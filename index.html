@@ -1557,7 +1557,7 @@
             container.innerHTML = '';
             
             // Chart dimensions
-            const margin = { top: 20, right: 80, bottom: 50, left: 70 };
+            const margin = { top: 20, right: 100, bottom: 50, left: 80 };
             const width = container.clientWidth - margin.left - margin.right;
             const height = 400 - margin.top - margin.bottom;
             
@@ -1568,78 +1568,75 @@
             const maxWeek = Math.max(...allWeeks);
             const maxPoints = Math.max(...allPoints);
             
-            // Scale functions
-            const xScale = (week) => ((week - minWeek) / (maxWeek - minWeek)) * width;
-            const yScale = (points) => height - (points / maxPoints) * height;
+            // Scale functions - fixed to go left to right
+            const xScale = (week) => margin.left + ((week - minWeek) / (maxWeek - minWeek)) * width;
+            const yScale = (points) => margin.top + height - (points / maxPoints) * height;
             
             // Generate colors for teams
             const colors = generateTeamColors(teamData.length);
             
             // Create SVG
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.setAttribute('width', width + margin.left + margin.right + 40);
+            svg.setAttribute('width', container.clientWidth);
             svg.setAttribute('height', height + margin.top + margin.bottom);
             svg.setAttribute('class', 'chart-svg');
-            
-            // Create main group with margins
-            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            g.setAttribute('transform', `translate(${margin.left}, ${margin.top})`);
             
             // Draw grid lines
             const numGridLines = 5;
             for (let i = 0; i <= numGridLines; i++) {
-                const y = (i / numGridLines) * height;
+                const y = margin.top + (i / numGridLines) * height;
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-                line.setAttribute('x1', 0);
+                line.setAttribute('x1', margin.left);
                 line.setAttribute('y1', y);
-                line.setAttribute('x2', width);
+                line.setAttribute('x2', margin.left + width);
                 line.setAttribute('y2', y);
                 line.setAttribute('class', 'chart-grid-line');
-                g.appendChild(line);
+                svg.appendChild(line);
                 
                 // Y-axis label
                 const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                label.setAttribute('x', -10);
+                label.setAttribute('x', margin.left - 10);
                 label.setAttribute('y', y + 4);
                 label.setAttribute('text-anchor', 'end');
                 label.setAttribute('class', 'chart-axis-label');
                 label.textContent = Math.round(maxPoints * (1 - i / numGridLines)).toLocaleString();
-                g.appendChild(label);
+                svg.appendChild(label);
             }
             
             // Draw X-axis labels
-            const weekStep = Math.ceil((maxWeek - minWeek) / 10);
+            const numWeeks = maxWeek - minWeek + 1;
+            const weekStep = Math.max(1, Math.ceil(numWeeks / 10));
             for (let week = minWeek; week <= maxWeek; week += weekStep) {
                 const x = xScale(week);
                 const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 label.setAttribute('x', x);
-                label.setAttribute('y', height + 25);
+                label.setAttribute('y', margin.top + height + 25);
                 label.setAttribute('text-anchor', 'middle');
                 label.setAttribute('class', 'chart-axis-label');
                 label.textContent = `Wk ${week}`;
-                g.appendChild(label);
+                svg.appendChild(label);
             }
             
             // X-axis title
             const xTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            xTitle.setAttribute('x', width / 2);
-            xTitle.setAttribute('y', height + 45);
+            xTitle.setAttribute('x', margin.left + width / 2);
+            xTitle.setAttribute('y', margin.top + height + 45);
             xTitle.setAttribute('text-anchor', 'middle');
             xTitle.setAttribute('class', 'chart-axis-label');
             xTitle.setAttribute('font-weight', 'bold');
             xTitle.textContent = 'Week';
-            g.appendChild(xTitle);
+            svg.appendChild(xTitle);
             
             // Y-axis title
             const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             yTitle.setAttribute('transform', `rotate(-90)`);
-            yTitle.setAttribute('x', -height / 2);
-            yTitle.setAttribute('y', -50);
+            yTitle.setAttribute('x', -(margin.top + height / 2));
+            yTitle.setAttribute('y', 20);
             yTitle.setAttribute('text-anchor', 'middle');
             yTitle.setAttribute('class', 'chart-axis-label');
             yTitle.setAttribute('font-weight', 'bold');
             yTitle.textContent = 'Cumulative Points';
-            g.appendChild(yTitle);
+            svg.appendChild(yTitle);
             
             // Draw lines for each team
             teamData.forEach((team, index) => {
@@ -1657,7 +1654,7 @@
                 path.setAttribute('class', 'chart-line');
                 path.setAttribute('stroke', colors[index]);
                 path.setAttribute('data-team-key', team.team_key);
-                g.appendChild(path);
+                svg.appendChild(path);
             });
             
             // Add team logo markers at the end of each line
@@ -1688,25 +1685,17 @@
                     image.setAttribute('y', -12);
                     image.setAttribute('width', 24);
                     image.setAttribute('height', 24);
-                    image.setAttribute('clip-path', 'circle(12px)');
+                    image.setAttribute('style', 'clip-path: circle(12px at center)');
                     logoGroup.appendChild(image);
-                    
-                    // Circular clip path
-                    const clipCircle = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-                    clipCircle.setAttribute('id', `clip-${team.team_key}`);
-                    const clipCircleShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    clipCircleShape.setAttribute('r', 12);
-                    clipCircle.appendChild(clipCircleShape);
                 }
                 
                 // Add hover events
                 logoGroup.addEventListener('mouseenter', () => handleTeamHover(team.team_key, team.team_name, team.finalPoints, colors[index]));
                 logoGroup.addEventListener('mouseleave', () => handleTeamHoverEnd());
                 
-                g.appendChild(logoGroup);
+                svg.appendChild(logoGroup);
             });
             
-            svg.appendChild(g);
             container.appendChild(svg);
             
             // Create tooltip element
