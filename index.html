@@ -823,6 +823,24 @@
             background: #2a5298;
             color: white;
         }
+        
+        /* Mobile optimizations for chart */
+        @media (max-width: 768px) {
+            #season-chart-container > div:first-child {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            #season-chart {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .chart-toggle-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+            }
+        }
 
         footer {
             background: rgba(255, 255, 255, 0.9);
@@ -1518,10 +1536,10 @@
                     return;
                 }
                 
-                // Reset to weekly view
-                currentChartType = 'weekly';
-                document.getElementById('btn-weekly').classList.add('active');
-                document.getElementById('btn-total').classList.remove('active');
+                // Reset to total view (default)
+                currentChartType = 'total';
+                document.getElementById('btn-weekly').classList.remove('active');
+                document.getElementById('btn-total').classList.add('active');
                 
                 // Show container first so it has dimensions
                 chartContainer.style.display = 'block';
@@ -1698,11 +1716,21 @@
             const teams = chartType === 'weekly' ? weeklyTeams : cumulativeTeams;
             const isWeekly = chartType === 'weekly';
             
-            // Chart dimensions - increased left margin to prevent logo clipping
+            // Detect mobile
+            const isMobile = window.innerWidth <= 768;
+            
+            // Chart dimensions - adjusted for mobile
             const containerWidth = container.clientWidth || container.offsetWidth || 900;
-            const margin = { top: 30, right: 30, bottom: 50, left: 70 };
-            const width = Math.max(600, containerWidth - margin.left - margin.right);
-            const height = Math.max(400, numTeams * 40 + 60);
+            const logoRadius = isMobile ? 10 : 14;
+            const logoImageSize = isMobile ? 14 : 20;
+            const rowHeight = isMobile ? 28 : 40;
+            
+            // On mobile, ensure minimum width for scrolling
+            const minChartWidth = isMobile ? Math.max(weeks.length * 25, 600) : 600;
+            
+            const margin = { top: 30, right: 30, bottom: 50, left: isMobile ? 40 : 70 };
+            const width = Math.max(minChartWidth, containerWidth - margin.left - margin.right);
+            const height = Math.max(400, numTeams * rowHeight + 60);
             
             const minWeek = Math.min(...weeks);
             const maxWeek = Math.max(...weeks);
@@ -1725,7 +1753,10 @@
             svg.setAttribute('height', height);
             svg.setAttribute('class', 'chart-svg');
             svg.style.display = 'block';
-            svg.style.maxWidth = '100%';
+            // Don't limit width on mobile to allow scrolling
+            if (!isMobile) {
+                svg.style.maxWidth = '100%';
+            }
             
             // Draw horizontal grid lines for each rank
             for (let rank = 1; rank <= numTeams; rank++) {
@@ -1741,17 +1772,18 @@
                 
                 // Y-axis rank label
                 const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                label.setAttribute('x', margin.left - 25);
+                label.setAttribute('x', margin.left - (isMobile ? 15 : 25));
                 label.setAttribute('y', y + 4);
                 label.setAttribute('text-anchor', 'end');
                 label.setAttribute('class', 'chart-axis-label');
+                label.setAttribute('font-size', isMobile ? '10px' : '12px');
                 label.textContent = rank;
                 svg.appendChild(label);
             }
             
-            // Draw X-axis labels
+            // Draw X-axis labels - show fewer on mobile
             const numWeeksTotal = weeks.length;
-            const weekStep = Math.max(1, Math.ceil(numWeeksTotal / 12));
+            const weekStep = Math.max(1, Math.ceil(numWeeksTotal / (isMobile ? 8 : 12)));
             for (let i = 0; i < weeks.length; i += weekStep) {
                 const week = weeks[i];
                 const x = xScale(week);
@@ -1760,6 +1792,7 @@
                 label.setAttribute('y', height - 10);
                 label.setAttribute('text-anchor', 'middle');
                 label.setAttribute('class', 'chart-axis-label');
+                label.setAttribute('font-size', isMobile ? '10px' : '12px');
                 label.textContent = `${week}`;
                 svg.appendChild(label);
             }
@@ -1771,6 +1804,7 @@
             xTitle.setAttribute('text-anchor', 'middle');
             xTitle.setAttribute('class', 'chart-axis-label');
             xTitle.setAttribute('font-weight', 'bold');
+            xTitle.setAttribute('font-size', isMobile ? '11px' : '12px');
             xTitle.textContent = 'Week';
             svg.appendChild(xTitle);
             
@@ -1778,10 +1812,11 @@
             const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             yTitle.setAttribute('transform', `rotate(-90)`);
             yTitle.setAttribute('x', -(margin.top + (height - margin.top - margin.bottom) / 2));
-            yTitle.setAttribute('y', 15);
+            yTitle.setAttribute('y', isMobile ? 12 : 15);
             yTitle.setAttribute('text-anchor', 'middle');
             yTitle.setAttribute('class', 'chart-axis-label');
             yTitle.setAttribute('font-weight', 'bold');
+            yTitle.setAttribute('font-size', isMobile ? '11px' : '12px');
             yTitle.textContent = isWeekly ? 'Weekly Rank' : 'Cumulative Rank';
             svg.appendChild(yTitle);
             
@@ -1800,6 +1835,7 @@
                 path.setAttribute('d', d);
                 path.setAttribute('class', 'chart-line');
                 path.setAttribute('stroke', colors[index]);
+                path.setAttribute('stroke-width', isMobile ? '2' : '2.5');
                 path.setAttribute('data-team-key', team.team_key);
                 svg.appendChild(path);
             });
@@ -1822,28 +1858,36 @@
                     
                     // Circle background
                     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-                    circle.setAttribute('r', 14);
+                    circle.setAttribute('r', logoRadius);
                     circle.setAttribute('fill', 'white');
                     circle.setAttribute('stroke', colors[teamIndex]);
-                    circle.setAttribute('stroke-width', 2);
+                    circle.setAttribute('stroke-width', isMobile ? '1.5' : '2');
                     logoGroup.appendChild(circle);
                     
                     // Team logo image
                     if (team.logo) {
+                        const imageOffset = logoImageSize / 2;
                         const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
                         image.setAttribute('href', team.logo);
-                        image.setAttribute('x', -10);
-                        image.setAttribute('y', -10);
-                        image.setAttribute('width', 20);
-                        image.setAttribute('height', 20);
-                        image.setAttribute('style', 'clip-path: circle(10px at center)');
+                        image.setAttribute('x', -imageOffset);
+                        image.setAttribute('y', -imageOffset);
+                        image.setAttribute('width', logoImageSize);
+                        image.setAttribute('height', logoImageSize);
+                        image.setAttribute('style', `clip-path: circle(${imageOffset}px at center)`);
                         logoGroup.appendChild(image);
                     }
                     
-                    // Add hover events
+                    // Add hover/touch events
                     const scoreValue = isWeekly ? point.score : point.cumulative;
-                    logoGroup.addEventListener('mouseenter', (e) => handleTeamHover(team.team_key, team.team_name, scoreValue, point.week, point.rank, isWeekly, e.currentTarget));
+                    const handleInteraction = (e) => {
+                        e.preventDefault();
+                        handleTeamHover(team.team_key, team.team_name, scoreValue, point.week, point.rank, isWeekly, e.currentTarget);
+                    };
+                    
+                    logoGroup.addEventListener('mouseenter', handleInteraction);
+                    logoGroup.addEventListener('touchstart', handleInteraction, { passive: false });
                     logoGroup.addEventListener('mouseleave', () => handleTeamHoverEnd());
+                    logoGroup.addEventListener('touchend', () => setTimeout(handleTeamHoverEnd, 1500));
                     
                     svg.appendChild(logoGroup);
                 });
@@ -1857,6 +1901,14 @@
             tooltip.style.display = 'none';
             tooltip.id = 'chart-tooltip';
             container.appendChild(tooltip);
+            
+            // Add scroll hint for mobile
+            if (isMobile && weeks.length > 10) {
+                const scrollHint = document.createElement('div');
+                scrollHint.style.cssText = 'text-align: center; color: #666; font-size: 0.8rem; margin-top: 0.5rem;';
+                scrollHint.textContent = '← Scroll to see all weeks →';
+                container.appendChild(scrollHint);
+            }
         }
 
         function generateTeamColors(count) {
