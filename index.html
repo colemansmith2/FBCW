@@ -656,11 +656,16 @@
         .award-icon {
             font-size: 1.8rem;
         }
+        
+        .award-table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 2rem;
+        }
 
         .award-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 2rem;
         }
 
         .award-table th {
@@ -668,6 +673,7 @@
             color: white;
             padding: 0.75rem;
             text-align: left;
+            white-space: nowrap;
         }
 
         .award-table td {
@@ -692,12 +698,21 @@
 
         @media (max-width: 768px) {
             .award-table {
-                font-size: 0.85rem;
+                font-size: 0.75rem;
+                min-width: 500px;
             }
             
             .award-table th,
             .award-table td {
                 padding: 0.5rem 0.3rem;
+            }
+            
+            .award-section h3 {
+                font-size: 1.2rem;
+            }
+            
+            .award-icon {
+                font-size: 1.4rem;
             }
         }
 
@@ -779,66 +794,74 @@
             <div id="awards-content" style="display: none;">
                 <div class="award-section">
                     <h3><span class="award-icon">👑</span> Regular Season Champion (Most Wins)</h3>
-                    <table class="award-table">
-                        <thead>
-                            <tr>
-                                <th>Year</th>
-                                <th>Manager</th>
-                                <th>Team Name</th>
-                                <th>Wins</th>
-                            </tr>
-                        </thead>
-                        <tbody id="regular-season-winners">
-                        </tbody>
-                    </table>
+                    <div class="award-table-wrapper">
+                        <table class="award-table">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Manager</th>
+                                    <th>Team Name</th>
+                                    <th>Wins</th>
+                                </tr>
+                            </thead>
+                            <tbody id="regular-season-winners">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="award-section">
                     <h3><span class="award-icon">⚡</span> Scoring Champion (Most Points)</h3>
-                    <table class="award-table">
-                        <thead>
-                            <tr>
-                                <th>Year</th>
-                                <th>Manager</th>
-                                <th>Team Name</th>
-                                <th>Points</th>
-                            </tr>
-                        </thead>
-                        <tbody id="scoring-champions">
-                        </tbody>
-                    </table>
+                    <div class="award-table-wrapper">
+                        <table class="award-table">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Manager</th>
+                                    <th>Team Name</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scoring-champions">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="award-section">
                     <h3><span class="award-icon">🗑️</span> Garbage Award (Worst Record)</h3>
-                    <table class="award-table">
-                        <thead>
-                            <tr>
-                                <th>Year</th>
-                                <th>Manager</th>
-                                <th>Team Name</th>
-                                <th>Record</th>
-                            </tr>
-                        </thead>
-                        <tbody id="garbage-awards">
-                        </tbody>
-                    </table>
+                    <div class="award-table-wrapper">
+                        <table class="award-table">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Manager</th>
+                                    <th>Team Name</th>
+                                    <th>Record</th>
+                                </tr>
+                            </thead>
+                            <tbody id="garbage-awards">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="award-section">
                     <h3><span class="award-icon">🤡</span> Clown Award (Least Points)</h3>
-                    <table class="award-table">
-                        <thead>
-                            <tr>
-                                <th>Year</th>
-                                <th>Manager</th>
-                                <th>Team Name</th>
-                                <th>Points</th>
-                            </tr>
-                        </thead>
-                        <tbody id="clown-awards">
-                        </tbody>
-                    </table>
+                    <div class="award-table-wrapper">
+                        <table class="award-table">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Manager</th>
+                                    <th>Team Name</th>
+                                    <th>Points</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clown-awards">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
