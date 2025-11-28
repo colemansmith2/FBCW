@@ -737,6 +737,73 @@
             margin: 1rem 0;
         }
 
+        /* Season Chart Styles */
+        .chart-svg {
+            overflow: visible;
+        }
+        
+        .chart-line {
+            fill: none;
+            stroke-width: 2.5;
+            transition: opacity 0.3s ease, stroke-width 0.3s ease;
+        }
+        
+        .chart-line.faded {
+            opacity: 0.15;
+        }
+        
+        .chart-line.highlighted {
+            stroke-width: 4;
+        }
+        
+        .team-logo-marker {
+            cursor: pointer;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .team-logo-marker.faded {
+            opacity: 0.2;
+        }
+        
+        .team-logo-marker.highlighted {
+            transform-origin: center;
+        }
+        
+        .chart-tooltip {
+            position: absolute;
+            background: rgba(30, 60, 114, 0.95);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            pointer-events: none;
+            z-index: 100;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transform: translate(-50%, -100%);
+            margin-top: -10px;
+        }
+        
+        .chart-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(30, 60, 114, 0.95);
+        }
+        
+        .chart-axis-label {
+            font-size: 0.75rem;
+            fill: #666;
+        }
+        
+        .chart-grid-line {
+            stroke: #e0e0e0;
+            stroke-width: 1;
+        }
+
         footer {
             background: rgba(255, 255, 255, 0.9);
             text-align: center;
@@ -756,16 +823,16 @@
     </header>
 
     <nav>
-        <button onclick="showSection('standings')" class="nav-btn active">Historical Standings</button>
+        <button onclick="showSection('standings')" class="nav-btn active">Seasons</button>
         <button onclick="showSection('awards')" class="nav-btn">Awards</button>
         <button onclick="showSection('scoring')" class="nav-btn">Player Scoring</button>
         <button onclick="showSection('managers')" class="nav-btn">Manager Profiles</button>
     </nav>
 
     <div class="container">
-        <!-- Historical Standings Section -->
+        <!-- Seasons Section -->
         <div id="standings" class="section active">
-            <h2>Historical Standings</h2>
+            <h2>Seasons</h2>
             
             <div class="season-selector">
                 <label for="standings-season">Select Season:</label>
@@ -793,6 +860,12 @@
                     <tbody id="standings-body">
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Season Points Chart -->
+            <div id="season-chart-container" style="display: none; margin-top: 2rem;">
+                <h3 style="color: #1e3c72; margin-bottom: 1rem;">Points Throughout Season</h3>
+                <div id="season-chart" style="position: relative; width: 100%; height: 450px; background: #fafafa; border-radius: 8px; overflow: visible;"></div>
             </div>
         </div>
 
@@ -1281,6 +1354,7 @@
             const loadingEl = document.getElementById('standings-loading');
             const errorEl = document.getElementById('standings-error');
             const tableEl = document.getElementById('standings-table');
+            const chartContainer = document.getElementById('season-chart-container');
             
             if (!season) {
                 return; // No season selected yet
@@ -1290,6 +1364,7 @@
                 loadingEl.style.display = 'block';
                 errorEl.style.display = 'none';
                 tableEl.style.display = 'none';
+                chartContainer.style.display = 'none';
                 
                 let response;
                 const seasonNum = parseInt(season);
@@ -1325,9 +1400,10 @@
                 }
                 
                 let teamLogos = {};
+                let teamData = [];
                 if (teamsResponse.ok) {
-                    const teams = await teamsResponse.json();
-                    teams.forEach(team => {
+                    teamData = await teamsResponse.json();
+                    teamData.forEach(team => {
                         teamLogos[team.team_key] = team.team_logo;
                     });
                 }
@@ -1367,11 +1443,348 @@
                 loadingEl.style.display = 'none';
                 tableEl.style.display = 'table';
                 
+                // Load and render the season chart
+                await loadSeasonChart(seasonNum, isCurrentSeason, standings, teamLogos, teamData);
+                
             } catch (error) {
                 console.error('Error loading standings:', error);
                 loadingEl.style.display = 'none';
                 errorEl.textContent = `Error loading ${season} standings: ${error.message}`;
                 errorEl.style.display = 'block';
+            }
+        }
+
+        // ===== SEASON CHART FUNCTIONS =====
+        async function loadSeasonChart(seasonNum, isCurrentSeason, standings, teamLogos, teamData) {
+            const chartContainer = document.getElementById('season-chart-container');
+            const chartEl = document.getElementById('season-chart');
+            
+            try {
+                // Load weekly scores data
+                let scoresResponse;
+                if (isCurrentSeason) {
+                    scoresResponse = await fetch('data/current_season/all_scores.json');
+                } else {
+                    scoresResponse = await fetch(`data/historical/${seasonNum}/all_scores.json`);
+                }
+                
+                if (!scoresResponse.ok) {
+                    console.log('No scores data available for chart');
+                    chartContainer.style.display = 'none';
+                    return;
+                }
+                
+                const scoresData = await scoresResponse.json();
+                
+                // Process scores into cumulative points per team per week
+                const teamWeeklyData = processScoresForChart(scoresData, standings, teamLogos, teamData);
+                
+                if (teamWeeklyData.length === 0) {
+                    chartContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Render the chart
+                renderSeasonChart(chartEl, teamWeeklyData);
+                chartContainer.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading season chart:', error);
+                chartContainer.style.display = 'none';
+            }
+        }
+
+        function processScoresForChart(scoresData, standings, teamLogos, teamData) {
+            // Group scores by team and week
+            const teamScores = {};
+            
+            // Initialize teams from standings
+            standings.forEach(team => {
+                teamScores[team.team_key] = {
+                    team_key: team.team_key,
+                    team_name: team.team_name,
+                    manager: team.manager,
+                    logo: teamLogos[team.team_key] || '',
+                    weeks: {}
+                };
+            });
+            
+            // Process each matchup
+            scoresData.forEach(matchup => {
+                const week = matchup.week;
+                
+                // Process team 1
+                if (teamScores[matchup.team1_key]) {
+                    teamScores[matchup.team1_key].weeks[week] = matchup.team1_points;
+                }
+                
+                // Process team 2
+                if (teamScores[matchup.team2_key]) {
+                    teamScores[matchup.team2_key].weeks[week] = matchup.team2_points;
+                }
+            });
+            
+            // Convert to cumulative points array
+            const result = [];
+            
+            Object.values(teamScores).forEach(team => {
+                const weeks = Object.keys(team.weeks).map(Number).sort((a, b) => a - b);
+                
+                if (weeks.length === 0) return;
+                
+                let cumulative = 0;
+                const cumulativeData = weeks.map(week => {
+                    cumulative += team.weeks[week] || 0;
+                    return { week, points: cumulative };
+                });
+                
+                result.push({
+                    team_key: team.team_key,
+                    team_name: team.team_name,
+                    manager: team.manager,
+                    logo: team.logo,
+                    data: cumulativeData,
+                    finalPoints: cumulative
+                });
+            });
+            
+            // Sort by final points descending for consistent coloring
+            result.sort((a, b) => b.finalPoints - a.finalPoints);
+            
+            return result;
+        }
+
+        function renderSeasonChart(container, teamData) {
+            // Clear previous chart
+            container.innerHTML = '';
+            
+            // Chart dimensions
+            const margin = { top: 20, right: 80, bottom: 50, left: 70 };
+            const width = container.clientWidth - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+            
+            // Find data bounds
+            const allWeeks = teamData.flatMap(t => t.data.map(d => d.week));
+            const allPoints = teamData.flatMap(t => t.data.map(d => d.points));
+            const minWeek = Math.min(...allWeeks);
+            const maxWeek = Math.max(...allWeeks);
+            const maxPoints = Math.max(...allPoints);
+            
+            // Scale functions
+            const xScale = (week) => ((week - minWeek) / (maxWeek - minWeek)) * width;
+            const yScale = (points) => height - (points / maxPoints) * height;
+            
+            // Generate colors for teams
+            const colors = generateTeamColors(teamData.length);
+            
+            // Create SVG
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', width + margin.left + margin.right + 40);
+            svg.setAttribute('height', height + margin.top + margin.bottom);
+            svg.setAttribute('class', 'chart-svg');
+            
+            // Create main group with margins
+            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.setAttribute('transform', `translate(${margin.left}, ${margin.top})`);
+            
+            // Draw grid lines
+            const numGridLines = 5;
+            for (let i = 0; i <= numGridLines; i++) {
+                const y = (i / numGridLines) * height;
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', 0);
+                line.setAttribute('y1', y);
+                line.setAttribute('x2', width);
+                line.setAttribute('y2', y);
+                line.setAttribute('class', 'chart-grid-line');
+                g.appendChild(line);
+                
+                // Y-axis label
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', -10);
+                label.setAttribute('y', y + 4);
+                label.setAttribute('text-anchor', 'end');
+                label.setAttribute('class', 'chart-axis-label');
+                label.textContent = Math.round(maxPoints * (1 - i / numGridLines)).toLocaleString();
+                g.appendChild(label);
+            }
+            
+            // Draw X-axis labels
+            const weekStep = Math.ceil((maxWeek - minWeek) / 10);
+            for (let week = minWeek; week <= maxWeek; week += weekStep) {
+                const x = xScale(week);
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x);
+                label.setAttribute('y', height + 25);
+                label.setAttribute('text-anchor', 'middle');
+                label.setAttribute('class', 'chart-axis-label');
+                label.textContent = `Wk ${week}`;
+                g.appendChild(label);
+            }
+            
+            // X-axis title
+            const xTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            xTitle.setAttribute('x', width / 2);
+            xTitle.setAttribute('y', height + 45);
+            xTitle.setAttribute('text-anchor', 'middle');
+            xTitle.setAttribute('class', 'chart-axis-label');
+            xTitle.setAttribute('font-weight', 'bold');
+            xTitle.textContent = 'Week';
+            g.appendChild(xTitle);
+            
+            // Y-axis title
+            const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            yTitle.setAttribute('transform', `rotate(-90)`);
+            yTitle.setAttribute('x', -height / 2);
+            yTitle.setAttribute('y', -50);
+            yTitle.setAttribute('text-anchor', 'middle');
+            yTitle.setAttribute('class', 'chart-axis-label');
+            yTitle.setAttribute('font-weight', 'bold');
+            yTitle.textContent = 'Cumulative Points';
+            g.appendChild(yTitle);
+            
+            // Draw lines for each team
+            teamData.forEach((team, index) => {
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                
+                // Build path
+                let d = '';
+                team.data.forEach((point, i) => {
+                    const x = xScale(point.week);
+                    const y = yScale(point.points);
+                    d += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
+                });
+                
+                path.setAttribute('d', d);
+                path.setAttribute('class', 'chart-line');
+                path.setAttribute('stroke', colors[index]);
+                path.setAttribute('data-team-key', team.team_key);
+                g.appendChild(path);
+            });
+            
+            // Add team logo markers at the end of each line
+            teamData.forEach((team, index) => {
+                const lastPoint = team.data[team.data.length - 1];
+                const x = xScale(lastPoint.week);
+                const y = yScale(lastPoint.points);
+                
+                // Create group for logo marker
+                const logoGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                logoGroup.setAttribute('class', 'team-logo-marker');
+                logoGroup.setAttribute('data-team-key', team.team_key);
+                logoGroup.setAttribute('transform', `translate(${x}, ${y})`);
+                
+                // Circle background
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('r', 16);
+                circle.setAttribute('fill', 'white');
+                circle.setAttribute('stroke', colors[index]);
+                circle.setAttribute('stroke-width', 2);
+                logoGroup.appendChild(circle);
+                
+                // Team logo image
+                if (team.logo) {
+                    const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+                    image.setAttribute('href', team.logo);
+                    image.setAttribute('x', -12);
+                    image.setAttribute('y', -12);
+                    image.setAttribute('width', 24);
+                    image.setAttribute('height', 24);
+                    image.setAttribute('clip-path', 'circle(12px)');
+                    logoGroup.appendChild(image);
+                    
+                    // Circular clip path
+                    const clipCircle = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+                    clipCircle.setAttribute('id', `clip-${team.team_key}`);
+                    const clipCircleShape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    clipCircleShape.setAttribute('r', 12);
+                    clipCircle.appendChild(clipCircleShape);
+                }
+                
+                // Add hover events
+                logoGroup.addEventListener('mouseenter', () => handleTeamHover(team.team_key, team.team_name, team.finalPoints, colors[index]));
+                logoGroup.addEventListener('mouseleave', () => handleTeamHoverEnd());
+                
+                g.appendChild(logoGroup);
+            });
+            
+            svg.appendChild(g);
+            container.appendChild(svg);
+            
+            // Create tooltip element
+            const tooltip = document.createElement('div');
+            tooltip.className = 'chart-tooltip';
+            tooltip.style.display = 'none';
+            tooltip.id = 'chart-tooltip';
+            container.appendChild(tooltip);
+        }
+
+        function generateTeamColors(count) {
+            const baseColors = [
+                '#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
+                '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe',
+                '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000',
+                '#aaffc3'
+            ];
+            
+            const colors = [];
+            for (let i = 0; i < count; i++) {
+                colors.push(baseColors[i % baseColors.length]);
+            }
+            return colors;
+        }
+
+        function handleTeamHover(teamKey, teamName, finalPoints, color) {
+            // Fade all lines and markers except the hovered one
+            document.querySelectorAll('.chart-line').forEach(line => {
+                if (line.getAttribute('data-team-key') === teamKey) {
+                    line.classList.add('highlighted');
+                    line.classList.remove('faded');
+                } else {
+                    line.classList.add('faded');
+                    line.classList.remove('highlighted');
+                }
+            });
+            
+            document.querySelectorAll('.team-logo-marker').forEach(marker => {
+                if (marker.getAttribute('data-team-key') === teamKey) {
+                    marker.classList.add('highlighted');
+                    marker.classList.remove('faded');
+                } else {
+                    marker.classList.add('faded');
+                    marker.classList.remove('highlighted');
+                }
+            });
+            
+            // Show tooltip
+            const tooltip = document.getElementById('chart-tooltip');
+            const marker = document.querySelector(`.team-logo-marker[data-team-key="${teamKey}"]`);
+            
+            if (tooltip && marker) {
+                const containerRect = document.getElementById('season-chart').getBoundingClientRect();
+                const markerRect = marker.getBoundingClientRect();
+                
+                tooltip.innerHTML = `<strong>${teamName}</strong><br>${Math.round(finalPoints).toLocaleString()} pts`;
+                tooltip.style.display = 'block';
+                tooltip.style.left = (markerRect.left - containerRect.left + markerRect.width / 2) + 'px';
+                tooltip.style.top = (markerRect.top - containerRect.top - 5) + 'px';
+            }
+        }
+
+        function handleTeamHoverEnd() {
+            // Remove all faded/highlighted classes
+            document.querySelectorAll('.chart-line').forEach(line => {
+                line.classList.remove('faded', 'highlighted');
+            });
+            
+            document.querySelectorAll('.team-logo-marker').forEach(marker => {
+                marker.classList.remove('faded', 'highlighted');
+            });
+            
+            // Hide tooltip
+            const tooltip = document.getElementById('chart-tooltip');
+            if (tooltip) {
+                tooltip.style.display = 'none';
             }
         }
 
