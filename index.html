@@ -1056,6 +1056,7 @@
         let availableSeasons = [];
         let allManagersData = [];
         let managerHistoryData = [];
+        let managerAwardsData = {}; // Store manager awards globally
         
         // Chart state
         let currentChartData = null;
@@ -2097,6 +2098,7 @@
                 
                 // Calculate awards for all managers
                 const managerAwards = await calculateManagerAwards();
+                managerAwardsData = managerAwards; // Store globally for modal access
                 
                 // Now build manager logos using cached data
                 const managerLogos = {};
@@ -2313,7 +2315,7 @@
             const modalHeaderSection = document.getElementById('modal-header-section');
             
             // Build awards display for modal header (same format as cards)
-            const awards = managerAwards[manager.manager_name] || {};
+            const awards = managerAwardsData[manager.manager_name] || {};
             let modalAwardsHTML = '';
             
             const awardsList = [];
