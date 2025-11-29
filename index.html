@@ -381,6 +381,36 @@
             min-width: 14px;
             text-align: center;
         }
+        
+        /* Global award badge styles (for modal and other uses) */
+        .awards-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        
+        .award-badge {
+            position: relative;
+            font-size: 1.6rem;
+            line-height: 1;
+            display: inline-block;
+        }
+        
+        .award-count {
+            position: absolute;
+            bottom: -2px;
+            right: -4px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            font-size: 0.55rem;
+            padding: 0.1rem 0.2rem;
+            border-radius: 2px;
+            font-weight: bold;
+            line-height: 1;
+            min-width: 14px;
+            text-align: center;
+        }
 
         /* Manager Detail Modal */
         .modal {
@@ -2326,7 +2356,7 @@
             if (awards.clown) awardsList.push({ emoji: '🤡', count: awards.clown });
             
             if (awardsList.length > 0) {
-                modalAwardsHTML = '<div class="awards-row" style="display: inline-flex; margin-left: 0.75rem;">';
+                modalAwardsHTML = '<div class="awards-row">';
                 awardsList.forEach(award => {
                     modalAwardsHTML += `<div class="award-badge">${award.emoji}`;
                     if (award.count > 1) {
@@ -2339,8 +2369,11 @@
             
             modalHeaderSection.innerHTML = `
                 <div class="modal-header">
-                    <h2 style="display: inline-flex; align-items: center; flex-wrap: wrap;">${manager.manager_name}${modalAwardsHTML}</h2>
-                    <p style="color: #666;">Joined ${manager.first_season} | ${manager.seasons_played} seasons</p>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        <h2 style="margin: 0;">${manager.manager_name}</h2>
+                        ${modalAwardsHTML}
+                    </div>
+                    <p style="color: #666; margin-top: 0.5rem;">Joined ${manager.first_season} | ${manager.seasons_played} seasons</p>
                 </div>
             `;
             
