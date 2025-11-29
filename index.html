@@ -2309,11 +2309,35 @@
                 ${h2hHTML}
             `;
             
-            // Set the header separately
+            // Set the header separately with awards emojis
             const modalHeaderSection = document.getElementById('modal-header-section');
+            
+            // Build awards display for modal header (same format as cards)
+            const awards = managerAwards[manager.manager_name] || {};
+            let modalAwardsHTML = '';
+            
+            const awardsList = [];
+            if (awards.championships) awardsList.push({ emoji: '💍', count: awards.championships });
+            if (awards.regularSeason) awardsList.push({ emoji: '👑', count: awards.regularSeason });
+            if (awards.scoringChamp) awardsList.push({ emoji: '🏅', count: awards.scoringChamp });
+            if (awards.garbage) awardsList.push({ emoji: '🗑️', count: awards.garbage });
+            if (awards.clown) awardsList.push({ emoji: '🤡', count: awards.clown });
+            
+            if (awardsList.length > 0) {
+                modalAwardsHTML = '<div class="awards-row" style="display: inline-flex; margin-left: 0.75rem;">';
+                awardsList.forEach(award => {
+                    modalAwardsHTML += `<div class="award-badge">${award.emoji}`;
+                    if (award.count > 1) {
+                        modalAwardsHTML += `<span class="award-count">x${award.count}</span>`;
+                    }
+                    modalAwardsHTML += '</div>';
+                });
+                modalAwardsHTML += '</div>';
+            }
+            
             modalHeaderSection.innerHTML = `
                 <div class="modal-header">
-                    <h2>${manager.manager_name}</h2>
+                    <h2 style="display: inline-flex; align-items: center; flex-wrap: wrap;">${manager.manager_name}${modalAwardsHTML}</h2>
                     <p style="color: #666;">Joined ${manager.first_season} | ${manager.seasons_played} seasons</p>
                 </div>
             `;
