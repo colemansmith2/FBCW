@@ -516,6 +516,13 @@
             display: inline-block;
         }
         
+        .award-image {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            vertical-align: middle;
+        }
+        
         .award-count {
             position: absolute;
             bottom: -2px;
@@ -2337,16 +2344,21 @@
                     let awardsHTML = '';
                     
                     const awardsList = [];
-                    if (awards.championships) awardsList.push({ emoji: '💍', count: awards.championships });
-                    if (awards.regularSeason) awardsList.push({ emoji: '👑', count: awards.regularSeason });
-                    if (awards.scoringChamp) awardsList.push({ emoji: '🏅', count: awards.scoringChamp });
-                    if (awards.garbage) awardsList.push({ emoji: '🗑️', count: awards.garbage });
-                    if (awards.clown) awardsList.push({ emoji: '🤡', count: awards.clown });
+                    if (awards.championships) awardsList.push({ type: 'image', src: 'champion_ring.png', count: awards.championships, alt: 'Championship' });
+                    if (awards.regularSeason) awardsList.push({ type: 'emoji', emoji: '👑', count: awards.regularSeason });
+                    if (awards.scoringChamp) awardsList.push({ type: 'emoji', emoji: '🏅', count: awards.scoringChamp });
+                    if (awards.garbage) awardsList.push({ type: 'emoji', emoji: '🗑️', count: awards.garbage });
+                    if (awards.clown) awardsList.push({ type: 'image', src: 'clown_award.png', count: awards.clown, alt: 'Clown Award' });
                     
                     if (awardsList.length > 0) {
                         awardsHTML = '<div class="awards-row">';
                         awardsList.forEach(award => {
-                            awardsHTML += `<div class="award-badge">${award.emoji}`;
+                            awardsHTML += '<div class="award-badge">';
+                            if (award.type === 'image') {
+                                awardsHTML += `<img src="${award.src}" alt="${award.alt}" class="award-image">`;
+                            } else {
+                                awardsHTML += award.emoji;
+                            }
                             if (award.count > 1) {
                                 awardsHTML += `<span class="award-count">x${award.count}</span>`;
                             }
@@ -2512,16 +2524,21 @@
             let modalAwardsHTML = '';
             
             const awardsList = [];
-            if (awards.championships) awardsList.push({ emoji: '💍', count: awards.championships });
-            if (awards.regularSeason) awardsList.push({ emoji: '👑', count: awards.regularSeason });
-            if (awards.scoringChamp) awardsList.push({ emoji: '🏅', count: awards.scoringChamp });
-            if (awards.garbage) awardsList.push({ emoji: '🗑️', count: awards.garbage });
-            if (awards.clown) awardsList.push({ emoji: '🤡', count: awards.clown });
+            if (awards.championships) awardsList.push({ type: 'image', src: 'champion_ring.png', count: awards.championships, alt: 'Championship' });
+            if (awards.regularSeason) awardsList.push({ type: 'emoji', emoji: '👑', count: awards.regularSeason });
+            if (awards.scoringChamp) awardsList.push({ type: 'emoji', emoji: '🏅', count: awards.scoringChamp });
+            if (awards.garbage) awardsList.push({ type: 'emoji', emoji: '🗑️', count: awards.garbage });
+            if (awards.clown) awardsList.push({ type: 'image', src: 'clown_award.png', count: awards.clown, alt: 'Clown Award' });
             
             if (awardsList.length > 0) {
                 modalAwardsHTML = '<div class="awards-row">';
                 awardsList.forEach(award => {
-                    modalAwardsHTML += `<div class="award-badge">${award.emoji}`;
+                    modalAwardsHTML += '<div class="award-badge">';
+                    if (award.type === 'image') {
+                        modalAwardsHTML += `<img src="${award.src}" alt="${award.alt}" class="award-image">`;
+                    } else {
+                        modalAwardsHTML += award.emoji;
+                    }
                     if (award.count > 1) {
                         modalAwardsHTML += `<span class="award-count">x${award.count}</span>`;
                     }
