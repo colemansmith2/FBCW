@@ -30,12 +30,31 @@
             z-index: 200;
         }
         
+        .header-container {
+            position: relative;
+            display: block;
+        }
+        
         .header-banner {
             width: 100%;
             height: auto;
             display: block;
             max-height: 70px;
             object-fit: cover;
+        }
+        
+        .header-league-link {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6%; /* Approximate width of FBCW red box area */
+            height: 100%;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
+        .header-league-link:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
         
         .league-logo {
@@ -57,6 +76,10 @@
         @media (max-width: 768px) {
             .header-banner {
                 max-height: 50px;
+            }
+            
+            .header-league-link {
+                width: 12%; /* Slightly larger tap target on mobile */
             }
             
             .league-logo {
@@ -888,10 +911,13 @@
 </head>
 <body>
     <header>
-        <picture>
-            <source srcset="header_long.png" media="(min-width: 1200px)">
-            <img src="header_short.png" alt="Fantasy Baseball Civil War - Established 2017 - 12 Team Points League" class="header-banner">
-        </picture>
+        <div class="header-container">
+            <picture>
+                <source srcset="header_long.png" media="(min-width: 1200px)">
+                <img src="header_short.png" alt="Fantasy Baseball Civil War - Established 2017 - 12 Team Points League" class="header-banner">
+            </picture>
+            <a href="https://baseball.fantasysports.yahoo.com/league/fantasybaseballcivilwar/2025" target="_blank" class="header-league-link" title="Go to Yahoo Fantasy League"></a>
+        </div>
     </header>
 
     <nav>
