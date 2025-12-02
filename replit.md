@@ -58,6 +58,18 @@ Python dependencies (see `requirements.txt`):
 
 ## Recent Changes
 
+- **2024-12-02**: Added Mike Trout Award and Jacob deGrom Award
+  - Mike Trout Award: Given to the manager who owned the highest scoring hitter each season
+  - Jacob deGrom Award: Given to the manager who owned the highest scoring pitcher each season
+  - Awards display on the Awards page with year, manager, team logo, player name, headshot, and points
+  - Manager profiles show award badges with count overlay (e.g., "x2" for multiple wins)
+  - Custom award images: `attached_assets/trout_award_1764648146923.png` and `attached_assets/degom_award_1764648146918.jpg`
+
+- **2024-12-02**: Updated Player Scoring table
+  - Team logos are now circular
+  - Stats columns updated to: Pts, G, PPG (Points Per Game), IP, ERA, W, K, BB, PA, HR, OPS
+  - All columns are sortable
+
 - **2024-12-02**: Imported from GitHub and configured for Replit environment
   - Created `server.py` to serve static files on port 5000
   - Added `requirements.txt` for Python dependencies
