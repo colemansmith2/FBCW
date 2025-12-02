@@ -1,30 +1,274 @@
 {
   "batting": {
-    "1B": 2.6,
-    "2B": 5.2,
-    "3B": 7.8,
-    "HR": 10.4,
-    "RBI": 1.9,
-    "R": 1.9,
-    "BB": 2.6,
-    "HBP": 2.6,
-    "SB": 4.2,
-    "CS": -2.6,
-    "SO": -1
+    "1B": 1.0,
+    "2B": 2.0,
+    "3B": 3.0,
+    "HR": 4.0,
+    "RBI": 1.0,
+    "SB": 2.0,
+    "CS": -1.0,
+    "BB": 1.0,
+    "HBP": 1.0,
+    "SO": -0.5,
+    "CYC": 5.0,
+    "SLAM": 2.0
   },
   "pitching": {
-    "IP": 5,
-    "W": 4,
-    "L": -4,
-    "SV": 8,
-    "HLD": 4,
-    "ER": -3,
-    "H": -1,
-    "BB": -1,
-    "K": 3,
-    "QS": 4,
-    "CG": 5,
-    "SO": 5
+    "IP": 2.5,
+    "W": 2.5,
+    "L": -3.0,
+    "CG": 5.0,
+    "ShO": 5.0,
+    "SV": 5.0,
+    "HA": -0.75,
+    "ER": -1.75,
+    "BBA": -0.75,
+    "K": 1.5,
+    "HLD": 2.0,
+    "PICK": 3.0,
+    "NH": 10.0,
+    "QS": 3.0
   },
-  "raw_settings": []
+  "start_date": "2022-04-07",
+  "end_date": "2022-09-18",
+  "raw_settings": {
+    "league_key": "412.l.4348",
+    "league_id": "4348",
+    "name": "Fantasy Baseball Civil War VI",
+    "url": "https://baseball.fantasysports.yahoo.com/2022/b1/4348",
+    "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/32820601564_7b48b59fac.jpg",
+    "draft_status": "postdraft",
+    "num_teams": 12,
+    "edit_key": "2022-09-18",
+    "weekly_deadline": "intraday",
+    "roster_type": "date",
+    "league_update_timestamp": "1663569855",
+    "scoring_type": "headpoint",
+    "league_type": "private",
+    "renew": "404_47332",
+    "renewed": "422_6780",
+    "felo_tier": "silver",
+    "is_highscore": false,
+    "matchup_week": 22,
+    "iris_group_chat_id": "",
+    "allow_add_to_dl_extra_pos": 1,
+    "is_pro_league": "0",
+    "is_cash_league": "0",
+    "current_week": "22",
+    "start_week": "1",
+    "start_date": "2022-04-07",
+    "end_week": "22",
+    "end_date": "2022-09-18",
+    "is_finished": 1,
+    "current_date": "2022-09-18",
+    "is_plus_league": "0",
+    "game_code": "mlb",
+    "season": "2022",
+    "draft_type": "live",
+    "is_auction_draft": "0",
+    "invite_permission": "commissioner",
+    "uses_playoff": "1",
+    "has_playoff_consolation_games": true,
+    "playoff_start_week": "20",
+    "uses_playoff_reseeding": 0,
+    "uses_lock_eliminated_teams": 0,
+    "num_playoff_teams": "6",
+    "num_playoff_consolation_teams": 6,
+    "has_multiweek_championship": 0,
+    "uses_roster_import": "1",
+    "roster_import_deadline": "2022-02-23",
+    "waiver_type": "R",
+    "waiver_rule": "all",
+    "uses_faab": "0",
+    "draft_time": "1647820800",
+    "draft_pick_time": "60",
+    "post_draft_players": "FA",
+    "max_teams": "12",
+    "waiver_time": "0",
+    "trade_end_date": "2022-08-11",
+    "trade_ratify_type": "commish",
+    "trade_reject_time": "1",
+    "player_pool": "ALL",
+    "cant_cut_list": "none",
+    "draft_together": 0,
+    "can_trade_draft_picks": "1",
+    "sendbird_channel_url": "f2ff0df18db11dd6010d4030b393c65e",
+    "stat_modifiers": {
+      "stats": [
+        {
+          "stat": {
+            "stat_id": 9,
+            "value": "1"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 10,
+            "value": "2"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 11,
+            "value": "3"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 12,
+            "value": "4"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 13,
+            "value": "1"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 16,
+            "value": "2"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 17,
+            "value": "-1"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 18,
+            "value": "1"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 20,
+            "value": "1"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 21,
+            "value": "-.5"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 64,
+            "value": "5"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 66,
+            "value": "2"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 50,
+            "value": "2.5"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 28,
+            "value": "2.5"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 29,
+            "value": "-3"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 30,
+            "value": "5"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 31,
+            "value": "5"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 32,
+            "value": "5"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 34,
+            "value": "-.75"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 37,
+            "value": "-1.75"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 39,
+            "value": "-.75"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 42,
+            "value": "1.5"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 48,
+            "value": "2"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 72,
+            "value": "3"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 79,
+            "value": "10"
+          }
+        },
+        {
+          "stat": {
+            "stat_id": 83,
+            "value": "3"
+          }
+        }
+      ]
+    },
+    "divisions": [
+      {
+        "division": {
+          "division_id": 1,
+          "name": "North"
+        }
+      },
+      {
+        "division": {
+          "division_id": 2,
+          "name": "South"
+        }
+      }
+    ],
+    "max_weekly_adds": "4",
+    "uses_median_score": false,
+    "league_premium_features": []
+  }
 }
