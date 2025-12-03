@@ -3233,8 +3233,10 @@
                     const topHitter = batters.reduce((max, player) => 
                         (player.fantasy_points || 0) > (max.fantasy_points || 0) ? player : max
                     );
-                    if (!managerAwards[topHitter.manager]) managerAwards[topHitter.manager] = {};
-                    managerAwards[topHitter.manager].troutAward = (managerAwards[topHitter.manager].troutAward || 0) + 1;
+                    // NORMALIZE THE MANAGER NAME
+                    const normalizedManager = normalizeManagerName(topHitter.manager, parseInt(year), null, null);
+                    if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
+                    managerAwards[normalizedManager].troutAward = (managerAwards[normalizedManager].troutAward || 0) + 1;
                 }
                 
                 // Jacob deGrom Award (highest scoring pitcher)
@@ -3243,8 +3245,10 @@
                     const topPitcher = pitchers.reduce((max, player) => 
                         (player.fantasy_points || 0) > (max.fantasy_points || 0) ? player : max
                     );
-                    if (!managerAwards[topPitcher.manager]) managerAwards[topPitcher.manager] = {};
-                    managerAwards[topPitcher.manager].degromAward = (managerAwards[topPitcher.manager].degromAward || 0) + 1;
+                    // NORMALIZE THE MANAGER NAME
+                    const normalizedManager = normalizeManagerName(topPitcher.manager, parseInt(year), null, null);
+                    if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
+                    managerAwards[normalizedManager].degromAward = (managerAwards[normalizedManager].degromAward || 0) + 1;
                 }
             }
             
