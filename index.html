@@ -1375,9 +1375,9 @@
         }
 
         .roster-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
         }
 
         .roster-player-card {
@@ -1432,17 +1432,55 @@
             color: #888;
         }
 
-        .roster-section-title {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #666;
-            margin: 1rem 0 0.5rem 0;
-            padding-bottom: 0.25rem;
-            border-bottom: 1px solid #ddd;
+        .roster-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
         }
 
-        .roster-section-title:first-child {
-            margin-top: 0;
+        @media (max-width: 900px) {
+            .roster-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .roster-column {
+            min-width: 0;
+        }
+
+        .roster-section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e3c72;
+            margin: 0 0 0.75rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #1e3c72;
+        }
+
+        .prospects-section {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 2px dashed #ddd;
+        }
+
+        .prospects-section .roster-section-title {
+            color: #888;
+            border-bottom-color: #ccc;
+        }
+
+        .prospects-section .roster-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .roster-player-card.prospect {
+            background: #f0f0f0;
+            opacity: 0.8;
+        }
+
+        .roster-player-card.prospect .points-value {
+            color: #999;
         }
 
         /* Mobile styles for Player Scoring */
@@ -4438,19 +4476,22 @@
 
                 // Populate season dropdown if not already done
                 if (seasonSelect.options.length === 0) {
-                    const seasons = [2024, 2023, 2022, 2021, 2020, 2019];
+                    const seasons = [2025, 2024, 2023, 2022, 2021, 2020, 2019];
                     seasons.forEach(year => {
                         const option = document.createElement('option');
                         option.value = year;
-                        option.textContent = year;
+                        option.textContent = year === 2025 ? '2025 (Current)' : year;
                         seasonSelect.appendChild(option);
                     });
                 }
 
-                const selectedYear = parseInt(seasonSelect.value) || 2024;
+                const selectedYear = parseInt(seasonSelect.value) || 2025;
+                const isCurrentSeason = selectedYear === 2025;
+                const dataPath = isCurrentSeason ? 'data/current_season' : `data/historical/${selectedYear}`;
 
                 // Load standings to find champion
-                const standingsResponse = await fetch(`data/historical/${selectedYear}/final_standings.json`);
+                const standingsFile = isCurrentSeason ? 'standings.json' : 'final_standings.json';
+                const standingsResponse = await fetch(`${dataPath}/${standingsFile}`);
                 if (!standingsResponse.ok) throw new Error(`No data for ${selectedYear}`);
                 let standings = await standingsResponse.json();
                 standings = normalizeStandingsData(standings, selectedYear);
@@ -4460,7 +4501,7 @@
                 if (!champion) throw new Error('Champion not found');
 
                 // Load teams data for logo
-                const teamsResponse = await fetch(`data/historical/${selectedYear}/teams.json`);
+                const teamsResponse = await fetch(`${dataPath}/teams.json`);
                 let teams = [];
                 if (teamsResponse.ok) {
                     teams = await teamsResponse.json();
@@ -4469,27 +4510,27 @@
                 const teamLogo = championTeam?.team_logo || '';
 
                 // Load scores for schedule
-                const scoresResponse = await fetch(`data/historical/${selectedYear}/all_scores.json`);
+                const scoresResponse = await fetch(`${dataPath}/all_scores.json`);
                 let scores = [];
                 if (scoresResponse.ok) {
                     scores = await scoresResponse.json();
                 }
 
                 // Load player stats for roster
-                const playerStatsResponse = await fetch(`data/historical/${selectedYear}/player_stats.json`);
+                const playerStatsResponse = await fetch(`${dataPath}/player_stats.json`);
                 let playerStats = [];
                 if (playerStatsResponse.ok) {
                     playerStats = await playerStatsResponse.json();
                 }
 
-                // Count championships for this manager
-                const managerChampionships = await countManagerChampionships(champion.manager, selectedYear);
+                // Count championships for this manager (and check for back-to-back)
+                const championshipInfo = await countManagerChampionships(champion.manager, selectedYear);
 
                 // Render champion header
-                renderChampionHeader(champion, teamLogo, selectedYear);
+                renderChampionHeader(champion, teamLogo, selectedYear, isCurrentSeason);
 
                 // Render championship count
-                renderChampionshipCount(managerChampionships);
+                renderChampionshipCount(championshipInfo);
 
                 // Render stats
                 renderChampionStats(champion, scores, standings);
@@ -4512,20 +4553,27 @@
         }
 
         async function countManagerChampionships(managerName, upToYear) {
-            const seasons = [2019, 2020, 2021, 2022, 2023, 2024];
+            const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
             let count = 0;
             let thisIsNth = 0;
+            let championshipYears = [];
 
             for (const year of seasons) {
                 if (year > upToYear) break;
                 try {
-                    const response = await fetch(`data/historical/${year}/final_standings.json`);
+                    let response;
+                    if (year === 2025) {
+                        response = await fetch('data/current_season/standings.json');
+                    } else {
+                        response = await fetch(`data/historical/${year}/final_standings.json`);
+                    }
                     if (response.ok) {
                         let standings = await response.json();
                         standings = normalizeStandingsData(standings, year);
                         const champ = standings.find(t => t.rank === 1);
                         if (champ && champ.manager === managerName) {
                             count++;
+                            championshipYears.push(year);
                             if (year === upToYear) {
                                 thisIsNth = count;
                             }
@@ -4536,7 +4584,37 @@
                 }
             }
 
-            return thisIsNth;
+            // Check for back-to-back (consecutive years)
+            let isBackToBack = false;
+            let consecutiveCount = 1;
+            
+            if (championshipYears.length >= 2) {
+                const currentIndex = championshipYears.indexOf(upToYear);
+                if (currentIndex > 0) {
+                    // Check if previous championship was the year before
+                    const prevYear = championshipYears[currentIndex - 1];
+                    if (prevYear === upToYear - 1) {
+                        isBackToBack = true;
+                        // Count consecutive championships
+                        consecutiveCount = 2;
+                        for (let i = currentIndex - 2; i >= 0; i--) {
+                            if (championshipYears[i] === championshipYears[i + 1] - 1) {
+                                consecutiveCount++;
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return {
+                nth: thisIsNth,
+                total: count,
+                isBackToBack: isBackToBack,
+                consecutiveCount: consecutiveCount,
+                years: championshipYears
+            };
         }
 
         function getOrdinal(n) {
@@ -4545,38 +4623,53 @@
             return n + (s[(v - 20) % 10] || s[v] || s[0]);
         }
 
-        function renderChampionHeader(champion, teamLogo, year) {
+        function renderChampionHeader(champion, teamLogo, year, isCurrentSeason) {
             const headerEl = document.getElementById('champion-header');
             const placeholderLogo = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFhMWEyZSIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZCI+8J+Phjwv dGV4dD48L3N2Zz4=';
+            
+            const seasonLabel = isCurrentSeason ? `${year} Season Leader` : `${year} Season Champion`;
 
             headerEl.innerHTML = `
                 <img src="${teamLogo || placeholderLogo}" alt="${champion.team_name}" class="team-logo" onerror="this.src='${placeholderLogo}'">
                 <div class="champion-info">
                     <h3>${champion.team_name}</h3>
                     <div class="manager-name">Manager: ${champion.manager}</div>
-                    <div class="season-year">${year} Season Champion</div>
+                    <div class="season-year">${seasonLabel}</div>
                 </div>
                 <div class="trophy-icon">🏆</div>
             `;
         }
 
-        function renderChampionshipCount(nth) {
+        function renderChampionshipCount(info) {
             const bannerEl = document.getElementById('championship-count-banner');
-            if (nth > 0) {
-                const ordinal = getOrdinal(nth);
-                let message = `🎉 ${ordinal} Championship Title! 🎉`;
-                if (nth === 1) {
-                    message = `🌟 First Championship Title! 🌟`;
-                } else if (nth === 2) {
-                    message = `⭐ Back-to-Back? No, but ${ordinal} Championship! ⭐`;
-                } else if (nth >= 3) {
-                    message = `👑 Dynasty Alert: ${ordinal} Championship! 👑`;
-                }
-                bannerEl.innerHTML = message;
-                bannerEl.style.display = 'block';
-            } else {
+            
+            if (!info || info.nth === 0) {
                 bannerEl.style.display = 'none';
+                return;
             }
+            
+            const { nth, isBackToBack, consecutiveCount } = info;
+            const ordinal = getOrdinal(nth);
+            let message = '';
+            
+            if (nth === 1) {
+                message = `🌟 First Championship Title! 🌟`;
+            } else if (isBackToBack) {
+                if (consecutiveCount === 2) {
+                    message = `🔥 Back-to-Back Champions! ${ordinal} Title! 🔥`;
+                } else if (consecutiveCount === 3) {
+                    message = `👑 THREE-PEAT! ${ordinal} Championship! 👑`;
+                } else if (consecutiveCount >= 4) {
+                    message = `🏆👑 ${consecutiveCount}-PEAT DYNASTY! ${ordinal} Championship! 👑🏆`;
+                }
+            } else if (nth >= 3) {
+                message = `👑 Dynasty Alert: ${ordinal} Championship! 👑`;
+            } else {
+                message = `🎉 ${ordinal} Championship Title! 🎉`;
+            }
+            
+            bannerEl.innerHTML = message;
+            bannerEl.style.display = 'block';
         }
 
         function renderChampionStats(champion, scores, standings) {
@@ -4657,20 +4750,24 @@
                 return;
             }
 
-            // Sort by fantasy points descending
-            rosterPlayers.sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+            // Separate by position type and points
+            const batters = rosterPlayers.filter(p => p.position_type === 'B' && (p.fantasy_points || 0) > 0);
+            const pitchers = rosterPlayers.filter(p => p.position_type === 'P' && (p.fantasy_points || 0) > 0);
+            const prospects = rosterPlayers.filter(p => (p.fantasy_points || 0) === 0);
 
-            // Separate batters and pitchers
-            const batters = rosterPlayers.filter(p => p.position_type === 'B');
-            const pitchers = rosterPlayers.filter(p => p.position_type === 'P');
+            // Sort each group by fantasy points descending
+            batters.sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+            pitchers.sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+            prospects.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
 
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
 
-            const renderPlayerCard = (player) => {
+            const renderPlayerCard = (player, isProspect = false) => {
                 const headshot = player.headshot_url || placeholderImg;
                 const points = (player.fantasy_points || 0).toFixed(1);
+                const cardClass = isProspect ? 'roster-player-card prospect' : 'roster-player-card';
                 return `
-                    <div class="roster-player-card">
+                    <div class="${cardClass}">
                         <img src="${headshot}" alt="${player.name}" class="player-headshot" onerror="this.src='${placeholderImg}'">
                         <div class="player-info">
                             <div class="player-name">${player.name}</div>
@@ -4684,16 +4781,32 @@
                 `;
             };
 
-            let html = '';
+            let html = '<div class="roster-columns">';
             
+            // Batters column
+            html += '<div class="roster-column">';
             if (batters.length > 0) {
                 html += `<div class="roster-section-title">⚾ Batters (${batters.length})</div>`;
-                html += `<div class="roster-grid">${batters.map(renderPlayerCard).join('')}</div>`;
+                html += `<div class="roster-grid">${batters.map(p => renderPlayerCard(p, false)).join('')}</div>`;
             }
+            html += '</div>';
             
+            // Pitchers column
+            html += '<div class="roster-column">';
             if (pitchers.length > 0) {
                 html += `<div class="roster-section-title">🎯 Pitchers (${pitchers.length})</div>`;
-                html += `<div class="roster-grid">${pitchers.map(renderPlayerCard).join('')}</div>`;
+                html += `<div class="roster-grid">${pitchers.map(p => renderPlayerCard(p, false)).join('')}</div>`;
+            }
+            html += '</div>';
+            
+            html += '</div>';
+
+            // Prospects section (players with 0 points)
+            if (prospects.length > 0) {
+                html += '<div class="prospects-section">';
+                html += `<div class="roster-section-title">🌱 Prospects (${prospects.length})</div>`;
+                html += `<div class="roster-grid">${prospects.map(p => renderPlayerCard(p, true)).join('')}</div>`;
+                html += '</div>';
             }
 
             rosterEl.innerHTML = html;
