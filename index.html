@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,10 +9,10 @@
     <!-- Favicon for browsers -->
     <link rel="icon" type="image/png" sizes="32x32" href="league_logo.png">
     <link rel="icon" type="image/png" sizes="16x16" href="league_logo.png">
-  
+
     <!-- For iOS/Safari bookmarks -->
     <link rel="apple-touch-icon" sizes="180x180" href="league_logo.png">
-    
+
     <style>
         * {
             margin: 0;
@@ -24,30 +25,32 @@
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: #333;
             min-height: 100vh;
-            padding-top: 120px; /* header (70px) + nav (~50px) */
+            padding-top: 120px;
+            /* header (70px) + nav (~50px) */
         }
 
         header.desktop-header {
-            background: #4a5d23; /* Olive/brown color to match banner edges */
+            background: #4a5d23;
+            /* Olive/brown color to match banner edges */
             padding: 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 200;
         }
-        
+
         /* Mobile header - hidden on desktop */
         header.mobile-header {
             display: none;
         }
-        
+
         .header-container {
             position: relative;
             display: block;
         }
-        
+
         .header-banner {
             width: 100%;
             height: auto;
@@ -55,27 +58,28 @@
             max-height: 70px;
             object-fit: cover;
         }
-        
+
         .header-league-link {
             position: absolute;
             top: 0;
             left: 0;
-            width: 12%; /* Full width of FBCW red box area */
+            width: 12%;
+            /* Full width of FBCW red box area */
             height: 100%;
             cursor: pointer;
             z-index: 10;
         }
-        
+
         .header-league-link:hover {
             background: rgba(255, 255, 255, 0.1);
         }
-        
+
         .league-logo {
             width: 50px;
             height: 50px;
             object-fit: contain;
         }
-        
+
         .header-content {
             flex: 1;
         }
@@ -87,11 +91,12 @@
         }
 
         @media (max-width: 768px) {
+
             /* Hide desktop header on mobile */
             header.desktop-header {
                 display: none;
             }
-            
+
             /* Show mobile header */
             header.mobile-header {
                 display: block;
@@ -100,20 +105,20 @@
                 left: 0;
                 right: 0;
                 z-index: 200;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
             }
-            
+
             .mobile-header-container {
                 position: relative;
                 width: 100%;
             }
-            
+
             .mobile-header-banner {
                 width: 100%;
                 height: auto;
                 display: block;
             }
-            
+
             /* Clickable zones positioned over the banner */
             .mobile-zone {
                 position: absolute;
@@ -121,59 +126,60 @@
                 height: 100%;
                 z-index: 10;
             }
-            
+
             .mobile-zone:active {
                 background: rgba(255, 255, 255, 0.15);
             }
-            
+
             /* Zone positions based on banner layout - adjusted right */
             .zone-logo {
                 left: 0;
                 width: 36%;
             }
-            
+
             .zone-seasons {
                 left: 36%;
                 width: 11%;
             }
-            
+
             .zone-awards {
                 left: 47%;
                 width: 11%;
             }
-            
+
             .zone-scoring {
                 left: 58%;
                 width: 11%;
             }
-            
+
             .zone-managers {
                 left: 69%;
                 width: 11%;
             }
-            
+
             /* Hide desktop nav on mobile */
             nav {
                 display: none;
             }
-            
+
             body {
                 padding-top: 55px;
             }
-            
+
             .header-league-link {
-                width: 18%; /* Larger tap target on mobile */
+                width: 18%;
+                /* Larger tap target on mobile */
             }
-            
+
             .league-logo {
                 width: 40px;
                 height: 40px;
             }
-            
+
             h1 {
                 font-size: 1.5rem;
             }
-            
+
             .section {
                 padding: 1rem;
             }
@@ -194,14 +200,14 @@
             left: 0;
             right: 0;
             z-index: 100;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        
+
         @media (max-width: 768px) {
             body {
                 padding-top: 95px;
             }
-            
+
             nav {
                 top: 50px;
                 padding: 0.4rem;
@@ -247,17 +253,17 @@
             background: white;
             padding: 2rem;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
             overflow-x: hidden;
         }
-        
+
         @media (max-width: 768px) {
             .section {
                 padding: 0.75rem;
                 margin-bottom: 1rem;
             }
-            
+
             .container {
                 padding: 0 0.5rem;
                 margin: 0.5rem auto;
@@ -270,8 +276,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         h2 {
@@ -280,21 +293,21 @@
             border-bottom: 3px solid #ff6b6b;
             padding-bottom: 0.5rem;
         }
-        
+
         @media (max-width: 768px) {
             h2 {
                 font-size: 1.2rem;
                 margin-bottom: 0.75rem;
             }
-            
+
             h3 {
                 font-size: 1rem;
             }
-            
+
             label {
                 font-size: 0.85rem;
             }
-            
+
             select {
                 font-size: 0.85rem;
                 padding: 0.4rem;
@@ -343,7 +356,7 @@
             -webkit-overflow-scrolling: touch;
             margin: 1rem 0;
         }
-        
+
         @media (max-width: 768px) {
             .table-wrapper {
                 overflow-x: visible;
@@ -356,36 +369,64 @@
                 width: 100%;
                 table-layout: fixed;
             }
-            
+
             .standings-table th,
             .standings-table td {
                 padding: 0.3rem 0.2rem;
                 white-space: nowrap;
                 overflow: hidden;
             }
-            
+
             /* Column widths for mobile */
             .standings-table th:nth-child(1),
-            .standings-table td:nth-child(1) { width: 8%; } /* Rank */
-            
+            .standings-table td:nth-child(1) {
+                width: 8%;
+            }
+
+            /* Rank */
+
             .standings-table th:nth-child(2),
-            .standings-table td:nth-child(2) { width: 18%; } /* Manager */
-            
+            .standings-table td:nth-child(2) {
+                width: 18%;
+            }
+
+            /* Manager */
+
             .standings-table th:nth-child(3),
-            .standings-table td:nth-child(3) { width: 28%; } /* Team Name */
-            
+            .standings-table td:nth-child(3) {
+                width: 28%;
+            }
+
+            /* Team Name */
+
             .standings-table th:nth-child(4),
-            .standings-table td:nth-child(4) { width: 10%; } /* Wins */
-            
+            .standings-table td:nth-child(4) {
+                width: 10%;
+            }
+
+            /* Wins */
+
             .standings-table th:nth-child(5),
-            .standings-table td:nth-child(5) { width: 10%; } /* Losses */
-            
+            .standings-table td:nth-child(5) {
+                width: 10%;
+            }
+
+            /* Losses */
+
             .standings-table th:nth-child(6),
-            .standings-table td:nth-child(6) { width: 12%; } /* Win % */
-            
+            .standings-table td:nth-child(6) {
+                width: 12%;
+            }
+
+            /* Win % */
+
             .standings-table th:nth-child(7),
-            .standings-table td:nth-child(7) { width: 14%; } /* Total Points */
-            
+            .standings-table td:nth-child(7) {
+                width: 14%;
+            }
+
+            /* Total Points */
+
             .standings-table .team-logo {
                 width: 16px;
                 height: 16px;
@@ -445,7 +486,7 @@
             color: white;
             padding: 1.5rem;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s;
             cursor: pointer;
         }
@@ -493,21 +534,21 @@
             border-radius: 3px;
             font-size: 0.85rem;
         }
-        
+
         .manager-card .awards-row {
             display: flex;
             align-items: center;
             gap: 0.4rem;
             flex-wrap: wrap;
         }
-        
+
         .manager-card .award-badge {
             position: relative;
             font-size: 1.6rem;
             line-height: 1;
             display: inline-block;
         }
-        
+
         .manager-card .award-count {
             position: absolute;
             bottom: -2px;
@@ -522,7 +563,7 @@
             min-width: 14px;
             text-align: center;
         }
-        
+
         /* Global award badge styles (for modal and other uses) */
         .awards-row {
             display: flex;
@@ -530,21 +571,21 @@
             gap: 0.4rem;
             flex-wrap: wrap;
         }
-        
+
         .award-badge {
             position: relative;
             font-size: 1.6rem;
             line-height: 1;
             display: inline-block;
         }
-        
+
         .award-image {
             width: 28px;
             height: 28px;
             object-fit: contain;
             vertical-align: middle;
         }
-        
+
         .award-count {
             position: absolute;
             bottom: -2px;
@@ -569,7 +610,7 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,0,0,0.7);
+            background-color: rgba(0, 0, 0, 0.7);
             animation: fadeIn 0.3s;
             align-items: center;
             justify-content: center;
@@ -588,7 +629,7 @@
             max-height: 85vh;
             overflow: hidden;
             position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             display: flex;
             flex-direction: column;
         }
@@ -615,12 +656,12 @@
                 width: 95%;
                 max-height: 90vh;
             }
-            
+
             .modal-header {
                 padding: 1.5rem;
                 padding-bottom: 1rem;
             }
-            
+
             .modal-body-scroll {
                 padding: 1.5rem;
             }
@@ -671,15 +712,15 @@
                 grid-template-columns: repeat(2, 1fr);
                 gap: 0.75rem;
             }
-            
+
             .stat-box {
                 padding: 0.75rem;
             }
-            
+
             .stat-box .value {
                 font-size: 1.4rem;
             }
-            
+
             .stat-box .label {
                 font-size: 0.8rem;
             }
@@ -785,7 +826,7 @@
             .matchup-table {
                 font-size: 0.8rem;
             }
-            
+
             .matchup-table th,
             .matchup-table td {
                 padding: 0.5rem 0.25rem;
@@ -859,14 +900,14 @@
         .award-icon {
             font-size: 1.5rem;
         }
-        
+
         .award-header-image {
             width: 28px;
             height: 28px;
             object-fit: contain;
             vertical-align: middle;
         }
-        
+
         .award-table-wrapper {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -904,7 +945,7 @@
         .player-controls {
             margin-bottom: 1.5rem;
         }
-        
+
         .player-control-row {
             display: flex;
             flex-wrap: wrap;
@@ -912,7 +953,7 @@
             margin-bottom: 1rem;
             align-items: flex-end;
         }
-        
+
         .player-control-row .season-selector,
         .player-control-row .position-filter,
         .player-control-row .manager-filter {
@@ -920,13 +961,13 @@
             flex-direction: column;
             gap: 0.25rem;
         }
-        
+
         .player-control-row label {
             font-weight: bold;
             color: #1e3c72;
             font-size: 0.85rem;
         }
-        
+
         .player-control-row select {
             padding: 0.5rem;
             border: 1px solid #ddd;
@@ -934,12 +975,12 @@
             font-size: 0.9rem;
             min-width: 150px;
         }
-        
+
         .player-search {
             width: 100%;
             max-width: 400px;
         }
-        
+
         .player-search input {
             width: 100%;
             padding: 0.6rem 1rem;
@@ -947,30 +988,30 @@
             border-radius: 4px;
             font-size: 1rem;
         }
-        
+
         .player-search input:focus {
             outline: none;
             border-color: #2a5298;
             box-shadow: 0 0 0 2px rgba(42, 82, 152, 0.1);
         }
-        
+
         .player-summary {
             margin-bottom: 1rem;
             color: #666;
             font-size: 0.9rem;
         }
-        
+
         .player-table-wrapper {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
-        
+
         .player-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
         }
-        
+
         .player-table th {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: white;
@@ -980,52 +1021,52 @@
             position: sticky;
             top: 0;
         }
-        
+
         .player-table th.sortable {
             cursor: pointer;
             user-select: none;
         }
-        
+
         .player-table th.sortable:hover {
             background: linear-gradient(135deg, #2a5298, #3a6cc8);
         }
-        
+
         .player-table th.sort-asc::after {
             content: ' ▲';
             font-size: 0.7rem;
         }
-        
+
         .player-table th.sort-desc::after {
             content: ' ▼';
             font-size: 0.7rem;
         }
-        
+
         .player-table td {
             padding: 0.6rem 0.5rem;
             border-bottom: 1px solid #eee;
             vertical-align: middle;
         }
-        
+
         .player-table tr:hover {
             background: #f0f4f8;
         }
-        
+
         .player-table .stat-col {
             text-align: center;
         }
-        
+
         .player-name-cell {
             display: flex;
             align-items: center;
             gap: 0.5rem;
             cursor: pointer;
         }
-        
+
         .player-name-cell:hover .player-name {
             color: #2a5298;
             text-decoration: underline;
         }
-        
+
         .player-headshot {
             width: 32px;
             height: 32px;
@@ -1033,22 +1074,22 @@
             object-fit: cover;
             background: #f0f0f0;
         }
-        
+
         .player-name {
             font-weight: 500;
         }
-        
+
         .player-mlb-team {
             font-size: 0.75rem;
             color: #888;
         }
-        
+
         .player-team-cell {
             display: flex;
             align-items: center;
             gap: 0.4rem;
         }
-        
+
         .player-team-logo {
             width: 24px;
             height: 24px;
@@ -1056,7 +1097,7 @@
             object-fit: cover;
             background: white;
         }
-        
+
         .player-fantasy-team {
             font-size: 0.8rem;
             white-space: nowrap;
@@ -1064,28 +1105,28 @@
             text-overflow: ellipsis;
             max-width: 120px;
         }
-        
+
         .player-position {
             font-weight: 500;
             color: #555;
         }
-        
+
         .player-points {
             font-weight: bold;
             color: #1e3c72;
         }
-        
+
         /* Hide batter/pitcher stats based on filter */
         .show-batters .pitcher-stat,
         .show-pitchers .batter-stat {
             display: none;
         }
-        
+
         /* Player Modal Styles */
         .player-modal-content {
             max-width: 800px;
         }
-        
+
         #player-modal-header {
             display: flex;
             align-items: center;
@@ -1096,7 +1137,7 @@
             color: white;
             border-radius: 8px 8px 0 0;
         }
-        
+
         .player-modal-headshot {
             width: 80px;
             height: 80px;
@@ -1105,78 +1146,78 @@
             background: white;
             border: 3px solid white;
         }
-        
+
         .player-modal-info h2 {
             margin: 0 0 0.25rem 0;
             font-size: 1.5rem;
             color: white;
             border-bottom: none;
         }
-        
+
         .player-modal-info .player-details {
             display: flex;
             gap: 1rem;
             font-size: 0.9rem;
             opacity: 0.9;
         }
-        
+
         .player-modal-points {
             margin-left: auto;
             text-align: right;
         }
-        
+
         .player-modal-points .points-value {
             font-size: 2rem;
             font-weight: bold;
         }
-        
+
         .player-modal-points .points-label {
             font-size: 0.8rem;
             opacity: 0.8;
         }
-        
+
         .player-modal-section {
             margin-bottom: 1.5rem;
         }
-        
+
         .player-modal-section h3 {
             color: #1e3c72;
             margin-bottom: 0.75rem;
             padding-bottom: 0.5rem;
             border-bottom: 2px solid #eee;
         }
-        
+
         .player-stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             gap: 0.75rem;
         }
-        
+
         .player-stat-box {
             background: #f8f9fa;
             padding: 0.75rem;
             border-radius: 6px;
             text-align: center;
         }
-        
+
         .player-stat-box .stat-value {
             font-size: 1.25rem;
             font-weight: bold;
             color: #1e3c72;
         }
-        
+
         .player-stat-box .stat-label {
             font-size: 0.75rem;
             color: #666;
             text-transform: uppercase;
         }
-        
+
         .player-history-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.9rem;
         }
-        
+
         .player-history-table th {
             background: #f0f4f8;
             padding: 0.6rem;
@@ -1184,134 +1225,134 @@
             font-weight: 600;
             color: #1e3c72;
         }
-        
+
         .player-history-table td {
             padding: 0.6rem;
             border-bottom: 1px solid #eee;
         }
-        
+
         .player-history-table tr:hover {
             background: #f8f9fa;
         }
-        
+
         /* Mobile styles for Player Scoring */
         @media (max-width: 768px) {
             .player-control-row {
                 flex-direction: column;
                 gap: 0.75rem;
             }
-            
+
             .player-control-row .season-selector,
             .player-control-row .position-filter,
             .player-control-row .manager-filter {
                 width: 100%;
             }
-            
+
             .player-control-row select {
                 width: 100%;
                 min-width: unset;
             }
-            
+
             .player-search {
                 max-width: 100%;
             }
-            
+
             .player-table-wrapper {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
-            
+
             .player-table {
                 font-size: 0.7rem;
                 min-width: 600px;
             }
-            
+
             .player-table th,
             .player-table td {
                 padding: 0.4rem 0.3rem;
             }
-            
+
             .player-headshot {
                 width: 24px;
                 height: 24px;
             }
-            
+
             .player-team-logo {
                 width: 18px;
                 height: 18px;
             }
-            
+
             .player-name-cell {
                 gap: 0.3rem;
             }
-            
+
             .player-mlb-team {
                 font-size: 0.65rem;
             }
-            
+
             .player-fantasy-team {
                 max-width: 60px;
                 font-size: 0.7rem;
             }
-            
+
             /* Player Modal Mobile */
             .player-modal-content {
                 width: 95%;
                 max-height: 90vh;
             }
-            
+
             #player-modal-header {
                 flex-direction: column;
                 text-align: center;
                 padding: 1rem;
                 gap: 0.75rem;
             }
-            
+
             .player-modal-headshot {
                 width: 60px;
                 height: 60px;
             }
-            
+
             .player-modal-info h2 {
                 font-size: 1.2rem;
             }
-            
+
             .player-modal-info .player-details {
                 flex-wrap: wrap;
                 justify-content: center;
                 gap: 0.5rem;
             }
-            
+
             .player-modal-points {
                 margin-left: 0;
                 text-align: center;
             }
-            
+
             .player-modal-points .points-value {
                 font-size: 1.5rem;
             }
-            
+
             .player-stats-grid {
                 grid-template-columns: repeat(4, 1fr);
                 gap: 0.5rem;
             }
-            
+
             .player-stat-box {
                 padding: 0.5rem;
             }
-            
+
             .player-stat-box .stat-value {
                 font-size: 1rem;
             }
-            
+
             .player-stat-box .stat-label {
                 font-size: 0.65rem;
             }
-            
+
             .player-history-table {
                 font-size: 0.8rem;
             }
-            
+
             .player-history-table th,
             .player-history-table td {
                 padding: 0.4rem;
@@ -1330,7 +1371,7 @@
                 width: 100%;
                 table-layout: fixed;
             }
-            
+
             .award-table th,
             .award-table td {
                 padding: 0.3rem 0.2rem;
@@ -1338,33 +1379,49 @@
                 text-overflow: ellipsis;
                 white-space: nowrap;
             }
-            
+
             /* Award table column widths */
             .award-table th:nth-child(1),
-            .award-table td:nth-child(1) { width: 15%; } /* Year */
-            
+            .award-table td:nth-child(1) {
+                width: 15%;
+            }
+
+            /* Year */
+
             .award-table th:nth-child(2),
-            .award-table td:nth-child(2) { width: 25%; } /* Manager */
-            
+            .award-table td:nth-child(2) {
+                width: 25%;
+            }
+
+            /* Manager */
+
             .award-table th:nth-child(3),
-            .award-table td:nth-child(3) { width: 40%; } /* Team Name */
-            
+            .award-table td:nth-child(3) {
+                width: 40%;
+            }
+
+            /* Team Name */
+
             .award-table th:nth-child(4),
-            .award-table td:nth-child(4) { width: 20%; } /* Points/Wins */
-            
+            .award-table td:nth-child(4) {
+                width: 20%;
+            }
+
+            /* Points/Wins */
+
             .award-section h3 {
                 font-size: 1rem;
             }
-            
+
             .award-icon {
                 font-size: 1rem;
             }
-            
+
             .awards-grid {
                 grid-template-columns: 1fr;
                 gap: 1rem;
             }
-            
+
             .award-table-wrapper {
                 overflow-x: visible;
             }
@@ -1383,34 +1440,34 @@
         .chart-svg {
             overflow: visible;
         }
-        
+
         .chart-line {
             fill: none;
             stroke-width: 2.5;
             transition: opacity 0.3s ease, stroke-width 0.3s ease;
         }
-        
+
         .chart-line.faded {
             opacity: 0.15;
         }
-        
+
         .chart-line.highlighted {
             stroke-width: 4;
         }
-        
+
         .team-logo-marker {
             cursor: pointer;
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
-        
+
         .team-logo-marker.faded {
             opacity: 0.2;
         }
-        
+
         .team-logo-marker.highlighted {
             transform-origin: center;
         }
-        
+
         .chart-tooltip {
             position: absolute;
             background: rgba(30, 60, 114, 0.95);
@@ -1421,11 +1478,11 @@
             pointer-events: none;
             z-index: 100;
             white-space: nowrap;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             transform: translate(-50%, -100%);
             margin-top: -10px;
         }
-        
+
         .chart-tooltip::after {
             content: '';
             position: absolute;
@@ -1435,17 +1492,17 @@
             border: 6px solid transparent;
             border-top-color: rgba(30, 60, 114, 0.95);
         }
-        
+
         .chart-axis-label {
             font-size: 0.75rem;
             fill: #666;
         }
-        
+
         .chart-grid-line {
             stroke: #e0e0e0;
             stroke-width: 1;
         }
-        
+
         .chart-toggle-btn {
             background: #e0e0e0;
             color: #333;
@@ -1456,28 +1513,28 @@
             font-size: 0.9rem;
             transition: background 0.3s, color 0.3s;
         }
-        
+
         .chart-toggle-btn:hover {
             background: #ccc;
         }
-        
+
         .chart-toggle-btn.active {
             background: #2a5298;
             color: white;
         }
-        
+
         /* Mobile optimizations for chart */
         @media (max-width: 768px) {
-            #season-chart-container > div:first-child {
+            #season-chart-container>div:first-child {
                 flex-direction: column;
                 align-items: flex-start;
             }
-            
+
             #season-chart {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
-            
+
             .chart-toggle-btn {
                 padding: 0.4rem 0.8rem;
                 font-size: 0.85rem;
@@ -1493,26 +1550,34 @@
         }
     </style>
 </head>
+
 <body>
     <header class="desktop-header">
         <div class="header-container">
             <picture>
                 <source srcset="header_long.png" media="(min-width: 1200px)">
-                <img src="header_short.png" alt="Fantasy Baseball Civil War - Established 2017 - 12 Team Points League" class="header-banner">
+                <img src="header_short.png" alt="Fantasy Baseball Civil War - Established 2017 - 12 Team Points League"
+                    class="header-banner">
             </picture>
-            <a href="https://baseball.fantasysports.yahoo.com/league/fantasybaseballcivilwar/2025" target="_blank" class="header-league-link" title="Go to Yahoo Fantasy League"></a>
+            <a href="https://baseball.fantasysports.yahoo.com/league/fantasybaseballcivilwar/2025" target="_blank"
+                class="header-league-link" title="Go to Yahoo Fantasy League"></a>
         </div>
     </header>
-    
+
     <header class="mobile-header">
         <div class="mobile-header-container">
             <img src="mobile_header.png" alt="Fantasy Baseball Civil War" class="mobile-header-banner">
             <!-- Clickable zones over the banner -->
-            <a href="https://baseball.fantasysports.yahoo.com/league/fantasybaseballcivilwar/2025" target="_blank" class="mobile-zone zone-logo" title="Go to Yahoo Fantasy League"></a>
-            <a href="#" class="mobile-zone zone-seasons" onclick="showSection('standings'); return false;" title="Seasons"></a>
-            <a href="#" class="mobile-zone zone-awards" onclick="showSection('awards'); return false;" title="Awards"></a>
-            <a href="#" class="mobile-zone zone-scoring" onclick="showSection('scoring'); return false;" title="Player Scoring"></a>
-            <a href="#" class="mobile-zone zone-managers" onclick="showSection('managers'); return false;" title="Manager Profiles"></a>
+            <a href="https://baseball.fantasysports.yahoo.com/league/fantasybaseballcivilwar/2025" target="_blank"
+                class="mobile-zone zone-logo" title="Go to Yahoo Fantasy League"></a>
+            <a href="#" class="mobile-zone zone-seasons" onclick="showSection('standings'); return false;"
+                title="Seasons"></a>
+            <a href="#" class="mobile-zone zone-awards" onclick="showSection('awards'); return false;"
+                title="Awards"></a>
+            <a href="#" class="mobile-zone zone-scoring" onclick="showSection('scoring'); return false;"
+                title="Player Scoring"></a>
+            <a href="#" class="mobile-zone zone-managers" onclick="showSection('managers'); return false;"
+                title="Manager Profiles"></a>
             <!-- Icons 5 and 6 are placeholders - no links -->
         </div>
     </header>
@@ -1528,7 +1593,7 @@
         <!-- Seasons Section -->
         <div id="standings" class="section active">
             <h2>Seasons</h2>
-            
+
             <div class="season-selector">
                 <label for="standings-season">Select Season:</label>
                 <select id="standings-season" onchange="loadStandingsBySeason()">
@@ -1556,137 +1621,146 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Season Points Chart -->
             <div id="season-chart-container" style="display: none; margin-top: 2rem;">
-                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                <div
+                    style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
                     <h3 style="color: #1e3c72; margin: 0;">Summary</h3>
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
                         <label style="font-weight: bold; color: #1e3c72;">Scoring Type:</label>
-                        <button id="btn-weekly" class="chart-toggle-btn active" onclick="setChartType('weekly')">Weekly</button>
+                        <button id="btn-weekly" class="chart-toggle-btn active"
+                            onclick="setChartType('weekly')">Weekly</button>
                         <button id="btn-total" class="chart-toggle-btn" onclick="setChartType('total')">Total</button>
                     </div>
                 </div>
-                <div id="season-chart" style="position: relative; width: 100%; min-height: 500px; background: #fafafa; border-radius: 8px; overflow: visible;"></div>
+                <div id="season-chart"
+                    style="position: relative; width: 100%; min-height: 500px; background: #fafafa; border-radius: 8px; overflow: visible;">
+                </div>
             </div>
         </div>
 
         <!-- Awards Section -->
         <div id="awards" class="section">
             <h2>🏆 League Awards</h2>
-            
+
             <div id="awards-loading" class="loading">Loading awards...</div>
             <div id="awards-error" class="error" style="display: none;"></div>
-            
+
             <div id="awards-content" style="display: none;">
                 <div class="awards-grid">
-                <div class="award-section">
-                    <h3><span class="award-icon">👑</span> Regular Season Champion (Most Wins)</h3>
-                    <div class="award-table-wrapper">
-                        <table class="award-table">
-                            <thead>
-                                <tr>
-                                    <th>Year</th>
-                                    <th>Manager</th>
-                                    <th>Team Name</th>
-                                    <th>Wins</th>
-                                </tr>
-                            </thead>
-                            <tbody id="regular-season-winners">
-                            </tbody>
-                        </table>
+                    <div class="award-section">
+                        <h3><span class="award-icon">👑</span> Regular Season Champion (Most Wins)</h3>
+                        <div class="award-table-wrapper">
+                            <table class="award-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Manager</th>
+                                        <th>Team Name</th>
+                                        <th>Wins</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="regular-season-winners">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                <div class="award-section">
-                    <h3><span class="award-icon">🏅</span> Scoring Champion (Most Points)</h3>
-                    <div class="award-table-wrapper">
-                        <table class="award-table">
-                            <thead>
-                                <tr>
-                                    <th>Year</th>
-                                    <th>Manager</th>
-                                    <th>Team Name</th>
-                                    <th>Points</th>
-                                </tr>
-                            </thead>
-                            <tbody id="scoring-champions">
-                            </tbody>
-                        </table>
+                    <div class="award-section">
+                        <h3><span class="award-icon">🏅</span> Scoring Champion (Most Points)</h3>
+                        <div class="award-table-wrapper">
+                            <table class="award-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Manager</th>
+                                        <th>Team Name</th>
+                                        <th>Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="scoring-champions">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                <div class="award-section">
-                    <h3><span class="award-icon">🗑️</span> Garbage Award (Worst Record)</h3>
-                    <div class="award-table-wrapper">
-                        <table class="award-table">
-                            <thead>
-                                <tr>
-                                    <th>Year</th>
-                                    <th>Manager</th>
-                                    <th>Team Name</th>
-                                    <th>Record</th>
-                                </tr>
-                            </thead>
-                            <tbody id="garbage-awards">
-                            </tbody>
-                        </table>
+                    <div class="award-section">
+                        <h3><span class="award-icon">🗑️</span> Garbage Award (Worst Record)</h3>
+                        <div class="award-table-wrapper">
+                            <table class="award-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Manager</th>
+                                        <th>Team Name</th>
+                                        <th>Record</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="garbage-awards">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                <div class="award-section">
-                    <h3><span class="award-icon"><img src="clown_award.png" alt="Clown Award" class="award-header-image"></span> Clown Award (Least Points)</h3>
-                    <div class="award-table-wrapper">
-                        <table class="award-table">
-                            <thead>
-                                <tr>
-                                    <th>Year</th>
-                                    <th>Manager</th>
-                                    <th>Team Name</th>
-                                    <th>Points</th>
-                                </tr>
-                            </thead>
-                            <tbody id="clown-awards">
-                            </tbody>
-                        </table>
+                    <div class="award-section">
+                        <h3><span class="award-icon"><img src="clown_award.png" alt="Clown Award"
+                                    class="award-header-image"></span> Clown Award (Least Points)</h3>
+                        <div class="award-table-wrapper">
+                            <table class="award-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Manager</th>
+                                        <th>Team Name</th>
+                                        <th>Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="clown-awards">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                <div class="award-section">
-                    <h3><span class="award-icon"><img src="attached_assets/trout_award_1764648146923.png" alt="Mike Trout Award" class="award-header-image"></span> Mike Trout Award (Highest Scoring Hitter)</h3>
-                    <div class="award-table-wrapper">
-                        <table class="award-table player-award-table">
-                            <thead>
-                                <tr>
-                                    <th>Year</th>
-                                    <th>Manager</th>
-                                    <th>Player</th>
-                                    <th>Points</th>
-                                </tr>
-                            </thead>
-                            <tbody id="trout-awards">
-                            </tbody>
-                        </table>
+                    <div class="award-section">
+                        <h3><span class="award-icon"><img src="attached_assets/trout_award_1764648146923.png"
+                                    alt="Mike Trout Award" class="award-header-image"></span> Mike Trout Award (Highest
+                            Scoring Hitter)</h3>
+                        <div class="award-table-wrapper">
+                            <table class="award-table player-award-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Manager</th>
+                                        <th>Player</th>
+                                        <th>Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="trout-awards">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
 
-                <div class="award-section">
-                    <h3><span class="award-icon"><img src="attached_assets/degom_award_1764648146918.png" alt="Jacob deGrom Award" class="award-header-image"></span> Jacob deGrom Award (Highest Scoring Pitcher)</h3>
-                    <div class="award-table-wrapper">
-                        <table class="award-table player-award-table">
-                            <thead>
-                                <tr>
-                                    <th>Year</th>
-                                    <th>Manager</th>
-                                    <th>Player</th>
-                                    <th>Points</th>
-                                </tr>
-                            </thead>
-                            <tbody id="degrom-awards">
-                            </tbody>
-                        </table>
+                    <div class="award-section">
+                        <h3><span class="award-icon"><img src="attached_assets/degom_award_1764648146918.png"
+                                    alt="Jacob deGrom Award" class="award-header-image"></span> Jacob deGrom Award
+                            (Highest Scoring Pitcher)</h3>
+                        <div class="award-table-wrapper">
+                            <table class="award-table player-award-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Manager</th>
+                                        <th>Player</th>
+                                        <th>Points</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="degrom-awards">
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
                 </div>
             </div>
         </div>
@@ -1694,7 +1768,7 @@
         <!-- Player Scoring Section -->
         <div id="scoring" class="section">
             <h2>Player Scoring</h2>
-            
+
             <div class="player-controls">
                 <div class="player-control-row">
                     <div class="season-selector">
@@ -1703,7 +1777,7 @@
                             <!-- Will be populated dynamically -->
                         </select>
                     </div>
-                    
+
                     <div class="position-filter">
                         <label for="position-filter">Position:</label>
                         <select id="position-filter" onchange="filterPlayers()">
@@ -1725,7 +1799,7 @@
                             </optgroup>
                         </select>
                     </div>
-                    
+
                     <div class="manager-filter">
                         <label for="manager-filter">Manager:</label>
                         <select id="manager-filter" onchange="filterPlayers()">
@@ -1734,7 +1808,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="player-search">
                     <input type="text" id="player-search" placeholder="Search players..." oninput="filterPlayers()">
                 </div>
@@ -1742,12 +1816,12 @@
 
             <div id="player-loading" class="loading">Loading player data...</div>
             <div id="player-error" class="error" style="display: none;"></div>
-            
+
             <div id="player-stats-container" style="display: none;">
                 <div class="player-summary">
                     <span id="player-count">0 players</span>
                 </div>
-                
+
                 <div class="table-wrapper player-table-wrapper">
                     <table class="player-table" id="player-table">
                         <thead>
@@ -1792,10 +1866,10 @@
         <!-- Manager Profiles Section -->
         <div id="managers" class="section">
             <h2>Manager Profiles</h2>
-            
+
             <div id="managers-loading" class="loading">Loading manager profiles...</div>
             <div id="managers-error" class="error" style="display: none;"></div>
-            
+
             <div class="manager-grid" id="manager-grid">
             </div>
         </div>
@@ -1824,28 +1898,29 @@
         let allManagersData = [];
         let managerHistoryData = [];
         let managerAwardsData = {}; // Store manager awards globally
-        
+        let currentTableMode = 'all'; // 'all', 'batters', or 'pitchers'
+
         // Player scoring state
         let allPlayersData = [];
         let filteredPlayersData = [];
         let playerHistoryData = {};
         let currentPlayerSort = { column: 'fantasy_points', direction: 'desc' };
-        
+
         // Chart state
         let currentChartData = null;
         let currentChartType = 'weekly'; // 'weekly' or 'total'
-        
+
         // Cache for team data to avoid redundant fetches
         const teamDataCache = {};
-        
+
         // Helper function to get team data with caching
         async function getTeamData(year) {
             const cacheKey = year === 2025 ? 'current' : year;
-            
+
             if (teamDataCache[cacheKey]) {
                 return teamDataCache[cacheKey];
             }
-            
+
             try {
                 let teamsResponse;
                 if (year === 2025) {
@@ -1853,7 +1928,7 @@
                 } else {
                     teamsResponse = await fetch(`data/historical/${year}/teams.json`);
                 }
-                
+
                 if (teamsResponse.ok) {
                     const teams = await teamsResponse.json();
                     teamDataCache[cacheKey] = teams;
@@ -1862,24 +1937,24 @@
             } catch (e) {
                 console.log(`Could not load team data for ${year}`);
             }
-            
+
             return null;
         }
 
         // ===== PLAYER SCORING FUNCTIONS =====
-        
+
         async function loadPlayerScoring() {
             const seasonSelect = document.getElementById('scoring-season');
             const selectedYear = parseInt(seasonSelect.value);
-            
+
             const loadingEl = document.getElementById('player-loading');
             const errorEl = document.getElementById('player-error');
             const containerEl = document.getElementById('player-stats-container');
-            
+
             loadingEl.style.display = 'block';
             errorEl.style.display = 'none';
             containerEl.style.display = 'none';
-            
+
             try {
                 // Determine the path based on year
                 let playerStatsPath;
@@ -1888,23 +1963,23 @@
                 } else {
                     playerStatsPath = `data/historical/${selectedYear}/player_stats.json`;
                 }
-                
+
                 const response = await fetch(playerStatsPath);
                 if (!response.ok) {
                     throw new Error(`No player data available for ${selectedYear}`);
                 }
-                
+
                 allPlayersData = await response.json();
-                
+
                 // Populate manager filter
                 populateManagerFilter();
-                
+
                 // Apply filters and render
                 filterPlayers();
-                
+
                 loadingEl.style.display = 'none';
                 containerEl.style.display = 'block';
-                
+
             } catch (error) {
                 console.error('Error loading player data:', error);
                 loadingEl.style.display = 'none';
@@ -1912,11 +1987,11 @@
                 errorEl.style.display = 'block';
             }
         }
-        
+
         function populateManagerFilter() {
             const managerFilter = document.getElementById('manager-filter');
             const managers = [...new Set(allPlayersData.map(p => p.manager))].sort();
-            
+
             // Keep the "All Managers" option and add the rest
             managerFilter.innerHTML = '<option value="all">All Managers</option>';
             managers.forEach(manager => {
@@ -1926,12 +2001,21 @@
                 managerFilter.appendChild(option);
             });
         }
-        
+
         function filterPlayers() {
             const positionFilter = document.getElementById('position-filter').value;
             const managerFilter = document.getElementById('manager-filter').value;
             const searchQuery = document.getElementById('player-search').value.toLowerCase().trim();
-            
+
+            // 1. DETERMINE TABLE MODE
+            if (positionFilter === 'P' || positionFilter === 'SP' || positionFilter === 'RP') {
+                currentTableMode = 'pitchers';
+            } else if (positionFilter === 'B' || ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util'].includes(positionFilter)) {
+                currentTableMode = 'batters';
+            } else {
+                currentTableMode = 'all';
+            }
+
             filteredPlayersData = allPlayersData.filter(player => {
                 // Position filter
                 if (positionFilter !== 'all') {
@@ -1942,12 +2026,12 @@
                         if (!player.eligible_positions.includes(positionFilter)) return false;
                     }
                 }
-                
+
                 // Manager filter
                 if (managerFilter !== 'all' && player.manager !== managerFilter) {
                     return false;
                 }
-                
+
                 // Search filter
                 if (searchQuery) {
                     const nameMatch = player.name.toLowerCase().includes(searchQuery);
@@ -1955,31 +2039,80 @@
                     const mlbMatch = (player.mlb_team || '').toLowerCase().includes(searchQuery);
                     if (!nameMatch && !teamMatch && !mlbMatch) return false;
                 }
-                
+
                 return true;
             });
-            
+
             // Apply current sort
             sortPlayersArray();
-            
-            // Update table classes for showing/hiding columns
-            updateTableColumns(positionFilter);
-            
+
+            // 2. REBUILD HEADERS BASED ON MODE
+            updateTableHeaders();
+
             // Render the table
             renderPlayerTable();
         }
-        
-        function updateTableColumns(positionFilter) {
-            const table = document.getElementById('player-table');
-            table.classList.remove('show-batters', 'show-pitchers');
-            
-            if (positionFilter === 'P' || positionFilter === 'SP' || positionFilter === 'RP') {
-                table.classList.add('show-pitchers');
-            } else if (positionFilter === 'B' || ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util'].includes(positionFilter)) {
-                table.classList.add('show-batters');
+
+        function updateTableHeaders() {
+            const thead = document.querySelector('#player-table thead');
+            let headerHTML = `
+                <tr>
+                    <th class="sortable" onclick="sortPlayerTable('rank')">#</th>
+                    <th class="sortable" onclick="sortPlayerTable('name')">Player</th>
+                    <th>Team</th>
+                    <th class="sortable" onclick="sortPlayerTable('position')">Pos</th>
+            `;
+
+            if (currentTableMode === 'batters') {
+                // BATTER SPECIFIC HEADERS
+                headerHTML += `
+                    <th class="sortable stat-col" onclick="sortPlayerTable('fantasy_points')">Pts</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('G')">G</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('PPG')">PPG</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('OPS')">OPS</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('AB')">AB</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('H')">H</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('HR')">HR</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('RBI')">RBI</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('SB')">SB</th>
+                `;
+            } else if (currentTableMode === 'pitchers') {
+                // PITCHER SPECIFIC HEADERS
+                headerHTML += `
+                    <th class="sortable stat-col" onclick="sortPlayerTable('fantasy_points')">Pts</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('G')">G</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('GS')">GS</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('PPG')">PPG</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('IP')">IP</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('ERA')">ERA</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('WHIP')">WHIP</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('SO')">K</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('BB')">BB</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('W')">W</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('L')">L</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('SV')">SV</th>
+                `;
+            } else {
+                // ALL PLAYERS (DEFAULT) HEADERS
+                headerHTML += `
+                    <th class="sortable stat-col" onclick="sortPlayerTable('fantasy_points')">Pts</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('G')">G</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('PPG')">PPG</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('IP')">IP</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('ERA')">ERA</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('W')">W</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('SO')">K</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('BB')">BB</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('PA')">PA</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('HR')">HR</th>
+                    <th class="sortable stat-col" onclick="sortPlayerTable('OPS')">OPS</th>
+                `;
             }
+
+            headerHTML += `</tr>`;
+            thead.innerHTML = headerHTML;
         }
-        
+
         function sortPlayerTable(column) {
             // Toggle direction if same column
             if (currentPlayerSort.column === column) {
@@ -1989,18 +2122,18 @@
                 // Default to descending for stats, ascending for name
                 currentPlayerSort.direction = (column === 'name' || column === 'position') ? 'asc' : 'desc';
             }
-            
+
             sortPlayersArray();
             renderPlayerTable();
             updateSortIndicators();
         }
-        
+
         function sortPlayersArray() {
             const { column, direction } = currentPlayerSort;
-            
+
             filteredPlayersData.sort((a, b) => {
                 let aVal, bVal;
-                
+
                 if (column === 'rank') {
                     // Rank is determined by fantasy points
                     aVal = a.fantasy_points || 0;
@@ -2025,21 +2158,21 @@
                     aVal = (a.stats && a.stats[column]) || 0;
                     bVal = (b.stats && b.stats[column]) || 0;
                 }
-                
+
                 if (typeof aVal === 'string') {
                     return direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
                 }
-                
+
                 return direction === 'asc' ? aVal - bVal : bVal - aVal;
             });
         }
-        
+
         function updateSortIndicators() {
             // Remove all sort indicators
             document.querySelectorAll('.player-table th').forEach(th => {
                 th.classList.remove('sort-asc', 'sort-desc');
             });
-            
+
             // Add indicator to current sort column
             const headers = document.querySelectorAll('.player-table th');
             headers.forEach(th => {
@@ -2049,34 +2182,33 @@
                 }
             });
         }
-        
+
         function renderPlayerTable() {
             const tbody = document.getElementById('player-table-body');
             const countEl = document.getElementById('player-count');
-            
+
             countEl.textContent = `${filteredPlayersData.length} player${filteredPlayersData.length !== 1 ? 's' : ''}`;
-            
+
             if (filteredPlayersData.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="15" style="text-align: center; padding: 2rem; color: #666;">No players found matching your criteria</td></tr>';
                 return;
             }
-            
-            // Base64 encoded placeholder silhouette (simple gray circle + body shape)
+
+            // Base64 encoded placeholder
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
-            
+
             tbody.innerHTML = filteredPlayersData.map((player, index) => {
                 const stats = player.stats || {};
                 const isBatter = player.position_type === 'B';
-                
-                // Use headshot if available and not empty, otherwise use placeholder
                 const headshot = (player.headshot_url && player.headshot_url.trim()) ? player.headshot_url : placeholderImg;
-                
-                // Calculate PPG (Points Per Game)
+
+                // Calculate PPG
                 const games = stats.G || 0;
                 const fantasyPoints = player.fantasy_points || 0;
                 const ppg = games > 0 ? (fantasyPoints / games).toFixed(2) : '-';
-                
-                return `
+
+                // Common cells (Rank, Name, Team, Pos)
+                let rowHTML = `
                     <tr>
                         <td>${index + 1}</td>
                         <td>
@@ -2095,6 +2227,39 @@
                             </div>
                         </td>
                         <td class="player-position">${player.primary_position || '-'}</td>
+                `;
+
+                // STAT CELLS BASED ON MODE
+                if (currentTableMode === 'batters') {
+                    rowHTML += `
+                        <td class="player-points">${fantasyPoints.toFixed(1)}</td>
+                        <td class="stat-col">${games || '-'}</td>
+                        <td class="stat-col">${ppg}</td>
+                        <td class="stat-col">${stats.OPS ? stats.OPS.toFixed(3) : '-'}</td>
+                        <td class="stat-col">${stats.AB || '-'}</td>
+                        <td class="stat-col">${stats.H || '-'}</td>
+                        <td class="stat-col">${stats.HR || '-'}</td>
+                        <td class="stat-col">${stats.RBI || '-'}</td>
+                        <td class="stat-col">${stats.SB || '-'}</td>
+                    `;
+                } else if (currentTableMode === 'pitchers') {
+                    rowHTML += `
+                        <td class="player-points">${fantasyPoints.toFixed(1)}</td>
+                        <td class="stat-col">${games || '-'}</td>
+                        <td class="stat-col">${stats.GS || '-'}</td>
+                        <td class="stat-col">${ppg}</td>
+                        <td class="stat-col">${stats.IP || '-'}</td>
+                        <td class="stat-col">${stats.ERA ? stats.ERA.toFixed(2) : '-'}</td>
+                        <td class="stat-col">${stats.WHIP ? stats.WHIP.toFixed(2) : '-'}</td>
+                        <td class="stat-col">${stats.SO || '-'}</td>
+                        <td class="stat-col">${stats.BB || '-'}</td>
+                        <td class="stat-col">${stats.W || '-'}</td>
+                        <td class="stat-col">${stats.L || '-'}</td>
+                        <td class="stat-col">${stats.SV || '-'}</td>
+                    `;
+                } else {
+                    // ALL PLAYERS
+                    rowHTML += `
                         <td class="player-points">${fantasyPoints.toFixed(1)}</td>
                         <td class="stat-col">${games || '-'}</td>
                         <td class="stat-col">${ppg}</td>
@@ -2106,25 +2271,28 @@
                         <td class="stat-col">${isBatter ? (stats.PA || '-') : '-'}</td>
                         <td class="stat-col">${isBatter ? (stats.HR || '-') : '-'}</td>
                         <td class="stat-col">${isBatter ? (stats.OPS ? stats.OPS.toFixed(3) : '-') : '-'}</td>
-                    </tr>
-                `;
+                    `;
+                }
+
+                rowHTML += `</tr>`;
+                return rowHTML;
             }).join('');
-            
+
             updateSortIndicators();
         }
-        
+
         async function showPlayerDetail(playerName) {
             const modal = document.getElementById('player-modal');
             const headerEl = document.getElementById('player-modal-header');
             const bodyEl = document.getElementById('player-modal-body');
-            
+
             // Find player in current data
             const player = allPlayersData.find(p => p.name === playerName);
             if (!player) return;
-            
+
             const seasonSelect = document.getElementById('scoring-season');
             const selectedYear = parseInt(seasonSelect.value);
-            
+
             // Load player history if not cached
             if (Object.keys(playerHistoryData).length === 0) {
                 try {
@@ -2136,11 +2304,11 @@
                     console.log('Could not load player history');
                 }
             }
-            
+
             // Render header - use base64 placeholder for modal (white version for dark header)
             const modalPlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2ZmZiIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjZGRkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjZGRkIi8+PC9zdmc+';
             const headshot = (player.headshot_url && player.headshot_url.trim()) ? player.headshot_url : modalPlaceholder;
-            
+
             headerEl.innerHTML = `
                 <img src="${headshot}" alt="${player.name}" class="player-modal-headshot" onerror="this.src='${modalPlaceholder}'">
                 <div class="player-modal-info">
@@ -2156,18 +2324,18 @@
                     <div class="points-label">${selectedYear} Fantasy Pts</div>
                 </div>
             `;
-            
+
             // Render body
             let bodyHTML = '';
-            
+
             // Current season stats
             const stats = player.stats || {};
             const isBatter = player.position_type === 'B';
-            
+
             bodyHTML += `<div class="player-modal-section">
                 <h3>${selectedYear} Season Stats</h3>
                 <div class="player-stats-grid">`;
-            
+
             if (isBatter) {
                 bodyHTML += `
                     <div class="player-stat-box"><div class="stat-value">${stats.G || 0}</div><div class="stat-label">Games</div></div>
@@ -2203,13 +2371,13 @@
                     <div class="player-stat-box"><div class="stat-value">${stats['K/9'] ? stats['K/9'].toFixed(2) : '0.00'}</div><div class="stat-label">K/9</div></div>
                 `;
             }
-            
+
             bodyHTML += '</div></div>';
-            
+
             // Career history
             const normalizedName = playerName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             const playerHistory = playerHistoryData[normalizedName];
-            
+
             if (playerHistory && playerHistory.seasons && playerHistory.seasons.length > 0) {
                 bodyHTML += `<div class="player-modal-section">
                     <h3>League History</h3>
@@ -2223,10 +2391,10 @@
                             </tr>
                         </thead>
                         <tbody>`;
-                
+
                 // Sort by year descending
                 const sortedSeasons = [...playerHistory.seasons].sort((a, b) => b.year - a.year);
-                
+
                 sortedSeasons.forEach(season => {
                     bodyHTML += `
                         <tr>
@@ -2237,24 +2405,24 @@
                         </tr>
                     `;
                 });
-                
+
                 bodyHTML += `</tbody></table>
                     <div style="margin-top: 0.75rem; color: #666; font-size: 0.9rem;">
                         Career Total: <strong>${(playerHistory.career_fantasy_points || 0).toFixed(1)}</strong> fantasy points
                     </div>
                 </div>`;
             }
-            
+
             bodyEl.innerHTML = bodyHTML;
             modal.style.display = 'flex';
         }
-        
+
         function closePlayerModal() {
             document.getElementById('player-modal').style.display = 'none';
         }
-        
+
         // Close player modal on outside click
-        document.getElementById('player-modal')?.addEventListener('click', function(e) {
+        document.getElementById('player-modal')?.addEventListener('click', function (e) {
             if (e.target === this) {
                 closePlayerModal();
             }
@@ -2265,7 +2433,7 @@
             "Draft Pool": "Logan C",
             "Peanut Butter & Elly": "Logan S"
         };
-        
+
         // Logan team keys for 2023 disambiguation
         const LOGAN_TEAM_KEYS_2023 = {
             "422.l.6780.t.4": "Logan C",   // Draft Pool
@@ -2279,7 +2447,7 @@
                 .split(' ')
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                 .join(' ');
-            
+
             // Handle Logan disambiguation
             if (normalized === "Logan") {
                 if (year === 2023 && teamName && MANAGER_TEAM_2023[teamName]) {
@@ -2291,7 +2459,7 @@
                     return "Logan S";
                 }
             }
-            
+
             // Handle Josh disambiguation (2019-2022)
             if (normalized === "Josh") {
                 if (year && year >= 2019 && year <= 2022) {
@@ -2307,7 +2475,7 @@
                     }
                 }
             }
-            
+
             return normalized;
         }
 
@@ -2320,9 +2488,9 @@
 
         function normalizeAndMergeManagerData(managersData, historyData) {
             const managerMap = {};
-            
+
             console.log("Processing managers:", managersData.length);
-            
+
             // Process each manager's data
             managersData.forEach(manager => {
                 // Determine normalized name based on season history
@@ -2331,14 +2499,14 @@
                     .split(' ')
                     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                     .join(' ');
-                
+
                 // Handle Logan based on team keys in 2023 or years active
                 if (normalizedName === "Logan") {
                     console.log("Found Logan:", manager.season_history);
-                    
+
                     // Check if they have 2023 season
                     const season2023 = manager.season_history.find(s => s.year === 2023);
-                    
+
                     if (season2023) {
                         console.log("Logan has 2023, team:", season2023.team_name);
                         // Use team name to distinguish
@@ -2356,9 +2524,9 @@
                         const years = manager.season_history.map(s => s.year);
                         const maxYear = Math.max(...years);
                         const minYear = Math.min(...years);
-                        
+
                         console.log("Logan years:", years, "min:", minYear, "max:", maxYear);
-                        
+
                         if (maxYear <= 2022) {
                             // Only played 2020-2022 = Logan C
                             normalizedName = "Logan C";
@@ -2372,16 +2540,16 @@
                         }
                     }
                 }
-                
+
                 // Normalize season history
                 const normalizedSeasonHistory = manager.season_history.map(season => ({
                     ...season
                 }));
-                
+
                 // DON'T merge different Logans - only merge case variations
-                const shouldMerge = managerMap[normalizedName] && 
-                                   !(normalizedName === "Logan C" || normalizedName === "Logan S");
-                
+                const shouldMerge = managerMap[normalizedName] &&
+                    !(normalizedName === "Logan C" || normalizedName === "Logan S");
+
                 if (shouldMerge) {
                     console.log("Merging into existing manager:", normalizedName);
                     // Merge stats
@@ -2393,13 +2561,13 @@
                     managerMap[normalizedName].runner_ups += manager.runner_ups;
                     managerMap[normalizedName].playoff_appearances += manager.playoff_appearances;
                     managerMap[normalizedName].seasons_played += manager.seasons_played;
-                    
+
                     // Merge season history
                     managerMap[normalizedName].season_history = [
                         ...managerMap[normalizedName].season_history,
                         ...normalizedSeasonHistory
                     ];
-                    
+
                     // Update first season
                     managerMap[normalizedName].first_season = Math.min(
                         managerMap[normalizedName].first_season,
@@ -2415,9 +2583,9 @@
                     };
                 }
             });
-            
+
             console.log("Final managers:", Object.keys(managerMap));
-            
+
             // Recalculate derived stats for merged managers
             Object.values(managerMap).forEach(manager => {
                 const totalGames = manager.total_wins + manager.total_losses;
@@ -2425,11 +2593,11 @@
                 manager.avg_finish = manager.season_history.length > 0
                     ? manager.season_history.reduce((sum, s) => sum + s.rank, 0) / manager.season_history.length
                     : 0;
-                
+
                 // Sort season history by year
                 manager.season_history.sort((a, b) => a.year - b.year);
             });
-            
+
             return Object.values(managerMap);
         }
 
@@ -2439,24 +2607,24 @@
                 // Load 2023 standings and scores
                 const standingsResponse = await fetch('data/historical/2023/final_standings.json');
                 const scoresResponse = await fetch('data/historical/2023/all_scores.json');
-                
+
                 if (!standingsResponse.ok || !scoresResponse.ok) {
                     console.log("Could not load 2023 data for Logan split");
                     return null;
                 }
-                
+
                 const standings = await standingsResponse.json();
                 const scores = await scoresResponse.json();
-                
+
                 // Find Logan's teams by team_key
                 const loganCTeam = standings.find(t => t.team_key === "422.l.6780.t.4");
                 const loganSTeam = standings.find(t => t.team_key === "422.l.6780.t.12");
-                
+
                 if (!loganCTeam && !loganSTeam) {
                     console.log("Could not find Logan team keys in 2023 standings");
                     return null;
                 }
-                
+
                 // Calculate stats for each Logan based on team_key
                 const loganStats = {
                     "Logan C": loganCTeam ? {
@@ -2478,10 +2646,10 @@
                         points_for: loganSTeam.points_for
                     } : null
                 };
-                
+
                 console.log("Split Logan 2023 stats:", loganStats);
                 return loganStats;
-                
+
             } catch (error) {
                 console.error("Error splitting Logan stats:", error);
                 return null;
@@ -2491,17 +2659,17 @@
         // Apply Logan split to manager data
         async function applyLogan2023Split(managersData) {
             const logan2023Stats = await splitLogan2023Stats();
-            
+
             if (!logan2023Stats) {
                 console.log("No Logan split needed or data unavailable");
                 return managersData;
             }
-            
+
             // Update each Logan's 2023 season data
             managersData.forEach(manager => {
                 if ((manager.manager_name === "Logan C" || manager.manager_name === "Logan S") && logan2023Stats[manager.manager_name]) {
                     const season2023Index = manager.season_history.findIndex(s => s.year === 2023);
-                    
+
                     if (season2023Index >= 0) {
                         // Update with correct stats
                         const stats = logan2023Stats[manager.manager_name];
@@ -2513,19 +2681,19 @@
                             losses: stats.losses,
                             points_for: stats.points_for
                         };
-                        
+
                         // Recalculate totals
                         manager.total_wins = manager.season_history.reduce((sum, s) => sum + s.wins, 0);
                         manager.total_losses = manager.season_history.reduce((sum, s) => sum + s.losses, 0);
                         manager.total_points_for = manager.season_history.reduce((sum, s) => sum + s.points_for, 0);
                         manager.win_pct = manager.total_wins / (manager.total_wins + manager.total_losses);
                         manager.avg_finish = manager.season_history.reduce((sum, s) => sum + s.rank, 0) / manager.season_history.length;
-                        
+
                         console.log(`Updated ${manager.manager_name} with 2023 stats`);
                     }
                 }
             });
-            
+
             return managersData;
         }
 
@@ -2533,19 +2701,19 @@
         async function initializeSeasonSelectors() {
             const standingsSelect = document.getElementById('standings-season');
             standingsSelect.innerHTML = '<option value="">Loading seasons...</option>';
-            
+
             // Try to detect available seasons by checking for data files
             const possibleSeasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
             const availableSeasons = [];
-            
+
             // Check current season
             try {
                 const response = await fetch('data/current_season/standings.json');
                 if (response.ok) {
                     availableSeasons.push({ year: 2025, isCurrent: true });
                 }
-            } catch (e) {}
-            
+            } catch (e) { }
+
             // Check historical seasons
             for (const year of possibleSeasons.filter(y => y < 2025)) {
                 try {
@@ -2553,12 +2721,12 @@
                     if (response.ok) {
                         availableSeasons.push({ year: year, isCurrent: false });
                     }
-                } catch (e) {}
+                } catch (e) { }
             }
-            
+
             // Sort by year descending
             availableSeasons.sort((a, b) => b.year - a.year);
-            
+
             // Populate dropdown
             standingsSelect.innerHTML = '';
             availableSeasons.forEach(season => {
@@ -2567,11 +2735,11 @@
                 option.textContent = season.isCurrent ? `${season.year} (Current)` : season.year;
                 standingsSelect.appendChild(option);
             });
-            
+
             // Populate scoring dropdown the same way
             const scoringSelect = document.getElementById('scoring-season');
             scoringSelect.innerHTML = standingsSelect.innerHTML;
-            
+
             return availableSeasons;
         }
 
@@ -2582,42 +2750,42 @@
             const errorEl = document.getElementById('standings-error');
             const tableEl = document.getElementById('standings-table');
             const chartContainer = document.getElementById('season-chart-container');
-            
+
             if (!season) {
                 return; // No season selected yet
             }
-            
+
             try {
                 loadingEl.style.display = 'block';
                 errorEl.style.display = 'none';
                 tableEl.style.display = 'none';
                 chartContainer.style.display = 'none';
-                
+
                 let response;
                 const seasonNum = parseInt(season);
-                
+
                 // Check if this is current season (2025) or historical
                 const currentSeasonCheck = await fetch('data/current_season/standings.json');
                 let isCurrentSeason = false;
-                
+
                 if (currentSeasonCheck.ok) {
                     // If current season data exists, it's 2025
                     isCurrentSeason = (seasonNum === 2025);
                 }
-                
+
                 // Load from appropriate location
                 if (isCurrentSeason) {
                     response = await fetch('data/current_season/standings.json');
                 } else {
                     response = await fetch(`data/historical/${season}/final_standings.json`);
                 }
-                
+
                 if (!response.ok) {
                     throw new Error(`Data not found for ${season}`);
                 }
-                
+
                 let standings = await response.json();
-                
+
                 // Load team logos
                 let teamsResponse;
                 if (isCurrentSeason) {
@@ -2625,7 +2793,7 @@
                 } else {
                     teamsResponse = await fetch(`data/historical/${season}/teams.json`);
                 }
-                
+
                 let teamLogos = {};
                 let teamData = [];
                 if (teamsResponse.ok) {
@@ -2634,27 +2802,27 @@
                         teamLogos[team.team_key] = team.team_logo;
                     });
                 }
-                
+
                 // Normalize manager names
                 standings = normalizeStandingsData(standings, seasonNum);
-                
+
                 // Sort by rank to ensure proper ordering
                 standings.sort((a, b) => a.rank - b.rank);
-                
+
                 // Populate the table
                 const tbody = document.getElementById('standings-body');
                 tbody.innerHTML = '';
-                
+
                 standings.forEach(team => {
                     const row = document.createElement('tr');
                     const logo = teamLogos[team.team_key] ? `<img src="${teamLogos[team.team_key]}" class="team-logo" alt="Team Logo">` : '';
-                    
+
                     // Add medals for top 3
                     let medal = '';
                     if (team.rank === 1) medal = '<span class="medal">🥇</span>';
                     else if (team.rank === 2) medal = '<span class="medal">🥈</span>';
                     else if (team.rank === 3) medal = '<span class="medal">🥉</span>';
-                    
+
                     row.innerHTML = `
                         <td>${medal}${team.rank}</td>
                         <td>${team.manager}</td>
@@ -2666,13 +2834,13 @@
                     `;
                     tbody.appendChild(row);
                 });
-                
+
                 loadingEl.style.display = 'none';
                 tableEl.style.display = 'table';
-                
+
                 // Load and render the season chart
                 await loadSeasonChart(seasonNum, isCurrentSeason, standings, teamLogos, teamData);
-                
+
             } catch (error) {
                 console.error('Error loading standings:', error);
                 loadingEl.style.display = 'none';
@@ -2685,7 +2853,7 @@
         async function loadSeasonChart(seasonNum, isCurrentSeason, standings, teamLogos, teamData) {
             const chartContainer = document.getElementById('season-chart-container');
             const chartEl = document.getElementById('season-chart');
-            
+
             try {
                 // Load weekly scores data
                 let scoresResponse;
@@ -2694,39 +2862,39 @@
                 } else {
                     scoresResponse = await fetch(`data/historical/${seasonNum}/all_scores.json`);
                 }
-                
+
                 if (!scoresResponse.ok) {
                     console.log('No scores data available for chart');
                     chartContainer.style.display = 'none';
                     return;
                 }
-                
+
                 const scoresData = await scoresResponse.json();
                 console.log('Loaded scores data:', scoresData.length, 'entries');
-                
+
                 // Process scores into both weekly and cumulative rankings
                 currentChartData = processScoresForChart(scoresData, standings, teamLogos, teamData);
                 console.log('Processed chart data:', currentChartData.weeklyTeams.length, 'teams');
-                
+
                 if (currentChartData.weeklyTeams.length === 0) {
                     console.log('No team data to display');
                     chartContainer.style.display = 'none';
                     return;
                 }
-                
+
                 // Reset to total view (default)
                 currentChartType = 'total';
                 document.getElementById('btn-weekly').classList.remove('active');
                 document.getElementById('btn-total').classList.add('active');
-                
+
                 // Show container first so it has dimensions
                 chartContainer.style.display = 'block';
-                
+
                 // Use requestAnimationFrame to ensure DOM is updated before rendering
                 requestAnimationFrame(() => {
                     renderSeasonChart(chartEl, currentChartData, currentChartType);
                 });
-                
+
             } catch (error) {
                 console.error('Error loading season chart:', error);
                 chartContainer.style.display = 'none';
@@ -2735,13 +2903,13 @@
 
         function setChartType(type) {
             if (type === currentChartType || !currentChartData) return;
-            
+
             currentChartType = type;
-            
+
             // Update button states
             document.getElementById('btn-weekly').classList.toggle('active', type === 'weekly');
             document.getElementById('btn-total').classList.toggle('active', type === 'total');
-            
+
             // Re-render chart
             const chartEl = document.getElementById('season-chart');
             renderSeasonChart(chartEl, currentChartData, currentChartType);
@@ -2751,18 +2919,18 @@
             // Group scores by week first
             const weeklyScores = {};
             const teamInfo = {};
-            
+
             // Collect all scores by week and team info
             scoresData.forEach(entry => {
                 const teamKey = entry.team_key;
                 const week = entry.week;
                 const score = entry.team_score;
-                
+
                 // Store team info
                 if (!teamInfo[teamKey]) {
                     const standingTeam = standings.find(t => t.team_key === teamKey);
                     const teamDataEntry = teamData.find(t => t.team_key === teamKey);
-                    
+
                     teamInfo[teamKey] = {
                         team_key: teamKey,
                         team_name: standingTeam?.team_name || teamDataEntry?.team_name || 'Unknown Team',
@@ -2770,7 +2938,7 @@
                         logo: teamLogos[teamKey] || teamDataEntry?.team_logo || ''
                     };
                 }
-                
+
                 // Store weekly score
                 if (!weeklyScores[week]) {
                     weeklyScores[week] = [];
@@ -2780,10 +2948,10 @@
                     score: score
                 });
             });
-            
+
             const weeks = Object.keys(weeklyScores).map(Number).sort((a, b) => a - b);
             const numTeams = Object.keys(teamInfo).length;
-            
+
             // Calculate WEEKLY rankings
             const teamWeeklyRankings = {};
             weeks.forEach(week => {
@@ -2800,11 +2968,11 @@
                     });
                 });
             });
-            
+
             // Calculate CUMULATIVE rankings
             const teamCumulativeScores = {}; // team_key -> running total
             const teamCumulativeRankings = {};
-            
+
             weeks.forEach(week => {
                 // Update cumulative scores
                 weeklyScores[week].forEach(entry => {
@@ -2813,12 +2981,12 @@
                     }
                     teamCumulativeScores[entry.team_key] += entry.score;
                 });
-                
+
                 // Sort teams by cumulative score descending
                 const cumulativeRanking = Object.entries(teamCumulativeScores)
                     .map(([teamKey, total]) => ({ team_key: teamKey, cumulative: total }))
                     .sort((a, b) => b.cumulative - a.cumulative);
-                
+
                 // Assign cumulative ranks
                 cumulativeRanking.forEach((entry, index) => {
                     const rank = index + 1;
@@ -2832,20 +3000,20 @@
                     });
                 });
             });
-            
+
             // Build result arrays for both types
             const weeklyTeams = [];
             const cumulativeTeams = [];
-            
+
             Object.keys(teamInfo).forEach(teamKey => {
                 const info = teamInfo[teamKey];
-                
+
                 // Weekly data
                 const weeklyData = (teamWeeklyRankings[teamKey] || []).sort((a, b) => a.week - b.week);
-                const avgWeeklyRank = weeklyData.length > 0 
-                    ? weeklyData.reduce((sum, r) => sum + r.rank, 0) / weeklyData.length 
+                const avgWeeklyRank = weeklyData.length > 0
+                    ? weeklyData.reduce((sum, r) => sum + r.rank, 0) / weeklyData.length
                     : numTeams;
-                
+
                 weeklyTeams.push({
                     team_key: teamKey,
                     team_name: info.team_name,
@@ -2854,13 +3022,13 @@
                     data: weeklyData,
                     avgRank: avgWeeklyRank
                 });
-                
+
                 // Cumulative data
                 const cumulativeData = (teamCumulativeRankings[teamKey] || []).sort((a, b) => a.week - b.week);
-                const finalRank = cumulativeData.length > 0 
-                    ? cumulativeData[cumulativeData.length - 1].rank 
+                const finalRank = cumulativeData.length > 0
+                    ? cumulativeData[cumulativeData.length - 1].rank
                     : numTeams;
-                
+
                 cumulativeTeams.push({
                     team_key: teamKey,
                     team_name: info.team_name,
@@ -2870,61 +3038,61 @@
                     finalRank: finalRank
                 });
             });
-            
+
             // Sort weekly by average rank, cumulative by final rank
             weeklyTeams.sort((a, b) => a.avgRank - b.avgRank);
             cumulativeTeams.sort((a, b) => a.finalRank - b.finalRank);
-            
+
             console.log('Teams with ranking data:', weeklyTeams.length);
             console.log('Weeks:', weeks.length);
-            
-            return { 
-                weeklyTeams: weeklyTeams, 
+
+            return {
+                weeklyTeams: weeklyTeams,
                 cumulativeTeams: cumulativeTeams,
-                numTeams: numTeams, 
-                weeks: weeks 
+                numTeams: numTeams,
+                weeks: weeks
             };
         }
 
         function renderSeasonChart(container, chartData, chartType) {
             // Clear previous chart
             container.innerHTML = '';
-            
+
             const { weeklyTeams, cumulativeTeams, numTeams, weeks } = chartData;
             const teams = chartType === 'weekly' ? weeklyTeams : cumulativeTeams;
             const isWeekly = chartType === 'weekly';
-            
+
             // Detect mobile
             const isMobile = window.innerWidth <= 768;
-            
+
             // Chart dimensions - adjusted for mobile
             const containerWidth = container.clientWidth || container.offsetWidth || 900;
             const logoRadius = isMobile ? 10 : 14;
             const logoImageSize = isMobile ? 14 : 20;
             const rowHeight = isMobile ? 28 : 40;
-            
+
             // On mobile, ensure minimum width for scrolling
             const minChartWidth = isMobile ? Math.max(weeks.length * 25, 600) : 600;
-            
+
             const margin = { top: 30, right: 30, bottom: 50, left: isMobile ? 40 : 70 };
             const width = Math.max(minChartWidth, containerWidth - margin.left - margin.right);
             const height = Math.max(400, numTeams * rowHeight + 60);
-            
+
             const minWeek = Math.min(...weeks);
             const maxWeek = Math.max(...weeks);
             const weekRange = maxWeek - minWeek || 1;
-            
+
             // Scale functions
             const xScale = (week) => margin.left + ((week - minWeek) / weekRange) * width;
             const yScale = (rank) => margin.top + ((rank - 1) / (numTeams - 1)) * (height - margin.top - margin.bottom);
-            
+
             // Generate colors for teams
             const colors = generateTeamColors(teams.length);
             const teamColorMap = {};
             teams.forEach((team, index) => {
                 teamColorMap[team.team_key] = colors[index];
             });
-            
+
             // Create SVG
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
             svg.setAttribute('width', width + margin.left + margin.right);
@@ -2935,7 +3103,7 @@
             if (!isMobile) {
                 svg.style.maxWidth = '100%';
             }
-            
+
             // Draw horizontal grid lines for each rank
             for (let rank = 1; rank <= numTeams; rank++) {
                 const y = yScale(rank);
@@ -2947,7 +3115,7 @@
                 line.setAttribute('class', 'chart-grid-line');
                 line.setAttribute('stroke-dasharray', '3,3');
                 svg.appendChild(line);
-                
+
                 // Y-axis rank label
                 const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 label.setAttribute('x', margin.left - (isMobile ? 15 : 25));
@@ -2958,7 +3126,7 @@
                 label.textContent = rank;
                 svg.appendChild(label);
             }
-            
+
             // Draw X-axis labels - show fewer on mobile
             const numWeeksTotal = weeks.length;
             const weekStep = Math.max(1, Math.ceil(numWeeksTotal / (isMobile ? 8 : 12)));
@@ -2974,7 +3142,7 @@
                 label.textContent = `${week}`;
                 svg.appendChild(label);
             }
-            
+
             // X-axis title
             const xTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             xTitle.setAttribute('x', margin.left + width / 2);
@@ -2985,7 +3153,7 @@
             xTitle.setAttribute('font-size', isMobile ? '11px' : '12px');
             xTitle.textContent = 'Week';
             svg.appendChild(xTitle);
-            
+
             // Y-axis title
             const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             yTitle.setAttribute('transform', `rotate(-90)`);
@@ -2997,11 +3165,11 @@
             yTitle.setAttribute('font-size', isMobile ? '11px' : '12px');
             yTitle.textContent = isWeekly ? 'Weekly Rank' : 'Cumulative Rank';
             svg.appendChild(yTitle);
-            
+
             // Draw lines for each team (draw lines first, then logos on top)
             teams.forEach((team, index) => {
                 const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-                
+
                 // Build path
                 let d = '';
                 team.data.forEach((point, i) => {
@@ -3009,7 +3177,7 @@
                     const y = yScale(point.rank);
                     d += i === 0 ? `M ${x} ${y}` : ` L ${x} ${y}`;
                 });
-                
+
                 path.setAttribute('d', d);
                 path.setAttribute('class', 'chart-line');
                 path.setAttribute('stroke', colors[index]);
@@ -3017,13 +3185,13 @@
                 path.setAttribute('data-team-key', team.team_key);
                 svg.appendChild(path);
             });
-            
+
             // Add team logo markers at EVERY week for each team
             teams.forEach((team, teamIndex) => {
                 team.data.forEach((point) => {
                     const x = xScale(point.week);
                     const y = yScale(point.rank);
-                    
+
                     // Create group for logo marker
                     const logoGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
                     logoGroup.setAttribute('class', 'team-logo-marker');
@@ -3033,7 +3201,7 @@
                     logoGroup.setAttribute('data-score', isWeekly ? point.score : point.cumulative);
                     logoGroup.setAttribute('data-is-weekly', isWeekly);
                     logoGroup.setAttribute('transform', `translate(${x}, ${y})`);
-                    
+
                     // Circle background
                     const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                     circle.setAttribute('r', logoRadius);
@@ -3041,7 +3209,7 @@
                     circle.setAttribute('stroke', colors[teamIndex]);
                     circle.setAttribute('stroke-width', isMobile ? '1.5' : '2');
                     logoGroup.appendChild(circle);
-                    
+
                     // Team logo image
                     if (team.logo) {
                         const imageOffset = logoImageSize / 2;
@@ -3054,32 +3222,32 @@
                         image.setAttribute('style', `clip-path: circle(${imageOffset}px at center)`);
                         logoGroup.appendChild(image);
                     }
-                    
+
                     // Add hover/touch events
                     const scoreValue = isWeekly ? point.score : point.cumulative;
                     const handleInteraction = (e) => {
                         e.preventDefault();
                         handleTeamHover(team.team_key, team.team_name, scoreValue, point.week, point.rank, isWeekly, e.currentTarget);
                     };
-                    
+
                     logoGroup.addEventListener('mouseenter', handleInteraction);
                     logoGroup.addEventListener('touchstart', handleInteraction, { passive: false });
                     logoGroup.addEventListener('mouseleave', () => handleTeamHoverEnd());
                     logoGroup.addEventListener('touchend', () => setTimeout(handleTeamHoverEnd, 1500));
-                    
+
                     svg.appendChild(logoGroup);
                 });
             });
-            
+
             container.appendChild(svg);
-            
+
             // Create tooltip element
             const tooltip = document.createElement('div');
             tooltip.className = 'chart-tooltip';
             tooltip.style.display = 'none';
             tooltip.id = 'chart-tooltip';
             container.appendChild(tooltip);
-            
+
             // Add scroll hint for mobile
             if (isMobile && weeks.length > 10) {
                 const scrollHint = document.createElement('div');
@@ -3096,7 +3264,7 @@
                 '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000',
                 '#aaffc3'
             ];
-            
+
             const colors = [];
             for (let i = 0; i < count; i++) {
                 colors.push(baseColors[i % baseColors.length]);
@@ -3115,7 +3283,7 @@
                     line.classList.remove('highlighted');
                 }
             });
-            
+
             document.querySelectorAll('.team-logo-marker').forEach(marker => {
                 if (marker.getAttribute('data-team-key') === teamKey) {
                     marker.classList.add('highlighted');
@@ -3125,14 +3293,14 @@
                     marker.classList.remove('highlighted');
                 }
             });
-            
+
             // Show tooltip with appropriate label
             const tooltip = document.getElementById('chart-tooltip');
-            
+
             if (tooltip && markerElement) {
                 const containerRect = document.getElementById('season-chart').getBoundingClientRect();
                 const markerRect = markerElement.getBoundingClientRect();
-                
+
                 const scoreLabel = isWeekly ? `Week ${week}: ${score.toLocaleString()} pts` : `Total: ${score.toLocaleString()} pts`;
                 tooltip.innerHTML = `<strong>${teamName}</strong><br>${scoreLabel}<br>Rank: #${rank}`;
                 tooltip.style.display = 'block';
@@ -3146,11 +3314,11 @@
             document.querySelectorAll('.chart-line').forEach(line => {
                 line.classList.remove('faded', 'highlighted');
             });
-            
+
             document.querySelectorAll('.team-logo-marker').forEach(marker => {
                 marker.classList.remove('faded', 'highlighted');
             });
-            
+
             // Hide tooltip
             const tooltip = document.getElementById('chart-tooltip');
             if (tooltip) {
@@ -3162,12 +3330,12 @@
         async function calculateManagerAwards() {
             const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
             const seasonData = {};
-            
+
             // Load all seasons data including player stats
             for (const year of seasons) {
                 try {
                     let standingsResponse, playerStatsResponse;
-                    
+
                     if (year === 2025) {
                         standingsResponse = await fetch('data/current_season/standings.json');
                         playerStatsResponse = await fetch('data/current_season/player_stats.json');
@@ -3175,7 +3343,7 @@
                         standingsResponse = await fetch(`data/historical/${year}/final_standings.json`);
                         playerStatsResponse = await fetch(`data/historical/${year}/player_stats.json`);
                     }
-                    
+
                     if (standingsResponse.ok) {
                         const standings = await standingsResponse.json();
                         const normalizedStandings = normalizeStandingsData(standings, year);
@@ -3186,80 +3354,80 @@
                     console.error(`Error loading ${year}:`, e);
                 }
             }
-            
+
             // Calculate awards by manager
             const managerAwards = {};
-            
+
             for (const [year, data] of Object.entries(seasonData)) {
                 const standings = data.standings;
                 const playerStats = data.playerStats || [];
-                
+
                 // Find winners for each award category
-                const mostWins = standings.reduce((max, team) => 
+                const mostWins = standings.reduce((max, team) =>
                     team.wins > max.wins ? team : max
                 );
-                const mostPoints = standings.reduce((max, team) => 
+                const mostPoints = standings.reduce((max, team) =>
                     team.points_for > max.points_for ? team : max
                 );
-                const fewestWins = standings.reduce((min, team) => 
+                const fewestWins = standings.reduce((min, team) =>
                     team.wins < min.wins ? team : min
                 );
-                const leastPoints = standings.reduce((min, team) => 
+                const leastPoints = standings.reduce((min, team) =>
                     team.points_for < min.points_for ? team : min
                 );
                 const champion = standings.find(team => team.rank === 1);
-                
+
                 // Track awards
                 if (champion) {
                     if (!managerAwards[champion.manager]) managerAwards[champion.manager] = {};
                     managerAwards[champion.manager].championships = (managerAwards[champion.manager].championships || 0) + 1;
                 }
-                
+
                 if (!managerAwards[mostWins.manager]) managerAwards[mostWins.manager] = {};
                 managerAwards[mostWins.manager].regularSeason = (managerAwards[mostWins.manager].regularSeason || 0) + 1;
-                
+
                 if (!managerAwards[mostPoints.manager]) managerAwards[mostPoints.manager] = {};
                 managerAwards[mostPoints.manager].scoringChamp = (managerAwards[mostPoints.manager].scoringChamp || 0) + 1;
-                
+
                 if (!managerAwards[fewestWins.manager]) managerAwards[fewestWins.manager] = {};
                 managerAwards[fewestWins.manager].garbage = (managerAwards[fewestWins.manager].garbage || 0) + 1;
-                
+
                 if (!managerAwards[leastPoints.manager]) managerAwards[leastPoints.manager] = {};
                 managerAwards[leastPoints.manager].clown = (managerAwards[leastPoints.manager].clown || 0) + 1;
-                
+
                 // Mike Trout Award (highest scoring hitter)
                 const batters = playerStats.filter(p => p.position_type === 'B');
                 if (batters.length > 0) {
-                    const topHitter = batters.reduce((max, player) => 
+                    const topHitter = batters.reduce((max, player) =>
                         (player.fantasy_points || 0) > (max.fantasy_points || 0) ? player : max
                     );
                     // Find the team_key for this player's manager
                     const playerTeam = standings.find(t => t.team_name === topHitter.team_name);
                     const teamKey = playerTeam ? playerTeam.team_key : null;
-    
+
                     // NORMALIZE THE MANAGER NAME with team info
                     const normalizedManager = normalizeManagerName(topHitter.manager, parseInt(year), topHitter.team_name, teamKey);
                     if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
                     managerAwards[normalizedManager].troutAward = (managerAwards[normalizedManager].troutAward || 0) + 1;
                 }
-                
+
                 // Jacob deGrom Award (highest scoring pitcher)
                 const pitchers = playerStats.filter(p => p.position_type === 'P');
                 if (pitchers.length > 0) {
-                    const topPitcher = pitchers.reduce((max, player) => 
+                    const topPitcher = pitchers.reduce((max, player) =>
                         (player.fantasy_points || 0) > (max.fantasy_points || 0) ? player : max
                     );
                     // Find the team_key for this player's manager
                     const playerTeam = standings.find(t => t.team_name === topPitcher.team_name);
                     const teamKey = playerTeam ? playerTeam.team_key : null;
-                    
+
                     // NORMALIZE THE MANAGER NAME with team info
                     const normalizedManager = normalizeManagerName(topPitcher.manager, parseInt(year), topPitcher.team_name, teamKey);
                     if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
                     managerAwards[normalizedManager].degromAward = (managerAwards[normalizedManager].degromAward || 0) + 1;
                 }
             }
-            
+
             return managerAwards;
         }
 
@@ -3268,28 +3436,28 @@
             const loadingEl = document.getElementById('managers-loading');
             const errorEl = document.getElementById('managers-error');
             const gridEl = document.getElementById('manager-grid');
-            
+
             try {
                 loadingEl.style.display = 'block';
                 errorEl.style.display = 'none';
                 gridEl.innerHTML = '';
-                
+
                 // Load manager stats
                 const response = await fetch('data/managers/all_time_stats.json');
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const rawManagersData = await response.json();
-                
+
                 // Load manager history for detailed view
                 const historyResponse = await fetch('data/managers/manager_history.json');
                 if (historyResponse.ok) {
                     managerHistoryData = await historyResponse.json();
                 }
-                
+
                 // Normalize and merge manager data
                 allManagersData = normalizeAndMergeManagerData(rawManagersData, managerHistoryData);
-                
+
                 // Determine all unique seasons we need to load
                 const allSeasons = new Set();
                 allManagersData.forEach(manager => {
@@ -3297,20 +3465,20 @@
                         allSeasons.add(season.year);
                     });
                 });
-                
+
                 // Pre-load team data for all seasons in parallel
                 await Promise.all(Array.from(allSeasons).map(year => getTeamData(year)));
-                
+
                 // Calculate awards for all managers
                 const managerAwards = await calculateManagerAwards();
                 managerAwardsData = managerAwards; // Store globally for modal access
-                
+
                 // Now build manager logos using cached data
                 const managerLogos = {};
                 for (const manager of allManagersData) {
                     const recentSeason = Math.max(...manager.season_history.map(s => s.year));
                     const recentSeasonData = manager.season_history.find(s => s.year === recentSeason);
-                    
+
                     const teams = await getTeamData(recentSeason);
                     if (teams) {
                         const managerTeam = teams.find(t => t.team_name === recentSeasonData.team_name);
@@ -3319,7 +3487,7 @@
                         }
                     }
                 }
-                
+
                 // Determine which managers are currently active
                 const currentStandingsResponse = await fetch('data/current_season/standings.json');
                 let currentManagers = [];
@@ -3328,26 +3496,26 @@
                     const normalizedStandings = normalizeStandingsData(currentStandings, 2025);
                     currentManagers = normalizedStandings.map(team => team.manager);
                 }
-                
+
                 // Sort by win percentage (best first)
                 allManagersData.sort((a, b) => b.win_pct - a.win_pct);
-                
+
                 allManagersData.forEach(manager => {
                     const isActive = currentManagers.includes(manager.manager_name);
                     const card = document.createElement('div');
                     card.className = isActive ? 'manager-card' : 'manager-card inactive';
                     card.onclick = () => showManagerDetail(manager.manager_name);
-                    
+
                     // Get last season played
                     const lastSeason = Math.max(...manager.season_history.map(s => s.year));
-                    
+
                     // Get logo if available
                     const logo = managerLogos[manager.manager_name] ? `<img src="${managerLogos[manager.manager_name]}" class="manager-logo" alt="${manager.manager_name}">` : '';
-                    
+
                     // Build awards display
                     const awards = managerAwards[manager.manager_name] || {};
                     let awardsHTML = '';
-                    
+
                     const awardsList = [];
                     if (awards.championships) awardsList.push({ type: 'image', src: 'champion_ring.png', count: awards.championships, alt: 'Championship' });
                     if (awards.regularSeason) awardsList.push({ type: 'emoji', emoji: '👑', count: awards.regularSeason });
@@ -3356,7 +3524,7 @@
                     if (awards.degromAward) awardsList.push({ type: 'image', src: 'attached_assets/degom_award_1764648146918.png', count: awards.degromAward, alt: 'Jacob deGrom Award' });
                     if (awards.garbage) awardsList.push({ type: 'emoji', emoji: '🗑️', count: awards.garbage });
                     if (awards.clown) awardsList.push({ type: 'image', src: 'clown_award.png', count: awards.clown, alt: 'Clown Award' });
-                    
+
                     if (awardsList.length > 0) {
                         awardsHTML = '<div class="awards-row">';
                         awardsList.forEach(award => {
@@ -3373,7 +3541,7 @@
                         });
                         awardsHTML += '</div>';
                     }
-                    
+
                     card.innerHTML = `
                         <h3>${logo}${manager.manager_name}</h3>
                         <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -3391,9 +3559,9 @@
                     `;
                     gridEl.appendChild(card);
                 });
-                
+
                 loadingEl.style.display = 'none';
-                
+
             } catch (error) {
                 console.error('Error loading manager profiles:', error);
                 loadingEl.style.display = 'none';
@@ -3406,10 +3574,10 @@
         async function showManagerDetail(managerName) {
             const manager = allManagersData.find(m => m.manager_name === managerName);
             if (!manager) return;
-            
+
             const modal = document.getElementById('manager-modal');
             const modalBody = document.getElementById('modal-body');
-            
+
             // Load team logos for each season using cached data
             const seasonLogos = {};
             for (const season of manager.season_history) {
@@ -3421,13 +3589,13 @@
                     }
                 }
             }
-            
+
             // Build season timeline
             const seasonHistory = manager.season_history.sort((a, b) => b.year - a.year);
             let timelineHTML = seasonHistory.map(season => {
                 let rankClass = '';
                 let rankText = `#${season.rank}`;
-                
+
                 if (season.rank === 1) {
                     rankClass = 'champion';
                     rankText = '🏆 Champion';
@@ -3435,9 +3603,9 @@
                     rankClass = 'runner-up';
                     rankText = '🥈 Runner-up';
                 }
-                
+
                 const logo = seasonLogos[season.year] ? `<img src="${seasonLogos[season.year]}" class="timeline-logo" alt="${season.team_name}">` : '';
-                
+
                 return `
                     <div class="timeline-item">
                         <div class="year">${season.year}</div>
@@ -3452,11 +3620,11 @@
                     </div>
                 `;
             }).join('');
-            
+
             // Calculate head-to-head records
             const h2hRecords = await calculateHeadToHeadRecords(managerName);
             let h2hHTML = '';
-            
+
             if (h2hRecords.length > 0) {
                 h2hHTML = `
                     <div class="timeline">
@@ -3486,7 +3654,7 @@
                     </div>
                 `;
             }
-            
+
             modalBody.innerHTML = `
                 <div class="modal-stats">
                     <div class="stat-box">
@@ -3522,14 +3690,14 @@
                 
                 ${h2hHTML}
             `;
-            
+
             // Set the header separately with awards emojis
             const modalHeaderSection = document.getElementById('modal-header-section');
-            
+
             // Build awards display for modal header (same format as cards)
             const awards = managerAwardsData[manager.manager_name] || {};
             let modalAwardsHTML = '';
-            
+
             const awardsList = [];
             if (awards.championships) awardsList.push({ type: 'image', src: 'champion_ring.png', count: awards.championships, alt: 'Championship' });
             if (awards.regularSeason) awardsList.push({ type: 'emoji', emoji: '👑', count: awards.regularSeason });
@@ -3538,7 +3706,7 @@
             if (awards.degromAward) awardsList.push({ type: 'image', src: 'attached_assets/degom_award_1764648146918.png', count: awards.degromAward, alt: 'Jacob deGrom Award' });
             if (awards.garbage) awardsList.push({ type: 'emoji', emoji: '🗑️', count: awards.garbage });
             if (awards.clown) awardsList.push({ type: 'image', src: 'clown_award.png', count: awards.clown, alt: 'Clown Award' });
-            
+
             if (awardsList.length > 0) {
                 modalAwardsHTML = '<div class="awards-row">';
                 awardsList.forEach(award => {
@@ -3555,7 +3723,7 @@
                 });
                 modalAwardsHTML += '</div>';
             }
-            
+
             modalHeaderSection.innerHTML = `
                 <div class="modal-header">
                     <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
@@ -3565,12 +3733,12 @@
                     <p style="color: #666; margin-top: 0.5rem;">Joined ${manager.first_season} | ${manager.seasons_played} seasons</p>
                 </div>
             `;
-            
+
             // Store h2h data for sorting
             window.currentH2HData = h2hRecords;
             window.currentSortColumn = null;
             window.currentSortDirection = 'desc';
-            
+
             modal.classList.add('active');
         }
 
@@ -3578,9 +3746,9 @@
         function sortH2HTable(columnIndex, dataType) {
             const tbody = document.getElementById('h2h-body');
             const headers = document.querySelectorAll('#h2h-table th');
-            
+
             if (!window.currentH2HData || window.currentH2HData.length === 0) return;
-            
+
             // Toggle sort direction if clicking same column
             if (window.currentSortColumn === columnIndex) {
                 window.currentSortDirection = window.currentSortDirection === 'asc' ? 'desc' : 'asc';
@@ -3588,7 +3756,7 @@
                 window.currentSortColumn = columnIndex;
                 window.currentSortDirection = 'desc'; // Default to descending
             }
-            
+
             // Update header classes
             headers.forEach((header, index) => {
                 header.classList.remove('sorted-asc', 'sorted-desc');
@@ -3596,11 +3764,11 @@
                     header.classList.add(window.currentSortDirection === 'asc' ? 'sorted-asc' : 'sorted-desc');
                 }
             });
-            
+
             // Sort the data
             const sortedData = [...window.currentH2HData].sort((a, b) => {
                 let valueA, valueB;
-                
+
                 switch (columnIndex) {
                     case 0: // Opponent
                         valueA = a.opponent.toLowerCase();
@@ -3623,14 +3791,14 @@
                         valueB = b.avg_points_against;
                         break;
                 }
-                
+
                 if (window.currentSortDirection === 'asc') {
                     return valueA > valueB ? 1 : valueA < valueB ? -1 : 0;
                 } else {
                     return valueA < valueB ? 1 : valueA > valueB ? -1 : 0;
                 }
             });
-            
+
             // Update table
             tbody.innerHTML = sortedData.map(record => `
                 <tr>
@@ -3648,10 +3816,10 @@
             try {
                 // Get all available seasons and load their scores
                 const h2hMap = {};
-                
+
                 const manager = allManagersData.find(m => m.manager_name === managerName);
                 if (!manager) return [];
-                
+
                 for (const season of manager.season_history.map(h => h.year)) {
                     try {
                         let scoresResponse;
@@ -3660,33 +3828,33 @@
                         } else {
                             scoresResponse = await fetch(`data/historical/${season}/all_scores.json`);
                         }
-                        
+
                         if (!scoresResponse.ok) continue;
-                        
+
                         const scores = await scoresResponse.json();
-                        let standings = season === 2025 
+                        let standings = season === 2025
                             ? await (await fetch('data/current_season/standings.json')).json()
                             : await (await fetch(`data/historical/${season}/final_standings.json`)).json();
-                        
+
                         // Normalize standings
                         standings = normalizeStandingsData(standings, season);
-                        
+
                         // Create team_key to manager mapping
                         const teamToManager = {};
                         standings.forEach(team => {
                             teamToManager[team.team_key] = team.manager;
                         });
-                        
+
                         // Find manager's team key
                         const managerTeam = standings.find(team => team.manager === managerName);
                         if (!managerTeam) continue;
-                        
+
                         // Process matchups
                         scores.forEach(matchup => {
                             if (matchup.team_key === managerTeam.team_key) {
                                 const opponent = teamToManager[matchup.opponent_key];
                                 if (!opponent) return;
-                                
+
                                 if (!h2hMap[opponent]) {
                                     h2hMap[opponent] = {
                                         opponent: opponent,
@@ -3697,11 +3865,11 @@
                                         games: 0
                                     };
                                 }
-                                
+
                                 h2hMap[opponent].games++;
                                 h2hMap[opponent].total_points_for += matchup.team_score;
                                 h2hMap[opponent].total_points_against += matchup.opponent_score;
-                                
+
                                 if (matchup.team_score > matchup.opponent_score) {
                                     h2hMap[opponent].wins++;
                                 } else if (matchup.team_score < matchup.opponent_score) {
@@ -3713,7 +3881,7 @@
                         console.log(`Could not load scores for ${season}`);
                     }
                 }
-                
+
                 // Convert to array and calculate averages
                 const h2hRecords = Object.values(h2hMap).map(record => ({
                     ...record,
@@ -3721,10 +3889,10 @@
                     avg_points_for: record.total_points_for / record.games,
                     avg_points_against: record.total_points_against / record.games
                 }));
-                
+
                 // Sort by win percentage
                 h2hRecords.sort((a, b) => b.win_pct - a.win_pct);
-                
+
                 return h2hRecords;
             } catch (error) {
                 console.error('Error calculating head-to-head:', error);
@@ -3739,7 +3907,7 @@
         }
 
         // Close modal when clicking outside
-        window.onclick = function(event) {
+        window.onclick = function (event) {
             const modal = document.getElementById('manager-modal');
             if (event.target === modal) {
                 closeManagerModal();
@@ -3752,25 +3920,25 @@
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
             });
-            
+
             // Remove active class from all desktop nav buttons
             document.querySelectorAll('.nav-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            
+
             // Remove active class from all mobile nav buttons
             document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
                 btn.classList.remove('active');
             });
-            
+
             // Show selected section
             document.getElementById(sectionId).classList.add('active');
-            
+
             // Add active class to clicked button (both desktop and mobile)
             if (event && event.target) {
                 event.target.closest('button')?.classList.add('active');
             }
-            
+
             // Also update the corresponding nav buttons by section ID
             const sectionToIndex = {
                 'standings': 0,
@@ -3783,7 +3951,7 @@
                 document.querySelectorAll('.nav-btn')[index]?.classList.add('active');
                 document.querySelectorAll('.mobile-nav-btn')[index]?.classList.add('active');
             }
-            
+
             // Load section-specific data
             if (sectionId === 'awards') {
                 loadAwards();
@@ -3801,22 +3969,22 @@
             const loadingEl = document.getElementById('awards-loading');
             const errorEl = document.getElementById('awards-error');
             const contentEl = document.getElementById('awards-content');
-            
+
             try {
                 loadingEl.style.display = 'block';
                 errorEl.style.display = 'none';
                 contentEl.style.display = 'none';
-                
+
                 // Load all seasons data
                 const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
                 const seasonData = {};
-                
+
                 console.log("Fetching data for seasons:", seasons);
-                
+
                 for (const year of seasons) {
                     try {
                         let standingsResponse, teamsResponse, playerStatsResponse;
-                        
+
                         if (year === 2025) {
                             standingsResponse = await fetch('data/current_season/standings.json');
                             teamsResponse = await fetch('data/current_season/teams.json');
@@ -3826,23 +3994,23 @@
                             teamsResponse = await fetch(`data/historical/${year}/teams.json`);
                             playerStatsResponse = await fetch(`data/historical/${year}/player_stats.json`);
                         }
-                        
+
                         console.log(`${year}: standings=${standingsResponse.ok}, teams=${teamsResponse.ok}, playerStats=${playerStatsResponse.ok}`);
-                        
+
                         if (standingsResponse.ok && teamsResponse.ok) {
                             const standings = await standingsResponse.json();
                             const teams = await teamsResponse.json();
                             const playerStats = playerStatsResponse.ok ? await playerStatsResponse.json() : [];
-                            
+
                             // Normalize standings
                             const normalizedStandings = normalizeStandingsData(standings, year);
-                            
+
                             // Create team logo map
                             const logoMap = {};
                             teams.forEach(team => {
                                 logoMap[team.team_key] = team.team_logo;
                             });
-                            
+
                             seasonData[year] = {
                                 standings: normalizedStandings,
                                 logos: logoMap,
@@ -3853,9 +4021,9 @@
                         console.error(`Error loading ${year}:`, e);
                     }
                 }
-                
+
                 console.log("Loaded season data for:", Object.keys(seasonData));
-                
+
                 // Calculate awards
                 const regularSeasonWinners = [];
                 const scoringChampions = [];
@@ -3863,14 +4031,14 @@
                 const clownAwards = [];
                 const troutAwards = [];
                 const degromAwards = [];
-                
+
                 for (const [year, data] of Object.entries(seasonData)) {
                     const standings = data.standings;
                     const logos = data.logos;
                     const playerStats = data.playerStats || [];
-                    
+
                     // Regular Season Champion (most wins)
-                    const mostWins = standings.reduce((max, team) => 
+                    const mostWins = standings.reduce((max, team) =>
                         team.wins > max.wins ? team : max
                     );
                     regularSeasonWinners.push({
@@ -3880,9 +4048,9 @@
                         logo: logos[mostWins.team_key],
                         value: mostWins.wins
                     });
-                    
+
                     // Scoring Champion (most points)
-                    const mostPoints = standings.reduce((max, team) => 
+                    const mostPoints = standings.reduce((max, team) =>
                         team.points_for > max.points_for ? team : max
                     );
                     scoringChampions.push({
@@ -3892,9 +4060,9 @@
                         logo: logos[mostPoints.team_key],
                         value: Math.round(mostPoints.points_for)
                     });
-                    
+
                     // Garbage Award (worst record - fewest wins)
-                    const fewestWins = standings.reduce((min, team) => 
+                    const fewestWins = standings.reduce((min, team) =>
                         team.wins < min.wins ? team : min
                     );
                     garbageAwards.push({
@@ -3905,9 +4073,9 @@
                         wins: fewestWins.wins,
                         losses: fewestWins.losses
                     });
-                    
+
                     // Clown Award (least points)
-                    const leastPoints = standings.reduce((min, team) => 
+                    const leastPoints = standings.reduce((min, team) =>
                         team.points_for < min.points_for ? team : min
                     );
                     clownAwards.push({
@@ -3917,11 +4085,11 @@
                         logo: logos[leastPoints.team_key],
                         value: Math.round(leastPoints.points_for)
                     });
-                    
+
                     // Mike Trout Award (highest scoring hitter)
                     const batters = playerStats.filter(p => p.position_type === 'B');
                     if (batters.length > 0) {
-                        const topHitter = batters.reduce((max, player) => 
+                        const topHitter = batters.reduce((max, player) =>
                             (player.fantasy_points || 0) > (max.fantasy_points || 0) ? player : max
                         );
                         troutAwards.push({
@@ -3933,11 +4101,11 @@
                             value: Math.round(topHitter.fantasy_points || 0)
                         });
                     }
-                    
+
                     // Jacob deGrom Award (highest scoring pitcher)
                     const pitchers = playerStats.filter(p => p.position_type === 'P');
                     if (pitchers.length > 0) {
-                        const topPitcher = pitchers.reduce((max, player) => 
+                        const topPitcher = pitchers.reduce((max, player) =>
                             (player.fantasy_points || 0) > (max.fantasy_points || 0) ? player : max
                         );
                         degromAwards.push({
@@ -3950,7 +4118,7 @@
                         });
                     }
                 }
-                
+
                 console.log("Calculated awards:", {
                     regularSeasonWinners: regularSeasonWinners.length,
                     scoringChampions: scoringChampions.length,
@@ -3959,12 +4127,12 @@
                     troutAwards: troutAwards.length,
                     degromAwards: degromAwards.length
                 });
-                
+
                 // Sort all by year (most recent first)
                 [regularSeasonWinners, scoringChampions, garbageAwards, clownAwards, troutAwards, degromAwards].forEach(arr => {
                     arr.sort((a, b) => b.year - a.year);
                 });
-                
+
                 // Populate tables
                 populateAwardTable('regular-season-winners', regularSeasonWinners, (award) => `
                     <td>${award.year}</td>
@@ -3972,49 +4140,49 @@
                     <td>${award.team_name}</td>
                     <td><span class="award-value">${award.value}</span></td>
                 `);
-                
+
                 populateAwardTable('scoring-champions', scoringChampions, (award) => `
                     <td>${award.year}</td>
                     <td><div class="manager-cell">${award.logo ? `<img src="${award.logo}" class="team-logo">` : ''}${award.manager}</div></td>
                     <td>${award.team_name}</td>
                     <td><span class="award-value">${award.value.toLocaleString()}</span></td>
                 `);
-                
+
                 populateAwardTable('garbage-awards', garbageAwards, (award) => `
                     <td>${award.year}</td>
                     <td><div class="manager-cell">${award.logo ? `<img src="${award.logo}" class="team-logo">` : ''}${award.manager}</div></td>
                     <td>${award.team_name}</td>
                     <td><span class="award-value">${award.wins}-${award.losses}</span></td>
                 `);
-                
+
                 populateAwardTable('clown-awards', clownAwards, (award) => `
                     <td>${award.year}</td>
                     <td><div class="manager-cell">${award.logo ? `<img src="${award.logo}" class="team-logo">` : ''}${award.manager}</div></td>
                     <td>${award.team_name}</td>
                     <td><span class="award-value">${award.value.toLocaleString()}</span></td>
                 `);
-                
+
                 // Base64 encoded placeholder for player headshots
                 const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
-                
+
                 populateAwardTable('trout-awards', troutAwards, (award) => `
                     <td>${award.year}</td>
                     <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ''}${award.manager}</div></td>
                     <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
                     <td><span class="award-value">${award.value.toLocaleString()}</span></td>
                 `);
-                
+
                 populateAwardTable('degrom-awards', degromAwards, (award) => `
                     <td>${award.year}</td>
                     <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ''}${award.manager}</div></td>
                     <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
                     <td><span class="award-value">${award.value.toLocaleString()}</span></td>
                 `);
-                
+
                 console.log("Awards populated successfully");
                 loadingEl.style.display = 'none';
                 contentEl.style.display = 'block';
-                
+
             } catch (error) {
                 console.error('Error loading awards:', error);
                 loadingEl.style.display = 'none';
@@ -4026,7 +4194,7 @@
         function populateAwardTable(tableId, awards, rowTemplate) {
             const tbody = document.getElementById(tableId);
             tbody.innerHTML = '';
-            
+
             awards.forEach(award => {
                 const row = document.createElement('tr');
                 row.innerHTML = rowTemplate(award);
@@ -4038,13 +4206,14 @@
         window.addEventListener('DOMContentLoaded', async () => {
             // Initialize season selectors (detect available seasons)
             await initializeSeasonSelectors();
-            
+
             // Load current season standings by default
             loadStandingsBySeason();
-            
+
             // Load manager profiles
             loadManagerProfiles();
         });
     </script>
 </body>
+
 </html>
