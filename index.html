@@ -4365,6 +4365,44 @@
             svg.setAttribute('class', 'chart-svg winpct-chart');
             svg.style.display = 'block';
 
+            // --- LAYERS SETUP ---
+            // 1. Grid Lines Layer (bottom)
+            const gridLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            svg.appendChild(gridLayer);
+
+            // 2. Data/Chart Layer (middle)
+            const chartLayer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            svg.appendChild(chartLayer);
+
+            // 3. Y-Axis Layer (top - sticky)
+            const yAxisGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            yAxisGroup.setAttribute('class', 'y-axis-group');
+            // Add a white background rect to the Y-axis group to obscure lines behind it when scrolling
+            const yAxisBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            yAxisBg.setAttribute('x', 0);
+            yAxisBg.setAttribute('y', 0);
+            yAxisBg.setAttribute('width', margin.left);
+            yAxisBg.setAttribute('height', height);
+            yAxisBg.setAttribute('fill', 'white');
+            yAxisGroup.appendChild(yAxisBg);
+            
+            // Add a vertical divider line at the edge of the Y-axis
+            const yAxisLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            yAxisLine.setAttribute('x1', margin.left);
+            yAxisLine.setAttribute('y1', margin.top);
+            yAxisLine.setAttribute('x2', margin.left);
+            yAxisLine.setAttribute('y2', height - margin.bottom);
+            yAxisLine.setAttribute('stroke', '#ccc');
+            yAxisLine.setAttribute('stroke-width', '1');
+            yAxisGroup.appendChild(yAxisLine);
+
+            svg.appendChild(yAxisGroup);
+
+            // --- SCROLL HANDLER FOR STICKY AXIS ---
+            container.addEventListener('scroll', () => {
+                yAxisGroup.setAttribute('transform', `translate(${container.scrollLeft}, 0)`);
+            });
+
             // Click background to deselect
             svg.addEventListener('click', (e) => {
                 if(e.target === svg) {
@@ -4373,9 +4411,11 @@
                 }
             });
 
-            // Draw horizontal grid lines
+            // Draw horizontal grid lines (on Grid Layer) and Labels (on Y-Axis Layer)
             for (let val = minNet; val <= maxNet; val += 5) {
                 const y = yScale(val);
+                
+                // Grid Line
                 const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
                 line.setAttribute('x1', margin.left);
                 line.setAttribute('y1', y);
@@ -4390,8 +4430,9 @@
                     line.setAttribute('stroke-width', '1');
                     line.setAttribute('stroke-dasharray', '3,3');
                 }
-                svg.appendChild(line);
+                gridLayer.appendChild(line);
 
+                // Axis Label (Sticky)
                 const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
                 label.setAttribute('x', margin.left - 10);
                 label.setAttribute('y', y + 4);
@@ -4401,8 +4442,19 @@
                 label.setAttribute('font-weight', val === 0 ? 'bold' : 'normal');
                 const labelText = val > 0 ? `+${val}` : `${val}`;
                 label.textContent = labelText;
-                svg.appendChild(label);
+                yAxisGroup.appendChild(label); // Append to sticky group
             }
+
+            // Draw Y-axis title (Sticky)
+            const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            yTitle.setAttribute('x', 15);
+            yTitle.setAttribute('y', height / 2);
+            yTitle.setAttribute('text-anchor', 'middle');
+            yTitle.setAttribute('font-size', '12px');
+            yTitle.setAttribute('fill', '#666');
+            yTitle.setAttribute('transform', `rotate(-90, 15, ${height / 2})`);
+            yTitle.textContent = 'Games Above .500';
+            yAxisGroup.appendChild(yTitle); // Append to sticky group
 
             // Draw vertical season separator lines
             Object.entries(seasonStartWeeks).forEach(([year, startWeek]) => {
@@ -4416,7 +4468,7 @@
                     line.setAttribute('stroke', '#1e3c72');
                     line.setAttribute('stroke-width', '2');
                     line.setAttribute('stroke-dasharray', '5,3');
-                    svg.appendChild(line);
+                    gridLayer.appendChild(line);
                 }
             });
 
@@ -4435,7 +4487,7 @@
                 label.setAttribute('fill', wl.isSeasonStart ? '#1e3c72' : '#666');
                 label.setAttribute('transform', `rotate(45, ${x}, ${height - margin.bottom + 15})`);
                 label.textContent = wl.isSeasonStart ? wl.year : wl.label;
-                svg.appendChild(label);
+                gridLayer.appendChild(label); // X-axis moves with scroll, so put on gridLayer
             });
 
             // Create tooltip
@@ -4453,8 +4505,10 @@
                     if (line.getAttribute('data-manager') === managerName) {
                         line.classList.add('highlighted');
                         line.classList.remove('faded');
-                        // Move to end of SVG to be on top of others
-                        line.parentNode.appendChild(line);
+                        // Move to end of chartLayer to be on top of others
+                        if (line.parentNode === chartLayer) {
+                            chartLayer.appendChild(line);
+                        }
                     } else {
                         line.classList.add('faded');
                         line.classList.remove('highlighted');
@@ -4520,7 +4574,7 @@
                     clipCircle.setAttribute('cy', logoY);
                     clipCircle.setAttribute('r', logoRadius);
                     clipPath.appendChild(clipCircle);
-                    svg.appendChild(clipPath);
+                    svg.appendChild(clipPath); // Defines must be in SVG, usually ok anywhere
 
                     const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                     bgCircle.setAttribute('cx', logoX);
@@ -4584,16 +4638,32 @@
                     // Always highlight on hover, even if something else is selected (transient view)
                     applyHighlight(manager.manager);
 
-                    // Show tooltip
+                    // Show tooltip with Logo
                     const sign = finalNetWins > 0 ? '+' : '';
-                    tooltip.innerHTML = `<strong>${manager.manager}</strong><br>Games > .500: ${sign}${finalNetWins}<br>Record: ${manager.wins}-${manager.losses}`;
+                    
+                    // Construct Logo HTML
+                    const logoHtml = manager.logo ? 
+                        `<img src="${manager.logo}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid ${color};">` :
+                        `<div style="width: 40px; height: 40px; border-radius: 50%; background: ${color}; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; border: 2px solid white;">${manager.manager.charAt(0)}</div>`;
+
+                    tooltip.innerHTML = `
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            ${logoHtml}
+                            <div>
+                                <div style="font-weight: bold; font-size: 1.1em;">${manager.manager}</div>
+                                <div style="margin-top: 2px; color: #ccc;">Record: ${manager.wins}-${manager.losses}</div>
+                                <div style="margin-top: 2px; color: ${finalNetWins >= 0 ? '#4cd137' : '#ff4757'}; font-weight: bold;">
+                                    ${sign}${finalNetWins} games
+                                </div>
+                            </div>
+                        </div>
+                    `;
                     tooltip.style.display = 'block';
                 });
 
                 // Tooltip follow mouse (FIXED for scrolling)
                 group.addEventListener('mousemove', (e) => {
                     const rect = container.getBoundingClientRect();
-                    // Add scrollLeft to account for horizontal scrolling
                     const scrollLeft = container.scrollLeft;
                     
                     tooltip.style.left = (e.clientX - rect.left + scrollLeft + 15) + 'px';
@@ -4616,19 +4686,8 @@
                 lineGroups.push(group);
             });
 
-            // Add lines to SVG
-            lineGroups.reverse().forEach(g => svg.appendChild(g));
-
-            // Y-axis title
-            const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            yTitle.setAttribute('x', 15);
-            yTitle.setAttribute('y', height / 2);
-            yTitle.setAttribute('text-anchor', 'middle');
-            yTitle.setAttribute('font-size', '12px');
-            yTitle.setAttribute('fill', '#666');
-            yTitle.setAttribute('transform', `rotate(-90, 15, ${height / 2})`);
-            yTitle.textContent = 'Games Above .500';
-            svg.appendChild(yTitle);
+            // Add lines to Chart Layer
+            lineGroups.reverse().forEach(g => chartLayer.appendChild(g));
 
             container.appendChild(svg);
         }
