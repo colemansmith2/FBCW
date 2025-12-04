@@ -1801,6 +1801,39 @@
             color: white;
         }
 
+        /* Win Percentage Chart Styles */
+        .winpct-chart {
+            font-family: inherit;
+        }
+
+        .winpct-chart .chart-line {
+            transition: opacity 0.2s;
+        }
+
+        .winpct-chart .chart-line.faded {
+            opacity: 0.15;
+        }
+
+        .winpct-chart .chart-line.highlighted path:first-child {
+            stroke-width: 4;
+        }
+
+        #winpct-chart {
+            position: relative;
+        }
+
+        #winpct-chart .chart-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            pointer-events: none;
+            z-index: 100;
+            white-space: nowrap;
+        }
+
         /* Mobile optimizations for chart */
         @media (max-width: 768px) {
             #season-chart-container>div:first-child {
@@ -2225,6 +2258,13 @@
             <div id="managers-error" class="error" style="display: none;"></div>
 
             <div class="manager-grid" id="manager-grid">
+            </div>
+
+            <!-- Win Percentage Over Time Chart -->
+            <div id="winpct-chart-container" style="display: none; margin-top: 2rem;">
+                <h3 style="color: #1e3c72; margin-bottom: 1rem;">📈 Win Percentage Over Time</h3>
+                <div id="winpct-chart" style="width: 100%; overflow-x: auto; background: white; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                </div>
             </div>
         </div>
     </div>
@@ -4085,12 +4125,448 @@
 
                 loadingEl.style.display = 'none';
 
+                // Load and render win percentage chart
+                await loadWinPctChart(allManagersData, managerLogos);
+
             } catch (error) {
                 console.error('Error loading manager profiles:', error);
                 loadingEl.style.display = 'none';
                 errorEl.textContent = `Error loading manager profiles: ${error.message}`;
                 errorEl.style.display = 'block';
             }
+        }
+
+        // ===== WIN PERCENTAGE OVER TIME CHART =====
+        async function loadWinPctChart(managers, managerLogos) {
+            const chartContainer = document.getElementById('winpct-chart-container');
+            const chartEl = document.getElementById('winpct-chart');
+
+            try {
+                // Load all scores for all seasons
+                const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+                const allScoresData = [];
+                const seasonStartWeeks = {}; // Track week index where each season starts
+
+                let globalWeekIndex = 0;
+
+                for (const year of seasons) {
+                    try {
+                        let response;
+                        if (year === 2025) {
+                            response = await fetch('data/current_season/all_scores.json');
+                        } else {
+                            response = await fetch(`data/historical/${year}/all_scores.json`);
+                        }
+
+                        if (response.ok) {
+                            const scores = await response.json();
+                            
+                            // Load standings to map team_key to manager
+                            let standingsResponse;
+                            if (year === 2025) {
+                                standingsResponse = await fetch('data/current_season/standings.json');
+                            } else {
+                                standingsResponse = await fetch(`data/historical/${year}/final_standings.json`);
+                            }
+                            
+                            let standings = [];
+                            if (standingsResponse.ok) {
+                                standings = await standingsResponse.json();
+                                standings = normalizeStandingsData(standings, year);
+                            }
+
+                            // Create team_key to manager mapping
+                            const teamToManager = {};
+                            standings.forEach(team => {
+                                teamToManager[team.team_key] = team.manager;
+                            });
+
+                            // Get unique weeks in this season
+                            const weeksInSeason = [...new Set(scores.map(s => s.week))].sort((a, b) => a - b);
+                            
+                            // Mark season start
+                            seasonStartWeeks[year] = globalWeekIndex;
+
+                            // Add scores with global week index
+                            weeksInSeason.forEach((week, weekIdx) => {
+                                const weekScores = scores.filter(s => s.week === week);
+                                weekScores.forEach(score => {
+                                    const manager = teamToManager[score.team_key];
+                                    if (manager) {
+                                        allScoresData.push({
+                                            manager: manager,
+                                            year: year,
+                                            week: week,
+                                            globalWeek: globalWeekIndex + weekIdx,
+                                            score: score.team_score,
+                                            opponentScore: score.opponent_score,
+                                            isWin: score.team_score > score.opponent_score,
+                                            isLoss: score.team_score < score.opponent_score
+                                        });
+                                    }
+                                });
+                            });
+
+                            globalWeekIndex += weeksInSeason.length;
+                        }
+                    } catch (e) {
+                        console.log(`Could not load ${year} scores for chart`);
+                    }
+                }
+
+                if (allScoresData.length === 0) {
+                    chartContainer.style.display = 'none';
+                    return;
+                }
+
+                // Process data for chart
+                const chartData = processWinPctData(allScoresData, managers, managerLogos, seasonStartWeeks);
+
+                chartContainer.style.display = 'block';
+
+                requestAnimationFrame(() => {
+                    renderWinPctChart(chartEl, chartData);
+                });
+
+            } catch (error) {
+                console.error('Error loading win pct chart:', error);
+                chartContainer.style.display = 'none';
+            }
+        }
+
+        function processWinPctData(scoresData, managers, managerLogos, seasonStartWeeks) {
+            // Group scores by manager and calculate cumulative win pct
+            const managerData = {};
+
+            // Sort by globalWeek
+            scoresData.sort((a, b) => a.globalWeek - b.globalWeek);
+
+            // Get all unique global weeks
+            const allWeeks = [...new Set(scoresData.map(s => s.globalWeek))].sort((a, b) => a - b);
+            
+            // Build week labels (with year markers)
+            const weekLabels = [];
+            let currentYear = null;
+            allWeeks.forEach(globalWeek => {
+                const weekData = scoresData.find(s => s.globalWeek === globalWeek);
+                if (weekData) {
+                    if (weekData.year !== currentYear) {
+                        currentYear = weekData.year;
+                        weekLabels.push({ globalWeek, label: `${weekData.year}`, isSeasonStart: true, year: weekData.year, week: weekData.week });
+                    } else {
+                        weekLabels.push({ globalWeek, label: `W${weekData.week}`, isSeasonStart: false, year: weekData.year, week: weekData.week });
+                    }
+                }
+            });
+
+            // Process each score
+            scoresData.forEach(score => {
+                if (!managerData[score.manager]) {
+                    managerData[score.manager] = {
+                        manager: score.manager,
+                        logo: managerLogos[score.manager] || '',
+                        wins: 0,
+                        losses: 0,
+                        data: [],
+                        lastGlobalWeek: 0
+                    };
+                }
+
+                const md = managerData[score.manager];
+                if (score.isWin) md.wins++;
+                if (score.isLoss) md.losses++;
+
+                const totalGames = md.wins + md.losses;
+                const winPct = totalGames > 0 ? md.wins / totalGames : 0.5;
+
+                md.data.push({
+                    globalWeek: score.globalWeek,
+                    winPct: winPct,
+                    wins: md.wins,
+                    losses: md.losses,
+                    year: score.year,
+                    week: score.week
+                });
+
+                md.lastGlobalWeek = Math.max(md.lastGlobalWeek, score.globalWeek);
+            });
+
+            // Convert to array and sort by final win pct
+            const managerArray = Object.values(managerData);
+            managerArray.sort((a, b) => {
+                const aFinal = a.data.length > 0 ? a.data[a.data.length - 1].winPct : 0;
+                const bFinal = b.data.length > 0 ? b.data[b.data.length - 1].winPct : 0;
+                return bFinal - aFinal;
+            });
+
+            return {
+                managers: managerArray,
+                weeks: allWeeks,
+                weekLabels: weekLabels,
+                seasonStartWeeks: seasonStartWeeks,
+                maxWeek: Math.max(...allWeeks)
+            };
+        }
+
+        function renderWinPctChart(container, chartData) {
+            container.innerHTML = '';
+
+            const { managers, weeks, weekLabels, seasonStartWeeks, maxWeek } = chartData;
+            
+            if (managers.length === 0 || weeks.length === 0) return;
+
+            const isMobile = window.innerWidth <= 768;
+            
+            // Chart dimensions
+            const containerWidth = container.clientWidth || 900;
+            const minChartWidth = isMobile ? Math.max(weeks.length * 20, 600) : Math.max(weeks.length * 12, 800);
+            
+            const margin = { top: 40, right: 80, bottom: 80, left: 60 };
+            const width = Math.max(minChartWidth, containerWidth - margin.left - margin.right);
+            const height = 450;
+
+            const minWeek = Math.min(...weeks);
+
+            // Scale functions - Y axis centered at 0.5
+            const xScale = (globalWeek) => margin.left + ((globalWeek - minWeek) / (maxWeek - minWeek || 1)) * width;
+            const yScale = (winPct) => margin.top + (1 - winPct) * (height - margin.top - margin.bottom);
+
+            // Generate colors for managers
+            const colors = generateTeamColors(managers.length);
+            const managerColorMap = {};
+            managers.forEach((m, i) => {
+                managerColorMap[m.manager] = colors[i];
+            });
+
+            // Create SVG
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.setAttribute('width', width + margin.left + margin.right);
+            svg.setAttribute('height', height);
+            svg.setAttribute('class', 'chart-svg winpct-chart');
+            svg.style.display = 'block';
+
+            // Draw horizontal grid lines
+            const gridLines = [0.3, 0.4, 0.5, 0.6, 0.7];
+            gridLines.forEach(pct => {
+                const y = yScale(pct);
+                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                line.setAttribute('x1', margin.left);
+                line.setAttribute('y1', y);
+                line.setAttribute('x2', margin.left + width);
+                line.setAttribute('y2', y);
+                
+                if (pct === 0.5) {
+                    // Bold line at .500
+                    line.setAttribute('stroke', '#000');
+                    line.setAttribute('stroke-width', '2');
+                } else {
+                    line.setAttribute('stroke', '#e0e0e0');
+                    line.setAttribute('stroke-width', '1');
+                    line.setAttribute('stroke-dasharray', '3,3');
+                }
+                svg.appendChild(line);
+
+                // Y-axis labels
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', margin.left - 10);
+                label.setAttribute('y', y + 4);
+                label.setAttribute('text-anchor', 'end');
+                label.setAttribute('font-size', '11px');
+                label.setAttribute('fill', pct === 0.5 ? '#000' : '#666');
+                label.setAttribute('font-weight', pct === 0.5 ? 'bold' : 'normal');
+                label.textContent = `.${(pct * 1000).toFixed(0).padStart(3, '0')}`;
+                svg.appendChild(label);
+            });
+
+            // Draw vertical season separator lines
+            Object.entries(seasonStartWeeks).forEach(([year, startWeek]) => {
+                if (startWeek > minWeek) {
+                    const x = xScale(startWeek);
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', x);
+                    line.setAttribute('y1', margin.top);
+                    line.setAttribute('x2', x);
+                    line.setAttribute('y2', height - margin.bottom);
+                    line.setAttribute('stroke', '#1e3c72');
+                    line.setAttribute('stroke-width', '2');
+                    line.setAttribute('stroke-dasharray', '5,3');
+                    svg.appendChild(line);
+                }
+            });
+
+            // Draw X-axis labels (weeks)
+            weekLabels.forEach((wl, idx) => {
+                // Only show some labels to avoid crowding
+                const showLabel = wl.isSeasonStart || idx % (isMobile ? 8 : 4) === 0;
+                if (!showLabel && !wl.isSeasonStart) return;
+
+                const x = xScale(wl.globalWeek);
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x);
+                label.setAttribute('y', height - margin.bottom + 15);
+                label.setAttribute('text-anchor', 'start');
+                label.setAttribute('font-size', wl.isSeasonStart ? '12px' : '10px');
+                label.setAttribute('font-weight', wl.isSeasonStart ? 'bold' : 'normal');
+                label.setAttribute('fill', wl.isSeasonStart ? '#1e3c72' : '#666');
+                label.setAttribute('transform', `rotate(45, ${x}, ${height - margin.bottom + 15})`);
+                label.textContent = wl.isSeasonStart ? wl.year : wl.label;
+                svg.appendChild(label);
+            });
+
+            // Create tooltip
+            const tooltip = document.createElement('div');
+            tooltip.className = 'chart-tooltip';
+            tooltip.style.display = 'none';
+            container.appendChild(tooltip);
+
+            // Draw lines for each manager
+            const lineGroups = [];
+            
+            managers.forEach((manager, idx) => {
+                if (manager.data.length < 2) return;
+
+                const color = managerColorMap[manager.manager];
+                const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+                group.setAttribute('class', 'chart-line');
+                group.setAttribute('data-manager', manager.manager);
+
+                // Build path
+                let pathD = '';
+                manager.data.forEach((point, i) => {
+                    const x = xScale(point.globalWeek);
+                    const y = yScale(point.winPct);
+                    pathD += (i === 0 ? 'M' : 'L') + `${x},${y} `;
+                });
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', pathD.trim());
+                path.setAttribute('fill', 'none');
+                path.setAttribute('stroke', color);
+                path.setAttribute('stroke-width', '2.5');
+                path.setAttribute('stroke-linejoin', 'round');
+                path.setAttribute('stroke-linecap', 'round');
+                group.appendChild(path);
+
+                // Invisible wider path for hover detection
+                const hoverPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                hoverPath.setAttribute('d', pathD.trim());
+                hoverPath.setAttribute('fill', 'none');
+                hoverPath.setAttribute('stroke', 'transparent');
+                hoverPath.setAttribute('stroke-width', '15');
+                hoverPath.style.cursor = 'pointer';
+                group.appendChild(hoverPath);
+
+                // Logo at the END of the line (manager's last data point)
+                const lastPoint = manager.data[manager.data.length - 1];
+                const logoX = xScale(lastPoint.globalWeek);
+                const logoY = yScale(lastPoint.winPct);
+                const logoRadius = 14;
+
+                if (manager.logo) {
+                    // Clip path for circular logo
+                    const clipId = `winpct-clip-${idx}`;
+                    const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+                    clipPath.setAttribute('id', clipId);
+                    const clipCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    clipCircle.setAttribute('cx', logoX);
+                    clipCircle.setAttribute('cy', logoY);
+                    clipCircle.setAttribute('r', logoRadius);
+                    clipPath.appendChild(clipCircle);
+                    svg.appendChild(clipPath);
+
+                    // White background circle
+                    const bgCircle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    bgCircle.setAttribute('cx', logoX);
+                    bgCircle.setAttribute('cy', logoY);
+                    bgCircle.setAttribute('r', logoRadius + 2);
+                    bgCircle.setAttribute('fill', 'white');
+                    bgCircle.setAttribute('stroke', color);
+                    bgCircle.setAttribute('stroke-width', '2');
+                    group.appendChild(bgCircle);
+
+                    // Logo image
+                    const logoImg = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+                    logoImg.setAttribute('x', logoX - logoRadius);
+                    logoImg.setAttribute('y', logoY - logoRadius);
+                    logoImg.setAttribute('width', logoRadius * 2);
+                    logoImg.setAttribute('height', logoRadius * 2);
+                    logoImg.setAttribute('href', manager.logo);
+                    logoImg.setAttribute('clip-path', `url(#${clipId})`);
+                    logoImg.setAttribute('preserveAspectRatio', 'xMidYMid slice');
+                    group.appendChild(logoImg);
+                } else {
+                    // Fallback circle with first letter
+                    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                    circle.setAttribute('cx', logoX);
+                    circle.setAttribute('cy', logoY);
+                    circle.setAttribute('r', logoRadius);
+                    circle.setAttribute('fill', color);
+                    circle.setAttribute('stroke', 'white');
+                    circle.setAttribute('stroke-width', '2');
+                    group.appendChild(circle);
+
+                    const initial = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                    initial.setAttribute('x', logoX);
+                    initial.setAttribute('y', logoY + 5);
+                    initial.setAttribute('text-anchor', 'middle');
+                    initial.setAttribute('fill', 'white');
+                    initial.setAttribute('font-size', '12px');
+                    initial.setAttribute('font-weight', 'bold');
+                    initial.textContent = manager.manager.charAt(0);
+                    group.appendChild(initial);
+                }
+
+                // Hover events
+                const finalWinPct = lastPoint.winPct;
+                
+                group.addEventListener('mouseenter', (e) => {
+                    // Highlight this line
+                    document.querySelectorAll('.winpct-chart .chart-line').forEach(line => {
+                        if (line === group) {
+                            line.classList.add('highlighted');
+                            line.classList.remove('faded');
+                        } else {
+                            line.classList.add('faded');
+                            line.classList.remove('highlighted');
+                        }
+                    });
+
+                    // Show tooltip
+                    tooltip.innerHTML = `<strong>${manager.manager}</strong><br>Win%: ${(finalWinPct * 100).toFixed(1)}%<br>Record: ${manager.wins}-${manager.losses}`;
+                    tooltip.style.display = 'block';
+                });
+
+                group.addEventListener('mousemove', (e) => {
+                    const rect = container.getBoundingClientRect();
+                    tooltip.style.left = (e.clientX - rect.left + 10) + 'px';
+                    tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+                });
+
+                group.addEventListener('mouseleave', () => {
+                    document.querySelectorAll('.winpct-chart .chart-line').forEach(line => {
+                        line.classList.remove('highlighted', 'faded');
+                    });
+                    tooltip.style.display = 'none';
+                });
+
+                lineGroups.push(group);
+            });
+
+            // Add lines to SVG (in reverse order so top lines are rendered last)
+            lineGroups.reverse().forEach(g => svg.appendChild(g));
+
+            // Y-axis title
+            const yTitle = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            yTitle.setAttribute('x', 15);
+            yTitle.setAttribute('y', height / 2);
+            yTitle.setAttribute('text-anchor', 'middle');
+            yTitle.setAttribute('font-size', '12px');
+            yTitle.setAttribute('fill', '#666');
+            yTitle.setAttribute('transform', `rotate(-90, 15, ${height / 2})`);
+            yTitle.textContent = 'Win Percentage';
+            svg.appendChild(yTitle);
+
+            container.appendChild(svg);
         }
 
         // ===== SHOW MANAGER DETAIL MODAL =====
