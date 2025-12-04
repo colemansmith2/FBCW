@@ -348,6 +348,11 @@
             align-items: center;
         }
 
+        .team-cell-content {
+            display: flex;
+            align-items: center;
+        }
+
         .player-award-cell {
             display: flex;
             align-items: center;
@@ -379,6 +384,7 @@
                 font-size: 0.65rem;
                 width: 100%;
                 table-layout: fixed;
+                border-collapse: collapse;
             }
 
             .standings-table th,
@@ -386,6 +392,15 @@
                 padding: 0.3rem 0.2rem;
                 white-space: nowrap;
                 overflow: hidden;
+                vertical-align: middle;
+            }
+
+            .standings-table tr {
+                border-bottom: 1px solid #ddd;
+            }
+
+            .standings-table td {
+                border-bottom: none; /* Remove individual cell borders, use row border instead */
             }
 
             /* Column widths for mobile */
@@ -416,12 +431,15 @@
             
             .standings-table td:nth-child(3) {
                 width: 32%;
-                display: flex;          /* Enables side-by-side layout */
-                align-items: center;    /* Vertically centers logo and text */
                 white-space: normal;    /* Allows text to wrap */
                 line-height: 1.1;       /* Tight line height */
                 overflow: visible;
                 padding-right: 2px;
+            }
+
+            .standings-table td:nth-child(3) .team-cell-content {
+                display: flex;          /* Enables side-by-side layout */
+                align-items: center;    /* Vertically centers logo and text */
             }
 
             /* Wins */
@@ -3476,7 +3494,7 @@
                     row.innerHTML = `
                         <td>${medal}${team.rank}</td>
                         <td><div class="manager-cell">${team.manager}</div></td>
-                        <td>${logo}${team.team_name}</td>
+                        <td><div class="team-cell-content">${logo}<span>${team.team_name}</span></div></td>
                         <td>${team.wins}</td>
                         <td>${team.losses}</td>
                         <td>${team.win_pct.toFixed(3)}</td>
