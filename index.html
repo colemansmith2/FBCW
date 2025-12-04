@@ -1190,16 +1190,6 @@
             border-bottom: 3px solid #f5d742;
         }
 
-        .card-team-logo {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            object-fit: contain;
-            background: white;
-            padding: 4px;
-            border: 2px solid #f5d742;
-        }
-
         .card-player-name {
             color: white;
             font-size: 1.4rem;
@@ -1211,16 +1201,21 @@
             text-align: center;
         }
 
-        .card-fantasy-points {
-            background: #f5d742;
-            color: #1e3c72;
-            font-size: 1.3rem;
+        .card-mlb-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px;
+        }
+
+        .card-mlb-team {
+            color: #f5d742;
+            font-size: 0.9rem;
             font-weight: bold;
-            padding: 0.3rem 0.6rem;
-            border-radius: 6px;
-            border: 2px solid #1e3c72;
-            min-width: 50px;
-            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .card-photo-section {
@@ -1230,7 +1225,7 @@
             display: flex;
             justify-content: center;
             align-items: flex-end;
-            min-height: 180px;
+            min-height: 200px;
         }
 
         .card-photo-frame {
@@ -1265,10 +1260,31 @@
             border: 2px solid #f5d742;
         }
 
-        .card-team-badge {
+        .card-team-logo-corner {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: contain;
+            background: white;
+            padding: 4px;
+            border: 2px solid #f5d742;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-stats-corner {
             position: absolute;
             top: 10px;
             right: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .card-team-badge {
             background: rgba(255, 255, 255, 0.95);
             padding: 0.3rem 0.6rem;
             border-radius: 4px;
@@ -1276,6 +1292,33 @@
             font-weight: bold;
             color: #1e3c72;
             border: 2px solid #1e3c72;
+        }
+
+        .card-fantasy-points {
+            background: #f5d742;
+            color: #1e3c72;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            border: 2px solid #1e3c72;
+            text-align: center;
+        }
+
+        .card-fantasy-points .pts-label {
+            font-size: 0.6rem;
+            font-weight: normal;
+            display: block;
+        }
+
+        .card-position-rank {
+            background: #1e3c72;
+            color: #f5d742;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 2px solid #f5d742;
         }
 
         .card-info-strip {
@@ -1475,9 +1518,9 @@
                 padding: 0.5rem 0.75rem;
             }
 
-            .card-team-logo {
-                width: 35px;
-                height: 35px;
+            .card-mlb-logo {
+                width: 30px;
+                height: 30px;
             }
 
             .card-player-name {
@@ -1485,12 +1528,16 @@
             }
 
             .card-fantasy-points {
-                font-size: 1rem;
-                padding: 0.2rem 0.4rem;
+                font-size: 0.9rem;
+                padding: 0.15rem 0.35rem;
+            }
+
+            .card-fantasy-points .pts-label {
+                font-size: 0.5rem;
             }
 
             .card-photo-section {
-                min-height: 140px;
+                min-height: 160px;
                 padding: 0.75rem;
             }
 
@@ -1505,6 +1552,21 @@
 
             .card-team-badge {
                 font-size: 0.65rem;
+                padding: 0.2rem 0.4rem;
+            }
+
+            .card-team-logo-corner {
+                width: 40px;
+                height: 40px;
+            }
+
+            .card-position-rank {
+                font-size: 0.65rem;
+                padding: 0.15rem 0.35rem;
+            }
+
+            .card-mlb-team {
+                font-size: 0.7rem;
             }
 
             .card-info-strip {
@@ -3169,6 +3231,57 @@
             updateSortIndicators();
         }
 
+        // MLB Team abbreviation to ESPN CDN logo mapping
+        function getMLBTeamLogo(mlbTeam) {
+            if (!mlbTeam) return null;
+            
+            // Map common team names/abbreviations to ESPN CDN abbreviations
+            const mlbTeamMap = {
+                // American League East
+                'BAL': 'bal', 'Orioles': 'bal', 'Baltimore': 'bal',
+                'BOS': 'bos', 'Red Sox': 'bos', 'Boston': 'bos',
+                'NYY': 'nyy', 'Yankees': 'nyy', 'NY Yankees': 'nyy',
+                'TB': 'tb', 'Rays': 'tb', 'Tampa Bay': 'tb', 'TBR': 'tb',
+                'TOR': 'tor', 'Blue Jays': 'tor', 'Toronto': 'tor',
+                // American League Central
+                'CWS': 'chw', 'White Sox': 'chw', 'Chi White Sox': 'chw', 'CHW': 'chw',
+                'CLE': 'cle', 'Guardians': 'cle', 'Cleveland': 'cle', 'Indians': 'cle',
+                'DET': 'det', 'Tigers': 'det', 'Detroit': 'det',
+                'KC': 'kc', 'Royals': 'kc', 'Kansas City': 'kc', 'KCR': 'kc',
+                'MIN': 'min', 'Twins': 'min', 'Minnesota': 'min',
+                // American League West
+                'HOU': 'hou', 'Astros': 'hou', 'Houston': 'hou',
+                'LAA': 'laa', 'Angels': 'laa', 'Los Angeles Angels': 'laa', 'LA Angels': 'laa',
+                'OAK': 'oak', 'Athletics': 'oak', 'Oakland': 'oak', "A's": 'oak',
+                'SEA': 'sea', 'Mariners': 'sea', 'Seattle': 'sea',
+                'TEX': 'tex', 'Rangers': 'tex', 'Texas': 'tex',
+                // National League East
+                'ATL': 'atl', 'Braves': 'atl', 'Atlanta': 'atl',
+                'MIA': 'mia', 'Marlins': 'mia', 'Miami': 'mia',
+                'NYM': 'nym', 'Mets': 'nym', 'NY Mets': 'nym',
+                'PHI': 'phi', 'Phillies': 'phi', 'Philadelphia': 'phi',
+                'WSH': 'wsh', 'Nationals': 'wsh', 'Washington': 'wsh', 'WAS': 'wsh',
+                // National League Central
+                'CHC': 'chc', 'Cubs': 'chc', 'Chi Cubs': 'chc',
+                'CIN': 'cin', 'Reds': 'cin', 'Cincinnati': 'cin',
+                'MIL': 'mil', 'Brewers': 'mil', 'Milwaukee': 'mil',
+                'PIT': 'pit', 'Pirates': 'pit', 'Pittsburgh': 'pit',
+                'STL': 'stl', 'Cardinals': 'stl', 'St. Louis': 'stl', 'St Louis': 'stl',
+                // National League West
+                'ARI': 'ari', 'Diamondbacks': 'ari', 'Arizona': 'ari', 'AZ': 'ari', 'D-backs': 'ari',
+                'COL': 'col', 'Rockies': 'col', 'Colorado': 'col',
+                'LAD': 'lad', 'Dodgers': 'lad', 'Los Angeles Dodgers': 'lad', 'LA Dodgers': 'lad',
+                'SD': 'sd', 'Padres': 'sd', 'San Diego': 'sd', 'SDP': 'sd',
+                'SF': 'sf', 'Giants': 'sf', 'San Francisco': 'sf', 'SFG': 'sf'
+            };
+            
+            const abbrev = mlbTeamMap[mlbTeam];
+            if (abbrev) {
+                return `https://a.espncdn.com/i/teamlogos/mlb/500/${abbrev}.png`;
+            }
+            return null;
+        }
+
         async function showPlayerDetail(playerName) {
             const modal = document.getElementById('player-modal');
             const headerEl = document.getElementById('player-modal-header');
@@ -3198,10 +3311,19 @@
             const placeholderLogo = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFlM2M3MiIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZiI+4pqB77iPPC90ZXh0Pjwvc3ZnPg==';
 
             const headshot = (player.headshot_url && player.headshot_url.trim()) ? player.headshot_url : placeholderHeadshot;
-            const teamLogo = player.team_logo || placeholderLogo;
+            const fantasyTeamLogo = player.team_logo || placeholderLogo;
+            const mlbLogo = getMLBTeamLogo(player.mlb_team) || placeholderLogo;
             const stats = player.stats || {};
             const isBatter = player.position_type === 'B';
             const fantasyPts = (player.fantasy_points || 0).toFixed(1);
+
+            // Calculate position rank for current season
+            const primaryPos = player.primary_position;
+            const samePos = allPlayersData
+                .filter(p => p.eligible_positions && p.eligible_positions.includes(primaryPos))
+                .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+            const posRank = samePos.findIndex(p => p.name === player.name) + 1;
+            const posRankDisplay = posRank > 0 ? `${primaryPos}${posRank}` : primaryPos;
 
             // Clear header (we're using body for the card)
             headerEl.innerHTML = '';
@@ -3210,13 +3332,20 @@
             let cardHTML = `
             <div class="baseball-card">
                 <div class="card-header">
-                    <img src="${teamLogo}" alt="" class="card-team-logo" onerror="this.src='${placeholderLogo}'">
+                    <img src="${mlbLogo}" alt="" class="card-mlb-logo" onerror="this.style.display='none'">
                     <div class="card-player-name">${player.name}</div>
-                    <div class="card-fantasy-points">${fantasyPts}</div>
                 </div>
                 
                 <div class="card-photo-section">
-                    <div class="card-team-badge">${player.mlb_team || 'FA'}</div>
+                    <img src="${fantasyTeamLogo}" alt="" class="card-team-logo-corner" onerror="this.style.display='none'">
+                    <div class="card-stats-corner">
+                        <div class="card-team-badge">${player.mlb_team || 'FA'}</div>
+                        <div class="card-fantasy-points">
+                            ${fantasyPts}
+                            <span class="pts-label">PTS</span>
+                        </div>
+                        <div class="card-position-rank">${posRankDisplay}</div>
+                    </div>
                     <div class="card-photo-frame">
                         <img src="${headshot}" alt="${player.name}" class="card-headshot" onerror="this.src='${placeholderHeadshot}'">
                         <div class="card-position-badge">${player.primary_position}</div>
