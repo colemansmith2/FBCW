@@ -413,9 +413,12 @@
             .standings-table th:nth-child(3),
             .standings-table td:nth-child(3) {
                 width: 28%;
-                white-space: normal; /* Changed from nowrap to normal */
-                line-height: 1.2;    /* Tighter line height for 2 lines */
-                overflow: visible;   /* Allow text to be seen */
+                display: flex;          /* Enables side-by-side layout */
+                align-items: center;    /* Vertically centers logo and text */
+                white-space: normal;    /* Allows text to wrap */
+                line-height: 1.1;       /* Tight line height */
+                overflow: visible;
+                padding-right: 2px;
             }
 
             /* Wins */
@@ -442,9 +445,11 @@
             /* Total Points */
 
             .standings-table .team-logo {
-                width: 16px;
-                height: 16px;
-                margin-right: 2px;
+                width: 24px;      /* Increased from 16px */
+                height: 24px;     /* Increased from 16px */
+                min-width: 24px;  /* Prevents squishing */
+                margin-right: 4px;
+                object-fit: contain;
             }
         }
 
@@ -3467,8 +3472,8 @@
 
                     row.innerHTML = `
                         <td>${medal}${team.rank}</td>
-                        <td><div class="manager-cell">${logo}${team.manager}</div></td>
-                        <td>${team.team_name}</td>
+                        <td><div class="manager-cell">${team.manager}</div></td>
+                        <td>${logo}${team.team_name}</td>
                         <td>${team.wins}</td>
                         <td>${team.losses}</td>
                         <td>${team.win_pct.toFixed(3)}</td>
