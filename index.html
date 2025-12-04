@@ -1913,6 +1913,10 @@
                 width: 16px; /* Smaller logo */
                 height: 16px;
             }
+
+            .week-text {
+                display: none;
+            }
         }
 
         footer {
@@ -5422,14 +5426,18 @@
                 const rowResultClass = isWin ? 'schedule-row-win' : 'schedule-row-loss';
                 
                 let rowClass = rowResultClass;
-                let weekLabel = `Week ${matchup.week}`;
+                
+                // CHANGED: Wrap "Week " in a span so we can hide it with CSS on mobile
+                const weekPrefix = '<span class="week-text">Week </span>';
+                let weekLabel = `${weekPrefix}${matchup.week}`;
+                
                 if (matchup.week >= playoffStart) {
                     rowClass += ' playoff-week';
                     if (matchup.week === maxWeek) {
                         rowClass += ' championship-week';
-                        weekLabel = `Week ${matchup.week} 🏆`;
+                        weekLabel = `${weekPrefix}${matchup.week} 🏆`;
                     } else {
-                        weekLabel = `Week ${matchup.week} ⭐`;
+                        weekLabel = `${weekPrefix}${matchup.week} ⭐`;
                     }
                 }
 
