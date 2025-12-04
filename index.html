@@ -131,30 +131,41 @@
                 background: rgba(255, 255, 255, 0.15);
             }
 
-            /* Zone positions based on banner layout - adjusted right */
+            /* Zone positions based on new banner layout */
+            /* Logo area covers the left box */
             .zone-logo {
                 left: 0;
-                width: 36%;
+                width: 32%; 
             }
 
+            /* Icon 1: Calendar */
             .zone-seasons {
-                left: 36%;
-                width: 11%;
+                left: 32%;
+                width: 11.3%;
             }
 
+            /* Icon 2: Ribbon */
             .zone-awards {
-                left: 47%;
-                width: 11%;
+                left: 43.3%;
+                width: 11.3%;
+            }
+            
+            /* Icon 3: Trophy (NEW) */
+            .zone-champions {
+                left: 54.6%;
+                width: 11.3%;
             }
 
+            /* Icon 4: Gauge */
             .zone-scoring {
-                left: 58%;
-                width: 11%;
+                left: 65.9%;
+                width: 11.3%;
             }
 
+            /* Icon 5: Head */
             .zone-managers {
-                left: 69%;
-                width: 11%;
+                left: 77.2%;
+                width: 11.3%;
             }
 
             /* Hide desktop nav on mobile */
@@ -1878,18 +1889,23 @@
     <header class="mobile-header">
         <div class="mobile-header-container">
             <img src="mobile_header.png" alt="Fantasy Baseball Civil War" class="mobile-header-banner">
-            <!-- Clickable zones over the banner -->
             <a href="https://baseball.fantasysports.yahoo.com/league/fantasybaseballcivilwar/2025" target="_blank"
                 class="mobile-zone zone-logo" title="Go to Yahoo Fantasy League"></a>
+            
             <a href="#" class="mobile-zone zone-seasons" onclick="showSection('standings'); return false;"
                 title="Seasons"></a>
+            
             <a href="#" class="mobile-zone zone-awards" onclick="showSection('awards'); return false;"
                 title="Awards"></a>
+
+            <a href="#" class="mobile-zone zone-champions" onclick="showSection('champions'); return false;"
+                title="Hall of Champions"></a>
+
             <a href="#" class="mobile-zone zone-scoring" onclick="showSection('scoring'); return false;"
                 title="Player Scoring"></a>
+            
             <a href="#" class="mobile-zone zone-managers" onclick="showSection('managers'); return false;"
                 title="Manager Profiles"></a>
-            <!-- Icons 5 and 6 are placeholders - no links -->
         </div>
     </header>
 
