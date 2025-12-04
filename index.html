@@ -1352,10 +1352,6 @@
             border-bottom: 1px solid #eee;
         }
 
-        .champion-schedule-table tr:hover {
-            background: #f8f9fa;
-        }
-
         .champion-schedule-table .result-win {
             color: #28a745;
             font-weight: bold;
@@ -1366,12 +1362,46 @@
             font-weight: bold;
         }
 
+        .champion-schedule-table .schedule-row-win {
+            background: rgba(40, 167, 69, 0.08);
+        }
+
+        .champion-schedule-table .schedule-row-win:hover {
+            background: rgba(40, 167, 69, 0.15);
+        }
+
+        .champion-schedule-table .schedule-row-loss {
+            background: rgba(220, 53, 69, 0.08);
+        }
+
+        .champion-schedule-table .schedule-row-loss:hover {
+            background: rgba(220, 53, 69, 0.15);
+        }
+
         .champion-schedule-table .playoff-week {
-            background: linear-gradient(90deg, rgba(255, 215, 0, 0.1), transparent);
+            border-left: 3px solid #ffd700;
         }
 
         .champion-schedule-table .championship-week {
-            background: linear-gradient(90deg, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.1));
+            border-left: 3px solid #ffd700;
+            background: rgba(255, 215, 0, 0.15) !important;
+        }
+
+        .champion-schedule-table .championship-week:hover {
+            background: rgba(255, 215, 0, 0.25) !important;
+        }
+
+        .schedule-opponent {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .schedule-team-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
         }
 
         .roster-grid {
@@ -4536,7 +4566,7 @@
                 renderChampionStats(champion, scores, standings);
 
                 // Render schedule
-                renderChampionSchedule(champion, scores, standings);
+                renderChampionSchedule(champion, scores, standings, teams);
 
                 // Render roster
                 renderChampionRoster(champion, playerStats);
@@ -4693,14 +4723,18 @@
             document.getElementById('champion-best-week').textContent = bestWeek.toFixed(1);
         }
 
-        function renderChampionSchedule(champion, scores, standings) {
+        function renderChampionSchedule(champion, scores, standings, teams) {
             const tbody = document.getElementById('champion-schedule');
             const championScores = scores.filter(s => s.team_key === champion.team_key);
 
-            // Create team key to name mapping
-            const teamKeyToName = {};
+            // Create team key to name and logo mapping
+            const teamKeyToInfo = {};
             standings.forEach(team => {
-                teamKeyToName[team.team_key] = team.team_name;
+                const teamData = teams.find(t => t.team_key === team.team_key);
+                teamKeyToInfo[team.team_key] = {
+                    name: team.team_name,
+                    logo: teamData?.team_logo || ''
+                };
             });
 
             // Sort by week
@@ -4710,18 +4744,22 @@
             const maxWeek = Math.max(...championScores.map(s => s.week));
             const playoffStart = maxWeek - 2; // Assume 3 week playoffs
 
+            const placeholderLogo = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjwvc3ZnPg==';
+
             tbody.innerHTML = championScores.map(matchup => {
-                const opponentName = teamKeyToName[matchup.opponent_key] || 'Unknown';
+                const opponentInfo = teamKeyToInfo[matchup.opponent_key] || { name: 'Unknown', logo: '' };
+                const opponentLogo = opponentInfo.logo || placeholderLogo;
                 const isWin = matchup.team_score > matchup.opponent_score;
                 const result = isWin ? 'W' : 'L';
                 const resultClass = isWin ? 'result-win' : 'result-loss';
+                const rowResultClass = isWin ? 'schedule-row-win' : 'schedule-row-loss';
                 
-                let rowClass = '';
+                let rowClass = rowResultClass;
                 let weekLabel = `Week ${matchup.week}`;
                 if (matchup.week >= playoffStart) {
-                    rowClass = 'playoff-week';
+                    rowClass += ' playoff-week';
                     if (matchup.week === maxWeek) {
-                        rowClass = 'championship-week';
+                        rowClass += ' championship-week';
                         weekLabel = `Week ${matchup.week} 🏆`;
                     } else {
                         weekLabel = `Week ${matchup.week} ⭐`;
@@ -4731,7 +4769,12 @@
                 return `
                     <tr class="${rowClass}">
                         <td>${weekLabel}</td>
-                        <td>${opponentName}</td>
+                        <td>
+                            <div class="schedule-opponent">
+                                <img src="${opponentLogo}" alt="" class="schedule-team-logo" onerror="this.style.display='none'">
+                                <span>${opponentInfo.name}</span>
+                            </div>
+                        </td>
                         <td>${matchup.team_score.toFixed(1)} - ${matchup.opponent_score.toFixed(1)}</td>
                         <td class="${resultClass}">${result}</td>
                     </tr>
