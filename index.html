@@ -521,7 +521,7 @@
         }
 
         .standings-panel .table-wrapper {
-            margin-top: 0;
+            margin: 0;
         }
 
         .draft-panel {
@@ -543,7 +543,6 @@
             overflow-y: auto;
             border: 1px solid #ddd;
             border-radius: 8px;
-            margin-top: 1rem;
         }
 
         .draft-table {
@@ -556,6 +555,20 @@
             position: sticky;
             top: 0;
             z-index: 1;
+        }
+
+        /* Round separator row */
+        .draft-round-separator {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .draft-round-separator td {
+            padding: 0.4rem !important;
+            font-size: 0.8rem;
+            border-bottom: none !important;
         }
 
         .draft-table th {
@@ -4541,8 +4554,20 @@
                     positionRanks = calculateDraftPositionRanks(statsData);
                 }
 
-                // Render draft table
-                draftData.forEach(pick => {
+                // Render draft table with round separators
+                let currentRound = 0;
+                draftData.forEach((pick, index) => {
+                    const pickRound = pick.round || 0;
+                    
+                    // Add round separator when round changes
+                    if (pickRound !== currentRound) {
+                        currentRound = pickRound;
+                        const separatorRow = document.createElement('tr');
+                        separatorRow.className = 'draft-round-separator';
+                        separatorRow.innerHTML = `<td colspan="6">Round ${currentRound}</td>`;
+                        draftBody.appendChild(separatorRow);
+                    }
+                    
                     const row = document.createElement('tr');
                     
                     // Get player stats - try player_key first, then fall back to name match
