@@ -1442,6 +1442,22 @@
             width: 16px;
             height: 16px;
             object-fit: contain;
+            background: white;
+            border-radius: 50%;
+            padding: 2px;
+        }
+
+        .player-mlb-fa {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            font-size: 0.5rem;
+            font-weight: bold;
+            color: #1e3c72;
         }
 
         .player-team-cell {
@@ -1525,6 +1541,24 @@
             width: 40px;
             height: 40px;
             object-fit: contain;
+            background: white;
+            border-radius: 50%;
+            padding: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-mlb-fa {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #1e3c72;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
         }
 
         .card-mlb-team {
@@ -3715,7 +3749,11 @@
 
                 // Get MLB logo URL
                 const mlbLogoUrl = getMLBTeamLogo(player.mlb_team);
-                const mlbLogoHtml = mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">` : '';
+                const hasMlbTeam = player.mlb_team && player.mlb_team.trim() && player.mlb_team.trim() !== 'FA' && mlbLogoUrl;
+                const mlbLogoHtml = hasMlbTeam 
+                    ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.outerHTML='<span class=\\'player-mlb-fa\\'>FA</span>'">`
+                    : '<span class="player-mlb-fa">FA</span>';
+                const mlbTeamDisplay = player.mlb_team && player.mlb_team.trim() ? player.mlb_team : 'FA';
 
                 // Common cells (Rank, Name, Team, Pos)
                 let rowHTML = `
@@ -3726,7 +3764,7 @@
                                 <img src="${headshot}" alt="" class="player-headshot" onerror="this.src='${placeholderImg}'">
                                 <div>
                                     <div class="player-name">${player.name}</div>
-                                    <div class="player-mlb-team">${mlbLogoHtml}${player.mlb_team || ''}</div>
+                                    <div class="player-mlb-team">${mlbLogoHtml}${mlbTeamDisplay}</div>
                                 </div>
                             </div>
                         </td>
@@ -3910,7 +3948,11 @@
 
             const headshot = (player.headshot_url && player.headshot_url.trim()) ? player.headshot_url : placeholderHeadshot;
             const fantasyTeamLogo = player.team_logo || placeholderLogo;
-            const mlbLogo = getMLBTeamLogo(player.mlb_team) || placeholderLogo;
+            const mlbLogoUrl = getMLBTeamLogo(player.mlb_team);
+            const hasMlbTeam = player.mlb_team && player.mlb_team.trim() && player.mlb_team.trim() !== 'FA' && mlbLogoUrl;
+            const mlbLogoHtml = hasMlbTeam 
+                ? `<img src="${mlbLogoUrl}" alt="" class="card-mlb-logo" onerror="this.outerHTML='<div class=\\'card-mlb-fa\\'>FA</div>'">`
+                : `<div class="card-mlb-fa">FA</div>`;
             const stats = getPlayerStats(player);
             const isBatter = player.position_type === 'B';
             const fantasyPts = getPlayerFantasyPoints(player).toFixed(1);
@@ -3930,7 +3972,7 @@
             let cardHTML = `
             <div class="baseball-card">
                 <div class="card-header">
-                    <img src="${mlbLogo}" alt="" class="card-mlb-logo" onerror="this.style.display='none'">
+                    ${mlbLogoHtml}
                     <div class="card-player-name">${player.name}</div>
                 </div>
                 
