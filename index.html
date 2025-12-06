@@ -3749,9 +3749,9 @@
                 const games = stats.G || 0;
                 const ppg = games > 0 ? (fantasyPoints / games).toFixed(2) : '-';
 
-                // Get MLB logo URL
+                // Get MLB logo URL and normalize team display
                 const mlbLogoUrl = getMLBTeamLogo(player.mlb_team);
-                const mlbTeamText = player.mlb_team && player.mlb_team.trim() ? player.mlb_team.trim() : 'FA';
+                const mlbTeamText = formatMLBTeamDisplay(player.mlb_team);
                 const hasMlbLogo = mlbTeamText !== 'FA' && mlbLogoUrl;
                 const mlbLogoHtml = hasMlbLogo 
                     ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">`
@@ -3840,6 +3840,33 @@
         }
 
         // MLB Team abbreviation to ESPN CDN logo mapping
+        // Helper function to normalize and format MLB team display
+        function formatMLBTeamDisplay(mlbTeam) {
+            if (!mlbTeam || !mlbTeam.trim()) return 'FA';
+            
+            // Standard abbreviation mapping for display normalization
+            const displayMap = {
+                // Teams with alternate abbreviations that should be normalized
+                'TBR': 'TB', 'TAM': 'TB',
+                'CHW': 'CWS',
+                'KCR': 'KC',
+                'ANA': 'LAA',
+                'FLA': 'MIA',
+                'WAS': 'WSH', 'WSN': 'WSH',
+                'AZ': 'ARI',
+                'SDP': 'SD',
+                'SFG': 'SF'
+            };
+            
+            // Split by comma for multi-team players
+            const teams = mlbTeam.split(',').map(t => {
+                const trimmed = t.trim().toUpperCase();
+                return displayMap[trimmed] || trimmed;
+            });
+            
+            return teams.join(', ');
+        }
+
         function getMLBTeamLogo(mlbTeam, playerPosition) {
             if (!mlbTeam) return null;
             
@@ -3960,7 +3987,7 @@
 
             const headshot = (player.headshot_url && player.headshot_url.trim()) ? player.headshot_url : placeholderHeadshot;
             const mlbLogoUrl = getMLBTeamLogo(player.mlb_team);
-            const mlbTeamText = player.mlb_team && player.mlb_team.trim() ? player.mlb_team.trim() : 'FA';
+            const mlbTeamText = formatMLBTeamDisplay(player.mlb_team);
             const hasMlbLogo = mlbTeamText !== 'FA' && mlbLogoUrl;
             const mlbLogoHtml = hasMlbLogo 
                 ? `<img src="${mlbLogoUrl}" alt="" class="card-mlb-logo" onerror="this.outerHTML='<div class=\\'card-mlb-fa\\'>FA</div>'">`
