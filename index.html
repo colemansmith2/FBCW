@@ -3751,11 +3751,11 @@
 
                 // Get MLB logo URL
                 const mlbLogoUrl = getMLBTeamLogo(player.mlb_team);
-                const hasMlbTeam = player.mlb_team && player.mlb_team.trim() && player.mlb_team.trim() !== 'FA' && mlbLogoUrl;
-                const mlbLogoHtml = hasMlbTeam 
+                const mlbTeamText = player.mlb_team && player.mlb_team.trim() ? player.mlb_team.trim() : 'FA';
+                const hasMlbLogo = mlbTeamText !== 'FA' && mlbLogoUrl;
+                const mlbLogoHtml = hasMlbLogo 
                     ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">`
                     : '';
-                const mlbTeamDisplay = player.mlb_team && player.mlb_team.trim() ? player.mlb_team : 'FA';
                 
                 // Check if player is on a fantasy team
                 const hasFantasyTeam = player.team_key && player.team_key.trim() && player.team_name && player.team_name !== 'Free Agent' && player.team_name !== 'Drafted (Dropped)' && player.team_name !== 'Previously Rostered';
@@ -3773,7 +3773,7 @@
                                 <img src="${headshot}" alt="" class="player-headshot" onerror="this.src='${placeholderImg}'">
                                 <div>
                                     <div class="player-name">${player.name}</div>
-                                    <div class="player-mlb-team">${mlbLogoHtml}${mlbTeamDisplay}</div>
+                                    <div class="player-mlb-team">${mlbLogoHtml}${mlbTeamText}</div>
                                 </div>
                             </div>
                         </td>
@@ -3843,8 +3843,12 @@
         function getMLBTeamLogo(mlbTeam, playerPosition) {
             if (!mlbTeam) return null;
             
-            // Normalize input
-            const team = mlbTeam.trim();
+            // Normalize input - for multi-team players (e.g., "ARI, SEA"), use the last team
+            let team = mlbTeam.trim();
+            if (team.includes(',')) {
+                const teams = team.split(',').map(t => t.trim());
+                team = teams[teams.length - 1]; // Use last/current team
+            }
             
             // Direct abbreviation mappings (most reliable)
             // Covers both Fangraphs and Yahoo abbreviation styles
@@ -3854,7 +3858,7 @@
                 // American League Central  
                 'CWS': 'chw', 'CHW': 'chw', 'CLE': 'cle', 'DET': 'det', 'KC': 'kc', 'KCR': 'kc', 'MIN': 'min',
                 // American League West
-                'HOU': 'hou', 'LAA': 'laa', 'ANA': 'laa', 'OAK': 'oak', 'SEA': 'sea', 'TEX': 'tex',
+                'HOU': 'hou', 'LAA': 'laa', 'ANA': 'laa', 'OAK': 'oak', 'ATH': 'oak', 'SEA': 'sea', 'TEX': 'tex',
                 // National League East
                 'ATL': 'atl', 'MIA': 'mia', 'FLA': 'mia', 'NYM': 'nym', 'PHI': 'phi', 'WSH': 'wsh', 'WAS': 'wsh', 'WSN': 'wsh',
                 // National League Central
@@ -3956,8 +3960,9 @@
 
             const headshot = (player.headshot_url && player.headshot_url.trim()) ? player.headshot_url : placeholderHeadshot;
             const mlbLogoUrl = getMLBTeamLogo(player.mlb_team);
-            const hasMlbTeam = player.mlb_team && player.mlb_team.trim() && player.mlb_team.trim() !== 'FA' && mlbLogoUrl;
-            const mlbLogoHtml = hasMlbTeam 
+            const mlbTeamText = player.mlb_team && player.mlb_team.trim() ? player.mlb_team.trim() : 'FA';
+            const hasMlbLogo = mlbTeamText !== 'FA' && mlbLogoUrl;
+            const mlbLogoHtml = hasMlbLogo 
                 ? `<img src="${mlbLogoUrl}" alt="" class="card-mlb-logo" onerror="this.outerHTML='<div class=\\'card-mlb-fa\\'>FA</div>'">`
                 : `<div class="card-mlb-fa">FA</div>`;
             
@@ -3993,7 +3998,7 @@
                 <div class="card-photo-section">
                     ${fantasyTeamLogoHtml}
                     <div class="card-stats-corner">
-                        <div class="card-team-badge">${player.mlb_team || 'FA'}</div>
+                        <div class="card-team-badge">${mlbTeamText}</div>
                         <div class="card-fantasy-points">
                             ${fantasyPts}
                             <span class="pts-label">PTS</span>
