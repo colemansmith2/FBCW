@@ -4596,7 +4596,7 @@
                         posRank = positionRanks[playerData.player_key];
                     }
                     posRank = posRank || '-';
-                    const posRankClass = getRankClass(posRank);
+                    const posRankClass = getRankClass(posRank, primaryPos);
                     
                     // Team logo from draft
                     const teamLogo = teamLogos[pick.team_key] || '';
@@ -4670,13 +4670,33 @@
             return ranks;
         }
 
-        function getRankClass(rank) {
+        function getRankClass(rank, position) {
             if (rank === '-' || !rank) return '';
             const numRank = parseInt(rank);
-            if (numRank <= 10) return 'top-10';
-            if (numRank <= 25) return 'top-25';
-            if (numRank <= 50) return 'top-50';
-            return '';
+            const pos = (position || '').toUpperCase();
+            
+            // Pitcher positions
+            const isPitcher = ['SP', 'RP', 'P'].includes(pos);
+            
+            // Outfield positions
+            const isOutfield = ['OF', 'LF', 'CF', 'RF'].includes(pos);
+            
+            if (isPitcher) {
+                // Pitchers: Green = top 12, Yellow = top 60, Red = below
+                if (numRank <= 12) return 'top-10';
+                if (numRank <= 60) return 'top-25';
+                return 'top-50';
+            } else if (isOutfield) {
+                // Outfielders: Green = top 9, Yellow = top 25, Red = below
+                if (numRank <= 9) return 'top-10';
+                if (numRank <= 25) return 'top-25';
+                return 'top-50';
+            } else {
+                // All other hitters: Green = top 3, Yellow = top 10, Red = below
+                if (numRank <= 3) return 'top-10';
+                if (numRank <= 10) return 'top-25';
+                return 'top-50';
+            }
         }
 
         // ===== SEASON CHART FUNCTIONS =====
