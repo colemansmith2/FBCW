@@ -2972,6 +2972,44 @@
                             </table>
                         </div>
                     </div>
+
+                    <div class="award-section">
+                        <h3><span class="award-icon">💎</span> Diamond in the Rough Award (Best Draft Value)</h3>
+                        <div class="award-table-wrapper">
+                            <table class="award-table player-award-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Manager</th>
+                                        <th>Player</th>
+                                        <th>Pick</th>
+                                        <th>+/-</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="diamond-awards">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="award-section">
+                        <h3><span class="award-icon">❌</span> Bust of the Year Award (Worst Draft Value)</h3>
+                        <div class="award-table-wrapper">
+                            <table class="award-table player-award-table">
+                                <thead>
+                                    <tr>
+                                        <th>Year</th>
+                                        <th>Manager</th>
+                                        <th>Player</th>
+                                        <th>Pick</th>
+                                        <th>+/-</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bust-awards">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -5393,24 +5431,57 @@
             const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
             const seasonData = {};
 
-            // Load all seasons data including player stats
+            // Load keepers data
+            let allKeepers = {};
+            try {
+                const keepersResponse = await fetch('data/keepers.json');
+                if (keepersResponse.ok) {
+                    allKeepers = await keepersResponse.json();
+                }
+            } catch (e) {
+                console.log('No keepers data available');
+            }
+
+            // Load all seasons data including player stats and draft
             for (const year of seasons) {
                 try {
-                    let standingsResponse, playerStatsResponse;
+                    let standingsResponse, playerStatsResponse, draftResponse, teamsResponse;
 
                     if (year === 2025) {
                         standingsResponse = await fetch('data/current_season/standings.json');
                         playerStatsResponse = await fetch('data/current_season/player_stats.json');
+                        draftResponse = await fetch('data/current_season/draft.json');
+                        teamsResponse = await fetch('data/current_season/teams.json');
                     } else {
                         standingsResponse = await fetch(`data/historical/${year}/final_standings.json`);
                         playerStatsResponse = await fetch(`data/historical/${year}/player_stats.json`);
+                        draftResponse = await fetch(`data/historical/${year}/draft.json`);
+                        teamsResponse = await fetch(`data/historical/${year}/teams.json`);
                     }
 
                     if (standingsResponse.ok) {
                         const standings = await standingsResponse.json();
                         const normalizedStandings = normalizeStandingsData(standings, year);
                         const playerStats = playerStatsResponse.ok ? await playerStatsResponse.json() : [];
-                        seasonData[year] = { standings: normalizedStandings, playerStats: playerStats };
+                        const draftData = draftResponse && draftResponse.ok ? await draftResponse.json() : [];
+                        const teams = teamsResponse && teamsResponse.ok ? await teamsResponse.json() : [];
+                        
+                        // Create team info map
+                        const teamInfoMap = {};
+                        teams.forEach(team => {
+                            teamInfoMap[team.team_key] = {
+                                name: team.team_name,
+                                manager: team.manager,
+                                logo: team.team_logo
+                            };
+                        });
+                        
+                        seasonData[year] = { 
+                            standings: normalizedStandings, 
+                            playerStats: playerStats,
+                            draftData: draftData,
+                            teamInfo: teamInfoMap
+                        };
                     }
                 } catch (e) {
                     console.error(`Error loading ${year}:`, e);
@@ -5487,6 +5558,97 @@
                     const normalizedManager = normalizeManagerName(topPitcher.manager, parseInt(year), topPitcher.team_name, teamKey);
                     if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
                     managerAwards[normalizedManager].degromAward = (managerAwards[normalizedManager].degromAward || 0) + 1;
+                }
+
+                // Diamond in the Rough & Bust of the Year Awards
+                const draftData = data.draftData || [];
+                const teamInfo = data.teamInfo || {};
+                const keepersForYear = allKeepers[year.toString()] || {};
+                
+                // Create lowercase keeper lookup
+                const keepersLower = {};
+                for (const name of Object.keys(keepersForYear)) {
+                    keepersLower[name.toLowerCase()] = true;
+                }
+                
+                if (draftData.length > 0 && playerStats.length > 0) {
+                    // Create player stats lookup by name (lowercase)
+                    const playerStatsMap = {};
+                    playerStats.forEach(p => {
+                        if (p.name) {
+                            playerStatsMap[p.name.toLowerCase()] = p;
+                        }
+                    });
+                    
+                    // Sort players by fantasy points to get expected value by rank
+                    const sortedByPoints = [...playerStats]
+                        .filter(p => p.fantasy_points && p.fantasy_points > 0)
+                        .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+                    
+                    // Create expected points by overall rank (pick number)
+                    const expectedPointsByPick = {};
+                    sortedByPoints.forEach((p, idx) => {
+                        expectedPointsByPick[idx + 1] = p.fantasy_points || 0;
+                    });
+                    
+                    // Calculate value over expected for each draft pick (excluding keepers)
+                    const draftValues = [];
+                    draftData.forEach(pick => {
+                        const playerName = pick.player_name || '';
+                        const pickNum = pick.pick || 0;
+                        
+                        // Skip keepers
+                        if (keepersLower[playerName.toLowerCase()]) {
+                            return;
+                        }
+                        
+                        // Get actual points
+                        const playerData = playerStatsMap[playerName.toLowerCase()];
+                        const actualPoints = playerData ? (playerData.fantasy_points || 0) : 0;
+                        
+                        // Get expected points based on pick position
+                        const expectedPoints = expectedPointsByPick[pickNum] || 0;
+                        
+                        // Calculate value over expected
+                        const valueOverExpected = actualPoints - expectedPoints;
+                        
+                        // Get team info
+                        const team = teamInfo[pick.team_key] || {};
+                        
+                        draftValues.push({
+                            player_name: playerName,
+                            pick: pickNum,
+                            round: pick.round || Math.ceil(pickNum / 12),
+                            valueOverExpected: valueOverExpected,
+                            manager: team.manager || '',
+                            team_key: pick.team_key
+                        });
+                    });
+                    
+                    // Find best value (Diamond) - highest positive value over expected
+                    if (draftValues.length > 0) {
+                        const bestValue = draftValues.reduce((best, pick) =>
+                            pick.valueOverExpected > best.valueOverExpected ? pick : best
+                        );
+                        if (bestValue.valueOverExpected > 0 && bestValue.manager) {
+                            const normalizedManager = normalizeManagerName(bestValue.manager, parseInt(year), null, bestValue.team_key);
+                            if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
+                            managerAwards[normalizedManager].diamondAward = (managerAwards[normalizedManager].diamondAward || 0) + 1;
+                        }
+                        
+                        // Find worst value (Bust) - only from first 5 rounds
+                        const earlyPicks = draftValues.filter(p => p.round <= 5);
+                        if (earlyPicks.length > 0) {
+                            const worstValue = earlyPicks.reduce((worst, pick) =>
+                                pick.valueOverExpected < worst.valueOverExpected ? pick : worst
+                            );
+                            if (worstValue.valueOverExpected < 0 && worstValue.manager) {
+                                const normalizedManager = normalizeManagerName(worstValue.manager, parseInt(year), null, worstValue.team_key);
+                                if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
+                                managerAwards[normalizedManager].bustAward = (managerAwards[normalizedManager].bustAward || 0) + 1;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -5584,8 +5746,10 @@
                     if (awards.scoringChamp) awardsList.push({ type: 'emoji', emoji: '🏅', count: awards.scoringChamp });
                     if (awards.troutAward) awardsList.push({ type: 'image', src: 'attached_assets/trout_award_1764648146923.png', count: awards.troutAward, alt: 'Mike Trout Award' });
                     if (awards.degromAward) awardsList.push({ type: 'image', src: 'attached_assets/degom_award_1764648146918.png', count: awards.degromAward, alt: 'Jacob deGrom Award' });
+                    if (awards.diamondAward) awardsList.push({ type: 'emoji', emoji: '💎', count: awards.diamondAward });
                     if (awards.garbage) awardsList.push({ type: 'emoji', emoji: '🗑️', count: awards.garbage });
                     if (awards.clown) awardsList.push({ type: 'image', src: 'clown_award.png', count: awards.clown, alt: 'Clown Award' });
+                    if (awards.bustAward) awardsList.push({ type: 'emoji', emoji: '❌', count: awards.bustAward });
 
                     if (awardsList.length > 0) {
                         awardsHTML = '<div class="awards-row">';
@@ -6325,8 +6489,10 @@
             if (awards.scoringChamp) awardsList.push({ type: 'emoji', emoji: '🏅', count: awards.scoringChamp });
             if (awards.troutAward) awardsList.push({ type: 'image', src: 'attached_assets/trout_award_1764648146923.png', count: awards.troutAward, alt: 'Mike Trout Award' });
             if (awards.degromAward) awardsList.push({ type: 'image', src: 'attached_assets/degom_award_1764648146918.png', count: awards.degromAward, alt: 'Jacob deGrom Award' });
+            if (awards.diamondAward) awardsList.push({ type: 'emoji', emoji: '💎', count: awards.diamondAward });
             if (awards.garbage) awardsList.push({ type: 'emoji', emoji: '🗑️', count: awards.garbage });
             if (awards.clown) awardsList.push({ type: 'image', src: 'clown_award.png', count: awards.clown, alt: 'Clown Award' });
+            if (awards.bustAward) awardsList.push({ type: 'emoji', emoji: '❌', count: awards.bustAward });
 
             if (awardsList.length > 0) {
                 modalAwardsHTML = '<div class="awards-row">';
@@ -6977,16 +7143,18 @@
 
                 for (const year of seasons) {
                     try {
-                        let standingsResponse, teamsResponse, playerStatsResponse;
+                        let standingsResponse, teamsResponse, playerStatsResponse, draftResponse;
 
                         if (year === 2025) {
                             standingsResponse = await fetch('data/current_season/standings.json');
                             teamsResponse = await fetch('data/current_season/teams.json');
                             playerStatsResponse = await fetch('data/current_season/player_stats.json');
+                            draftResponse = await fetch('data/current_season/draft.json');
                         } else {
                             standingsResponse = await fetch(`data/historical/${year}/final_standings.json`);
                             teamsResponse = await fetch(`data/historical/${year}/teams.json`);
                             playerStatsResponse = await fetch(`data/historical/${year}/player_stats.json`);
+                            draftResponse = await fetch(`data/historical/${year}/draft.json`);
                         }
 
                         console.log(`${year}: standings=${standingsResponse.ok}, teams=${teamsResponse.ok}, playerStats=${playerStatsResponse.ok}`);
@@ -6995,6 +7163,7 @@
                             const standings = await standingsResponse.json();
                             const teams = await teamsResponse.json();
                             const playerStats = playerStatsResponse.ok ? await playerStatsResponse.json() : [];
+                            const draftData = draftResponse && draftResponse.ok ? await draftResponse.json() : [];
 
                             // Normalize standings
                             const normalizedStandings = normalizeStandingsData(standings, year);
@@ -7005,10 +7174,22 @@
                                 logoMap[team.team_key] = team.team_logo;
                             });
 
+                            // Create team info map
+                            const teamInfoMap = {};
+                            teams.forEach(team => {
+                                teamInfoMap[team.team_key] = {
+                                    name: team.team_name,
+                                    manager: team.manager,
+                                    logo: team.team_logo
+                                };
+                            });
+
                             seasonData[year] = {
                                 standings: normalizedStandings,
                                 logos: logoMap,
-                                playerStats: playerStats
+                                teamInfo: teamInfoMap,
+                                playerStats: playerStats,
+                                draftData: draftData
                             };
                         }
                     } catch (e) {
@@ -7025,6 +7206,19 @@
                 const clownAwards = [];
                 const troutAwards = [];
                 const degromAwards = [];
+                const diamondAwards = [];
+                const bustAwards = [];
+
+                // Load keepers data for excluding from draft value calculations
+                let allKeepers = {};
+                try {
+                    const keepersResponse = await fetch('data/keepers.json');
+                    if (keepersResponse.ok) {
+                        allKeepers = await keepersResponse.json();
+                    }
+                } catch (e) {
+                    console.log('No keepers data available');
+                }
 
                 for (const [year, data] of Object.entries(seasonData)) {
                     const standings = data.standings;
@@ -7111,6 +7305,117 @@
                             value: Math.round(topPitcher.fantasy_points || 0)
                         });
                     }
+
+                    // Diamond in the Rough & Bust of the Year Awards
+                    // Calculate points over expected value based on draft position
+                    const draftData = data.draftData || [];
+                    const teamInfo = data.teamInfo || {};
+                    const keepersForYear = allKeepers[year.toString()] || {};
+                    
+                    // Create lowercase keeper lookup
+                    const keepersLower = {};
+                    for (const name of Object.keys(keepersForYear)) {
+                        keepersLower[name.toLowerCase()] = true;
+                    }
+                    
+                    if (draftData.length > 0 && playerStats.length > 0) {
+                        // Create player stats lookup by name (lowercase)
+                        const playerStatsMap = {};
+                        playerStats.forEach(p => {
+                            if (p.name) {
+                                playerStatsMap[p.name.toLowerCase()] = p;
+                            }
+                        });
+                        
+                        // Sort players by fantasy points to get expected value by rank
+                        const sortedByPoints = [...playerStats]
+                            .filter(p => p.fantasy_points && p.fantasy_points > 0)
+                            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+                        
+                        // Create expected points by overall rank (pick number)
+                        // Expected value = average points of players picked around that position
+                        const expectedPointsByPick = {};
+                        sortedByPoints.forEach((p, idx) => {
+                            expectedPointsByPick[idx + 1] = p.fantasy_points || 0;
+                        });
+                        
+                        // Calculate value over expected for each draft pick (excluding keepers)
+                        const draftValues = [];
+                        draftData.forEach(pick => {
+                            const playerName = pick.player_name || '';
+                            const pickNum = pick.pick || 0;
+                            
+                            // Skip keepers
+                            if (keepersLower[playerName.toLowerCase()]) {
+                                return;
+                            }
+                            
+                            // Get actual points
+                            const playerData = playerStatsMap[playerName.toLowerCase()];
+                            const actualPoints = playerData ? (playerData.fantasy_points || 0) : 0;
+                            
+                            // Get expected points based on pick position
+                            const expectedPoints = expectedPointsByPick[pickNum] || 0;
+                            
+                            // Calculate value over expected
+                            const valueOverExpected = actualPoints - expectedPoints;
+                            
+                            // Get team info
+                            const team = teamInfo[pick.team_key] || {};
+                            
+                            draftValues.push({
+                                player_name: playerName,
+                                player_headshot: pick.headshot_url || (playerData ? playerData.headshot_url : ''),
+                                pick: pickNum,
+                                round: pick.round || Math.ceil(pickNum / 12),
+                                actualPoints: actualPoints,
+                                expectedPoints: expectedPoints,
+                                valueOverExpected: valueOverExpected,
+                                manager: team.manager || '',
+                                team_logo: team.logo || ''
+                            });
+                        });
+                        
+                        // Find best value (Diamond) - highest positive value over expected
+                        if (draftValues.length > 0) {
+                            const bestValue = draftValues.reduce((best, pick) =>
+                                pick.valueOverExpected > best.valueOverExpected ? pick : best
+                            );
+                            if (bestValue.valueOverExpected > 0) {
+                                diamondAwards.push({
+                                    year,
+                                    manager: bestValue.manager,
+                                    team_logo: bestValue.team_logo,
+                                    player_name: bestValue.player_name,
+                                    player_headshot: bestValue.player_headshot,
+                                    pick: bestValue.pick,
+                                    round: bestValue.round,
+                                    value: Math.round(bestValue.valueOverExpected)
+                                });
+                            }
+                            
+                            // Find worst value (Bust) - lowest (most negative) value over expected
+                            // Only consider players drafted in first 5 rounds
+                            const earlyPicks = draftValues.filter(p => p.round <= 5);
+                            if (earlyPicks.length > 0) {
+                                const worstValue = earlyPicks.reduce((worst, pick) =>
+                                    pick.valueOverExpected < worst.valueOverExpected ? pick : worst
+                                );
+                                if (worstValue.valueOverExpected < 0) {
+                                    bustAwards.push({
+                                        year,
+                                        manager: worstValue.manager,
+                                        team_logo: worstValue.team_logo,
+                                        player_name: worstValue.player_name,
+                                        player_headshot: worstValue.player_headshot,
+                                        pick: worstValue.pick,
+                                        round: worstValue.round,
+                                        value: Math.round(worstValue.valueOverExpected)
+                                    });
+                                }
+                            }
+                        }
+                    }
                 }
 
                 console.log("Calculated awards:", {
@@ -7119,11 +7424,13 @@
                     garbageAwards: garbageAwards.length,
                     clownAwards: clownAwards.length,
                     troutAwards: troutAwards.length,
-                    degromAwards: degromAwards.length
+                    degromAwards: degromAwards.length,
+                    diamondAwards: diamondAwards.length,
+                    bustAwards: bustAwards.length
                 });
 
                 // Sort all by year (most recent first)
-                [regularSeasonWinners, scoringChampions, garbageAwards, clownAwards, troutAwards, degromAwards].forEach(arr => {
+                [regularSeasonWinners, scoringChampions, garbageAwards, clownAwards, troutAwards, degromAwards, diamondAwards, bustAwards].forEach(arr => {
                     arr.sort((a, b) => b.year - a.year);
                 });
 
@@ -7171,6 +7478,22 @@
                     <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ''}${award.manager}</div></td>
                     <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
                     <td><span class="award-value">${award.value.toLocaleString()}</span></td>
+                `);
+
+                populateAwardTable('diamond-awards', diamondAwards, (award) => `
+                    <td>${award.year}</td>
+                    <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ''}${award.manager}</div></td>
+                    <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
+                    <td>Rd ${award.round}, #${award.pick}</td>
+                    <td><span class="award-value" style="color: #28a745;">+${award.value.toLocaleString()}</span></td>
+                `);
+
+                populateAwardTable('bust-awards', bustAwards, (award) => `
+                    <td>${award.year}</td>
+                    <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ''}${award.manager}</div></td>
+                    <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
+                    <td>Rd ${award.round}, #${award.pick}</td>
+                    <td><span class="award-value" style="color: #dc3545;">${award.value.toLocaleString()}</span></td>
                 `);
 
                 console.log("Awards populated successfully");
