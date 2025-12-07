@@ -659,6 +659,7 @@
             display: flex;
             align-items: center;
             gap: 0.3rem;
+            position: relative;
         }
 
         .draft-team-logo {
@@ -4706,9 +4707,18 @@
                     if (keepersResponse.ok) {
                         const allKeepers = await keepersResponse.json();
                         keepersForYear = allKeepers[seasonNum.toString()] || {};
+                        console.log(`Loaded ${Object.keys(keepersForYear).length} keepers for ${seasonNum}`);
+                    } else {
+                        console.log('Keepers response not ok:', keepersResponse.status);
                     }
                 } catch (e) {
-                    console.log('No keepers data available');
+                    console.log('No keepers data available:', e);
+                }
+                
+                // Create lowercase keeper lookup for flexible matching
+                const keepersLowercase = {};
+                for (const [name, info] of Object.entries(keepersForYear)) {
+                    keepersLowercase[name.toLowerCase().trim()] = info;
                 }
 
                 // Load player stats to get fantasy points and position ranks
