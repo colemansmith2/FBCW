@@ -640,6 +640,7 @@
             padding: 0.1rem 0.35rem;
             border-radius: 3px;
             display: inline-block;
+            width: fit-content;
         }
 
         .draft-player-pos.pos-util {
@@ -4145,9 +4146,14 @@
             const posRankDisplay = posRank > 0 ? `${primaryPos}${posRank}` : primaryPos;
 
             // Load acquisition info (draft data and transactions)
+            // Priority: Trade to current team > Waiver pickup > Draft
             let acquisitionHtml = '';
+            let draftInfo = null;
+            let tradeInfo = null;
+            let pickupInfo = null;
+            
             try {
-                // Try to load draft data for this season
+                // Load draft data
                 let draftResponse;
                 if (selectedYear === 2025) {
                     draftResponse = await fetch('data/current_season/draft.json');
@@ -4157,56 +4163,88 @@
                 
                 if (draftResponse.ok) {
                     const draftData = await draftResponse.json();
-                    // Find this player in the draft by name (case insensitive)
                     const draftPick = draftData.find(pick => 
                         pick.player_name && pick.player_name.toLowerCase() === player.name.toLowerCase()
                     );
-                    
                     if (draftPick) {
-                        acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Drafted:</span>Rd ${draftPick.round}, #${draftPick.pick}</div>`;
+                        draftInfo = { round: draftPick.round, pick: draftPick.pick, team_key: draftPick.team_key };
                     }
                 }
                 
-                // If not drafted, try to find in transactions
-                if (!acquisitionHtml) {
-                    let transResponse;
-                    if (selectedYear === 2025) {
-                        transResponse = await fetch('data/current_season/transactions.json');
-                    } else {
-                        transResponse = await fetch(`data/historical/${selectedYear}/transactions.json`);
-                    }
+                // Load transaction data
+                let transResponse;
+                if (selectedYear === 2025) {
+                    transResponse = await fetch('data/current_season/transactions.json');
+                } else {
+                    transResponse = await fetch(`data/historical/${selectedYear}/transactions.json`);
+                }
+                
+                if (transResponse && transResponse.ok) {
+                    const transData = await transResponse.json();
                     
-                    if (transResponse && transResponse.ok) {
-                        const transData = await transResponse.json();
-                        // Find the earliest add transaction for this player
-                        const playerTrans = transData
-                            .filter(t => t.players && t.players.some(p => 
-                                p.name && p.name.toLowerCase() === player.name.toLowerCase() && 
-                                (p.type === 'add' || t.type === 'add' || t.type === 'add/drop')
-                            ))
-                            .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
-                        
-                        if (playerTrans.length > 0) {
-                            const trans = playerTrans[0];
+                    // Find all transactions involving this player where they were added to current team
+                    const playerTransactions = transData.filter(t => {
+                        if (!t.players) return false;
+                        return t.players.some(p => 
+                            p.name && p.name.toLowerCase() === player.name.toLowerCase() &&
+                            (p.type === 'add' || p.destination_team_key === player.team_key)
+                        );
+                    }).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); // Most recent first
+                    
+                    // Check for trade to current team
+                    for (const trans of playerTransactions) {
+                        if (trans.type === 'trade') {
                             const transPlayer = trans.players.find(p => 
                                 p.name && p.name.toLowerCase() === player.name.toLowerCase()
                             );
-                            
-                            // Format the date
-                            let dateStr = '';
-                            if (trans.timestamp) {
-                                const date = new Date(trans.timestamp * 1000);
-                                dateStr = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
+                            // Check if player was added to current team in this trade
+                            if (transPlayer && (transPlayer.type === 'add' || transPlayer.destination_team_key === player.team_key)) {
+                                let dateStr = '';
+                                if (trans.timestamp) {
+                                    const date = new Date(trans.timestamp * 1000);
+                                    dateStr = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
+                                }
+                                tradeInfo = { date: dateStr };
+                                break;
                             }
-                            
-                            if (trans.type === 'trade') {
-                                acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Acquired via Trade:</span>${dateStr}</div>`;
-                            } else {
-                                acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Picked up:</span>${dateStr}</div>`;
+                        }
+                    }
+                    
+                    // If no trade, check for waiver pickup (only if player wasn't drafted by current team)
+                    if (!tradeInfo) {
+                        const wasDraftedByCurrentTeam = draftInfo && draftInfo.team_key === player.team_key;
+                        
+                        if (!wasDraftedByCurrentTeam) {
+                            for (const trans of playerTransactions) {
+                                if (trans.type === 'add' || trans.type === 'add/drop') {
+                                    const transPlayer = trans.players.find(p => 
+                                        p.name && p.name.toLowerCase() === player.name.toLowerCase() &&
+                                        p.type === 'add'
+                                    );
+                                    if (transPlayer) {
+                                        let dateStr = '';
+                                        if (trans.timestamp) {
+                                            const date = new Date(trans.timestamp * 1000);
+                                            dateStr = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
+                                        }
+                                        pickupInfo = { date: dateStr };
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                
+                // Build acquisition HTML based on priority: Trade > Pickup > Draft
+                if (tradeInfo) {
+                    acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Acquired via Trade:</span>${tradeInfo.date}</div>`;
+                } else if (pickupInfo) {
+                    acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Picked up:</span>${pickupInfo.date}</div>`;
+                } else if (draftInfo) {
+                    acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Drafted:</span>Rd ${draftInfo.round}, #${draftInfo.pick}</div>`;
+                }
+                
             } catch (e) {
                 console.log('Could not load acquisition info:', e);
             }
