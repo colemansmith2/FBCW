@@ -635,8 +635,69 @@
         }
 
         .draft-player-pos {
-            font-size: 0.7rem;
-            color: #666;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        .draft-player-pos.pos-util {
+            background: #e0e0e0;
+            color: #505050;
+        }
+
+        .draft-player-pos.pos-c {
+            background: #e8d4f0;
+            color: #6b2d8b;
+        }
+
+        .draft-player-pos.pos-1b {
+            background: #d4e8f0;
+            color: #1e5a7a;
+        }
+
+        .draft-player-pos.pos-2b {
+            background: #f0e8d4;
+            color: #7a5a1e;
+        }
+
+        .draft-player-pos.pos-ss {
+            background: #d4f0e8;
+            color: #1e7a5a;
+        }
+
+        .draft-player-pos.pos-3b {
+            background: #f0d4e8;
+            color: #7a1e5a;
+        }
+
+        .draft-player-pos.pos-of,
+        .draft-player-pos.pos-lf,
+        .draft-player-pos.pos-cf,
+        .draft-player-pos.pos-rf {
+            background: #d4f0d4;
+            color: #2d6b2d;
+        }
+
+        .draft-player-pos.pos-sp {
+            background: #f0d4d4;
+            color: #8b2d2d;
+        }
+
+        .draft-player-pos.pos-rp {
+            background: #f0e0d4;
+            color: #8b4d2d;
+        }
+
+        .draft-player-pos.pos-p {
+            background: #f0d4d4;
+            color: #8b2d2d;
+        }
+
+        .draft-player-pos.pos-dh {
+            background: #e0e0e0;
+            color: #505050;
         }
 
         .keeper-badge {
@@ -1638,6 +1699,27 @@
             font-weight: bold;
             font-size: 1rem;
             color: #1e3c72;
+        }
+
+        .card-acquisition-corner {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            color: #1e3c72;
+            border: 2px solid #1e3c72;
+            text-align: right;
+            max-width: 120px;
+            line-height: 1.2;
+        }
+
+        .card-acquisition-corner .acq-type {
+            font-weight: bold;
+            display: block;
         }
 
         .card-stats-corner {
@@ -4062,6 +4144,73 @@
             const posRank = samePos.findIndex(p => p.name === player.name) + 1;
             const posRankDisplay = posRank > 0 ? `${primaryPos}${posRank}` : primaryPos;
 
+            // Load acquisition info (draft data and transactions)
+            let acquisitionHtml = '';
+            try {
+                // Try to load draft data for this season
+                let draftResponse;
+                if (selectedYear === 2025) {
+                    draftResponse = await fetch('data/current_season/draft.json');
+                } else {
+                    draftResponse = await fetch(`data/historical/${selectedYear}/draft.json`);
+                }
+                
+                if (draftResponse.ok) {
+                    const draftData = await draftResponse.json();
+                    // Find this player in the draft by name (case insensitive)
+                    const draftPick = draftData.find(pick => 
+                        pick.player_name && pick.player_name.toLowerCase() === player.name.toLowerCase()
+                    );
+                    
+                    if (draftPick) {
+                        acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Drafted:</span>Rd ${draftPick.round}, #${draftPick.pick}</div>`;
+                    }
+                }
+                
+                // If not drafted, try to find in transactions
+                if (!acquisitionHtml) {
+                    let transResponse;
+                    if (selectedYear === 2025) {
+                        transResponse = await fetch('data/current_season/transactions.json');
+                    } else {
+                        transResponse = await fetch(`data/historical/${selectedYear}/transactions.json`);
+                    }
+                    
+                    if (transResponse && transResponse.ok) {
+                        const transData = await transResponse.json();
+                        // Find the earliest add transaction for this player
+                        const playerTrans = transData
+                            .filter(t => t.players && t.players.some(p => 
+                                p.name && p.name.toLowerCase() === player.name.toLowerCase() && 
+                                (p.type === 'add' || t.type === 'add' || t.type === 'add/drop')
+                            ))
+                            .sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                        
+                        if (playerTrans.length > 0) {
+                            const trans = playerTrans[0];
+                            const transPlayer = trans.players.find(p => 
+                                p.name && p.name.toLowerCase() === player.name.toLowerCase()
+                            );
+                            
+                            // Format the date
+                            let dateStr = '';
+                            if (trans.timestamp) {
+                                const date = new Date(trans.timestamp * 1000);
+                                dateStr = `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`;
+                            }
+                            
+                            if (trans.type === 'trade') {
+                                acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Acquired via Trade:</span>${dateStr}</div>`;
+                            } else {
+                                acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Picked up:</span>${dateStr}</div>`;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Could not load acquisition info:', e);
+            }
+
             // Clear header (we're using body for the card)
             headerEl.innerHTML = '';
 
@@ -4075,6 +4224,7 @@
                 
                 <div class="card-photo-section">
                     ${fantasyTeamLogoHtml}
+                    ${acquisitionHtml}
                     <div class="card-stats-corner">
                         <div class="card-team-badge">${mlbTeamText}</div>
                         <div class="card-fantasy-points">
@@ -4854,6 +5004,7 @@
                         }
                     }
                     const keeperBadge = isKeeper ? '<span class="keeper-badge">K</span>' : '';
+                    const posClass = getDraftPosClass(primaryPos);
                     
                     row.innerHTML = `
                         <td>${pick.round || '-'}</td>
@@ -4863,7 +5014,7 @@
                                 ${headshotImg}
                                 <div class="draft-player-info">
                                     <span class="draft-player-name">${pick.player_name || 'Unknown'}${keeperBadge}</span>
-                                    <span class="draft-player-pos">${primaryPos}</span>
+                                    <span class="draft-player-pos ${posClass}">${primaryPos}</span>
                                 </div>
                             </div>
                         </td>
@@ -4947,6 +5098,21 @@
                 if (numRank <= 10) return 'top-25';
                 return 'top-50';
             }
+        }
+
+        function getDraftPosClass(position) {
+            const pos = (position || '').toUpperCase();
+            if (pos === 'C') return 'pos-c';
+            if (pos === '1B') return 'pos-1b';
+            if (pos === '2B') return 'pos-2b';
+            if (pos === '3B') return 'pos-3b';
+            if (pos === 'SS') return 'pos-ss';
+            if (['OF', 'LF', 'CF', 'RF'].includes(pos)) return 'pos-of';
+            if (pos === 'UTIL' || pos === 'DH') return 'pos-util';
+            if (pos === 'SP') return 'pos-sp';
+            if (pos === 'RP') return 'pos-rp';
+            if (pos === 'P') return 'pos-p';
+            return '';
         }
 
         // ===== SEASON CHART FUNCTIONS =====
