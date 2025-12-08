@@ -7374,6 +7374,9 @@
                             
                             // Get team info
                             const team = teamInfo[pick.team_key] || {};
+
+                            // Normalize manager name
+                            const managerName = team.manager ? normalizeManagerName(team.manager, parseInt(year), team.name, pick.team_key) : '';
                             
                             draftValues.push({
                                 player_name: playerName,
@@ -7383,7 +7386,7 @@
                                 actualPoints: actualPoints,
                                 expectedPoints: expectedPoints,
                                 valueOverExpected: valueOverExpected,
-                                manager: team.manager || '',
+                                manager: managerName, // Use the normalized name
                                 team_logo: team.logo || ''
                             });
                         });
