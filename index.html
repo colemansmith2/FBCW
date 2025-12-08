@@ -5605,6 +5605,9 @@
                         // Get actual points
                         const playerData = playerStatsMap[playerName.toLowerCase()];
                         const actualPoints = playerData ? (playerData.fantasy_points || 0) : 0;
+
+                        // Define headshot
+                        const headshot = (playerData && playerData.headshot_url) ? playerData.headshot_url : (pick.headshot_url || '');
                         
                         // Get expected points based on pick position
                         const expectedPoints = expectedPointsByPick[pickNum] || 0;
