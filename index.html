@@ -5614,14 +5614,20 @@
                         
                         // Get team info
                         const team = teamInfo[pick.team_key] || {};
+
+                        // Get normalized manager name
+                        const managerName = team.manager ? normalizeManagerName(team.manager, parseInt(year), team.name, pick.team_key) : '';
                         
                         draftValues.push({
-                            player_name: playerName,
-                            pick: pickNum,
-                            round: pick.round || Math.ceil(pickNum / 12),
-                            valueOverExpected: valueOverExpected,
-                            manager: team.manager || '',
-                            team_key: pick.team_key
+                                player_name: playerName,
+                                player_headshot: headshot,
+                                pick: pickNum,
+                                round: pick.round || Math.ceil(pickNum / 12),
+                                actualPoints: actualPoints,
+                                expectedPoints: expectedPoints,
+                                valueOverExpected: valueOverExpected,
+                                manager: managerName, // Use the normalized name here
+                                team_logo: team.logo || ''
                         });
                     });
                     
