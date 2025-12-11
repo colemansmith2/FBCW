@@ -3301,12 +3301,6 @@
         <div id="preseason" class="section">
             <h2>⚾ Preseason Tools - Projected Points</h2>
 
-            <div class="info-box" style="background: #e7f3ff; border: 1px solid #b3d7ff; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem; color: #004085;">
-                <strong>How it works:</strong> This page shows projected fantasy points for the upcoming season using 
-                Fangraphs projections (Steamer/ZiPS) and your league's scoring system.
-                Run <code>python collect_data.py projections</code> to update the projections data.
-            </div>
-
             <div class="player-controls">
                 <div class="player-control-row">
                     <div class="projection-selector">
@@ -3355,8 +3349,12 @@
                 </div>
             </div>
 
-            <div id="proj-loading" class="loading">Loading projections...</div>
+            <div id="proj-loading" class="loading" style="display: none;">Loading projections...</div>
             <div id="proj-error" class="error" style="display: none;"></div>
+            <div id="proj-no-data" style="text-align: center; padding: 2rem; color: #666;">
+                <p style="font-size: 1.1rem; margin-bottom: 1rem;">No projection data available yet.</p>
+                <p>Run <code style="background: #f0f0f0; padding: 0.2rem 0.5rem; border-radius: 4px;">python collect_data.py projections</code> to generate projections.</p>
+            </div>
 
             <div id="proj-stats-container" style="display: none;">
                 <div class="player-summary">
@@ -7839,17 +7837,19 @@
             const loadingEl = document.getElementById('proj-loading');
             const errorEl = document.getElementById('proj-error');
             const containerEl = document.getElementById('proj-stats-container');
+            const noDataEl = document.getElementById('proj-no-data');
 
             loadingEl.style.display = 'block';
             errorEl.style.display = 'none';
             containerEl.style.display = 'none';
+            if (noDataEl) noDataEl.style.display = 'none';
 
             try {
                 // Try to load projections data
                 const response = await fetch(`data/projections/projections_${projectionType}.json`);
                 
                 if (!response.ok) {
-                    throw new Error(`Projections not found. Run 'python collect_data.py projections --type ${projectionType}' to generate.`);
+                    throw new Error(`Projections not found. Run 'python collect_data.py projections ${projectionType}' to generate.`);
                 }
 
                 projectionsData = await response.json();
@@ -7858,6 +7858,23 @@
                 allProjectionPitchers = projectionsData.pitchers || [];
 
                 console.log(`Loaded ${allProjectionBatters.length} batters and ${allProjectionPitchers.length} pitchers`);
+
+                // Pre-calculate games and PPG for sorting
+                allProjectionBatters.forEach(p => {
+                    const stats = p.stats || {};
+                    // Estimate games from PA (avg ~4.5 PA per game)
+                    p.games = Math.round((stats.PA || 0) / 4.5);
+                    p.ppg = p.games > 0 ? (p.projected_points || 0) / p.games : 0;
+                });
+                
+                allProjectionPitchers.forEach(p => {
+                    const stats = p.stats || {};
+                    p.games = stats.G || 0;
+                    p.ppg = p.games > 0 ? (p.projected_points || 0) / p.games : 0;
+                });
+
+                // Calculate position ranks
+                calculateProjectionPositionRanks();
 
                 // Display scoring settings
                 displayScoringSettings(projectionsData.scoring);
@@ -7873,6 +7890,99 @@
                 errorEl.textContent = error.message;
                 errorEl.style.display = 'block';
             }
+        }
+
+        function calculateProjectionPositionRanks() {
+            // Combine all players for ranking
+            const allPlayers = [...allProjectionBatters, ...allProjectionPitchers];
+            
+            // Define positions to rank (batting positions + pitching)
+            const positions = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'OF', 'DH', 'SP', 'RP'];
+            
+            positions.forEach(pos => {
+                // Get players eligible for this position
+                let eligiblePlayers;
+                if (pos === 'OF') {
+                    // OF includes LF, CF, RF, OF
+                    eligiblePlayers = allPlayers.filter(p => {
+                        const playerPos = (p.position || '').toUpperCase();
+                        return playerPos.includes('LF') || playerPos.includes('CF') || 
+                               playerPos.includes('RF') || playerPos.includes('OF');
+                    });
+                } else {
+                    eligiblePlayers = allPlayers.filter(p => {
+                        const playerPos = (p.position || '').toUpperCase();
+                        return playerPos.includes(pos);
+                    });
+                }
+                
+                // Sort by projected points descending
+                eligiblePlayers.sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
+                
+                // Assign ranks
+                eligiblePlayers.forEach((player, index) => {
+                    if (!player.position_ranks) {
+                        player.position_ranks = {};
+                    }
+                    player.position_ranks[pos] = index + 1;
+                });
+            });
+            
+            // Also calculate overall batter and pitcher ranks
+            const batters = allPlayers.filter(p => p.type === 'batter')
+                .sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
+            batters.forEach((player, index) => {
+                if (!player.position_ranks) player.position_ranks = {};
+                player.position_ranks['B'] = index + 1;
+            });
+            
+            const pitchers = allPlayers.filter(p => p.type === 'pitcher')
+                .sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
+            pitchers.forEach((player, index) => {
+                if (!player.position_ranks) player.position_ranks = {};
+                player.position_ranks['P'] = index + 1;
+            });
+        }
+
+        function formatProjectionPosition(position) {
+            // Format position string, excluding "Util"
+            if (!position) return '-';
+            
+            // Split by comma or slash and filter out Util
+            const positions = position.split(/[,\/]/)
+                .map(p => p.trim())
+                .filter(p => p && p.toUpperCase() !== 'UTIL');
+            
+            return positions.length > 0 ? positions.join(', ') : '-';
+        }
+
+        function getProjectionPositionRank(player) {
+            if (!player.position_ranks || !player.position) return '-';
+            
+            // Get the first non-Util position
+            const positions = (player.position || '').split(/[,\/]/)
+                .map(p => p.trim())
+                .filter(p => p && p.toUpperCase() !== 'UTIL');
+            
+            if (positions.length === 0) return '-';
+            
+            // Get the primary position (first one)
+            let primaryPos = positions[0].toUpperCase();
+            
+            // Normalize OF positions
+            if (['LF', 'CF', 'RF'].includes(primaryPos)) {
+                // Use OF rank if available, otherwise use specific position
+                if (player.position_ranks['OF']) {
+                    return `OF${player.position_ranks['OF']}`;
+                }
+            }
+            
+            const rank = player.position_ranks[primaryPos];
+            if (rank) {
+                return `${primaryPos}${rank}`;
+            }
+            
+            return positions[0];
         }
 
         function displayScoringSettings(scoring) {
@@ -7991,9 +8101,11 @@
                 <tr>
                     <th class="sortable" onclick="sortProjectionTable('rank')">#</th>
                     <th class="sortable" onclick="sortProjectionTable('name')">Player</th>
-                    <th>Team</th>
                     <th class="sortable" onclick="sortProjectionTable('position')">Pos</th>
+                    <th>Rank</th>
                     <th class="sortable stat-col" onclick="sortProjectionTable('projected_points')">Proj Pts</th>
+                    <th class="sortable stat-col" onclick="sortProjectionTable('games')">G</th>
+                    <th class="sortable stat-col" onclick="sortProjectionTable('ppg')">PPG</th>
             `;
 
             if (hasBatters && !hasPitchers) {
@@ -8065,19 +8177,47 @@
                     }
                 }
 
-                const headshot = player.headshot_url || placeholderImg;
+                // Get headshot - use MLB ID to construct URL if headshot_url is missing
+                let headshot = player.headshot_url;
+                if (!headshot && player.mlb_id) {
+                    headshot = `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${player.mlb_id}/headshot/67/current`;
+                }
+                if (!headshot) {
+                    headshot = placeholderImg;
+                }
+
+                // Get team display and logo
+                const teamDisplay = formatMLBTeamDisplay(player.team || '');
+                const mlbLogoUrl = getMLBTeamLogo(player.team || '');
+                const mlbLogoHtml = mlbLogoUrl 
+                    ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">`
+                    : '';
+                
+                // Format position (excluding Util) and get position rank
+                const positionDisplay = formatProjectionPosition(player.position);
+                const positionRank = getProjectionPositionRank(player);
+                
+                // Use pre-calculated games and PPG
+                const projPoints = player.projected_points || 0;
+                const games = player.games || 0;
+                const ppg = games > 0 ? player.ppg.toFixed(2) : '-';
 
                 row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>
                         <div class="player-name-cell">
                             <img src="${headshot}" class="player-headshot" onerror="this.src='${placeholderImg}'">
-                            <span class="player-name">${player.name || 'Unknown'}</span>
+                            <div>
+                                <div class="player-name">${player.name || 'Unknown'}</div>
+                                <div class="player-mlb-team">${mlbLogoHtml}${teamDisplay}</div>
+                            </div>
                         </div>
                     </td>
-                    <td>${player.team || ''}</td>
-                    <td class="player-position">${player.position || ''}</td>
-                    <td class="stat-col player-points">${(player.projected_points || 0).toLocaleString()}</td>
+                    <td class="player-position">${positionDisplay}</td>
+                    <td class="player-position">${positionRank}</td>
+                    <td class="stat-col player-points">${projPoints.toFixed(1)}</td>
+                    <td class="stat-col">${games || '-'}</td>
+                    <td class="stat-col">${ppg}</td>
                     ${statsHtml}
                 `;
                 
@@ -8105,8 +8245,10 @@
             const columnMap = {
                 'rank': 0,
                 'name': 1,
-                'position': 3,
-                'projected_points': 4
+                'position': 2,
+                'projected_points': 4,
+                'games': 5,
+                'ppg': 6
             };
 
             const headerIndex = columnMap[projectionSort.column];
