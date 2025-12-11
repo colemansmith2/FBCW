@@ -8172,14 +8172,14 @@
                         <td class="stat-col">${stats.K || stats.SO || 0}</td>
                         <td class="stat-col">${(stats.ERA || 0).toFixed(2)}</td>
                         <td class="stat-col">${(stats.WHIP || 0).toFixed(2)}</td>
-                        <td class="stat-col">${stats.IP || 0}</td>
+                        <td class="stat-col">${(stats.IP || 0).toFixed(0)}</td>
                     `;
                 } else {
                     // Mixed view - show abbreviated stats
                     if (player.type === 'batter') {
-                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.HR || 0}HR, ${stats.RBI || 0}RBI, ${stats.SB || 0}SB</td>`;
+                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.HR || 0}HR, ${stats.SB || 0}SB, ${stats.OPS || 0}OPS</td>`;
                     } else {
-                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.W || 0}W, ${stats.SV || 0}SV, ${stats.K || stats.SO || 0}K</td>`;
+                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.IP || 0}IP, ${stats.ERA || 0}ERA, ${stats.K || stats.SO || 0}K</td>`;
                     }
                 }
 
