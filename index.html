@@ -7050,6 +7050,12 @@
                     loadPlayerScoring();
                 }
             }
+            else if (sectionId === 'preseason') {
+                // Load projections if not already loaded
+                if (allProjectionBatters.length === 0 && allProjectionPitchers.length === 0) {
+                    loadProjections();
+                }
+            }
         }
 
         // ===== HALL OF CHAMPIONS =====
