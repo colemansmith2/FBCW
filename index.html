@@ -8177,9 +8177,9 @@
                 } else {
                     // Mixed view - show abbreviated stats
                     if (player.type === 'batter') {
-                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.HR || 0}HR, ${stats.SB || 0}SB, ${stats.OPS || 0}OPS</td>`;
+                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.HR || 0}HR, ${stats.SB || 0}SB, ${(stats.OPS || 0).toFixed(3)}OPS</td>`;
                     } else {
-                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.IP || 0}IP, ${stats.ERA || 0}ERA, ${stats.K || stats.SO || 0}K</td>`;
+                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${(stats.IP || 0).toFixed(0)}IP, ${(stats.ERA || 0).toFixed(2)}ERA, ${stats.K || stats.SO || 0}K</td>`;
                     }
                 }
 
