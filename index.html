@@ -2078,6 +2078,12 @@
         .chart-dot {
             fill: #1e3c72;
             opacity: 0.6;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .chart-dot:hover {
+            opacity: 0.9;
         }
 
         .chart-dot.highlighted {
@@ -8457,7 +8463,7 @@
 
         // ===== PROJECTION PLAYER DETAIL MODAL =====
         
-        function showProjectionPlayerDetail(playerName) {
+        async function showProjectionPlayerDetail(playerName) {
             const modal = document.getElementById('projection-modal');
             const cardContainer = document.getElementById('projection-card-container');
             const posChartEl = document.getElementById('projection-pos-chart');
@@ -8486,6 +8492,18 @@
             const positionDisplay = formatProjectionPosition(player.position);
             const positionRank = getProjectionPositionRank(player);
             const primaryPos = positionDisplay.split(',')[0].trim() || (isBatter ? 'B' : 'P');
+            
+            // Load player history data
+            if (Object.keys(playerHistoryData).length === 0) {
+                try {
+                    const historyResponse = await fetch('data/players/player_history.json');
+                    if (historyResponse.ok) {
+                        playerHistoryData = await historyResponse.json();
+                    }
+                } catch (e) {
+                    console.log('Could not load player history');
+                }
+            }
             
             // Build baseball card HTML
             let cardHTML = `
@@ -8584,7 +8602,47 @@
             
             cardHTML += `</div></div>`; // Close stats content and section
             
-            // Add League History section with 2026 projection
+            // Build League History section with 2026 projection and past seasons
+            const normalizedName = playerName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const playerHistory = playerHistoryData[normalizedName];
+            
+            // Prepare history data
+            const historyLogos = {};
+            const historyRanks = {};
+            
+            if (playerHistory && playerHistory.seasons && playerHistory.seasons.length > 0) {
+                for (const season of playerHistory.seasons) {
+                    const teams = await getTeamData(season.year);
+                    if (teams) {
+                        const team = teams.find(t => t.team_name === season.team_name);
+                        if (team) {
+                            historyLogos[`${season.year}_${season.team_name}`] = team.team_logo;
+                        }
+                    }
+                    
+                    const yearPlayers = await getPlayerStatsData(season.year);
+                    if (yearPlayers) {
+                        const posType = isBatter ? 'B' : 'P';
+                        const sameType = yearPlayers
+                            .filter(p => p.position_type === posType)
+                            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+                        const overallRank = sameType.findIndex(p => p.name === playerName) + 1;
+                        
+                        const samePos = yearPlayers
+                            .filter(p => p.eligible_positions && p.eligible_positions.includes(primaryPos))
+                            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+                        const posRank = samePos.findIndex(p => p.name === playerName) + 1;
+                        
+                        historyRanks[season.year] = {
+                            overall: overallRank > 0 ? overallRank : '-',
+                            position: posRank > 0 ? `${primaryPos}${posRank}` : '-'
+                        };
+                    } else {
+                        historyRanks[season.year] = { overall: '-', position: '-' };
+                    }
+                }
+            }
+            
             cardHTML += `
                     <div class="card-history-section">
                         <div class="card-history-title">📜 League History</div>
@@ -8592,7 +8650,7 @@
                             <thead>
                                 <tr>
                                     <th>Year</th>
-                                    <th>Status</th>
+                                    <th>Team</th>
                                     <th>Pts</th>
                                     <th>Rk</th>
                                     <th>Pos</th>
@@ -8605,7 +8663,25 @@
                                     <td>${(player.projected_points || 0).toFixed(0)}</td>
                                     <td>${player.position_ranks ? (isBatter ? player.position_ranks['B'] : player.position_ranks['P']) || '-' : '-'}</td>
                                     <td>${positionRank}</td>
-                                </tr>
+                                </tr>`;
+            
+            // Add historical seasons
+            if (playerHistory && playerHistory.seasons && playerHistory.seasons.length > 0) {
+                playerHistory.seasons.sort((a, b) => b.year - a.year).forEach(season => {
+                    const logo = historyLogos[`${season.year}_${season.team_name}`] || '';
+                    const ranks = historyRanks[season.year] || { overall: '-', position: '-' };
+                    cardHTML += `
+                                <tr>
+                                    <td><strong>${season.year}</strong></td>
+                                    <td>${logo ? `<img src="${logo}" class="team-logo-small" alt="">` : ''}${season.manager || ''}</td>
+                                    <td>${(season.fantasy_points || 0).toFixed(0)}</td>
+                                    <td>${ranks.overall}</td>
+                                    <td>${ranks.position}</td>
+                                </tr>`;
+                });
+            }
+            
+            cardHTML += `
                             </tbody>
                         </table>
                     </div>`;
@@ -8667,57 +8743,94 @@
             // Chart dimensions
             const width = container.clientWidth || 320;
             const height = 180;
-            const padding = { top: 15, right: 20, bottom: 25, left: 45 };
+            const padding = { top: 15, right: 20, bottom: 25, left: 50 };
             const chartWidth = width - padding.left - padding.right;
             const chartHeight = height - padding.top - padding.bottom;
             
-            // Get value range
+            // Get value range and calculate nice tick values
             const minPts = Math.min(...topPlayers.map(p => p.projected_points || 0));
             const maxPts = Math.max(...topPlayers.map(p => p.projected_points || 0));
-            const range = maxPts - minPts || 1;
+            
+            // Round to nice values (multiples of 50)
+            const tickInterval = 50;
+            const niceMin = Math.floor(minPts / tickInterval) * tickInterval;
+            const niceMax = Math.ceil(maxPts / tickInterval) * tickInterval;
+            const range = niceMax - niceMin || 1;
             
             // Scale function for y-axis
-            const scaleY = (val) => padding.top + chartHeight - ((val - minPts) / range * chartHeight);
+            const scaleY = (val) => padding.top + chartHeight - ((val - niceMin) / range * chartHeight);
             
             // Build SVG
             let svg = `<svg width="${width}" height="${height}" style="display: block;">`;
             
-            // Y-axis
+            // Y-axis line
             svg += `<line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" class="chart-axis"/>`;
             
-            // Y-axis labels
-            const yTicks = 5;
-            for (let i = 0; i <= yTicks; i++) {
-                const val = minPts + (range * i / yTicks);
+            // Y-axis ticks and grid lines at even intervals (50s)
+            for (let val = niceMin; val <= niceMax; val += tickInterval) {
                 const y = scaleY(val);
                 svg += `<line x1="${padding.left - 5}" y1="${y}" x2="${padding.left}" y2="${y}" class="chart-axis"/>`;
-                svg += `<text x="${padding.left - 8}" y="${y + 3}" text-anchor="end" class="chart-axis-label">${Math.round(val)}</text>`;
-                // Grid line
+                svg += `<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" class="chart-axis-label">${val}</text>`;
                 svg += `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="chart-grid"/>`;
             }
+            
+            // Y-axis label
+            svg += `<text x="12" y="${height / 2}" text-anchor="middle" transform="rotate(-90, 12, ${height / 2})" class="chart-axis-label" style="font-weight: bold;">Proj Pts</text>`;
             
             // X-axis (baseline)
             svg += `<line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" class="chart-axis"/>`;
             
-            // Plot dots
+            // Plot dots (non-selected first, then selected on top)
             const dotSpacing = chartWidth / (topPlayers.length + 1);
+            
+            // First pass: non-selected dots
             topPlayers.forEach((player, i) => {
+                if (player.name === selectedPlayer.name) return;
                 const x = padding.left + dotSpacing * (i + 1);
                 const y = scaleY(player.projected_points || 0);
-                const isSelected = player.name === selectedPlayer.name;
-                const radius = isSelected ? 8 : 5;
-                const cssClass = isSelected ? 'chart-dot highlighted' : 'chart-dot';
-                
-                svg += `<circle cx="${x}" cy="${y}" r="${radius}" class="${cssClass}">
-                    <title>${player.name}: ${(player.projected_points || 0).toFixed(1)} pts</title>
-                </circle>`;
+                const pts = (player.projected_points || 0).toFixed(1);
+                svg += `<circle cx="${x}" cy="${y}" r="5" class="chart-dot" data-name="${player.name}" data-pts="${pts}"/>`;
+            });
+            
+            // Second pass: selected dot (on top)
+            topPlayers.forEach((player, i) => {
+                if (player.name !== selectedPlayer.name) return;
+                const x = padding.left + dotSpacing * (i + 1);
+                const y = scaleY(player.projected_points || 0);
+                const pts = (player.projected_points || 0).toFixed(1);
+                svg += `<circle cx="${x}" cy="${y}" r="8" class="chart-dot highlighted" data-name="${player.name}" data-pts="${pts}"/>`;
             });
             
             // Position label
             svg += `<text x="${width / 2}" y="${height - 5}" text-anchor="middle" class="chart-axis-label" style="font-weight: bold;">${primaryPos.toUpperCase()} Rankings</text>`;
             
             svg += '</svg>';
+            
+            // Add tooltip div
+            svg += `<div class="chart-tooltip" style="display: none; position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 100;"></div>`;
+            
             container.innerHTML = svg;
+            container.style.position = 'relative';
+            
+            // Add tooltip event listeners
+            const tooltip = container.querySelector('.chart-tooltip');
+            container.querySelectorAll('.chart-dot').forEach(dot => {
+                dot.addEventListener('mouseenter', (e) => {
+                    const name = dot.getAttribute('data-name');
+                    const pts = dot.getAttribute('data-pts');
+                    tooltip.textContent = `${name}: ${pts} pts`;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.offsetX + 10) + 'px';
+                    tooltip.style.top = (e.offsetY - 20) + 'px';
+                });
+                dot.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = (e.offsetX + 10) + 'px';
+                    tooltip.style.top = (e.offsetY - 20) + 'px';
+                });
+                dot.addEventListener('mouseleave', () => {
+                    tooltip.style.display = 'none';
+                });
+            });
         }
         
         function renderScatterChart(selectedPlayer, container, isBatter) {
@@ -8738,7 +8851,7 @@
             // Chart dimensions
             const width = container.clientWidth || 320;
             const height = 180;
-            const padding = { top: 15, right: 20, bottom: 30, left: 45 };
+            const padding = { top: 15, right: 20, bottom: 30, left: 50 };
             const chartWidth = width - padding.left - padding.right;
             const chartHeight = height - padding.top - padding.bottom;
             
@@ -8749,12 +8862,22 @@
             const maxX = Math.max(...xValues);
             const minY = Math.min(...yValues);
             const maxY = Math.max(...yValues);
-            const rangeX = maxX - minX || 1;
-            const rangeY = maxY - minY || 1;
+            
+            // Round Y to nice values (multiples of 50)
+            const yTickInterval = 50;
+            const niceMinY = Math.floor(minY / yTickInterval) * yTickInterval;
+            const niceMaxY = Math.ceil(maxY / yTickInterval) * yTickInterval;
+            const rangeY = niceMaxY - niceMinY || 1;
+            
+            // Round X to nice values
+            const xTickInterval = isBatter ? 100 : 20;
+            const niceMinX = Math.floor(minX / xTickInterval) * xTickInterval;
+            const niceMaxX = Math.ceil(maxX / xTickInterval) * xTickInterval;
+            const rangeX = niceMaxX - niceMinX || 1;
             
             // Scale functions
-            const scaleX = (val) => padding.left + ((val - minX) / rangeX * chartWidth);
-            const scaleY = (val) => padding.top + chartHeight - ((val - minY) / rangeY * chartHeight);
+            const scaleX = (val) => padding.left + ((val - niceMinX) / rangeX * chartWidth);
+            const scaleY = (val) => padding.top + chartHeight - ((val - niceMinY) / rangeY * chartHeight);
             
             // Build SVG
             let svg = `<svg width="${width}" height="${height}" style="display: block;">`;
@@ -8762,47 +8885,81 @@
             // Y-axis
             svg += `<line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" class="chart-axis"/>`;
             
-            // Y-axis labels
-            const yTicks = 4;
-            for (let i = 0; i <= yTicks; i++) {
-                const val = minY + (rangeY * i / yTicks);
+            // Y-axis ticks and grid
+            for (let val = niceMinY; val <= niceMaxY; val += yTickInterval) {
                 const y = scaleY(val);
                 svg += `<line x1="${padding.left - 5}" y1="${y}" x2="${padding.left}" y2="${y}" class="chart-axis"/>`;
-                svg += `<text x="${padding.left - 8}" y="${y + 3}" text-anchor="end" class="chart-axis-label">${Math.round(val)}</text>`;
+                svg += `<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" class="chart-axis-label">${val}</text>`;
                 svg += `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="chart-grid"/>`;
             }
+            
+            // Y-axis label
+            svg += `<text x="12" y="${height / 2}" text-anchor="middle" transform="rotate(-90, 12, ${height / 2})" class="chart-axis-label" style="font-weight: bold;">Proj Pts</text>`;
             
             // X-axis
             svg += `<line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" class="chart-axis"/>`;
             
-            // X-axis labels
-            const xTicks = 5;
-            for (let i = 0; i <= xTicks; i++) {
-                const val = minX + (rangeX * i / xTicks);
+            // X-axis ticks
+            const numXTicks = 5;
+            for (let i = 0; i <= numXTicks; i++) {
+                const val = niceMinX + (rangeX * i / numXTicks);
                 const x = scaleX(val);
                 svg += `<line x1="${x}" y1="${height - padding.bottom}" x2="${x}" y2="${height - padding.bottom + 5}" class="chart-axis"/>`;
                 svg += `<text x="${x}" y="${height - padding.bottom + 15}" text-anchor="middle" class="chart-axis-label">${Math.round(val)}</text>`;
             }
             
-            // Plot dots
+            // Plot dots (non-selected first)
             validPlayers.forEach(player => {
+                if (player.name === selectedPlayer.name) return;
                 const x = scaleX(getXValue(player));
                 const y = scaleY(player.projected_points || 0);
-                const isSelected = player.name === selectedPlayer.name;
-                const radius = isSelected ? 8 : 4;
-                const cssClass = isSelected ? 'chart-dot highlighted' : 'chart-dot';
-                
-                svg += `<circle cx="${x}" cy="${y}" r="${radius}" class="${cssClass}">
-                    <title>${player.name}: ${(player.projected_points || 0).toFixed(1)} pts, ${getXValue(player)} ${isBatter ? 'PA' : 'G'}</title>
-                </circle>`;
+                const pts = (player.projected_points || 0).toFixed(1);
+                const xVal = getXValue(player);
+                svg += `<circle cx="${x}" cy="${y}" r="4" class="chart-dot" data-name="${player.name}" data-pts="${pts}" data-x="${xVal}"/>`;
             });
             
-            // Axis labels
+            // Plot selected dot on top
+            validPlayers.forEach(player => {
+                if (player.name !== selectedPlayer.name) return;
+                const x = scaleX(getXValue(player));
+                const y = scaleY(player.projected_points || 0);
+                const pts = (player.projected_points || 0).toFixed(1);
+                const xVal = getXValue(player);
+                svg += `<circle cx="${x}" cy="${y}" r="8" class="chart-dot highlighted" data-name="${player.name}" data-pts="${pts}" data-x="${xVal}"/>`;
+            });
+            
+            // X-axis label
             svg += `<text x="${width / 2}" y="${height - 3}" text-anchor="middle" class="chart-axis-label" style="font-weight: bold;">${isBatter ? 'Plate Appearances' : 'Games'}</text>`;
-            svg += `<text x="10" y="${height / 2}" text-anchor="middle" transform="rotate(-90, 10, ${height / 2})" class="chart-axis-label" style="font-weight: bold;">Proj Pts</text>`;
             
             svg += '</svg>';
+            
+            // Add tooltip div
+            const xLabel = isBatter ? 'PA' : 'G';
+            svg += `<div class="chart-tooltip" style="display: none; position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 100;"></div>`;
+            
             container.innerHTML = svg;
+            container.style.position = 'relative';
+            
+            // Add tooltip event listeners
+            const tooltip = container.querySelector('.chart-tooltip');
+            container.querySelectorAll('.chart-dot').forEach(dot => {
+                dot.addEventListener('mouseenter', (e) => {
+                    const name = dot.getAttribute('data-name');
+                    const pts = dot.getAttribute('data-pts');
+                    const xVal = dot.getAttribute('data-x');
+                    tooltip.textContent = `${name}: ${pts} pts, ${xVal} ${xLabel}`;
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (e.offsetX + 10) + 'px';
+                    tooltip.style.top = (e.offsetY - 20) + 'px';
+                });
+                dot.addEventListener('mousemove', (e) => {
+                    tooltip.style.left = (e.offsetX + 10) + 'px';
+                    tooltip.style.top = (e.offsetY - 20) + 'px';
+                });
+                dot.addEventListener('mouseleave', () => {
+                    tooltip.style.display = 'none';
+                });
+            });
         }
         
         function closeProjectionModal() {
