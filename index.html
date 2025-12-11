@@ -7968,7 +7968,7 @@
             // Get the first non-Util position
             const positions = (player.position || '').split(/[,\/]/)
                 .map(p => p.trim())
-                .filter(p => p && p.toUpperCase() !== 'UTIL');
+                .filter(p => p && p.toUpperCase() !== ('UTIL', 'NA'));
             
             if (positions.length === 0) return '-';
             
