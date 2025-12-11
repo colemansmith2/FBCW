@@ -7849,7 +7849,7 @@
                 const response = await fetch(`data/projections/projections_${projectionType}.json`);
                 
                 if (!response.ok) {
-                    throw new Error(`Projections not found. Run 'python collect_data.py projections ${projectionType}' to generate.`);
+                    throw new Error(`${projectionType} projections have not been released. Check back soon!`);
                 }
 
                 projectionsData = await response.json();
