@@ -7957,7 +7957,7 @@
             // Split by comma or slash and filter out Util
             const positions = position.split(/[,\/]/)
                 .map(p => p.trim())
-                .filter(p => p && p.toUpperCase() !== 'UTIL');
+                .filter(p => p && p.toUpperCase() !== ('UTIL', 'NA'));
             
             return positions.length > 0 ? positions.join(', ') : '-';
         }
