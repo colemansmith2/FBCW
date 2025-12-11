@@ -8039,7 +8039,7 @@
         function filterProjections() {
             const positionFilter = document.getElementById('proj-position-filter').value;
             const searchTerm = document.getElementById('proj-player-search').value.toLowerCase();
-
+        
             let data = [];
             
             if (currentProjectionPlayerType === 'all') {
@@ -8049,7 +8049,7 @@
             } else {
                 data = [...allProjectionPitchers];
             }
-
+        
             // Apply position filter
             if (positionFilter !== 'all') {
                 if (positionFilter === 'B') {
@@ -8066,7 +8066,7 @@
                     });
                 }
             }
-
+        
             // Apply search filter
             if (searchTerm) {
                 data = data.filter(p => 
@@ -8074,21 +8074,27 @@
                     (p.team || '').toLowerCase().includes(searchTerm)
                 );
             }
-
+        
             // Sort data
             data.sort((a, b) => {
                 const col = projectionSort.column;
                 
+                // === HELPER: Check both main object AND stats object ===
                 const getVal = (obj) => {
+                    // 1. Check main object (Rank, Name, Projected Points, Games)
                     if (obj[col] !== undefined) return obj[col];
+                    
+                    // 2. Check stats object (HR, RBI, ERA, WHIP, etc.)
                     if (obj.stats && obj.stats[col] !== undefined) return obj.stats[col];
-                    // Handle Strikeouts alias (K vs SO)
-                    if (col === 'K' && obj.stats && obj.stats.SO !== undefined) return obj.stats.SO; 
+                    
+                    // 3. Handle 'K' vs 'SO' mapping if needed
+                    if (col === 'K' && obj.stats && obj.stats.SO !== undefined) return obj.stats.SO;
+                    
                     return 0; // Default for missing data
                 };
-                
-                let aVal = a[projectionSort.column];
-                let bVal = b[projectionSort.column];
+        
+                let aVal = getVal(a);
+                let bVal = getVal(b);
                 
                 if (typeof aVal === 'string') {
                     return projectionSort.direction === 'asc' 
@@ -8096,9 +8102,9 @@
                         : (bVal || '').localeCompare(aVal || '');
                 }
                 
-                return projectionSort.direction === 'asc' ? (aVal || 0) - (bVal || 0) : (bVal || 0) - (aVal || 0);
+                return projectionSort.direction === 'asc' ? (aVal - bVal) : (bVal - aVal);
             });
-
+        
             filteredProjections = data;
             renderProjectionTable();
         }
@@ -8140,7 +8146,7 @@
                     <th class="sortable" onclick="sortProjectionTable('K')">K</th>
                     <th class="sortable" onclick="sortProjectionTable('ERA')">ERA</th>
                     <th class="sortable" onclick="sortProjectionTable('WHIP')">WHIP</th>
-                    <th class=""sortable" onclick="sortProjectionTable('IP')">IP</th>
+                    <th class="sortable" onclick="sortProjectionTable('IP')">IP</th>
                 `;
             } else {
                 // Mixed - show key stats for both
@@ -8254,26 +8260,22 @@
         }
 
         function updateProjectionSortIndicators() {
+            // 1. Remove indicators from all headers
             document.querySelectorAll('#proj-table th').forEach(th => {
                 th.classList.remove('sort-asc', 'sort-desc');
             });
-
-            const columnMap = {
-                'rank': 0,
-                'name': 1,
-                'position': 2,
-                'projected_points': 4,
-                'games': 5,
-                'ppg': 6
-            };
-
-            const headerIndex = columnMap[projectionSort.column];
-            if (headerIndex !== undefined) {
-                const headers = document.querySelectorAll('#proj-table th');
-                if (headers[headerIndex]) {
-                    headers[headerIndex].classList.add(projectionSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+        
+            // 2. Find the header that matches the current sort column
+            const sortCol = projectionSort.column;
+            const headers = document.querySelectorAll('#proj-table th');
+            
+            headers.forEach(th => {
+                const onclick = th.getAttribute('onclick');
+                // Check if this header's onclick contains the current sort column name
+                if (onclick && onclick.includes(`'${sortCol}'`)) {
+                    th.classList.add(projectionSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
                 }
-            }
+            });
         }
 
         function exportProjectionsCSV() {
