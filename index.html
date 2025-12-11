@@ -8077,6 +8077,16 @@
 
             // Sort data
             data.sort((a, b) => {
+                const col = projectionSort.column;
+                
+                const getVal = (obj) => {
+                    if (obj[col] !== undefined) return obj[col];
+                    if (obj.stats && obj.stats[col] !== undefined) return obj.stats[col];
+                    // Handle Strikeouts alias (K vs SO)
+                    if (col === 'K' && obj.stats && obj.stats.SO !== undefined) return obj.stats.SO; 
+                    return 0; // Default for missing data
+                };
+                
                 let aVal = a[projectionSort.column];
                 let bVal = b[projectionSort.column];
                 
