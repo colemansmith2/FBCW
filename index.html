@@ -8703,7 +8703,7 @@
             renderPositionRankChart(player, posChartEl);
             
             // Render scatter chart
-            scatterTitleEl.textContent = isBatter ? 'Points vs PA' : 'Points vs G';
+            scatterTitleEl.textContent = isBatter ? 'Points vs PA' : 'Points vs IP';
             renderScatterChart(player, scatterChartEl, isBatter);
             
             modal.classList.add('active');
@@ -8836,12 +8836,12 @@
         function renderScatterChart(selectedPlayer, container, isBatter) {
             const allPlayers = isBatter ? [...allProjectionBatters] : [...allProjectionPitchers];
             
-            // Get x-axis value (PA for batters, G for pitchers)
+            // Get x-axis value (PA for batters, IP for pitchers)
             const getXValue = (p) => {
                 if (isBatter) {
                     return p.stats?.PA || 0;
                 } else {
-                    return p.stats?.G || p.games || 0;
+                    return p.stats?.IP || 0;
                 }
             };
             
@@ -8869,8 +8869,8 @@
             const niceMaxY = Math.ceil(maxY / yTickInterval) * yTickInterval;
             const rangeY = niceMaxY - niceMinY || 1;
             
-            // Round X to nice values
-            const xTickInterval = isBatter ? 100 : 20;
+            // Round X to nice values (100 for PA, 50 for IP)
+            const xTickInterval = isBatter ? 100 : 50;
             const niceMinX = Math.floor(minX / xTickInterval) * xTickInterval;
             const niceMaxX = Math.ceil(maxX / xTickInterval) * xTickInterval;
             const rangeX = niceMaxX - niceMinX || 1;
@@ -8914,7 +8914,7 @@
                 const x = scaleX(getXValue(player));
                 const y = scaleY(player.projected_points || 0);
                 const pts = (player.projected_points || 0).toFixed(1);
-                const xVal = getXValue(player);
+                const xVal = isBatter ? getXValue(player) : getXValue(player).toFixed(1);
                 svg += `<circle cx="${x}" cy="${y}" r="4" class="chart-dot" data-name="${player.name}" data-pts="${pts}" data-x="${xVal}"/>`;
             });
             
@@ -8924,17 +8924,17 @@
                 const x = scaleX(getXValue(player));
                 const y = scaleY(player.projected_points || 0);
                 const pts = (player.projected_points || 0).toFixed(1);
-                const xVal = getXValue(player);
+                const xVal = isBatter ? getXValue(player) : getXValue(player).toFixed(1);
                 svg += `<circle cx="${x}" cy="${y}" r="8" class="chart-dot highlighted" data-name="${player.name}" data-pts="${pts}" data-x="${xVal}"/>`;
             });
             
             // X-axis label
-            svg += `<text x="${width / 2}" y="${height - 3}" text-anchor="middle" class="chart-axis-label" style="font-weight: bold;">${isBatter ? 'Plate Appearances' : 'Games'}</text>`;
+            svg += `<text x="${width / 2}" y="${height - 3}" text-anchor="middle" class="chart-axis-label" style="font-weight: bold;">${isBatter ? 'Plate Appearances' : 'Innings Pitched'}</text>`;
             
             svg += '</svg>';
             
             // Add tooltip div
-            const xLabel = isBatter ? 'PA' : 'G';
+            const xLabel = isBatter ? 'PA' : 'IP';
             svg += `<div class="chart-tooltip" style="display: none; position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 100;"></div>`;
             
             container.innerHTML = svg;
