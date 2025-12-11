@@ -8116,21 +8116,21 @@
 
             if (hasBatters && !hasPitchers) {
                 headers += `
-                    <th class="stat-col">HR</th>
-                    <th class="stat-col">RBI</th>
-                    <th class="stat-col">R</th>
-                    <th class="stat-col">SB</th>
-                    <th class="stat-col">AVG</th>
-                    <th class="stat-col">OPS</th>
+                    <th class="sortable" onclick="sortProjectionTable('HR')">HR</th>
+                    <th class="sortable" onclick="sortProjectionTable('RBI')">RBI</th>
+                    <th class="sortable" onclick="sortProjectionTable('R')">R</th>
+                    <th class="sortable" onclick="sortProjectionTable('SB')">SB</th>
+                    <th class="sortable" onclick="sortProjectionTable('AVG')">AVG</th>
+                    <th class="sortable" onclick="sortProjectionTable('OPS')">OPS</th>
                 `;
             } else if (hasPitchers && !hasBatters) {
                 headers += `
-                    <th class="stat-col">W</th>
-                    <th class="stat-col">SV</th>
-                    <th class="stat-col">K</th>
-                    <th class="stat-col">ERA</th>
-                    <th class="stat-col">WHIP</th>
-                    <th class="stat-col">IP</th>
+                    <th class="sortable" onclick="sortProjectionTable('W')">W</th>
+                    <th class="sortable" onclick="sortProjectionTable('SV')">SV</th>
+                    <th class="sortable" onclick="sortProjectionTable('K')">K</th>
+                    <th class="sortable" onclick="sortProjectionTable('ERA')">ERA</th>
+                    <th class="sortable" onclick="sortProjectionTable('WHIP')">WHIP</th>
+                    <th class=""sortable" onclick="sortProjectionTable('IP')">IP</th>
                 `;
             } else {
                 // Mixed - show key stats for both
