@@ -2851,6 +2851,7 @@
         <button onclick="showSection('champions')" class="nav-btn">Hall of Champions</button>
         <button onclick="showSection('scoring')" class="nav-btn">Player Scoring</button>
         <button onclick="showSection('managers')" class="nav-btn">Manager Profiles</button>
+        <button onclick="showSection('preseason')" class="nav-btn">Preseason Tools</button>
     </nav>
 
     <div class="container">
@@ -3292,6 +3293,93 @@
             <div id="winpct-chart-container" style="display: none; margin-top: 2rem;">
                 <h3 style="color: #1e3c72; margin-bottom: 1rem;">📈 Win Percentage Over Time</h3>
                 <div id="winpct-chart" style="width: 100%; overflow-x: auto; background: white; border-radius: 8px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                </div>
+            </div>
+        </div>
+
+        <!-- Preseason Tools Section -->
+        <div id="preseason" class="section">
+            <h2>⚾ Preseason Tools - Projected Points</h2>
+
+            <div class="info-box" style="background: #e7f3ff; border: 1px solid #b3d7ff; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; font-size: 0.9rem; color: #004085;">
+                <strong>How it works:</strong> This page shows projected fantasy points for the upcoming season using 
+                Fangraphs projections (Steamer/ZiPS) and your league's scoring system.
+                Run <code>python collect_data.py projections</code> to update the projections data.
+            </div>
+
+            <div class="player-controls">
+                <div class="player-control-row">
+                    <div class="projection-selector">
+                        <label for="projection-type">Projection System:</label>
+                        <select id="projection-type" onchange="loadProjections()">
+                            <option value="steamer">Steamer</option>
+                            <option value="zips">ZiPS</option>
+                            <option value="depthcharts">Depth Charts</option>
+                        </select>
+                    </div>
+
+                    <div class="position-filter">
+                        <label for="proj-position-filter">Position:</label>
+                        <select id="proj-position-filter" onchange="filterProjections()">
+                            <option value="all">All Players</option>
+                            <option value="B">All Batters</option>
+                            <option value="P">All Pitchers</option>
+                            <optgroup label="Batting Positions">
+                                <option value="C">C - Catcher</option>
+                                <option value="1B">1B - First Base</option>
+                                <option value="2B">2B - Second Base</option>
+                                <option value="3B">3B - Third Base</option>
+                                <option value="SS">SS - Shortstop</option>
+                                <option value="OF">OF - Outfield</option>
+                                <option value="DH">DH - Designated Hitter</option>
+                            </optgroup>
+                            <optgroup label="Pitching Positions">
+                                <option value="SP">SP - Starting Pitcher</option>
+                                <option value="RP">RP - Relief Pitcher</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="stat-type-toggle">
+                        <label>Player Type:</label>
+                        <div class="toggle-buttons">
+                            <button id="proj-btn-all" class="toggle-btn active" onclick="setProjectionPlayerType('all')">All</button>
+                            <button id="proj-btn-batters" class="toggle-btn" onclick="setProjectionPlayerType('batters')">Batters</button>
+                            <button id="proj-btn-pitchers" class="toggle-btn" onclick="setProjectionPlayerType('pitchers')">Pitchers</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="player-search">
+                    <input type="text" id="proj-player-search" placeholder="Search players..." oninput="filterProjections()">
+                </div>
+            </div>
+
+            <div id="proj-loading" class="loading">Loading projections...</div>
+            <div id="proj-error" class="error" style="display: none;"></div>
+
+            <div id="proj-stats-container" style="display: none;">
+                <div class="player-summary">
+                    <span id="proj-player-count">0 players</span>
+                    <button class="btn-export" style="margin-left: 1rem; padding: 0.3rem 0.8rem; font-size: 0.8rem; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="exportProjectionsCSV()">Export CSV</button>
+                </div>
+
+                <div class="table-wrapper player-table-wrapper">
+                    <table class="player-table" id="proj-table">
+                        <thead id="proj-table-head">
+                            <!-- Headers will be populated dynamically -->
+                        </thead>
+                        <tbody id="proj-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Scoring System Reference -->
+            <div style="margin-top: 2rem;">
+                <h3 style="color: #1e3c72; margin-bottom: 1rem;">📊 League Scoring System</h3>
+                <div id="proj-scoring-display" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <!-- Will be populated with scoring settings -->
                 </div>
             </div>
         </div>
@@ -7736,6 +7824,319 @@
                 row.innerHTML = rowTemplate(award);
                 tbody.appendChild(row);
             });
+        }
+
+        // ===== PRESEASON PROJECTIONS FUNCTIONS =====
+        let allProjectionBatters = [];
+        let allProjectionPitchers = [];
+        let filteredProjections = [];
+        let currentProjectionPlayerType = 'all';
+        let projectionSort = { column: 'projected_points', direction: 'desc' };
+        let projectionsData = null;
+
+        async function loadProjections() {
+            const projectionType = document.getElementById('projection-type').value;
+            const loadingEl = document.getElementById('proj-loading');
+            const errorEl = document.getElementById('proj-error');
+            const containerEl = document.getElementById('proj-stats-container');
+
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            containerEl.style.display = 'none';
+
+            try {
+                // Try to load projections data
+                const response = await fetch(`data/projections/projections_${projectionType}.json`);
+                
+                if (!response.ok) {
+                    throw new Error(`Projections not found. Run 'python collect_data.py projections --type ${projectionType}' to generate.`);
+                }
+
+                projectionsData = await response.json();
+                
+                allProjectionBatters = projectionsData.batters || [];
+                allProjectionPitchers = projectionsData.pitchers || [];
+
+                console.log(`Loaded ${allProjectionBatters.length} batters and ${allProjectionPitchers.length} pitchers`);
+
+                // Display scoring settings
+                displayScoringSettings(projectionsData.scoring);
+
+                loadingEl.style.display = 'none';
+                containerEl.style.display = 'block';
+
+                filterProjections();
+
+            } catch (error) {
+                console.error('Error loading projections:', error);
+                loadingEl.style.display = 'none';
+                errorEl.textContent = error.message;
+                errorEl.style.display = 'block';
+            }
+        }
+
+        function displayScoringSettings(scoring) {
+            const container = document.getElementById('proj-scoring-display');
+            if (!scoring) {
+                container.innerHTML = '<p>Scoring settings not available.</p>';
+                return;
+            }
+
+            const battingHtml = scoring.batting ? `
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h4 style="color: #2a5298; font-size: 0.9rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e0e0e0;">🏏 Batting</h4>
+                    ${Object.entries(scoring.batting).map(([stat, val]) => `
+                        <div style="display: flex; justify-content: space-between; padding: 0.25rem 0; font-size: 0.85rem;">
+                            <span style="color: #555;">${stat}</span>
+                            <span style="font-weight: 600; color: ${val >= 0 ? '#28a745' : '#dc3545'};">${val >= 0 ? '+' : ''}${val}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '';
+
+            const pitchingHtml = scoring.pitching ? `
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h4 style="color: #2a5298; font-size: 0.9rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e0e0e0;">⚾ Pitching</h4>
+                    ${Object.entries(scoring.pitching).map(([stat, val]) => `
+                        <div style="display: flex; justify-content: space-between; padding: 0.25rem 0; font-size: 0.85rem;">
+                            <span style="color: #555;">${stat}</span>
+                            <span style="font-weight: 600; color: ${val >= 0 ? '#28a745' : '#dc3545'};">${val >= 0 ? '+' : ''}${val}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : '';
+
+            container.innerHTML = battingHtml + pitchingHtml;
+        }
+
+        function setProjectionPlayerType(type) {
+            currentProjectionPlayerType = type;
+            
+            document.querySelectorAll('#preseason .stat-type-toggle .toggle-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`proj-btn-${type}`).classList.add('active');
+            
+            filterProjections();
+        }
+
+        function filterProjections() {
+            const positionFilter = document.getElementById('proj-position-filter').value;
+            const searchTerm = document.getElementById('proj-player-search').value.toLowerCase();
+
+            let data = [];
+            
+            if (currentProjectionPlayerType === 'all') {
+                data = [...allProjectionBatters, ...allProjectionPitchers];
+            } else if (currentProjectionPlayerType === 'batters') {
+                data = [...allProjectionBatters];
+            } else {
+                data = [...allProjectionPitchers];
+            }
+
+            // Apply position filter
+            if (positionFilter !== 'all') {
+                if (positionFilter === 'B') {
+                    data = data.filter(p => p.type === 'batter');
+                } else if (positionFilter === 'P') {
+                    data = data.filter(p => p.type === 'pitcher');
+                } else {
+                    data = data.filter(p => {
+                        const pos = (p.position || '').toUpperCase();
+                        if (positionFilter === 'OF') {
+                            return pos.includes('LF') || pos.includes('CF') || pos.includes('RF') || pos.includes('OF');
+                        }
+                        return pos.includes(positionFilter);
+                    });
+                }
+            }
+
+            // Apply search filter
+            if (searchTerm) {
+                data = data.filter(p => 
+                    (p.name || '').toLowerCase().includes(searchTerm) ||
+                    (p.team || '').toLowerCase().includes(searchTerm)
+                );
+            }
+
+            // Sort data
+            data.sort((a, b) => {
+                let aVal = a[projectionSort.column];
+                let bVal = b[projectionSort.column];
+                
+                if (typeof aVal === 'string') {
+                    return projectionSort.direction === 'asc' 
+                        ? (aVal || '').localeCompare(bVal || '') 
+                        : (bVal || '').localeCompare(aVal || '');
+                }
+                
+                return projectionSort.direction === 'asc' ? (aVal || 0) - (bVal || 0) : (bVal || 0) - (aVal || 0);
+            });
+
+            filteredProjections = data;
+            renderProjectionTable();
+        }
+
+        function renderProjectionTable() {
+            const thead = document.getElementById('proj-table-head');
+            const tbody = document.getElementById('proj-table-body');
+            const countEl = document.getElementById('proj-player-count');
+
+            // Check if we have mixed data or just batters/pitchers
+            const hasBatters = filteredProjections.some(p => p.type === 'batter');
+            const hasPitchers = filteredProjections.some(p => p.type === 'pitcher');
+
+            // Build headers based on data type
+            let headers = `
+                <tr>
+                    <th class="sortable" onclick="sortProjectionTable('rank')">#</th>
+                    <th class="sortable" onclick="sortProjectionTable('name')">Player</th>
+                    <th>Team</th>
+                    <th class="sortable" onclick="sortProjectionTable('position')">Pos</th>
+                    <th class="sortable stat-col" onclick="sortProjectionTable('projected_points')">Proj Pts</th>
+            `;
+
+            if (hasBatters && !hasPitchers) {
+                headers += `
+                    <th class="stat-col">HR</th>
+                    <th class="stat-col">RBI</th>
+                    <th class="stat-col">R</th>
+                    <th class="stat-col">SB</th>
+                    <th class="stat-col">AVG</th>
+                    <th class="stat-col">OPS</th>
+                `;
+            } else if (hasPitchers && !hasBatters) {
+                headers += `
+                    <th class="stat-col">W</th>
+                    <th class="stat-col">SV</th>
+                    <th class="stat-col">K</th>
+                    <th class="stat-col">ERA</th>
+                    <th class="stat-col">WHIP</th>
+                    <th class="stat-col">IP</th>
+                `;
+            } else {
+                // Mixed - show key stats for both
+                headers += `
+                    <th class="stat-col">Key Stats</th>
+                `;
+            }
+
+            headers += '</tr>';
+            thead.innerHTML = headers;
+
+            // Update sort indicators
+            updateProjectionSortIndicators();
+
+            // Build rows
+            tbody.innerHTML = '';
+            
+            // Base64 placeholder for headshots
+            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+
+            filteredProjections.forEach((player, index) => {
+                const row = document.createElement('tr');
+                const stats = player.stats || {};
+                
+                let statsHtml = '';
+                if (hasBatters && !hasPitchers) {
+                    statsHtml = `
+                        <td class="stat-col">${stats.HR || 0}</td>
+                        <td class="stat-col">${stats.RBI || 0}</td>
+                        <td class="stat-col">${stats.R || 0}</td>
+                        <td class="stat-col">${stats.SB || 0}</td>
+                        <td class="stat-col">${(stats.AVG || 0).toFixed(3)}</td>
+                        <td class="stat-col">${(stats.OPS || 0).toFixed(3)}</td>
+                    `;
+                } else if (hasPitchers && !hasBatters) {
+                    statsHtml = `
+                        <td class="stat-col">${stats.W || 0}</td>
+                        <td class="stat-col">${stats.SV || 0}</td>
+                        <td class="stat-col">${stats.K || stats.SO || 0}</td>
+                        <td class="stat-col">${(stats.ERA || 0).toFixed(2)}</td>
+                        <td class="stat-col">${(stats.WHIP || 0).toFixed(2)}</td>
+                        <td class="stat-col">${stats.IP || 0}</td>
+                    `;
+                } else {
+                    // Mixed view - show abbreviated stats
+                    if (player.type === 'batter') {
+                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.HR || 0}HR, ${stats.RBI || 0}RBI, ${stats.SB || 0}SB</td>`;
+                    } else {
+                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.W || 0}W, ${stats.SV || 0}SV, ${stats.K || stats.SO || 0}K</td>`;
+                    }
+                }
+
+                const headshot = player.headshot_url || placeholderImg;
+
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>
+                        <div class="player-name-cell">
+                            <img src="${headshot}" class="player-headshot" onerror="this.src='${placeholderImg}'">
+                            <span class="player-name">${player.name || 'Unknown'}</span>
+                        </div>
+                    </td>
+                    <td>${player.team || ''}</td>
+                    <td class="player-position">${player.position || ''}</td>
+                    <td class="stat-col player-points">${(player.projected_points || 0).toLocaleString()}</td>
+                    ${statsHtml}
+                `;
+                
+                tbody.appendChild(row);
+            });
+
+            countEl.textContent = `${filteredProjections.length} players`;
+        }
+
+        function sortProjectionTable(column) {
+            if (projectionSort.column === column) {
+                projectionSort.direction = projectionSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                projectionSort.column = column;
+                projectionSort.direction = column === 'name' ? 'asc' : 'desc';
+            }
+            filterProjections();
+        }
+
+        function updateProjectionSortIndicators() {
+            document.querySelectorAll('#proj-table th').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+            });
+
+            const columnMap = {
+                'rank': 0,
+                'name': 1,
+                'position': 3,
+                'projected_points': 4
+            };
+
+            const headerIndex = columnMap[projectionSort.column];
+            if (headerIndex !== undefined) {
+                const headers = document.querySelectorAll('#proj-table th');
+                if (headers[headerIndex]) {
+                    headers[headerIndex].classList.add(projectionSort.direction === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            }
+        }
+
+        function exportProjectionsCSV() {
+            if (filteredProjections.length === 0) {
+                alert('No data to export');
+                return;
+            }
+
+            let csv = 'Rank,Player,Team,Position,Projected Points\n';
+            
+            filteredProjections.forEach((player, index) => {
+                csv += `${index + 1},"${player.name}",${player.team},${player.position},${player.projected_points}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'projected_fantasy_points.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
         }
 
         // ===== INITIALIZE ON PAGE LOAD =====
