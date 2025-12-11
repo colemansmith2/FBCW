@@ -1998,6 +1998,133 @@
             display: none; /* Hide default header, we'll build card structure in body */
         }
 
+        /* Projection Modal Styles */
+        .projection-modal-content {
+            max-width: 900px;
+            width: 95vw;
+            background: transparent;
+            box-shadow: none;
+            border-radius: 12px;
+            overflow: visible;
+        }
+
+        .projection-modal-layout {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .projection-card-container {
+            flex: 0 0 420px;
+            max-width: 420px;
+        }
+
+        .projection-charts-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            min-width: 350px;
+        }
+
+        .projection-chart-box {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            border: 3px solid #1e3c72;
+        }
+
+        .projection-chart-title {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #1e3c72;
+            text-align: center;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .projection-chart {
+            height: 180px;
+            position: relative;
+        }
+
+        #projection-modal .modal-close {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            background: #1e3c72;
+            color: white;
+            border: 3px solid #f5d742;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        #projection-modal .modal-close:hover {
+            background: #f5d742;
+            color: #1e3c72;
+        }
+
+        /* Chart dot styles */
+        .chart-dot {
+            fill: #1e3c72;
+            opacity: 0.6;
+        }
+
+        .chart-dot.highlighted {
+            fill: #f5d742;
+            stroke: #1e3c72;
+            stroke-width: 2;
+            opacity: 1;
+        }
+
+        .chart-axis {
+            stroke: #ccc;
+            stroke-width: 1;
+        }
+
+        .chart-axis-label {
+            font-size: 10px;
+            fill: #666;
+        }
+
+        .chart-grid {
+            stroke: #eee;
+            stroke-width: 1;
+        }
+
+        /* Mobile styles for projection modal */
+        @media (max-width: 900px) {
+            .projection-modal-content {
+                max-width: 95vw;
+            }
+
+            .projection-modal-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .projection-card-container {
+                flex: none;
+                max-width: 100%;
+                width: 100%;
+            }
+
+            .projection-charts-container {
+                width: 100%;
+                min-width: auto;
+            }
+        }
+
         /* Mobile styles for baseball card */
         @media (max-width: 480px) {
             .player-modal-content {
@@ -3275,6 +3402,32 @@
                 </div>
                 <div class="modal-body-scroll" id="player-modal-body">
                     <!-- Body content loaded dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Projection Player Detail Modal -->
+        <div id="projection-modal" class="modal">
+            <div class="modal-content projection-modal-content">
+                <span class="modal-close" onclick="closeProjectionModal()">&times;</span>
+                <div class="projection-modal-layout">
+                    <div class="projection-card-container" id="projection-card-container">
+                        <!-- Baseball card loaded dynamically -->
+                    </div>
+                    <div class="projection-charts-container">
+                        <div class="projection-chart-box">
+                            <div class="projection-chart-title">Position Ranking</div>
+                            <div class="projection-chart" id="projection-pos-chart">
+                                <!-- Position rank chart -->
+                            </div>
+                        </div>
+                        <div class="projection-chart-box">
+                            <div class="projection-chart-title" id="projection-scatter-title">Points vs PA</div>
+                            <div class="projection-chart" id="projection-scatter-chart">
+                                <!-- Scatter plot -->
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -8223,11 +8376,14 @@
                 const projPoints = player.projected_points || 0;
                 const games = player.games || 0;
                 const ppg = games > 0 ? player.ppg.toFixed(2) : '-';
+                
+                // Escape player name for onclick
+                const escapedName = player.name.replace(/'/g, "\\'");
 
                 row.innerHTML = `
                     <td>${index + 1}</td>
                     <td>
-                        <div class="player-name-cell">
+                        <div class="player-name-cell" onclick="showProjectionPlayerDetail('${escapedName}')">
                             <img src="${headshot}" class="player-headshot" onerror="this.src='${placeholderImg}'">
                             <div>
                                 <div class="player-name">${player.name || 'Unknown'}</div>
@@ -8298,6 +8454,367 @@
             a.click();
             window.URL.revokeObjectURL(url);
         }
+
+        // ===== PROJECTION PLAYER DETAIL MODAL =====
+        
+        function showProjectionPlayerDetail(playerName) {
+            const modal = document.getElementById('projection-modal');
+            const cardContainer = document.getElementById('projection-card-container');
+            const posChartEl = document.getElementById('projection-pos-chart');
+            const scatterChartEl = document.getElementById('projection-scatter-chart');
+            const scatterTitleEl = document.getElementById('projection-scatter-title');
+            
+            // Find player in projection data
+            const allPlayers = [...allProjectionBatters, ...allProjectionPitchers];
+            const player = allPlayers.find(p => p.name === playerName);
+            if (!player) return;
+            
+            const isBatter = player.type === 'batter';
+            const stats = player.stats || {};
+            
+            // Placeholders
+            const placeholderHeadshot = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+            
+            const headshot = player.headshot_url || placeholderHeadshot;
+            const mlbLogoUrl = getMLBTeamLogo(player.team || '');
+            const mlbTeamText = formatMLBTeamDisplay(player.team || '');
+            const mlbLogoHtml = mlbLogoUrl 
+                ? `<img src="${mlbLogoUrl}" alt="" class="card-mlb-logo" onerror="this.outerHTML='<div class=\\'card-mlb-fa\\'>FA</div>'">`
+                : `<div class="card-mlb-fa">FA</div>`;
+            
+            const projPoints = (player.projected_points || 0).toFixed(1);
+            const positionDisplay = formatProjectionPosition(player.position);
+            const positionRank = getProjectionPositionRank(player);
+            const primaryPos = positionDisplay.split(',')[0].trim() || (isBatter ? 'B' : 'P');
+            
+            // Build baseball card HTML
+            let cardHTML = `
+            <div class="baseball-card">
+                <div class="card-header">
+                    ${mlbLogoHtml}
+                    <div class="card-player-name">${player.name}</div>
+                </div>
+                
+                <div class="card-photo-section">
+                    <div class="card-stats-corner">
+                        <div class="card-team-badge">${mlbTeamText}</div>
+                        <div class="card-fantasy-points">
+                            ${projPoints}
+                            <span class="pts-label">PROJ</span>
+                        </div>
+                        <div class="card-position-rank">${positionRank}</div>
+                    </div>
+                    <div class="card-photo-frame">
+                        <img src="${headshot}" alt="${player.name}" class="card-headshot" onerror="this.src='${placeholderHeadshot}'">
+                        <div class="card-position-badge">${primaryPos}</div>
+                    </div>
+                </div>
+
+                <div class="card-info-strip">
+                    <span>📊 2026 Projections</span>
+                    <span>${positionDisplay}</span>
+                    <span>⚾ ${isBatter ? 'Batter' : 'Pitcher'}</span>
+                </div>
+
+                <div class="card-scrollable">
+                    <div class="card-stats-section">
+                        <div class="card-stats-header">
+                            <div class="card-stats-title">2026 Projected Statistics</div>
+                        </div>
+                        <div id="projection-modal-stats-content">`;
+            
+            if (isBatter) {
+                const singles = (stats['1B'] || 0);
+                cardHTML += `
+                        <table class="card-stats-table">
+                            <tr>
+                                <th>G</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>R</th><th>SB</th>
+                            </tr>
+                            <tr>
+                                <td>${player.games || 0}</td>
+                                <td>${stats.PA || 0}</td>
+                                <td>${stats.H || 0}</td>
+                                <td>${stats.HR || 0}</td>
+                                <td>${stats.RBI || 0}</td>
+                                <td>${stats.R || 0}</td>
+                                <td>${stats.SB || 0}</td>
+                            </tr>
+                            <tr>
+                                <th>BB</th><th>1B</th><th>2B</th><th>3B</th><th>AVG</th><th>OPS</th><th>PPG</th>
+                            </tr>
+                            <tr>
+                                <td>${stats.BB || 0}</td>
+                                <td>${singles}</td>
+                                <td>${stats['2B'] || 0}</td>
+                                <td>${stats['3B'] || 0}</td>
+                                <td>${stats.AVG ? stats.AVG.toFixed(3) : '.000'}</td>
+                                <td>${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</td>
+                                <td>${player.ppg ? player.ppg.toFixed(2) : '-'}</td>
+                            </tr>
+                        </table>`;
+            } else {
+                cardHTML += `
+                        <table class="card-stats-table">
+                            <tr>
+                                <th>W</th><th>L</th><th>SV</th><th>G</th><th>GS</th><th>IP</th><th>K</th>
+                            </tr>
+                            <tr>
+                                <td>${stats.W || 0}</td>
+                                <td>${stats.L || 0}</td>
+                                <td>${stats.SV || 0}</td>
+                                <td>${stats.G || 0}</td>
+                                <td>${stats.GS || 0}</td>
+                                <td>${(stats.IP || 0).toFixed(1)}</td>
+                                <td>${stats.K || stats.SO || 0}</td>
+                            </tr>
+                            <tr>
+                                <th>BB</th><th>ER</th><th>H</th><th>ERA</th><th>WHIP</th><th>HLD</th><th>PPG</th>
+                            </tr>
+                            <tr>
+                                <td>${stats.BB || 0}</td>
+                                <td>${stats.ER || 0}</td>
+                                <td>${stats.H || 0}</td>
+                                <td>${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</td>
+                                <td>${stats.WHIP ? stats.WHIP.toFixed(2) : '0.00'}</td>
+                                <td>${stats.HLD || 0}</td>
+                                <td>${player.ppg ? player.ppg.toFixed(2) : '-'}</td>
+                            </tr>
+                        </table>`;
+            }
+            
+            cardHTML += `</div></div>`; // Close stats content and section
+            
+            // Add League History section with 2026 projection
+            cardHTML += `
+                    <div class="card-history-section">
+                        <div class="card-history-title">📜 League History</div>
+                        <table class="card-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Year</th>
+                                    <th>Status</th>
+                                    <th>Pts</th>
+                                    <th>Rk</th>
+                                    <th>Pos</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="background: rgba(245, 215, 66, 0.3);">
+                                    <td><strong>2026</strong></td>
+                                    <td><em>Projected</em></td>
+                                    <td>${(player.projected_points || 0).toFixed(0)}</td>
+                                    <td>${player.position_ranks ? (isBatter ? player.position_ranks['B'] : player.position_ranks['P']) || '-' : '-'}</td>
+                                    <td>${positionRank}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>`;
+            
+            cardHTML += `</div>`; // Close card-scrollable
+            
+            // Footer
+            cardHTML += `
+                <div class="card-footer">
+                    <div class="owner-info">
+                        <span style="color: #666; font-style: italic;">2026 Preseason Projection</span>
+                    </div>
+                </div>
+            </div>`; // Close baseball-card
+            
+            cardContainer.innerHTML = cardHTML;
+            
+            // Render position ranking chart
+            renderPositionRankChart(player, posChartEl);
+            
+            // Render scatter chart
+            scatterTitleEl.textContent = isBatter ? 'Points vs PA' : 'Points vs G';
+            renderScatterChart(player, scatterChartEl, isBatter);
+            
+            modal.classList.add('active');
+        }
+        
+        function renderPositionRankChart(selectedPlayer, container) {
+            const isBatter = selectedPlayer.type === 'batter';
+            const allPlayers = isBatter ? [...allProjectionBatters] : [...allProjectionPitchers];
+            
+            // Get primary position for filtering
+            const posDisplay = formatProjectionPosition(selectedPlayer.position);
+            const primaryPos = posDisplay.split(',')[0].trim();
+            
+            // Get players in same position group
+            let positionPlayers;
+            if (['LF', 'CF', 'RF', 'OF'].includes(primaryPos.toUpperCase())) {
+                positionPlayers = allPlayers.filter(p => {
+                    const pos = (p.position || '').toUpperCase();
+                    return pos.includes('LF') || pos.includes('CF') || pos.includes('RF') || pos.includes('OF');
+                });
+            } else if (['SP', 'RP'].includes(primaryPos.toUpperCase())) {
+                positionPlayers = allPlayers.filter(p => {
+                    const pos = (p.position || '').toUpperCase();
+                    return pos.includes(primaryPos.toUpperCase());
+                });
+            } else {
+                positionPlayers = allPlayers.filter(p => {
+                    const pos = (p.position || '').toUpperCase();
+                    return pos.includes(primaryPos.toUpperCase());
+                });
+            }
+            
+            // Sort by projected points and take top players
+            positionPlayers.sort((a, b) => (a.projected_points || 0) - (b.projected_points || 0));
+            const topPlayers = positionPlayers.slice(-50); // Top 50 for the chart
+            
+            // Chart dimensions
+            const width = container.clientWidth || 320;
+            const height = 180;
+            const padding = { top: 15, right: 20, bottom: 25, left: 45 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            
+            // Get value range
+            const minPts = Math.min(...topPlayers.map(p => p.projected_points || 0));
+            const maxPts = Math.max(...topPlayers.map(p => p.projected_points || 0));
+            const range = maxPts - minPts || 1;
+            
+            // Scale function for y-axis
+            const scaleY = (val) => padding.top + chartHeight - ((val - minPts) / range * chartHeight);
+            
+            // Build SVG
+            let svg = `<svg width="${width}" height="${height}" style="display: block;">`;
+            
+            // Y-axis
+            svg += `<line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" class="chart-axis"/>`;
+            
+            // Y-axis labels
+            const yTicks = 5;
+            for (let i = 0; i <= yTicks; i++) {
+                const val = minPts + (range * i / yTicks);
+                const y = scaleY(val);
+                svg += `<line x1="${padding.left - 5}" y1="${y}" x2="${padding.left}" y2="${y}" class="chart-axis"/>`;
+                svg += `<text x="${padding.left - 8}" y="${y + 3}" text-anchor="end" class="chart-axis-label">${Math.round(val)}</text>`;
+                // Grid line
+                svg += `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="chart-grid"/>`;
+            }
+            
+            // X-axis (baseline)
+            svg += `<line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" class="chart-axis"/>`;
+            
+            // Plot dots
+            const dotSpacing = chartWidth / (topPlayers.length + 1);
+            topPlayers.forEach((player, i) => {
+                const x = padding.left + dotSpacing * (i + 1);
+                const y = scaleY(player.projected_points || 0);
+                const isSelected = player.name === selectedPlayer.name;
+                const radius = isSelected ? 8 : 5;
+                const cssClass = isSelected ? 'chart-dot highlighted' : 'chart-dot';
+                
+                svg += `<circle cx="${x}" cy="${y}" r="${radius}" class="${cssClass}">
+                    <title>${player.name}: ${(player.projected_points || 0).toFixed(1)} pts</title>
+                </circle>`;
+            });
+            
+            // Position label
+            svg += `<text x="${width / 2}" y="${height - 5}" text-anchor="middle" class="chart-axis-label" style="font-weight: bold;">${primaryPos.toUpperCase()} Rankings</text>`;
+            
+            svg += '</svg>';
+            container.innerHTML = svg;
+        }
+        
+        function renderScatterChart(selectedPlayer, container, isBatter) {
+            const allPlayers = isBatter ? [...allProjectionBatters] : [...allProjectionPitchers];
+            
+            // Get x-axis value (PA for batters, G for pitchers)
+            const getXValue = (p) => {
+                if (isBatter) {
+                    return p.stats?.PA || 0;
+                } else {
+                    return p.stats?.G || p.games || 0;
+                }
+            };
+            
+            // Filter out players with 0 for x value
+            const validPlayers = allPlayers.filter(p => getXValue(p) > 0);
+            
+            // Chart dimensions
+            const width = container.clientWidth || 320;
+            const height = 180;
+            const padding = { top: 15, right: 20, bottom: 30, left: 45 };
+            const chartWidth = width - padding.left - padding.right;
+            const chartHeight = height - padding.top - padding.bottom;
+            
+            // Get value ranges
+            const xValues = validPlayers.map(p => getXValue(p));
+            const yValues = validPlayers.map(p => p.projected_points || 0);
+            const minX = Math.min(...xValues);
+            const maxX = Math.max(...xValues);
+            const minY = Math.min(...yValues);
+            const maxY = Math.max(...yValues);
+            const rangeX = maxX - minX || 1;
+            const rangeY = maxY - minY || 1;
+            
+            // Scale functions
+            const scaleX = (val) => padding.left + ((val - minX) / rangeX * chartWidth);
+            const scaleY = (val) => padding.top + chartHeight - ((val - minY) / rangeY * chartHeight);
+            
+            // Build SVG
+            let svg = `<svg width="${width}" height="${height}" style="display: block;">`;
+            
+            // Y-axis
+            svg += `<line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" class="chart-axis"/>`;
+            
+            // Y-axis labels
+            const yTicks = 4;
+            for (let i = 0; i <= yTicks; i++) {
+                const val = minY + (rangeY * i / yTicks);
+                const y = scaleY(val);
+                svg += `<line x1="${padding.left - 5}" y1="${y}" x2="${padding.left}" y2="${y}" class="chart-axis"/>`;
+                svg += `<text x="${padding.left - 8}" y="${y + 3}" text-anchor="end" class="chart-axis-label">${Math.round(val)}</text>`;
+                svg += `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="chart-grid"/>`;
+            }
+            
+            // X-axis
+            svg += `<line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" class="chart-axis"/>`;
+            
+            // X-axis labels
+            const xTicks = 5;
+            for (let i = 0; i <= xTicks; i++) {
+                const val = minX + (rangeX * i / xTicks);
+                const x = scaleX(val);
+                svg += `<line x1="${x}" y1="${height - padding.bottom}" x2="${x}" y2="${height - padding.bottom + 5}" class="chart-axis"/>`;
+                svg += `<text x="${x}" y="${height - padding.bottom + 15}" text-anchor="middle" class="chart-axis-label">${Math.round(val)}</text>`;
+            }
+            
+            // Plot dots
+            validPlayers.forEach(player => {
+                const x = scaleX(getXValue(player));
+                const y = scaleY(player.projected_points || 0);
+                const isSelected = player.name === selectedPlayer.name;
+                const radius = isSelected ? 8 : 4;
+                const cssClass = isSelected ? 'chart-dot highlighted' : 'chart-dot';
+                
+                svg += `<circle cx="${x}" cy="${y}" r="${radius}" class="${cssClass}">
+                    <title>${player.name}: ${(player.projected_points || 0).toFixed(1)} pts, ${getXValue(player)} ${isBatter ? 'PA' : 'G'}</title>
+                </circle>`;
+            });
+            
+            // Axis labels
+            svg += `<text x="${width / 2}" y="${height - 3}" text-anchor="middle" class="chart-axis-label" style="font-weight: bold;">${isBatter ? 'Plate Appearances' : 'Games'}</text>`;
+            svg += `<text x="10" y="${height / 2}" text-anchor="middle" transform="rotate(-90, 10, ${height / 2})" class="chart-axis-label" style="font-weight: bold;">Proj Pts</text>`;
+            
+            svg += '</svg>';
+            container.innerHTML = svg;
+        }
+        
+        function closeProjectionModal() {
+            document.getElementById('projection-modal').classList.remove('active');
+        }
+        
+        // Close projection modal on outside click
+        document.getElementById('projection-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeProjectionModal();
+            }
+        });
 
         // ===== INITIALIZE ON PAGE LOAD =====
         window.addEventListener('DOMContentLoaded', async () => {
