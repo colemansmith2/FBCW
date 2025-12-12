@@ -718,6 +718,157 @@
         }
 
         /* Keeper Management Styles */
+        .btn-select-keepers {
+            padding: 0.5rem 1.25rem;
+            background: linear-gradient(135deg, #d4af37, #c9a227);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.2s;
+        }
+
+        .btn-select-keepers:hover {
+            background: linear-gradient(135deg, #e0bc3f, #d4af37);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .keeper-modal-content {
+            max-width: 700px;
+            width: 95vw;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .keeper-modal-auth {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .keeper-modal-auth h2 {
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+
+        .keeper-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border-radius: 8px 8px 0 0;
+            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+        }
+
+        .keeper-modal-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+
+        .keeper-switch-btn {
+            padding: 0.4rem 0.8rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .keeper-switch-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        #keeper-modal-selection {
+            padding: 1.5rem;
+        }
+
+        .keeper-modal-footer {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid #e0e0e0;
+        }
+
+        .keeper-selected-summary {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            min-height: 60px;
+        }
+
+        .keeper-selected-summary .selected-player {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.6rem;
+            margin: 0.25rem;
+            background: rgba(212, 175, 55, 0.2);
+            border: 1px solid #d4af37;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+
+        .keeper-selected-summary .selected-player .remove-keeper {
+            cursor: pointer;
+            color: #888;
+            margin-left: 0.25rem;
+        }
+
+        .keeper-selected-summary .selected-player .remove-keeper:hover {
+            color: #dc3545;
+        }
+
+        .keeper-selected-summary .no-selection {
+            color: #888;
+            font-style: italic;
+        }
+
+        .keeper-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .keeper-cancel-btn {
+            padding: 0.6rem 1.5rem;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .keeper-cancel-btn:hover {
+            background: #5a6268;
+        }
+
+        .keeper-submit-btn {
+            padding: 0.6rem 1.5rem;
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .keeper-submit-btn:hover {
+            background: linear-gradient(135deg, #2dbc4e, #28a745);
+        }
+
+        .keeper-submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
         .keeper-auth-container {
             background: #f8f9fa;
             border-radius: 8px;
@@ -3775,9 +3926,12 @@
             </div>
 
             <div id="proj-stats-container" style="display: none;">
-                <div class="player-summary">
-                    <span id="proj-player-count">0 players</span>
-                    <button class="btn-export" style="margin-left: 1rem; padding: 0.3rem 0.8rem; font-size: 0.8rem; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="exportProjectionsCSV()">Export CSV</button>
+                <div class="player-summary" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span id="proj-player-count">0 players</span>
+                        <button class="btn-export" style="margin-left: 1rem; padding: 0.3rem 0.8rem; font-size: 0.8rem; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="exportProjectionsCSV()">Export CSV</button>
+                    </div>
+                    <button class="btn-select-keepers" onclick="openKeeperModal()">🔒 Select Keepers</button>
                 </div>
 
                 <div class="table-wrapper player-table-wrapper">
@@ -3799,67 +3953,83 @@
                 </div>
             </div>
 
-            <!-- Keeper Management Section -->
+            <!-- League Keepers Section -->
             <div style="margin-top: 3rem; border-top: 2px solid #e0e0e0; padding-top: 2rem;">
-                <h3 style="color: #1e3c72; margin-bottom: 1rem;">🔒 Keeper Management</h3>
+                <h3 style="color: #1e3c72; margin-bottom: 1rem;">📋 League Keepers</h3>
+                <div id="keeper-league-loading" class="loading" style="display: none;">Loading keepers...</div>
+                <div id="keeper-league-container">
+                    <div class="keeper-league-grid" id="keeper-league-grid">
+                        <!-- Keeper cards for each team -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Keeper Selection Modal -->
+    <div id="keeper-modal" class="modal">
+        <div class="modal-content keeper-modal-content">
+            <span class="modal-close" onclick="closeKeeperModal()">&times;</span>
+            
+            <!-- Auth Section -->
+            <div id="keeper-modal-auth" class="keeper-modal-auth">
+                <h2>🔒 Select Your Keepers</h2>
+                <p style="color: #666; margin-bottom: 1.5rem;">Select your team and enter your password to manage your keepers.</p>
                 
-                <div id="keeper-auth-section" class="keeper-auth-container">
-                    <p style="color: #666; margin-bottom: 1rem;">Select your team and enter your password to manage your keepers.</p>
-                    <div class="keeper-auth-form">
-                        <div class="keeper-auth-field">
-                            <label for="keeper-team-select">Your Team:</label>
-                            <select id="keeper-team-select" onchange="onKeeperTeamSelect()">
-                                <option value="">-- Select Team --</option>
-                            </select>
-                        </div>
-                        <div class="keeper-auth-field" id="keeper-password-field" style="display: none;">
-                            <label for="keeper-password">Password:</label>
-                            <input type="password" id="keeper-password" placeholder="Enter password">
-                            <button class="keeper-auth-btn" onclick="authenticateKeeper()">Unlock</button>
-                        </div>
+                <div class="keeper-auth-form">
+                    <div class="keeper-auth-field">
+                        <label for="keeper-team-select">Your Team:</label>
+                        <select id="keeper-team-select" onchange="onKeeperTeamSelect()">
+                            <option value="">-- Select Team --</option>
+                        </select>
                     </div>
-                    <div id="keeper-auth-error" class="keeper-auth-error" style="display: none;"></div>
-                </div>
-
-                <div id="keeper-management-section" style="display: none;">
-                    <div class="keeper-header">
-                        <div class="keeper-header-info">
-                            <span class="keeper-team-name" id="keeper-current-team"></span>
-                            <span class="keeper-status" id="keeper-status">0 / 0 keepers selected</span>
-                        </div>
-                        <button class="keeper-lock-btn" onclick="logoutKeeper()">🔓 Switch Team</button>
-                    </div>
-
-                    <div class="keeper-roster-section">
-                        <h4>Your 2025 Roster - Select Keepers</h4>
-                        <div id="keeper-roster-loading" class="loading" style="display: none;">Loading roster...</div>
-                        <div class="keeper-roster-table-wrapper">
-                            <table class="player-table keeper-table" id="keeper-roster-table">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 50px;">Keep</th>
-                                        <th>#</th>
-                                        <th>Player</th>
-                                        <th>Pos</th>
-                                        <th>2025 Pts</th>
-                                        <th>2026 Proj</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="keeper-roster-body">
-                                </tbody>
-                            </table>
-                        </div>
+                    <div class="keeper-auth-field" id="keeper-password-field" style="display: none;">
+                        <label for="keeper-password">Password:</label>
+                        <input type="password" id="keeper-password" placeholder="Enter password" onkeypress="if(event.key === 'Enter') authenticateKeeper()">
+                        <button class="keeper-auth-btn" onclick="authenticateKeeper()">Unlock</button>
                     </div>
                 </div>
-
-                <!-- View All Keepers Section -->
-                <div style="margin-top: 2rem;">
-                    <h4 style="color: #1e3c72; margin-bottom: 1rem;">📋 League Keepers</h4>
-                    <div id="keeper-league-loading" class="loading" style="display: none;">Loading keepers...</div>
-                    <div id="keeper-league-container">
-                        <div class="keeper-league-grid" id="keeper-league-grid">
-                            <!-- Keeper cards for each team -->
-                        </div>
+                <div id="keeper-auth-error" class="keeper-auth-error" style="display: none;"></div>
+            </div>
+            
+            <!-- Selection Section (hidden until authenticated) -->
+            <div id="keeper-modal-selection" style="display: none;">
+                <div class="keeper-modal-header">
+                    <div class="keeper-header-info">
+                        <h2 id="keeper-current-team"></h2>
+                        <span class="keeper-status" id="keeper-status">0 / 0 keepers selected</span>
+                    </div>
+                    <button class="keeper-switch-btn" onclick="logoutKeeper()">🔄 Switch Team</button>
+                </div>
+                
+                <div class="keeper-roster-section">
+                    <p style="color: #666; margin-bottom: 1rem;">Select up to <strong id="keeper-max-display">5</strong> players from your 2025 roster to keep for 2026.</p>
+                    <div id="keeper-roster-loading" class="loading" style="display: none;">Loading roster...</div>
+                    <div class="keeper-roster-table-wrapper">
+                        <table class="player-table keeper-table" id="keeper-roster-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">Keep</th>
+                                    <th>#</th>
+                                    <th>Player</th>
+                                    <th>Pos</th>
+                                    <th>2025 Pts</th>
+                                    <th>2026 Proj</th>
+                                </tr>
+                            </thead>
+                            <tbody id="keeper-roster-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="keeper-modal-footer">
+                    <div class="keeper-selected-summary" id="keeper-selected-summary">
+                        <!-- Shows selected keepers -->
+                    </div>
+                    <div class="keeper-modal-actions">
+                        <button class="keeper-cancel-btn" onclick="closeKeeperModal()">Cancel</button>
+                        <button class="keeper-submit-btn" onclick="submitKeepers()" id="keeper-submit-btn">Submit Keepers</button>
                     </div>
                 </div>
             </div>
@@ -8995,26 +9165,59 @@
             currentKeeperTeam = teamKey;
             errorEl.style.display = 'none';
             
-            // Hide auth section, show management section
-            document.getElementById('keeper-auth-section').style.display = 'none';
-            document.getElementById('keeper-management-section').style.display = 'block';
+            // Hide auth section, show selection section
+            document.getElementById('keeper-modal-auth').style.display = 'none';
+            document.getElementById('keeper-modal-selection').style.display = 'block';
             
             // Update header
             document.getElementById('keeper-current-team').textContent = `${teamInfo.manager}'s ${teamInfo.team_name}`;
+            document.getElementById('keeper-max-display').textContent = keeperConfig.max_keepers;
             
             // Load roster and display
             await loadKeeperRoster(teamKey);
             updateKeeperStatus();
+            updateKeeperSelectedSummary();
         }
         
         function logoutKeeper() {
             currentKeeperTeam = null;
-            document.getElementById('keeper-auth-section').style.display = 'block';
-            document.getElementById('keeper-management-section').style.display = 'none';
+            document.getElementById('keeper-modal-auth').style.display = 'block';
+            document.getElementById('keeper-modal-selection').style.display = 'none';
             document.getElementById('keeper-team-select').value = '';
             document.getElementById('keeper-password-field').style.display = 'none';
             document.getElementById('keeper-password').value = '';
+            document.getElementById('keeper-auth-error').style.display = 'none';
         }
+        
+        function openKeeperModal() {
+            // Initialize if needed
+            if (!keeperConfig) {
+                initializeKeeperManagement();
+            }
+            
+            // Reset to auth view
+            document.getElementById('keeper-modal-auth').style.display = 'block';
+            document.getElementById('keeper-modal-selection').style.display = 'none';
+            document.getElementById('keeper-team-select').value = '';
+            document.getElementById('keeper-password-field').style.display = 'none';
+            document.getElementById('keeper-password').value = '';
+            document.getElementById('keeper-auth-error').style.display = 'none';
+            
+            // Show modal
+            document.getElementById('keeper-modal').classList.add('active');
+        }
+        
+        function closeKeeperModal() {
+            document.getElementById('keeper-modal').classList.remove('active');
+            logoutKeeper();
+        }
+        
+        // Close keeper modal on outside click
+        document.getElementById('keeper-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeKeeperModal();
+            }
+        });
         
         async function loadKeeperRoster(teamKey) {
             const loadingEl = document.getElementById('keeper-roster-loading');
@@ -9123,13 +9326,10 @@
                 }
             }
             
-            // Save to localStorage
-            saveKeeperSelections();
-            
             // Update UI
             updateKeeperRosterDisplay();
             updateKeeperStatus();
-            displayLeagueKeepers();
+            updateKeeperSelectedSummary();
         }
         
         function saveKeeperSelections() {
@@ -9168,6 +9368,58 @@
             const teamKeepers = keeperSelections[currentKeeperTeam] || [];
             const statusEl = document.getElementById('keeper-status');
             statusEl.textContent = `${teamKeepers.length} / ${keeperConfig.max_keepers} keepers selected`;
+        }
+        
+        function updateKeeperSelectedSummary() {
+            const summaryEl = document.getElementById('keeper-selected-summary');
+            const teamKeepers = keeperSelections[currentKeeperTeam] || [];
+            
+            if (teamKeepers.length === 0) {
+                summaryEl.innerHTML = '<span class="no-selection">No keepers selected. Check the boxes next to players you want to keep.</span>';
+            } else {
+                summaryEl.innerHTML = teamKeepers.map(k => `
+                    <span class="selected-player">
+                        <span class="keeper-badge">K</span>
+                        ${k.player_name}
+                        <span class="remove-keeper" onclick="toggleKeeper('${k.player_name.replace(/'/g, "\\'")}', false)" title="Remove">✕</span>
+                    </span>
+                `).join('');
+            }
+            
+            // Update submit button state
+            const submitBtn = document.getElementById('keeper-submit-btn');
+            submitBtn.disabled = teamKeepers.length === 0;
+        }
+        
+        async function submitKeepers() {
+            if (!currentKeeperTeam) return;
+            
+            const teamKeepers = keeperSelections[currentKeeperTeam] || [];
+            const teamInfo = keeperConfig.teams[currentKeeperTeam];
+            
+            if (teamKeepers.length === 0) {
+                alert('Please select at least one keeper before submitting.');
+                return;
+            }
+            
+            // Confirm submission
+            const keeperNames = teamKeepers.map(k => k.player_name).join(', ');
+            const confirmed = confirm(`Submit the following keepers for ${teamInfo.team_name}?\n\n${keeperNames}\n\nThis will save your selections.`);
+            
+            if (!confirmed) return;
+            
+            // Save to localStorage
+            saveKeeperSelections();
+            
+            // Update the display
+            displayLeagueKeepers();
+            filterProjections(); // Refresh the projections table to show keeper badges
+            
+            // Show success message
+            alert(`✅ Keepers submitted successfully!\n\nYour ${teamKeepers.length} keeper(s) have been saved.`);
+            
+            // Close the modal
+            closeKeeperModal();
         }
         
         async function displayLeagueKeepers() {
