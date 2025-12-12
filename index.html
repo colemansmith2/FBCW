@@ -768,20 +768,33 @@
         .keeper-modal-header h2 {
             margin: 0;
             font-size: 1.2rem;
+            color: #f5d742; /* CHANGED: Gold color to pop against blue background */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
         .keeper-switch-btn {
-            padding: 0.4rem 0.8rem;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.3rem 0.6rem;
+            background: rgba(0, 0, 0, 0.2);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
         }
 
         .keeper-switch-btn:hover {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        
+        /* Add style for the status text when full */
+        .keeper-status.full {
+            color: #f5d742;
+            font-weight: bold;
         }
 
         #keeper-modal-selection {
@@ -9326,10 +9339,10 @@
                 }
             }
             
-            // Update UI
+            // Update UI Elements Immediately
             updateKeeperRosterDisplay();
-            updateKeeperStatus();
-            updateKeeperSelectedSummary();
+            updateKeeperStatus(); // Updates the top bar
+            updateKeeperSelectedSummary(); // Updates the bottom bar
         }
         
         function saveKeeperSelections() {
@@ -9367,7 +9380,18 @@
         function updateKeeperStatus() {
             const teamKeepers = keeperSelections[currentKeeperTeam] || [];
             const statusEl = document.getElementById('keeper-status');
-            statusEl.textContent = `${teamKeepers.length} / ${keeperConfig.max_keepers} keepers selected`;
+            const max = keeperConfig.max_keepers;
+            const current = teamKeepers.length;
+            
+            statusEl.textContent = `${current} / ${max} keepers selected`;
+            
+            // Visual cue when limit is reached
+            if (current === max) {
+                statusEl.classList.add('full');
+                statusEl.innerHTML += ' (Max Reached)';
+            } else {
+                statusEl.classList.remove('full');
+            }
         }
         
         function updateKeeperSelectedSummary() {
@@ -9411,9 +9435,12 @@
             // Save to localStorage
             saveKeeperSelections();
             
-            // Update the display
+            // Update the visual display of the league grid
             displayLeagueKeepers();
-            filterProjections(); // Refresh the projections table to show keeper badges
+            
+            // CRITICAL: Force re-render of the main projections table to show "K" badges immediately
+            // We call filterProjections() which internally calls renderProjectionTable()
+            filterProjections(); 
             
             // Show success message
             alert(`✅ Keepers submitted successfully!\n\nYour ${teamKeepers.length} keeper(s) have been saved.`);
