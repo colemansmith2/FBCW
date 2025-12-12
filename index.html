@@ -980,11 +980,60 @@
             margin-bottom: 0.75rem;
         }
 
+        /* Fix scrolling: Remove fixed height so the modal's main scrollbar handles everything */
         .keeper-roster-table-wrapper {
-            max-height: 500px;
-            overflow-y: auto;
+            max-height: none; /* Was 500px */
+            overflow-y: visible; /* Was auto */
             border: 1px solid #e0e0e0;
             border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        /* Update header layout to hold buttons on the right */
+        .keeper-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Align to top so buttons don't stretch */
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border-radius: 8px 8px 0 0;
+            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+            gap: 1rem; /* Space between info and buttons */
+        }
+        
+        /* Container for the two buttons in the header */
+        .keeper-header-actions {
+            display: flex;
+            flex-direction: column; /* Stack them: Submit on top, Switch below */
+            align-items: flex-end;
+            gap: 0.5rem;
+            min-width: 140px; /* Prevent squishing */
+        }
+        
+        /* Style the Submit button for the header */
+        .keeper-header-submit-btn {
+            padding: 0.5rem 1rem;
+            background: #28a745; /* Green */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+            width: 100%; /* Full width of container */
+        }
+        
+        .keeper-header-submit-btn:hover {
+            background: #218838;
+        }
+        
+        .keeper-header-submit-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.7;
         }
 
         .keeper-table .keeper-checkbox {
@@ -4010,9 +4059,16 @@
                 <div class="keeper-modal-header">
                     <div class="keeper-header-info">
                         <h2 id="keeper-current-team"></h2>
+                        <div class="keeper-progress-container">
+                            <div id="keeper-progress-bar" class="keeper-progress-bar"></div>
+                        </div>
                         <span class="keeper-status" id="keeper-status">0 / 0 keepers selected</span>
                     </div>
-                    <button class="keeper-switch-btn" onclick="logoutKeeper()">🔄 Switch Team</button>
+                    
+                    <div class="keeper-header-actions">
+                        <button class="keeper-header-submit-btn" onclick="submitKeepers()" id="keeper-submit-btn">Submit Keepers</button>
+                        <button class="keeper-switch-btn" onclick="logoutKeeper()">Switch Team</button>
+                    </div>
                 </div>
                 
                 <div class="keeper-roster-section">
@@ -4038,11 +4094,7 @@
                 
                 <div class="keeper-modal-footer">
                     <div class="keeper-selected-summary" id="keeper-selected-summary">
-                        <!-- Shows selected keepers -->
-                    </div>
-                    <div class="keeper-modal-actions">
-                        <button class="keeper-cancel-btn" onclick="closeKeeperModal()">Cancel</button>
-                        <button class="keeper-submit-btn" onclick="submitKeepers()" id="keeper-submit-btn">Submit Keepers</button>
+                        </div>
                     </div>
                 </div>
             </div>
