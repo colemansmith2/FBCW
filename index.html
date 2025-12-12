@@ -741,67 +741,95 @@
             max-width: 700px;
             width: 95vw;
             max-height: 90vh;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #keeper-modal-selection {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow: hidden;
+            padding: 0;
         }
 
         /* Progress Bar Container */
         .keeper-progress-container {
             width: 100%;
             max-width: 350px; 
-            height: 8px;      
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 4px;
+            height: 10px;      
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
             margin: 0.5rem 0;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* The Red Dynamic Bar */
+        /* The Dynamic Progress Bar */
         .keeper-progress-bar {
             height: 100%;
             width: 0%;
-            background-color: #ff4757; /* Bright Red */
-            transition: width 0.3s ease-out, background-color 0.3s;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 5px;
+            transition: width 0.3s ease-out, background 0.3s;
         }
 
-        /* Updated Header Layout: Everything on the left */
+        .keeper-progress-bar.full {
+            background: linear-gradient(90deg, #d4af37, #f5d742);
+        }
+
+        /* Header Layout */
         .keeper-modal-header {
             display: flex;
-            flex-direction: column; 
-            align-items: flex-start; 
-            padding: 1.5rem;
-            padding-right: 4rem; 
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1.25rem 1.5rem;
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: white;
-            border-radius: 8px 8px 0 0;
-            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-            position: relative;
+            flex-shrink: 0;
         }
 
-        /* Header Info Block */
-        .keeper-header-info {
-            width: 100%;
-            margin-bottom: 1rem;
+        .keeper-header-left {
+            flex: 1;
         }
 
-        /* Submit Button Style - positioned on the left */
-        .keeper-header-submit-btn {
-            padding: 0.6rem 1.5rem;
-            background: #28a745;
-            color: white;
-            border: none;
+        .keeper-header-right {
+            margin-left: 1rem;
+        }
+
+        .keeper-modal-header h2 {
+            margin: 0 0 0.25rem 0;
+            font-size: 1.2rem;
+            color: #f5d742;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .keeper-status {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .keeper-status.full {
+            color: #f5d742;
+            font-weight: bold;
+            opacity: 1;
+        }
+
+        .keeper-switch-btn {
+            padding: 0.4rem 0.8rem;
+            background: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 4px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 0.95rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: transform 0.1s, background 0.2s;
-            display: inline-block; 
+            font-size: 0.8rem;
+            transition: all 0.2s;
         }
 
-        .keeper-header-submit-btn:hover {
-            background: #218838;
-            transform: translateY(-1px);
+        .keeper-switch-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
         }
 
         .keeper-modal-auth {
@@ -814,57 +842,26 @@
             margin-bottom: 0.5rem;
         }
 
-        .keeper-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        /* Scrollable Roster Section */
+        .keeper-roster-section {
+            flex: 1;
+            overflow-y: auto;
             padding: 1rem 1.5rem;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
-            border-radius: 8px 8px 0 0;
-            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+            min-height: 0;
         }
 
-        .keeper-modal-header h2 {
-            margin: 0;
-            font-size: 1.2rem;
-            color: #f5d742; /* CHANGED: Gold color to pop against blue background */
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        .keeper-roster-table-wrapper {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
         }
 
-        .keeper-switch-btn {
-            padding: 0.3rem 0.6rem;
-            background: rgba(0, 0, 0, 0.2);
-            color: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.2s;
-        }
-
-        .keeper-switch-btn:hover {
-            background: rgba(255, 255, 255, 0.15);
-            color: #fff;
-            border-color: rgba(255, 255, 255, 0.5);
-        }
-        
-        /* Add style for the status text when full */
-        .keeper-status.full {
-            color: #f5d742;
-            font-weight: bold;
-        }
-
-        #keeper-modal-selection {
-            padding: 1.5rem;
-        }
-
+        /* Fixed Footer */
         .keeper-modal-footer {
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
+            padding: 1rem 1.5rem;
             border-top: 2px solid #e0e0e0;
+            background: #f8f9fa;
+            flex-shrink: 0;
         }
 
         .keeper-selected-summary {
@@ -1047,53 +1044,6 @@
             border: 1px solid #e0e0e0;
             border-radius: 8px;
             margin-bottom: 1rem;
-        }
-        
-        /* Update header layout to hold buttons on the right */
-        .keeper-modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start; /* Align to top so buttons don't stretch */
-            padding: 1rem 1.5rem;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
-            color: white;
-            border-radius: 8px 8px 0 0;
-            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-            gap: 1rem; /* Space between info and buttons */
-        }
-        
-        /* Container for the two buttons in the header */
-        .keeper-header-actions {
-            display: flex;
-            flex-direction: column; /* Stack them: Submit on top, Switch below */
-            align-items: flex-end;
-            gap: 0.5rem;
-            min-width: 140px; /* Prevent squishing */
-        }
-        
-        /* Style the Submit button for the header */
-        .keeper-header-submit-btn {
-            padding: 0.5rem 1rem;
-            background: #28a745; /* Green */
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: background 0.2s;
-            width: 100%; /* Full width of container */
-        }
-        
-        .keeper-header-submit-btn:hover {
-            background: #218838;
-        }
-        
-        .keeper-header-submit-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.7;
         }
 
         .keeper-table .keeper-checkbox {
@@ -4117,26 +4067,21 @@
             <!-- Selection Section (hidden until authenticated) -->
             <div id="keeper-modal-selection" style="display: none;">
                 
+                <!-- Fixed Header -->
                 <div class="keeper-modal-header">
-                    <div class="keeper-header-info">
+                    <div class="keeper-header-left">
                         <h2 id="keeper-current-team"></h2>
                         <div class="keeper-progress-container">
                             <div id="keeper-progress-bar" class="keeper-progress-bar"></div>
                         </div>
-                        <span class="keeper-status" id="keeper-status">0 / 0 keepers selected</span>
+                        <span class="keeper-status" id="keeper-status">0 / 5 keepers selected</span>
                     </div>
-                    
-                    <button class="keeper-header-submit-btn" onclick="submitKeepers()" id="keeper-submit-btn">Submit Keepers</button>
-                </div>
-                <div class="keeper-roster-section">
-                    <p style="color: #666; margin-bottom: 1rem;">Select up to <strong id="keeper-max-display">5</strong> players from your 2025 roster to keep for 2026.</p>
-                    
-                    <div class="keeper-header-actions">
-                        <button class="keeper-header-submit-btn" onclick="submitKeepers()" id="keeper-submit-btn">Submit Keepers</button>
+                    <div class="keeper-header-right">
                         <button class="keeper-switch-btn" onclick="logoutKeeper()">Switch Team</button>
                     </div>
                 </div>
                 
+                <!-- Scrollable Roster Section -->
                 <div class="keeper-roster-section">
                     <p style="color: #666; margin-bottom: 1rem;">Select up to <strong id="keeper-max-display">5</strong> players from your 2025 roster to keep for 2026.</p>
                     <div id="keeper-roster-loading" class="loading" style="display: none;">Loading roster...</div>
@@ -4158,9 +4103,14 @@
                     </div>
                 </div>
                 
+                <!-- Fixed Footer with Submit -->
                 <div class="keeper-modal-footer">
                     <div class="keeper-selected-summary" id="keeper-selected-summary">
-                        </div>
+                        <span class="no-selection">No keepers selected. Check the boxes next to players you want to keep.</span>
+                    </div>
+                    <div class="keeper-modal-actions">
+                        <button class="keeper-cancel-btn" onclick="closeKeeperModal()">Cancel</button>
+                        <button class="keeper-submit-btn" onclick="submitKeepers()" id="keeper-submit-btn" disabled>Submit Keepers</button>
                     </div>
                 </div>
             </div>
@@ -9468,36 +9418,25 @@
             const statusEl = document.getElementById('keeper-status');
             const barEl = document.getElementById('keeper-progress-bar');
             
-            // Ensure numbers are valid
-            const max = keeperConfig.max_keepers || 5; 
+            const max = keeperConfig?.max_keepers || 5; 
             const current = teamKeepers.length;
             
-            // 1. Update Text
+            // Update status text
             statusEl.textContent = `${current} / ${max} keepers selected`;
             
-            // 2. Update Bar Width & Color
+            // Update progress bar
             if (barEl) {
-                // Calculate percentage safely
                 const percentage = max > 0 ? Math.min((current / max) * 100, 100) : 0;
-                
-                // Force style update
                 barEl.style.width = percentage + '%';
                 
-                // Change color to green if full, otherwise red
+                // Add/remove full class for color change
                 if (current >= max) {
-                    barEl.style.backgroundColor = '#2ed573'; // Green
+                    barEl.classList.add('full');
+                    statusEl.classList.add('full');
                 } else {
-                    barEl.style.backgroundColor = '#ff4757'; // Red
+                    barEl.classList.remove('full');
+                    statusEl.classList.remove('full');
                 }
-            }
-            
-            // 3. Highlight text if full
-            if (current >= max) {
-                statusEl.style.color = '#f5d742'; // Gold
-                statusEl.style.fontWeight = 'bold';
-            } else {
-                statusEl.style.color = 'rgba(255, 255, 255, 0.9)';
-                statusEl.style.fontWeight = 'normal';
             }
         }
         
@@ -9531,23 +9470,6 @@
                     existingBadge.remove();
                 }
             });
-        }
-        
-        function updateKeeperStatus() {
-            const teamKeepers = keeperSelections[currentKeeperTeam] || [];
-            const statusEl = document.getElementById('keeper-status');
-            const max = keeperConfig.max_keepers;
-            const current = teamKeepers.length;
-            
-            statusEl.textContent = `${current} / ${max} keepers selected`;
-            
-            // Visual cue when limit is reached
-            if (current === max) {
-                statusEl.classList.add('full');
-                statusEl.innerHTML += ' (Max Reached)';
-            } else {
-                statusEl.classList.remove('full');
-            }
         }
         
         function updateKeeperSelectedSummary() {
