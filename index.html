@@ -920,6 +920,8 @@
         body.keeper-modal-open {
             overflow: hidden;
         }
+
+        .keeper-modal-footer {
             padding: 1rem 1.5rem;
             border-top: 2px solid #e0e0e0;
             background: #f8f9fa;
@@ -929,21 +931,35 @@
         .keeper-selected-summary {
             margin-bottom: 1rem;
             padding: 1rem;
-            background: #f8f9fa;
+            background: white;
+            border: 1px solid #e0e0e0;
             border-radius: 8px;
             min-height: 60px;
+        }
+
+        .keeper-summary-header {
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .keeper-summary-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
         }
 
         .keeper-selected-summary .selected-player {
             display: inline-flex;
             align-items: center;
             gap: 0.25rem;
-            padding: 0.25rem 0.6rem;
-            margin: 0.25rem;
-            background: rgba(212, 175, 55, 0.2);
+            padding: 0.3rem 0.5rem;
+            margin: 0.15rem;
+            background: rgba(212, 175, 55, 0.15);
             border: 1px solid #d4af37;
             border-radius: 20px;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
         .keeper-selected-summary .selected-player .remove-keeper {
@@ -959,6 +975,54 @@
         .keeper-selected-summary .no-selection {
             color: #888;
             font-style: italic;
+        }
+
+        .keeper-cost-tag {
+            background: #28a745;
+            color: white;
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .keeper-round-tag {
+            background: #1e3c72;
+            color: white;
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .keeper-round-tag.adjusted {
+            background: #6c5ce7;
+            position: relative;
+        }
+
+        .keeper-round-tag.adjusted::after {
+            content: '*';
+            font-size: 0.6rem;
+        }
+
+        /* Cost columns in keeper table */
+        .keeper-cost-col {
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .keeper-draft-round {
+            color: #666;
+        }
+
+        .keeper-round-cost {
+            color: #1e3c72;
+            font-weight: 600;
+        }
+
+        .keeper-dollar-cost {
+            color: #28a745;
+            font-weight: 700;
         }
 
         .keeper-modal-actions {
@@ -1233,6 +1297,23 @@
         .keeper-player-row .player-pts {
             font-weight: 600;
             color: #1e3c72;
+        }
+
+        .keeper-cost-small {
+            background: #28a745;
+            color: white;
+            padding: 0.1rem 0.35rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .keeper-budget-used {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.15rem 0.4rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
         }
 
         @media (max-width: 600px) {
@@ -4179,18 +4260,21 @@
                 
                 <!-- Scrollable Roster Section -->
                 <div class="keeper-roster-section">
-                    <p style="color: #666; margin-bottom: 1rem;">Select up to <strong id="keeper-max-display">5</strong> players from your 2025 roster to keep for 2026.</p>
+                    <p style="color: #666; margin-bottom: 1rem;">Select players from your 2025 roster to keep. Budget: <strong>$50</strong>. Player costs are based on draft round.</p>
                     <div id="keeper-roster-loading" class="loading" style="display: none;">Loading roster...</div>
                     <div class="keeper-roster-table-wrapper">
                         <table class="player-table keeper-table" id="keeper-roster-table">
                             <thead>
                                 <tr>
-                                    <th style="width: 50px;">Keep</th>
-                                    <th>#</th>
+                                    <th style="width: 40px;">Keep</th>
+                                    <th style="width: 30px;">#</th>
                                     <th>Player</th>
                                     <th>Pos</th>
                                     <th>2025 Pts</th>
                                     <th>2026 Proj</th>
+                                    <th style="width: 55px;">Drafted</th>
+                                    <th style="width: 55px;">Rd Cost</th>
+                                    <th style="width: 50px;">$ Cost</th>
                                 </tr>
                             </thead>
                             <tbody id="keeper-roster-body">
@@ -9183,6 +9267,8 @@
         let currentKeeperTeam = null;
         let keeperRosterData = [];
         let keeperProjectionsMap = {};
+        let keeperDraftData = {}; // Store draft data for cost calculations
+        const KEEPER_BUDGET = 50; // $50 per team
         
         // Password hashing function (simple SHA-256)
         async function hashPassword(password) {
@@ -9191,6 +9277,118 @@
             const hashBuffer = await crypto.subtle.digest('SHA-256', data);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        
+        // Calculate dollar cost based on draft round
+        function getKeeperDollarCost(draftRound) {
+            if (!draftRound || draftRound < 1) return 1; // Undrafted players cost $1
+            // Round 1 = $20, Round 2 = $19, ... Round 20+ = $1
+            return Math.max(1, 21 - draftRound);
+        }
+        
+        // Calculate next year's draft round cost for keeping a player
+        function getKeeperRoundCost(previousRound, totalRounds = 20) {
+            if (!previousRound || previousRound < 1) return totalRounds; // Undrafted costs last round
+            // Rounds 1-2: costs a 1st rounder
+            if (previousRound <= 2) return 1;
+            // Rounds 3-10: costs 3 rounds earlier
+            if (previousRound <= 10) return previousRound - 3;
+            // Rounds 11+: costs 4 rounds earlier
+            return Math.max(1, previousRound - 4);
+        }
+        
+        // Get the total number of rounds in the draft
+        function getTotalDraftRounds() {
+            if (!keeperDraftData || !keeperDraftData.length) return 20; // Default
+            return Math.max(...keeperDraftData.map(p => p.round || 0));
+        }
+        
+        // Get player's draft info from 2025
+        function getPlayerDraftInfo(playerName) {
+            const totalRounds = getTotalDraftRounds();
+            
+            if (!keeperDraftData || !keeperDraftData.length) {
+                // No draft data available, return undrafted defaults
+                return {
+                    round: null,
+                    pick: null,
+                    team_key: null,
+                    dollarCost: 1,
+                    roundCost: totalRounds,
+                    isUndrafted: true
+                };
+            }
+            
+            const normalizedName = playerName.toLowerCase().trim();
+            const pick = keeperDraftData.find(p => 
+                p.player_name && p.player_name.toLowerCase().trim() === normalizedName
+            );
+            
+            if (pick) {
+                return {
+                    round: pick.round,
+                    pick: pick.pick,
+                    team_key: pick.team_key,
+                    dollarCost: getKeeperDollarCost(pick.round),
+                    roundCost: getKeeperRoundCost(pick.round, totalRounds),
+                    isUndrafted: false
+                };
+            }
+            
+            // Player was not drafted (free agent pickup)
+            return {
+                round: null,
+                pick: null,
+                team_key: null,
+                dollarCost: 1, // Undrafted costs $1
+                roundCost: totalRounds, // Undrafted costs last round
+                isUndrafted: true
+            };
+        }
+        
+        // Calculate the actual round costs for a team's keepers, handling multiple last-round picks
+        function calculateTeamKeeperRoundCosts(teamKey) {
+            const keepers = keeperSelections[teamKey] || [];
+            if (keepers.length === 0) return [];
+            
+            const totalRounds = getTotalDraftRounds();
+            
+            // Get base round costs for each keeper
+            let roundCosts = keepers.map(k => ({
+                player_name: k.player_name,
+                baseRoundCost: k.roundCost || totalRounds,
+                isUndrafted: k.isUndrafted || false
+            }));
+            
+            // Sort by round cost (highest/latest rounds first for undrafted)
+            roundCosts.sort((a, b) => b.baseRoundCost - a.baseRoundCost);
+            
+            // Track used rounds
+            const usedRounds = new Set();
+            
+            // Assign actual rounds, avoiding conflicts
+            roundCosts.forEach(keeper => {
+                let assignedRound = keeper.baseRoundCost;
+                
+                // If this round is already used, find the next available round going backwards
+                while (usedRounds.has(assignedRound) && assignedRound > 0) {
+                    assignedRound--;
+                }
+                
+                // If we've gone below round 1, we have a problem (too many keepers)
+                if (assignedRound < 1) assignedRound = 1;
+                
+                keeper.actualRoundCost = assignedRound;
+                usedRounds.add(assignedRound);
+            });
+            
+            return roundCosts;
+        }
+        
+        // Calculate total budget used by a team's keepers
+        function calculateTeamBudgetUsed(teamKey) {
+            const keepers = keeperSelections[teamKey] || [];
+            return keepers.reduce((total, k) => total + (k.dollarCost || 1), 0);
         }
         
         async function initializeKeeperManagement() {
@@ -9202,6 +9400,17 @@
                 } else {
                     // Generate default config from current teams
                     await generateDefaultKeeperConfig();
+                }
+                
+                // Load 2025 draft data for cost calculations
+                try {
+                    const draftResponse = await fetch('data/current_season/draft.json');
+                    if (draftResponse.ok) {
+                        keeperDraftData = await draftResponse.json();
+                        console.log(`Loaded ${keeperDraftData.length} draft picks for keeper costs`);
+                    }
+                } catch (e) {
+                    console.log('Could not load draft data for keeper costs');
                 }
                 
                 // Load existing keeper selections
@@ -9352,7 +9561,6 @@
             
             // Update header with team name and logo
             document.getElementById('keeper-current-team').textContent = `${teamInfo.team_name}`;
-            document.getElementById('keeper-max-display').textContent = keeperConfig.max_keepers;
             
             // Set team logo
             const logoEl = document.getElementById('keeper-team-logo');
@@ -9440,9 +9648,18 @@
                     const isKept = keeperNames.includes(player.name.toLowerCase());
                     const projPts = keeperProjectionsMap[player.name.toLowerCase().trim()] || '-';
                     
+                    // Get draft info and costs
+                    const draftInfo = getPlayerDraftInfo(player.name);
+                    const dollarCost = draftInfo ? draftInfo.dollarCost : 1;
+                    const roundCost = draftInfo ? draftInfo.roundCost : getTotalDraftRounds();
+                    const draftRound = draftInfo && draftInfo.round ? `Rd ${draftInfo.round}` : 'FA';
+                    const isUndrafted = draftInfo ? draftInfo.isUndrafted : true;
+                    
                     const row = document.createElement('tr');
                     row.className = isKept ? 'is-keeper' : '';
                     row.dataset.playerName = player.name;
+                    row.dataset.dollarCost = dollarCost;
+                    row.dataset.roundCost = roundCost;
                     
                     const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
                     const headshot = player.headshot_url || placeholderImg;
@@ -9464,6 +9681,15 @@
                         <td class="player-position">${player.primary_position || '-'}</td>
                         <td class="stat-col">${(player.fantasy_points || 0).toFixed(1)}</td>
                         <td class="stat-col">${typeof projPts === 'number' ? projPts.toFixed(1) : projPts}</td>
+                        <td class="keeper-cost-col">
+                            <span class="keeper-draft-round">${draftRound}</span>
+                        </td>
+                        <td class="keeper-cost-col">
+                            <span class="keeper-round-cost">Rd ${roundCost}</span>
+                        </td>
+                        <td class="keeper-cost-col">
+                            <span class="keeper-dollar-cost">$${dollarCost}</span>
+                        </td>
                     `;
                     
                     tbody.appendChild(row);
@@ -9474,7 +9700,7 @@
             } catch (e) {
                 console.error('Error loading roster:', e);
                 loadingEl.style.display = 'none';
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">Could not load roster</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #888;">Could not load roster</td></tr>';
             }
         }
         
@@ -9490,9 +9716,16 @@
             const existingIndex = teamKeepers.findIndex(k => k.player_name.toLowerCase() === playerName.toLowerCase());
             
             if (isKeeping) {
-                // Check max limit
-                if (teamKeepers.length >= keeperConfig.max_keepers) {
-                    alert(`Maximum ${keeperConfig.max_keepers} keepers allowed.`);
+                // Get player cost info
+                const draftInfo = getPlayerDraftInfo(playerName);
+                const dollarCost = draftInfo ? draftInfo.dollarCost : 1;
+                const roundCost = draftInfo ? draftInfo.roundCost : getTotalDraftRounds();
+                const isUndrafted = draftInfo ? draftInfo.isUndrafted : true;
+                
+                // Check budget
+                const currentBudgetUsed = calculateTeamBudgetUsed(currentKeeperTeam);
+                if (currentBudgetUsed + dollarCost > KEEPER_BUDGET) {
+                    alert(`Adding this player would exceed your $${KEEPER_BUDGET} keeper budget.\n\nCurrent: $${currentBudgetUsed}\nThis player: $${dollarCost}\nTotal would be: $${currentBudgetUsed + dollarCost}`);
                     // Uncheck box
                     const row = document.querySelector(`tr[data-player-name="${playerName}"]`);
                     if (row) {
@@ -9501,14 +9734,18 @@
                     return;
                 }
                 
-                // Add keeper
+                // Add keeper with cost info
                 if (existingIndex === -1) {
                     const player = keeperRosterData.find(p => p.name === playerName);
                     teamKeepers.push({
                         player_name: playerName,
                         player_id: player?.player_key || '',
                         position: player?.primary_position || '',
-                        fantasy_points_2025: player?.fantasy_points || 0
+                        fantasy_points_2025: player?.fantasy_points || 0,
+                        dollarCost: dollarCost,
+                        roundCost: roundCost,
+                        draftRound: draftInfo?.round || null,
+                        isUndrafted: isUndrafted
                     });
                 }
             } else {
@@ -9529,19 +9766,21 @@
             const statusEl = document.getElementById('keeper-status');
             const barEl = document.getElementById('keeper-progress-bar');
             
-            const max = keeperConfig?.max_keepers || 5; 
-            const current = teamKeepers.length;
+            // Calculate budget used
+            const budgetUsed = calculateTeamBudgetUsed(currentKeeperTeam);
+            const budgetRemaining = KEEPER_BUDGET - budgetUsed;
+            const keeperCount = teamKeepers.length;
             
-            // Update status text
-            statusEl.textContent = `${current} / ${max} keepers selected`;
+            // Update status text to show budget
+            statusEl.textContent = `$${budgetUsed} / $${KEEPER_BUDGET} used (${keeperCount} keeper${keeperCount !== 1 ? 's' : ''})`;
             
-            // Update progress bar
+            // Update progress bar based on budget
             if (barEl) {
-                const percentage = max > 0 ? Math.min((current / max) * 100, 100) : 0;
+                const percentage = Math.min((budgetUsed / KEEPER_BUDGET) * 100, 100);
                 barEl.style.width = percentage + '%';
                 
                 // Add/remove full class for color change
-                if (current >= max) {
+                if (budgetUsed >= KEEPER_BUDGET) {
                     barEl.classList.add('full');
                     statusEl.classList.add('full');
                 } else {
@@ -9590,13 +9829,30 @@
             if (teamKeepers.length === 0) {
                 summaryEl.innerHTML = '<span class="no-selection">No keepers selected. Check the boxes next to players you want to keep.</span>';
             } else {
-                summaryEl.innerHTML = teamKeepers.map(k => `
+                const totalCost = calculateTeamBudgetUsed(currentKeeperTeam);
+                
+                // Calculate actual round costs (handling multiple last-round picks)
+                const roundCosts = calculateTeamKeeperRoundCosts(currentKeeperTeam);
+                
+                let summaryHtml = `<div class="keeper-summary-header">Selected Keepers (Total: $${totalCost})</div>`;
+                summaryHtml += '<div class="keeper-summary-list">';
+                summaryHtml += teamKeepers.map(k => {
+                    // Find the actual round cost for this keeper
+                    const roundInfo = roundCosts.find(rc => rc.player_name === k.player_name);
+                    const actualRound = roundInfo ? roundInfo.actualRoundCost : k.roundCost;
+                    const isAdjusted = roundInfo && roundInfo.actualRoundCost !== roundInfo.baseRoundCost;
+                    
+                    return `
                     <span class="selected-player">
                         <span class="keeper-badge">K</span>
                         ${k.player_name}
+                        <span class="keeper-cost-tag">$${k.dollarCost || 1}</span>
+                        <span class="keeper-round-tag ${isAdjusted ? 'adjusted' : ''}">Rd ${actualRound}</span>
                         <span class="remove-keeper" onclick="toggleKeeper('${k.player_name.replace(/'/g, "\\'")}', false)" title="Remove">✕</span>
                     </span>
-                `).join('');
+                `}).join('');
+                summaryHtml += '</div>';
+                summaryEl.innerHTML = summaryHtml;
             }
             
             // Update submit button state
@@ -9615,9 +9871,20 @@
                 return;
             }
             
-            // Confirm submission
-            const keeperNames = teamKeepers.map(k => k.player_name).join(', ');
-            const confirmed = confirm(`Submit the following keepers for ${teamInfo.team_name}?\n\n${keeperNames}\n\nThis will save your selections.`);
+            // Calculate total cost and actual round costs
+            const totalCost = calculateTeamBudgetUsed(currentKeeperTeam);
+            const roundCosts = calculateTeamKeeperRoundCosts(currentKeeperTeam);
+            
+            // Confirm submission with cost details
+            let confirmMsg = `Submit the following keepers for ${teamInfo.team_name}?\n\n`;
+            teamKeepers.forEach(k => {
+                const roundInfo = roundCosts.find(rc => rc.player_name === k.player_name);
+                const actualRound = roundInfo ? roundInfo.actualRoundCost : k.roundCost;
+                confirmMsg += `• ${k.player_name} ($${k.dollarCost || 1}, Round ${actualRound})\n`;
+            });
+            confirmMsg += `\nTotal Budget Used: $${totalCost} / $${KEEPER_BUDGET}`;
+            
+            const confirmed = confirm(confirmMsg);
             
             if (!confirmed) return;
             
@@ -9653,6 +9920,7 @@
             
             for (const [teamKey, teamInfo] of sortedTeams) {
                 const teamKeepers = keeperSelections[teamKey] || [];
+                const budgetUsed = teamKeepers.reduce((sum, k) => sum + (k.dollarCost || 1), 0);
                 
                 const card = document.createElement('div');
                 card.className = 'keeper-team-card';
@@ -9673,18 +9941,23 @@
                                 <span class="keeper-badge">K</span>
                                 <span class="player-name">${k.player_name}</span>
                                 <span class="player-pos">${k.position || ''}</span>
+                                <span class="keeper-cost-small">$${k.dollarCost || 1}</span>
                                 <span class="player-pts">${projDisplay}</span>
                             </div>
                         `;
                     }).join('');
                 }
                 
+                const budgetDisplay = teamKeepers.length > 0 
+                    ? `<span class="keeper-budget-used">$${budgetUsed}/$${KEEPER_BUDGET}</span>`
+                    : '';
+                
                 card.innerHTML = `
                     <div class="keeper-team-card-header">
                         ${logoImg}
                         <div class="keeper-team-card-info">
                             <h5>${teamInfo.team_name}</h5>
-                            <span>${teamInfo.manager}</span>
+                            <span>${teamInfo.manager} ${budgetDisplay}</span>
                         </div>
                     </div>
                     <div class="keeper-team-card-body">
