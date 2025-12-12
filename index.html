@@ -744,6 +744,66 @@
             overflow-y: auto;
         }
 
+        /* Progress Bar Container */
+        .keeper-progress-container {
+            width: 100%;
+            max-width: 350px; 
+            height: 8px;      
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 4px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* The Red Dynamic Bar */
+        .keeper-progress-bar {
+            height: 100%;
+            width: 0%;
+            background-color: #ff4757; /* Bright Red */
+            transition: width 0.3s ease-out, background-color 0.3s;
+        }
+
+        /* Updated Header Layout: Everything on the left */
+        .keeper-modal-header {
+            display: flex;
+            flex-direction: column; 
+            align-items: flex-start; 
+            padding: 1.5rem;
+            padding-right: 4rem; 
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border-radius: 8px 8px 0 0;
+            margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+            position: relative;
+        }
+
+        /* Header Info Block */
+        .keeper-header-info {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        /* Submit Button Style - positioned on the left */
+        .keeper-header-submit-btn {
+            padding: 0.6rem 1.5rem;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: transform 0.1s, background 0.2s;
+            display: inline-block; 
+        }
+
+        .keeper-header-submit-btn:hover {
+            background: #218838;
+            transform: translateY(-1px);
+        }
+
         .keeper-modal-auth {
             padding: 2rem;
             text-align: center;
@@ -4056,6 +4116,7 @@
             
             <!-- Selection Section (hidden until authenticated) -->
             <div id="keeper-modal-selection" style="display: none;">
+                
                 <div class="keeper-modal-header">
                     <div class="keeper-header-info">
                         <h2 id="keeper-current-team"></h2>
@@ -4064,6 +4125,11 @@
                         </div>
                         <span class="keeper-status" id="keeper-status">0 / 0 keepers selected</span>
                     </div>
+                    
+                    <button class="keeper-header-submit-btn" onclick="submitKeepers()" id="keeper-submit-btn">Submit Keepers</button>
+                </div>
+                <div class="keeper-roster-section">
+                    <p style="color: #666; margin-bottom: 1rem;">Select up to <strong id="keeper-max-display">5</strong> players from your 2025 roster to keep for 2026.</p>
                     
                     <div class="keeper-header-actions">
                         <button class="keeper-header-submit-btn" onclick="submitKeepers()" id="keeper-submit-btn">Submit Keepers</button>
@@ -9354,7 +9420,7 @@
         function toggleKeeper(playerName, isKeeping) {
             if (!currentKeeperTeam) return;
             
-            // Initialize team's keepers if needed
+            // Initialize array if needed
             if (!keeperSelections[currentKeeperTeam]) {
                 keeperSelections[currentKeeperTeam] = [];
             }
@@ -9363,10 +9429,10 @@
             const existingIndex = teamKeepers.findIndex(k => k.player_name.toLowerCase() === playerName.toLowerCase());
             
             if (isKeeping) {
-                // Check max keepers
+                // Check max limit
                 if (teamKeepers.length >= keeperConfig.max_keepers) {
                     alert(`Maximum ${keeperConfig.max_keepers} keepers allowed.`);
-                    // Uncheck the checkbox
+                    // Uncheck box
                     const row = document.querySelector(`tr[data-player-name="${playerName}"]`);
                     if (row) {
                         row.querySelector('.keeper-checkbox').checked = false;
@@ -9391,10 +9457,48 @@
                 }
             }
             
-            // Update UI Elements Immediately
+            // Trigger updates immediately
             updateKeeperRosterDisplay();
-            updateKeeperStatus(); // Updates the top bar
-            updateKeeperSelectedSummary(); // Updates the bottom bar
+            updateKeeperStatus();
+            updateKeeperSelectedSummary();
+        }
+
+        function updateKeeperStatus() {
+            const teamKeepers = keeperSelections[currentKeeperTeam] || [];
+            const statusEl = document.getElementById('keeper-status');
+            const barEl = document.getElementById('keeper-progress-bar');
+            
+            // Ensure numbers are valid
+            const max = keeperConfig.max_keepers || 5; 
+            const current = teamKeepers.length;
+            
+            // 1. Update Text
+            statusEl.textContent = `${current} / ${max} keepers selected`;
+            
+            // 2. Update Bar Width & Color
+            if (barEl) {
+                // Calculate percentage safely
+                const percentage = max > 0 ? Math.min((current / max) * 100, 100) : 0;
+                
+                // Force style update
+                barEl.style.width = percentage + '%';
+                
+                // Change color to green if full, otherwise red
+                if (current >= max) {
+                    barEl.style.backgroundColor = '#2ed573'; // Green
+                } else {
+                    barEl.style.backgroundColor = '#ff4757'; // Red
+                }
+            }
+            
+            // 3. Highlight text if full
+            if (current >= max) {
+                statusEl.style.color = '#f5d742'; // Gold
+                statusEl.style.fontWeight = 'bold';
+            } else {
+                statusEl.style.color = 'rgba(255, 255, 255, 0.9)';
+                statusEl.style.fontWeight = 'normal';
+            }
         }
         
         function saveKeeperSelections() {
