@@ -7831,7 +7831,7 @@
         }
 
         // ===== NAVIGATION =====
-        function showSection(sectionId) {
+        async function showSection(sectionId) {
             // Hide all sections
             document.querySelectorAll('.section').forEach(section => {
                 section.classList.remove('active');
@@ -7881,13 +7881,17 @@
                 }
             }
             else if (sectionId === 'preseason') {
+                // Initialize keeper management first, then load projections
+                // This ensures keeper data is available when rendering the table
+                if (!keeperConfig) {
+                    await initializeKeeperManagement();
+                }
                 // Load projections if not already loaded
                 if (allProjectionBatters.length === 0 && allProjectionPitchers.length === 0) {
                     loadProjections();
-                }
-                // Initialize keeper management
-                if (!keeperConfig) {
-                    initializeKeeperManagement();
+                } else {
+                    // If projections already loaded, refresh the table to show keeper info
+                    filterProjections();
                 }
             }
         }
