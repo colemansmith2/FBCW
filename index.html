@@ -717,6 +717,265 @@
             flex-shrink: 0;
         }
 
+        /* Keeper Management Styles */
+        .keeper-auth-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            max-width: 500px;
+        }
+
+        .keeper-auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .keeper-auth-field {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .keeper-auth-field label {
+            min-width: 100px;
+            font-weight: 500;
+        }
+
+        .keeper-auth-field select,
+        .keeper-auth-field input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .keeper-auth-btn {
+            padding: 0.5rem 1.25rem;
+            background: #1e3c72;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .keeper-auth-btn:hover {
+            background: #2a5298;
+        }
+
+        .keeper-auth-error {
+            color: #dc3545;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        .keeper-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .keeper-header-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .keeper-team-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .keeper-status {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .keeper-lock-btn {
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .keeper-lock-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .keeper-roster-section h4 {
+            color: #1e3c72;
+            margin-bottom: 0.75rem;
+        }
+
+        .keeper-roster-table-wrapper {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .keeper-table .keeper-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .keeper-table tr.is-keeper {
+            background: rgba(212, 175, 55, 0.15) !important;
+        }
+
+        .keeper-table tr.not-keeper {
+            opacity: 0.5;
+        }
+
+        .keeper-table .keeper-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-left: 0.5rem;
+            padding: 0.15rem 0.5rem;
+            background: #d4af37;
+            color: white;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        /* League Keepers Grid */
+        .keeper-league-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .keeper-team-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .keeper-team-card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+        }
+
+        .keeper-team-card-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: white;
+            object-fit: contain;
+            padding: 2px;
+        }
+
+        .keeper-team-card-info h5 {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .keeper-team-card-info span {
+            font-size: 0.8rem;
+            opacity: 0.85;
+        }
+
+        .keeper-team-card-body {
+            padding: 0.75rem 1rem;
+        }
+
+        .keeper-team-card-body .no-keepers {
+            color: #888;
+            font-style: italic;
+            font-size: 0.85rem;
+        }
+
+        .keeper-by-tag {
+            font-size: 0.7rem;
+            color: #d4af37;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* Keeper row styling in projections table */
+        #proj-table tr.is-keeper {
+            background: rgba(212, 175, 55, 0.12) !important;
+        }
+
+        #proj-table tr.is-keeper:hover {
+            background: rgba(212, 175, 55, 0.2) !important;
+        }
+
+        .keeper-player-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .keeper-player-row:last-child {
+            border-bottom: none;
+        }
+
+        .keeper-player-row .keeper-badge {
+            margin-left: 0;
+            margin-right: 0.25rem;
+        }
+
+        .keeper-player-row .player-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .keeper-player-row .player-pos {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .keeper-player-row .player-pts {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        @media (max-width: 600px) {
+            .keeper-auth-field {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .keeper-auth-field label {
+                min-width: auto;
+            }
+
+            .keeper-auth-field select,
+            .keeper-auth-field input {
+                width: 100%;
+            }
+
+            .keeper-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .keeper-league-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .draft-team-cell {
             display: flex;
             align-items: center;
@@ -3537,6 +3796,71 @@
                 <h3 style="color: #1e3c72; margin-bottom: 1rem;">📊 League Scoring System</h3>
                 <div id="proj-scoring-display" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
                     <!-- Will be populated with scoring settings -->
+                </div>
+            </div>
+
+            <!-- Keeper Management Section -->
+            <div style="margin-top: 3rem; border-top: 2px solid #e0e0e0; padding-top: 2rem;">
+                <h3 style="color: #1e3c72; margin-bottom: 1rem;">🔒 Keeper Management</h3>
+                
+                <div id="keeper-auth-section" class="keeper-auth-container">
+                    <p style="color: #666; margin-bottom: 1rem;">Select your team and enter your password to manage your keepers.</p>
+                    <div class="keeper-auth-form">
+                        <div class="keeper-auth-field">
+                            <label for="keeper-team-select">Your Team:</label>
+                            <select id="keeper-team-select" onchange="onKeeperTeamSelect()">
+                                <option value="">-- Select Team --</option>
+                            </select>
+                        </div>
+                        <div class="keeper-auth-field" id="keeper-password-field" style="display: none;">
+                            <label for="keeper-password">Password:</label>
+                            <input type="password" id="keeper-password" placeholder="Enter password">
+                            <button class="keeper-auth-btn" onclick="authenticateKeeper()">Unlock</button>
+                        </div>
+                    </div>
+                    <div id="keeper-auth-error" class="keeper-auth-error" style="display: none;"></div>
+                </div>
+
+                <div id="keeper-management-section" style="display: none;">
+                    <div class="keeper-header">
+                        <div class="keeper-header-info">
+                            <span class="keeper-team-name" id="keeper-current-team"></span>
+                            <span class="keeper-status" id="keeper-status">0 / 0 keepers selected</span>
+                        </div>
+                        <button class="keeper-lock-btn" onclick="logoutKeeper()">🔓 Switch Team</button>
+                    </div>
+
+                    <div class="keeper-roster-section">
+                        <h4>Your 2025 Roster - Select Keepers</h4>
+                        <div id="keeper-roster-loading" class="loading" style="display: none;">Loading roster...</div>
+                        <div class="keeper-roster-table-wrapper">
+                            <table class="player-table keeper-table" id="keeper-roster-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">Keep</th>
+                                        <th>#</th>
+                                        <th>Player</th>
+                                        <th>Pos</th>
+                                        <th>2025 Pts</th>
+                                        <th>2026 Proj</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="keeper-roster-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- View All Keepers Section -->
+                <div style="margin-top: 2rem;">
+                    <h4 style="color: #1e3c72; margin-bottom: 1rem;">📋 League Keepers</h4>
+                    <div id="keeper-league-loading" class="loading" style="display: none;">Loading keepers...</div>
+                    <div id="keeper-league-container">
+                        <div class="keeper-league-grid" id="keeper-league-grid">
+                            <!-- Keeper cards for each team -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -7214,6 +7538,10 @@
                 if (allProjectionBatters.length === 0 && allProjectionPitchers.length === 0) {
                     loadProjections();
                 }
+                // Initialize keeper management
+                if (!keeperConfig) {
+                    initializeKeeperManagement();
+                }
             }
         }
 
@@ -8383,8 +8711,17 @@
                 const games = player.games || 0;
                 const ppg = games > 0 ? player.ppg.toFixed(2) : '-';
                 
+                // Check if player is kept by someone
+                const keeperInfo = getPlayerKeeperInfo(player.name);
+                const isKept = keeperInfo !== null;
+                
                 // Escape player name for onclick
                 const escapedName = player.name.replace(/'/g, "\\'");
+                
+                // Add keeper styling
+                if (isKept) {
+                    row.classList.add('is-keeper');
+                }
 
                 row.innerHTML = `
                     <td>${index + 1}</td>
@@ -8392,8 +8729,12 @@
                         <div class="player-name-cell" onclick="showProjectionPlayerDetail('${escapedName}')">
                             <img src="${headshot}" class="player-headshot" onerror="this.src='${placeholderImg}'">
                             <div>
-                                <div class="player-name">${player.name || 'Unknown'}</div>
+                                <div class="player-name">
+                                    ${player.name || 'Unknown'}
+                                    ${isKept ? '<span class="keeper-badge">K</span>' : ''}
+                                </div>
                                 <div class="player-mlb-team">${mlbLogoHtml}${teamDisplay}</div>
+                                ${isKept ? `<div class="keeper-by-tag">Kept by ${keeperInfo.manager}</div>` : ''}
                             </div>
                         </div>
                     </td>
@@ -8409,6 +8750,29 @@
             });
 
             countEl.textContent = `${filteredProjections.length} players`;
+        }
+        
+        // Helper function to check if a player is kept
+        function getPlayerKeeperInfo(playerName) {
+            if (!keeperSelections || !keeperConfig) return null;
+            
+            const normalizedName = playerName.toLowerCase().trim();
+            
+            for (const [teamKey, keepers] of Object.entries(keeperSelections)) {
+                if (!keepers || !Array.isArray(keepers)) continue;
+                
+                const found = keepers.find(k => k.player_name.toLowerCase().trim() === normalizedName);
+                if (found) {
+                    const teamInfo = keeperConfig.teams[teamKey];
+                    return {
+                        teamKey,
+                        manager: teamInfo?.manager || 'Unknown',
+                        teamName: teamInfo?.team_name || 'Unknown'
+                    };
+                }
+            }
+            
+            return null;
         }
 
         function sortProjectionTable(column) {
@@ -8459,6 +8823,409 @@
             a.download = 'projected_fantasy_points.csv';
             a.click();
             window.URL.revokeObjectURL(url);
+        }
+
+        // ===== KEEPER MANAGEMENT =====
+        
+        let keeperConfig = null;
+        let keeperSelections = {};
+        let currentKeeperTeam = null;
+        let keeperRosterData = [];
+        let keeperProjectionsMap = {};
+        
+        // Password hashing function (simple SHA-256)
+        async function hashPassword(password) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+        
+        async function initializeKeeperManagement() {
+            try {
+                // Load keeper config
+                const configResponse = await fetch('data/keepers/keeper_config.json');
+                if (configResponse.ok) {
+                    keeperConfig = await configResponse.json();
+                } else {
+                    // Generate default config from current teams
+                    await generateDefaultKeeperConfig();
+                }
+                
+                // Load existing keeper selections
+                const selectionsResponse = await fetch('data/keepers/keepers_2026.json');
+                if (selectionsResponse.ok) {
+                    const data = await selectionsResponse.json();
+                    keeperSelections = data.keepers || {};
+                }
+                
+                // Also load from localStorage (for unsaved changes)
+                const localKeepers = localStorage.getItem('keeper_selections_2026');
+                if (localKeepers) {
+                    const localData = JSON.parse(localKeepers);
+                    // Merge local with server (local takes precedence for user's team)
+                    Object.assign(keeperSelections, localData);
+                }
+                
+                // Populate team selector
+                populateKeeperTeamSelect();
+                
+                // Load and display league keepers
+                displayLeagueKeepers();
+                
+                // Build projections lookup map
+                const allProj = [...allProjectionBatters, ...allProjectionPitchers];
+                allProj.forEach(p => {
+                    const normalizedName = p.name.toLowerCase().trim();
+                    keeperProjectionsMap[normalizedName] = p.projected_points || 0;
+                });
+                
+            } catch (e) {
+                console.log('Error initializing keeper management:', e);
+            }
+        }
+        
+        async function generateDefaultKeeperConfig() {
+            // Load teams from 2025
+            const teams = await getTeamData(2025);
+            if (!teams) return;
+            
+            // Load manager history to get join years
+            let managerJoinYears = {};
+            try {
+                const historyResponse = await fetch('data/managers/manager_history.json');
+                if (historyResponse.ok) {
+                    const history = await historyResponse.json();
+                    history.forEach(manager => {
+                        if (manager.seasons && manager.seasons.length > 0) {
+                            const firstYear = Math.min(...manager.seasons.map(s => s.year));
+                            managerJoinYears[manager.manager_name] = firstYear;
+                        }
+                    });
+                }
+            } catch (e) {
+                console.log('Could not load manager history');
+            }
+            
+            keeperConfig = {
+                season: 2026,
+                max_keepers: 5,
+                deadline: "2026-03-15T23:59:59",
+                teams: {}
+            };
+            
+            for (const team of teams) {
+                const joinYear = managerJoinYears[team.manager] || 2020;
+                const password = `${team.manager}${joinYear}`;
+                const passwordHash = await hashPassword(password);
+                
+                keeperConfig.teams[team.team_key] = {
+                    team_name: team.team_name,
+                    manager: team.manager,
+                    password_hash: passwordHash,
+                    team_logo: team.team_logo,
+                    keepers_locked: false
+                };
+            }
+        }
+        
+        function populateKeeperTeamSelect() {
+            const select = document.getElementById('keeper-team-select');
+            if (!keeperConfig || !keeperConfig.teams) return;
+            
+            select.innerHTML = '<option value="">-- Select Team --</option>';
+            
+            // Sort teams by manager name
+            const sortedTeams = Object.entries(keeperConfig.teams)
+                .sort((a, b) => a[1].manager.localeCompare(b[1].manager));
+            
+            for (const [teamKey, teamInfo] of sortedTeams) {
+                const option = document.createElement('option');
+                option.value = teamKey;
+                option.textContent = `${teamInfo.manager} - ${teamInfo.team_name}`;
+                select.appendChild(option);
+            }
+        }
+        
+        function onKeeperTeamSelect() {
+            const select = document.getElementById('keeper-team-select');
+            const passwordField = document.getElementById('keeper-password-field');
+            const errorEl = document.getElementById('keeper-auth-error');
+            
+            errorEl.style.display = 'none';
+            
+            if (select.value) {
+                passwordField.style.display = 'flex';
+                document.getElementById('keeper-password').value = '';
+                document.getElementById('keeper-password').focus();
+            } else {
+                passwordField.style.display = 'none';
+            }
+        }
+        
+        async function authenticateKeeper() {
+            const teamKey = document.getElementById('keeper-team-select').value;
+            const password = document.getElementById('keeper-password').value;
+            const errorEl = document.getElementById('keeper-auth-error');
+            
+            if (!teamKey || !password) {
+                errorEl.textContent = 'Please select a team and enter your password.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            const teamInfo = keeperConfig.teams[teamKey];
+            if (!teamInfo) {
+                errorEl.textContent = 'Invalid team selection.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            // Hash the entered password and compare
+            const enteredHash = await hashPassword(password);
+            
+            if (enteredHash !== teamInfo.password_hash) {
+                errorEl.textContent = 'Incorrect password. Hint: [YourName][YearJoined]';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            // Authentication successful
+            currentKeeperTeam = teamKey;
+            errorEl.style.display = 'none';
+            
+            // Hide auth section, show management section
+            document.getElementById('keeper-auth-section').style.display = 'none';
+            document.getElementById('keeper-management-section').style.display = 'block';
+            
+            // Update header
+            document.getElementById('keeper-current-team').textContent = `${teamInfo.manager}'s ${teamInfo.team_name}`;
+            
+            // Load roster and display
+            await loadKeeperRoster(teamKey);
+            updateKeeperStatus();
+        }
+        
+        function logoutKeeper() {
+            currentKeeperTeam = null;
+            document.getElementById('keeper-auth-section').style.display = 'block';
+            document.getElementById('keeper-management-section').style.display = 'none';
+            document.getElementById('keeper-team-select').value = '';
+            document.getElementById('keeper-password-field').style.display = 'none';
+            document.getElementById('keeper-password').value = '';
+        }
+        
+        async function loadKeeperRoster(teamKey) {
+            const loadingEl = document.getElementById('keeper-roster-loading');
+            const tbody = document.getElementById('keeper-roster-body');
+            
+            loadingEl.style.display = 'block';
+            tbody.innerHTML = '';
+            
+            try {
+                // Load 2025 player stats to get roster
+                const response = await fetch('data/current_season/player_stats.json');
+                if (!response.ok) throw new Error('Could not load player data');
+                
+                const allPlayers = await response.json();
+                
+                // Filter to just this team's players
+                keeperRosterData = allPlayers.filter(p => p.team_key === teamKey);
+                
+                // Sort by fantasy points descending
+                keeperRosterData.sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+                
+                // Get current keeper selections for this team
+                const teamKeepers = keeperSelections[teamKey] || [];
+                const keeperNames = teamKeepers.map(k => k.player_name.toLowerCase());
+                
+                // Render roster
+                keeperRosterData.forEach((player, index) => {
+                    const isKept = keeperNames.includes(player.name.toLowerCase());
+                    const projPts = keeperProjectionsMap[player.name.toLowerCase().trim()] || '-';
+                    
+                    const row = document.createElement('tr');
+                    row.className = isKept ? 'is-keeper' : '';
+                    row.dataset.playerName = player.name;
+                    
+                    const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+                    const headshot = player.headshot_url || placeholderImg;
+                    
+                    row.innerHTML = `
+                        <td style="text-align: center;">
+                            <input type="checkbox" class="keeper-checkbox" 
+                                   ${isKept ? 'checked' : ''} 
+                                   onchange="toggleKeeper('${player.name.replace(/'/g, "\\'")}', this.checked)">
+                        </td>
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="player-name-cell">
+                                <img src="${headshot}" class="player-headshot" onerror="this.src='${placeholderImg}'">
+                                <span class="player-name">${player.name}</span>
+                                ${isKept ? '<span class="keeper-badge">K</span>' : ''}
+                            </div>
+                        </td>
+                        <td class="player-position">${player.primary_position || '-'}</td>
+                        <td class="stat-col">${(player.fantasy_points || 0).toFixed(1)}</td>
+                        <td class="stat-col">${typeof projPts === 'number' ? projPts.toFixed(1) : projPts}</td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+                
+                loadingEl.style.display = 'none';
+                
+            } catch (e) {
+                console.error('Error loading roster:', e);
+                loadingEl.style.display = 'none';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888;">Could not load roster</td></tr>';
+            }
+        }
+        
+        function toggleKeeper(playerName, isKeeping) {
+            if (!currentKeeperTeam) return;
+            
+            // Initialize team's keepers if needed
+            if (!keeperSelections[currentKeeperTeam]) {
+                keeperSelections[currentKeeperTeam] = [];
+            }
+            
+            const teamKeepers = keeperSelections[currentKeeperTeam];
+            const existingIndex = teamKeepers.findIndex(k => k.player_name.toLowerCase() === playerName.toLowerCase());
+            
+            if (isKeeping) {
+                // Check max keepers
+                if (teamKeepers.length >= keeperConfig.max_keepers) {
+                    alert(`Maximum ${keeperConfig.max_keepers} keepers allowed.`);
+                    // Uncheck the checkbox
+                    const row = document.querySelector(`tr[data-player-name="${playerName}"]`);
+                    if (row) {
+                        row.querySelector('.keeper-checkbox').checked = false;
+                    }
+                    return;
+                }
+                
+                // Add keeper
+                if (existingIndex === -1) {
+                    const player = keeperRosterData.find(p => p.name === playerName);
+                    teamKeepers.push({
+                        player_name: playerName,
+                        player_id: player?.player_key || '',
+                        position: player?.primary_position || '',
+                        fantasy_points_2025: player?.fantasy_points || 0
+                    });
+                }
+            } else {
+                // Remove keeper
+                if (existingIndex !== -1) {
+                    teamKeepers.splice(existingIndex, 1);
+                }
+            }
+            
+            // Save to localStorage
+            saveKeeperSelections();
+            
+            // Update UI
+            updateKeeperRosterDisplay();
+            updateKeeperStatus();
+            displayLeagueKeepers();
+        }
+        
+        function saveKeeperSelections() {
+            // Save current team's selections to localStorage
+            const localData = JSON.parse(localStorage.getItem('keeper_selections_2026') || '{}');
+            localData[currentKeeperTeam] = keeperSelections[currentKeeperTeam];
+            localStorage.setItem('keeper_selections_2026', JSON.stringify(localData));
+        }
+        
+        function updateKeeperRosterDisplay() {
+            const teamKeepers = keeperSelections[currentKeeperTeam] || [];
+            const keeperNames = teamKeepers.map(k => k.player_name.toLowerCase());
+            
+            document.querySelectorAll('#keeper-roster-body tr').forEach(row => {
+                const playerName = row.dataset.playerName;
+                const isKept = keeperNames.includes(playerName.toLowerCase());
+                
+                row.className = isKept ? 'is-keeper' : '';
+                
+                // Update checkbox
+                const checkbox = row.querySelector('.keeper-checkbox');
+                if (checkbox) checkbox.checked = isKept;
+                
+                // Update keeper badge
+                const nameCell = row.querySelector('.player-name-cell');
+                const existingBadge = nameCell.querySelector('.keeper-badge');
+                if (isKept && !existingBadge) {
+                    nameCell.insertAdjacentHTML('beforeend', '<span class="keeper-badge">K</span>');
+                } else if (!isKept && existingBadge) {
+                    existingBadge.remove();
+                }
+            });
+        }
+        
+        function updateKeeperStatus() {
+            const teamKeepers = keeperSelections[currentKeeperTeam] || [];
+            const statusEl = document.getElementById('keeper-status');
+            statusEl.textContent = `${teamKeepers.length} / ${keeperConfig.max_keepers} keepers selected`;
+        }
+        
+        async function displayLeagueKeepers() {
+            const grid = document.getElementById('keeper-league-grid');
+            if (!keeperConfig || !keeperConfig.teams) {
+                grid.innerHTML = '<p style="color: #888;">Keeper data not available.</p>';
+                return;
+            }
+            
+            grid.innerHTML = '';
+            
+            // Sort teams by manager name
+            const sortedTeams = Object.entries(keeperConfig.teams)
+                .sort((a, b) => a[1].manager.localeCompare(b[1].manager));
+            
+            for (const [teamKey, teamInfo] of sortedTeams) {
+                const teamKeepers = keeperSelections[teamKey] || [];
+                
+                const card = document.createElement('div');
+                card.className = 'keeper-team-card';
+                
+                const logoImg = teamInfo.team_logo 
+                    ? `<img src="${teamInfo.team_logo}" class="keeper-team-card-logo" alt="">`
+                    : '';
+                
+                let keepersHtml = '';
+                if (teamKeepers.length === 0) {
+                    keepersHtml = '<div class="no-keepers">No keepers selected yet</div>';
+                } else {
+                    keepersHtml = teamKeepers.map(k => {
+                        const projPts = keeperProjectionsMap[k.player_name.toLowerCase().trim()];
+                        const projDisplay = projPts ? projPts.toFixed(0) : '-';
+                        return `
+                            <div class="keeper-player-row">
+                                <span class="keeper-badge">K</span>
+                                <span class="player-name">${k.player_name}</span>
+                                <span class="player-pos">${k.position || ''}</span>
+                                <span class="player-pts">${projDisplay}</span>
+                            </div>
+                        `;
+                    }).join('');
+                }
+                
+                card.innerHTML = `
+                    <div class="keeper-team-card-header">
+                        ${logoImg}
+                        <div class="keeper-team-card-info">
+                            <h5>${teamInfo.team_name}</h5>
+                            <span>${teamInfo.manager}</span>
+                        </div>
+                    </div>
+                    <div class="keeper-team-card-body">
+                        ${keepersHtml}
+                    </div>
+                `;
+                
+                grid.appendChild(card);
+            }
         }
 
         // ===== PROJECTION PLAYER DETAIL MODAL =====
