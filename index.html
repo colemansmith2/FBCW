@@ -738,7 +738,7 @@
         }
 
         .keeper-modal-content {
-            max-width: 1300px;
+            max-width: 1450px;
             width: 95vw;
             max-height: 90vh;
             display: flex;
@@ -1392,6 +1392,33 @@
             border-radius: 12px;
             font-size: 0.7rem;
             font-weight: bold;
+        }
+
+        /* Sortable headers for keeper table */
+        #keeper-roster-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+        }
+
+        #keeper-roster-table th.sortable:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        #keeper-roster-table th.sortable::after {
+            content: '';
+            margin-left: 4px;
+            opacity: 0.5;
+        }
+
+        #keeper-roster-table th.sortable.sort-asc::after {
+            content: '▲';
+            opacity: 1;
+        }
+
+        #keeper-roster-table th.sortable.sort-desc::after {
+            content: '▼';
+            opacity: 1;
         }
 
         /* League Keepers Grid */
@@ -5027,14 +5054,13 @@
                                 <thead>
                                     <tr>
                                         <th style="width: 40px;">Keep</th>
-                                        <th style="width: 30px;">#</th>
-                                        <th>Player</th>
-                                        <th>Pos</th>
-                                        <th>2025 Pts</th>
-                                        <th>2026 Proj</th>
-                                        <th style="width: 55px;">Drafted</th>
-                                        <th style="width: 55px;">Rd Cost</th>
-                                        <th style="width: 50px;">$ Cost</th>
+                                        <th class="sortable" data-sort="name">Player</th>
+                                        <th class="sortable" data-sort="position">Pos</th>
+                                        <th class="sortable" data-sort="pts2025">2025</th>
+                                        <th class="sortable" data-sort="pts2026"><em>2026</em></th>
+                                        <th class="sortable" data-sort="drafted" style="width: 55px;">Drafted</th>
+                                        <th class="sortable" data-sort="rdcost" style="width: 55px;">Rd Cost</th>
+                                        <th class="sortable" data-sort="cost" style="width: 50px;">Cost</th>
                                     </tr>
                                 </thead>
                                 <tbody id="keeper-roster-body">
@@ -10479,6 +10505,34 @@
                 // Filter to just this team's players
                 keeperRosterData = allPlayers.filter(p => p.team_key === teamKey);
                 
+                // Load projections if not already loaded
+                if (Object.keys(keeperProjectionsMap).length === 0) {
+                    try {
+                        // Try to load from projections files directly
+                        const [batterRes, pitcherRes] = await Promise.all([
+                            fetch('data/projections/steamer_batters.json'),
+                            fetch('data/projections/steamer_pitchers.json')
+                        ]);
+                        
+                        if (batterRes.ok) {
+                            const batters = await batterRes.json();
+                            batters.forEach(p => {
+                                const normalizedName = p.name.toLowerCase().trim();
+                                keeperProjectionsMap[normalizedName] = p.projected_points || 0;
+                            });
+                        }
+                        if (pitcherRes.ok) {
+                            const pitchers = await pitcherRes.json();
+                            pitchers.forEach(p => {
+                                const normalizedName = p.name.toLowerCase().trim();
+                                keeperProjectionsMap[normalizedName] = p.projected_points || 0;
+                            });
+                        }
+                    } catch (e) {
+                        console.log('Could not load projections:', e);
+                    }
+                }
+                
                 // Sort by fantasy points descending
                 keeperRosterData.sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
                 
@@ -10489,13 +10543,15 @@
                 // Render roster
                 keeperRosterData.forEach((player, index) => {
                     const isKept = keeperNames.includes(player.name.toLowerCase());
-                    const projPts = keeperProjectionsMap[player.name.toLowerCase().trim()] || '-';
+                    const projPts = keeperProjectionsMap[player.name.toLowerCase().trim()];
+                    const projDisplay = typeof projPts === 'number' ? projPts.toFixed(1) : '-';
                     
                     // Get draft info and costs
                     const draftInfo = getPlayerDraftInfo(player.name);
                     const dollarCost = draftInfo ? draftInfo.dollarCost : 1;
                     const roundCost = draftInfo ? draftInfo.roundCost : getTotalDraftRounds();
-                    const draftRound = draftInfo && draftInfo.round ? `Rd ${draftInfo.round}` : 'FA';
+                    const draftRound = draftInfo && draftInfo.round ? draftInfo.round : 99;
+                    const draftRoundDisplay = draftInfo && draftInfo.round ? `Rd ${draftInfo.round}` : 'FA';
                     const isUndrafted = draftInfo ? draftInfo.isUndrafted : true;
                     
                     const row = document.createElement('tr');
@@ -10503,6 +10559,10 @@
                     row.dataset.playerName = player.name;
                     row.dataset.dollarCost = dollarCost;
                     row.dataset.roundCost = roundCost;
+                    row.dataset.pts2025 = player.fantasy_points || 0;
+                    row.dataset.pts2026 = projPts || 0;
+                    row.dataset.position = player.primary_position || '';
+                    row.dataset.drafted = draftRound;
                     
                     const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
                     const headshot = player.headshot_url || placeholderImg;
@@ -10513,7 +10573,6 @@
                                    ${isKept ? 'checked' : ''} 
                                    onchange="toggleKeeper('${player.name.replace(/'/g, "\\'")}', this.checked)">
                         </td>
-                        <td>${index + 1}</td>
                         <td>
                             <div class="player-name-cell">
                                 <img src="${headshot}" class="player-headshot" onerror="this.src='${placeholderImg}'">
@@ -10523,9 +10582,9 @@
                         </td>
                         <td class="player-position">${player.primary_position || '-'}</td>
                         <td class="stat-col">${(player.fantasy_points || 0).toFixed(1)}</td>
-                        <td class="stat-col">${typeof projPts === 'number' ? projPts.toFixed(1) : projPts}</td>
+                        <td class="stat-col"><em>${projDisplay}</em></td>
                         <td class="keeper-cost-col">
-                            <span class="keeper-draft-round">${draftRound}</span>
+                            <span class="keeper-draft-round">${draftRoundDisplay}</span>
                         </td>
                         <td class="keeper-cost-col">
                             <span class="keeper-round-cost">Rd ${roundCost}</span>
@@ -10543,11 +10602,88 @@
                 // Update the draft picks display
                 updateKeeperPicksDisplay();
                 
+                // Setup sortable columns
+                setupKeeperTableSort();
+                
             } catch (e) {
                 console.error('Error loading roster:', e);
                 loadingEl.style.display = 'none';
-                tbody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #888;">Could not load roster</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #888;">Could not load roster</td></tr>';
             }
+        }
+        
+        let keeperSortColumn = 'pts2025';
+        let keeperSortDirection = 'desc';
+        
+        function setupKeeperTableSort() {
+            const headers = document.querySelectorAll('#keeper-roster-table th.sortable');
+            headers.forEach(th => {
+                th.style.cursor = 'pointer';
+                th.onclick = () => sortKeeperTable(th.dataset.sort);
+            });
+        }
+        
+        function sortKeeperTable(column) {
+            const tbody = document.getElementById('keeper-roster-body');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            // Toggle direction if same column
+            if (keeperSortColumn === column) {
+                keeperSortDirection = keeperSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                keeperSortColumn = column;
+                keeperSortDirection = 'desc';
+            }
+            
+            // Update header indicators
+            document.querySelectorAll('#keeper-roster-table th.sortable').forEach(th => {
+                th.classList.remove('sort-asc', 'sort-desc');
+                if (th.dataset.sort === column) {
+                    th.classList.add(keeperSortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+                }
+            });
+            
+            rows.sort((a, b) => {
+                let aVal, bVal;
+                
+                if (column === 'name') {
+                    aVal = a.dataset.playerName.toLowerCase();
+                    bVal = b.dataset.playerName.toLowerCase();
+                    return keeperSortDirection === 'asc' 
+                        ? aVal.localeCompare(bVal)
+                        : bVal.localeCompare(aVal);
+                } else if (column === 'position') {
+                    aVal = a.dataset.position;
+                    bVal = b.dataset.position;
+                    return keeperSortDirection === 'asc' 
+                        ? aVal.localeCompare(bVal)
+                        : bVal.localeCompare(aVal);
+                } else if (column === 'pts2025') {
+                    aVal = parseFloat(a.dataset.pts2025) || 0;
+                    bVal = parseFloat(b.dataset.pts2025) || 0;
+                } else if (column === 'pts2026') {
+                    aVal = parseFloat(a.dataset.pts2026) || 0;
+                    bVal = parseFloat(b.dataset.pts2026) || 0;
+                } else if (column === 'drafted') {
+                    aVal = parseFloat(a.dataset.drafted) || 99;
+                    bVal = parseFloat(b.dataset.drafted) || 99;
+                } else if (column === 'rdcost') {
+                    aVal = parseFloat(a.dataset.roundCost) || 99;
+                    bVal = parseFloat(b.dataset.roundCost) || 99;
+                } else if (column === 'cost') {
+                    aVal = parseFloat(a.dataset.dollarCost) || 0;
+                    bVal = parseFloat(b.dataset.dollarCost) || 0;
+                }
+                
+                if (keeperSortDirection === 'asc') {
+                    return aVal - bVal;
+                } else {
+                    return bVal - aVal;
+                }
+            });
+            
+            // Re-append sorted rows
+            rows.forEach(row => tbody.appendChild(row));
         }
         
         function toggleKeeper(playerName, isKeeping) {
