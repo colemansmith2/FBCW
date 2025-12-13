@@ -738,7 +738,7 @@
         }
 
         .keeper-modal-content {
-            max-width: 1100px;
+            max-width: 1300px;
             width: 95vw;
             max-height: 90vh;
             display: flex;
@@ -824,14 +824,6 @@
             padding: 1rem;
             overflow-y: auto;
             border: 1px solid #e0e0e0;
-        }
-
-        .keeper-picks-section h4 {
-            color: #1e3c72;
-            font-size: 0.95rem;
-            margin: 0 0 1rem 0;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #e0e0e0;
         }
 
         .keeper-picks-grid {
@@ -966,12 +958,57 @@
             flex: 1;
         }
 
+        .keeper-header-actions {
+            position: absolute;
+            right: 1rem;
+            top: 3.5rem;
+        }
+
         .keeper-header-right {
             display: flex;
             flex-direction: column;
             align-items: flex-end;
             gap: 0.5rem;
             margin-top: 0.25rem;
+        }
+
+        /* Draft Picks Header with Toggle */
+        .keeper-picks-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .keeper-picks-header h4 {
+            color: #1e3c72;
+            font-size: 0.9rem;
+            margin: 0;
+            padding: 0;
+            border: none;
+        }
+
+        .keeper-toggle-traded-btn {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            background: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            cursor: pointer;
+            color: #495057;
+            transition: all 0.2s;
+        }
+
+        .keeper-toggle-traded-btn:hover {
+            background: #dee2e6;
+        }
+
+        .keeper-toggle-traded-btn.active {
+            background: #1e3c72;
+            color: white;
+            border-color: #1e3c72;
         }
 
         .keeper-modal-header h2 {
@@ -4933,7 +4970,8 @@
                             <span class="keeper-status" id="keeper-status">0 / 5 keepers selected</span>
                         </div>
                     </div>
-                    <div class="keeper-header-right">
+                    <!-- Switch Team button moved under close button -->
+                    <div class="keeper-header-actions">
                         <button class="keeper-switch-btn" onclick="logoutKeeper()">Switch Team</button>
                     </div>
                 </div>
@@ -4967,7 +5005,12 @@
                     
                     <!-- Right: Draft Picks Visualization -->
                     <div class="keeper-picks-section">
-                        <h4>📋 Your 2026 Draft Picks</h4>
+                        <div class="keeper-picks-header">
+                            <h4>📋 Your 2026 Draft Picks</h4>
+                            <button class="keeper-toggle-traded-btn" id="keeper-toggle-traded" onclick="toggleTradedPicks()">
+                                <span id="toggle-traded-text">Show Traded</span>
+                            </button>
+                        </div>
                         <div class="keeper-picks-grid" id="keeper-picks-grid">
                             <!-- Pick boxes will be populated dynamically -->
                         </div>
@@ -9969,6 +10012,7 @@
         let keeperRosterData = [];
         let keeperProjectionsMap = {};
         let keeperDraftData = {}; // Store draft data for cost calculations
+        let showTradedPicks = false; // Toggle state for showing traded picks (default hidden)
         const KEEPER_BUDGET = 50; // $50 per team
         
         // Password hashing function (simple SHA-256)
@@ -10565,6 +10609,22 @@
             updateKeeperPicksDisplay();
         }
         
+        function toggleTradedPicks() {
+            showTradedPicks = !showTradedPicks;
+            const btn = document.getElementById('keeper-toggle-traded');
+            const text = document.getElementById('toggle-traded-text');
+            
+            if (showTradedPicks) {
+                btn.classList.add('active');
+                text.textContent = 'Hide Traded';
+            } else {
+                btn.classList.remove('active');
+                text.textContent = 'Show Traded';
+            }
+            
+            updateKeeperPicksDisplay();
+        }
+        
         function updateKeeperPicksDisplay() {
             const grid = document.getElementById('keeper-picks-grid');
             if (!grid || !currentKeeperTeam) return;
@@ -10581,10 +10641,13 @@
             roundCosts.forEach(rc => {
                 const keeper = teamKeepers.find(k => k.player_name === rc.player_name);
                 if (keeper) {
-                    keeperByRound[rc.actualRoundCost] = {
+                    if (!keeperByRound[rc.actualRoundCost]) {
+                        keeperByRound[rc.actualRoundCost] = [];
+                    }
+                    keeperByRound[rc.actualRoundCost].push({
                         name: rc.player_name,
                         headshot: keeperRosterData.find(p => p.name === rc.player_name)?.headshot_url
-                    };
+                    });
                 }
             });
             
@@ -10602,37 +10665,36 @@
             for (let round = 1; round <= totalRounds; round++) {
                 const picks = picksAtRound[round] || [];
                 const ownsPick = picks.length > 0;
-                const tradedFor = picks.some(p => p.originalOwner !== currentKeeperTeam);
-                const keeperInfo = keeperByRound[round];
                 
                 // Check if we traded away our pick at this round
                 const tradedAway = !ownsPick;
                 
+                // Skip traded AWAY picks if toggle is off (but always show picks we own)
+                if (!showTradedPicks && tradedAway) {
+                    continue;
+                }
+                
                 if (ownsPick) {
-                    // Show each pick we own at this round
+                    // Show each pick we own at this round (always show these regardless of toggle)
                     picks.forEach((pick, idx) => {
                         const isFromTrade = pick.originalOwner !== currentKeeperTeam;
                         const originalTeam = keeperConfig?.teams[pick.originalOwner]?.team_name || '';
                         
                         // Check if this specific pick slot is used for a keeper
-                        // We use keepers in order, so first keeper at round uses first pick, etc.
-                        const keepersAtThisRound = roundCosts.filter(rc => rc.actualRoundCost === round);
+                        const keepersAtThisRound = keeperByRound[round] || [];
                         const keeperForThisPick = keepersAtThisRound[idx];
-                        const keeperData = keeperForThisPick ? keeperByRound[round] : null;
                         
                         let boxClass = 'keeper-pick-box';
                         if (isFromTrade) boxClass += ' traded-for';
-                        if (keeperData) boxClass += ' used-for-keeper';
+                        if (keeperForThisPick) boxClass += ' used-for-keeper';
                         
                         const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
                         
-                        if (keeperForThisPick && keeperData) {
-                            const keeper = teamKeepers.find(k => k.player_name === keeperForThisPick.player_name);
-                            const headshot = keeperRosterData.find(p => p.name === keeperForThisPick.player_name)?.headshot_url || placeholderImg;
-                            const shortName = keeperForThisPick.player_name.split(' ').pop(); // Last name
+                        if (keeperForThisPick) {
+                            const headshot = keeperForThisPick.headshot || placeholderImg;
                             
                             html += `
-                                <div class="${boxClass}" title="${keeperForThisPick.player_name} - Round ${round}">
+                                <div class="${boxClass}" title="${keeperForThisPick.name} - Round ${round}">
                                     <img src="${headshot}" class="keeper-headshot" onerror="this.src='${placeholderImg}'">
                                     <div class="keeper-overlay">
                                         <span>Rd ${round}</span>
@@ -10649,8 +10711,8 @@
                             `;
                         }
                     });
-                } else {
-                    // Traded away
+                } else if (showTradedPicks) {
+                    // Traded away - only show if toggle is on
                     html += `
                         <div class="keeper-pick-box traded-away" title="Round ${round} - Traded Away">
                             <span class="pick-round">Rd</span>
