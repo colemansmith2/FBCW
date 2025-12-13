@@ -1402,7 +1402,7 @@
         }
 
         #keeper-roster-table th.sortable:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.15) !important;
         }
 
         #keeper-roster-table th.sortable::after {
@@ -1632,6 +1632,10 @@
             font-weight: 600;
             text-align: left;
             border-bottom: 2px solid #1e3c72;
+        }
+
+        .proj-table-scrollable thead th.sortable:hover {
+            background: rgba(0, 0, 0, 0.15) !important;
         }
 
         .proj-table-scrollable tbody tr {
@@ -2830,6 +2834,29 @@
             font-weight: 500;
             color: #555;
         }
+
+        /* Position badge with colored background */
+        .position-badge {
+            display: inline-block;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+            text-align: center;
+            min-width: 28px;
+        }
+
+        .position-badge.pos-C { background: #e74c3c; }
+        .position-badge.pos-1B { background: #3498db; }
+        .position-badge.pos-2B { background: #9b59b6; }
+        .position-badge.pos-3B { background: #e67e22; }
+        .position-badge.pos-SS { background: #1abc9c; }
+        .position-badge.pos-LF, .position-badge.pos-CF, .position-badge.pos-RF, .position-badge.pos-OF { background: #27ae60; }
+        .position-badge.pos-DH, .position-badge.pos-Util { background: #7f8c8d; }
+        .position-badge.pos-SP { background: #c0392b; }
+        .position-badge.pos-RP { background: #8e44ad; }
+        .position-badge.pos-P { background: #d35400; }
 
         .player-points {
             font-weight: bold;
@@ -9567,6 +9594,13 @@
         let projectionSort = { column: 'projected_points', direction: 'desc' };
         let projectionsData = null;
 
+        // Helper function to create position badge with color
+        function getPositionBadge(position) {
+            if (!position || position === '-') return '<span class="position-badge">-</span>';
+            const pos = position.split('/')[0].trim(); // Use first position if multiple
+            return `<span class="position-badge pos-${pos}">${position}</span>`;
+        }
+
         async function loadProjections() {
             const projectionType = document.getElementById('projection-type').value;
             const loadingEl = document.getElementById('proj-loading');
@@ -9983,7 +10017,7 @@
                             </div>
                         </div>
                     </td>
-                    <td class="player-position">${positionDisplay}</td>
+                    <td>${getPositionBadge(positionDisplay)}</td>
                     <td class="player-position">${positionRank}</td>
                     <td class="stat-col player-points">${projPoints.toFixed(1)}</td>
                     <td class="stat-col">${games || '-'}</td>
@@ -10505,28 +10539,29 @@
                 // Filter to just this team's players
                 keeperRosterData = allPlayers.filter(p => p.team_key === teamKey);
                 
-                // Load projections if not already loaded
+                // Load projections if not already loaded - use same format as main projections
                 if (Object.keys(keeperProjectionsMap).length === 0) {
                     try {
-                        // Try to load from projections files directly
-                        const [batterRes, pitcherRes] = await Promise.all([
-                            fetch('data/projections/steamer_batters.json'),
-                            fetch('data/projections/steamer_pitchers.json')
-                        ]);
-                        
-                        if (batterRes.ok) {
-                            const batters = await batterRes.json();
-                            batters.forEach(p => {
+                        // First check if allProjectionBatters/Pitchers are already loaded
+                        if (allProjectionBatters.length > 0 || allProjectionPitchers.length > 0) {
+                            [...allProjectionBatters, ...allProjectionPitchers].forEach(p => {
                                 const normalizedName = p.name.toLowerCase().trim();
                                 keeperProjectionsMap[normalizedName] = p.projected_points || 0;
                             });
-                        }
-                        if (pitcherRes.ok) {
-                            const pitchers = await pitcherRes.json();
-                            pitchers.forEach(p => {
-                                const normalizedName = p.name.toLowerCase().trim();
-                                keeperProjectionsMap[normalizedName] = p.projected_points || 0;
-                            });
+                            console.log(`Loaded ${Object.keys(keeperProjectionsMap).length} projections from global data`);
+                        } else {
+                            // Load from projections file directly
+                            const projResponse = await fetch('data/projections/projections_steamer.json');
+                            if (projResponse.ok) {
+                                const projData = await projResponse.json();
+                                const batters = projData.batters || [];
+                                const pitchers = projData.pitchers || [];
+                                [...batters, ...pitchers].forEach(p => {
+                                    const normalizedName = p.name.toLowerCase().trim();
+                                    keeperProjectionsMap[normalizedName] = p.projected_points || 0;
+                                });
+                                console.log(`Loaded ${Object.keys(keeperProjectionsMap).length} projections from file`);
+                            }
                         }
                     } catch (e) {
                         console.log('Could not load projections:', e);
@@ -10580,7 +10615,7 @@
                                 ${isKept ? '<span class="keeper-badge">K</span>' : ''}
                             </div>
                         </td>
-                        <td class="player-position">${player.primary_position || '-'}</td>
+                        <td>${getPositionBadge(player.primary_position || '-')}</td>
                         <td class="stat-col">${(player.fantasy_points || 0).toFixed(1)}</td>
                         <td class="stat-col"><em>${projDisplay}</em></td>
                         <td class="keeper-cost-col">
