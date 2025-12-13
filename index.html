@@ -1349,10 +1349,58 @@
             box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
         }
 
+        /* Scrollable trades list */
+        .trades-list-scrollable {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f8f9fa;
+            padding: 1rem;
+        }
+
         .trades-list {
             display: flex;
             flex-direction: column;
             gap: 1rem;
+        }
+
+        /* Scrollable projections table with fixed header */
+        .proj-table-scrollable {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .proj-table-scrollable table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .proj-table-scrollable thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        }
+
+        .proj-table-scrollable thead th {
+            background: transparent;
+            color: white;
+            padding: 0.75rem 0.5rem;
+            font-weight: 600;
+            text-align: left;
+            border-bottom: 2px solid #1e3c72;
+        }
+
+        .proj-table-scrollable tbody tr {
+            border-bottom: 1px solid #eee;
+        }
+
+        .proj-table-scrollable tbody tr:hover {
+            background: #f0f4ff;
         }
 
         .no-trades {
@@ -4553,7 +4601,7 @@
                     <button class="btn-select-keepers" onclick="openKeeperModal()">🔒 Select Keepers</button>
                 </div>
 
-                <div class="table-wrapper player-table-wrapper">
+                <div class="proj-table-scrollable">
                     <table class="player-table" id="proj-table">
                         <thead id="proj-table-head">
                             <!-- Headers will be populated dynamically -->
@@ -4561,14 +4609,6 @@
                         <tbody id="proj-table-body">
                         </tbody>
                     </table>
-                </div>
-            </div>
-
-            <!-- Scoring System Reference -->
-            <div style="margin-top: 2rem;">
-                <h3 style="color: #1e3c72; margin-bottom: 1rem;">📊 League Scoring System</h3>
-                <div id="proj-scoring-display" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <!-- Will be populated with scoring settings -->
                 </div>
             </div>
 
@@ -4593,8 +4633,8 @@
                     </div>
                 </div>
                 
-                <!-- Existing Trades List -->
-                <div id="trades-list-container">
+                <!-- Existing Trades List - Scrollable -->
+                <div id="trades-list-container" class="trades-list-scrollable">
                     <div id="trades-list" class="trades-list">
                         <!-- Trade cards will be populated here -->
                         <p class="no-trades" id="no-trades-msg">No trades recorded yet. Click "New Trade" to add one.</p>
@@ -9855,11 +9895,21 @@
         }
         
         // Calculate the actual round costs for a team's keepers, handling multiple last-round picks
+        // This now considers traded picks - if you traded for extra round 22 picks, you can use them
         function calculateTeamKeeperRoundCosts(teamKey) {
             const keepers = keeperSelections[teamKey] || [];
             if (keepers.length === 0) return [];
             
             const totalRounds = getTotalDraftRounds();
+            
+            // Get the team's available picks (including traded picks)
+            const ownedPicks = getTeamPicks(teamKey);
+            
+            // Build a count of how many picks the team has at each round
+            const pickCounts = {};
+            ownedPicks.forEach(pick => {
+                pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
+            });
             
             // Get base round costs for each keeper
             let roundCosts = keepers.map(k => ({
@@ -9871,23 +9921,47 @@
             // Sort by round cost (highest/latest rounds first for undrafted)
             roundCosts.sort((a, b) => b.baseRoundCost - a.baseRoundCost);
             
-            // Track used rounds
-            const usedRounds = new Set();
+            // Track used picks at each round
+            const usedPicksAtRound = {};
             
-            // Assign actual rounds, avoiding conflicts
+            // Assign actual rounds, using available picks
             roundCosts.forEach(keeper => {
                 let assignedRound = keeper.baseRoundCost;
                 
-                // If this round is already used, find the next available round going backwards
-                while (usedRounds.has(assignedRound) && assignedRound > 0) {
-                    assignedRound--;
+                // Initialize used count for this round
+                if (!usedPicksAtRound[assignedRound]) {
+                    usedPicksAtRound[assignedRound] = 0;
                 }
                 
-                // If we've gone below round 1, we have a problem (too many keepers)
-                if (assignedRound < 1) assignedRound = 1;
+                // Check if we have an available pick at this round
+                const availableAtRound = (pickCounts[assignedRound] || 0) - (usedPicksAtRound[assignedRound] || 0);
+                
+                if (availableAtRound > 0) {
+                    // We have an available pick at this round
+                    usedPicksAtRound[assignedRound]++;
+                } else {
+                    // Need to find the next available round going backwards
+                    let foundRound = false;
+                    for (let round = assignedRound - 1; round >= 1; round--) {
+                        if (!usedPicksAtRound[round]) {
+                            usedPicksAtRound[round] = 0;
+                        }
+                        const available = (pickCounts[round] || 1) - usedPicksAtRound[round]; // Default to 1 pick per round if not traded
+                        if (available > 0) {
+                            assignedRound = round;
+                            usedPicksAtRound[round]++;
+                            foundRound = true;
+                            break;
+                        }
+                    }
+                    
+                    // If no round found, just use round 1
+                    if (!foundRound) {
+                        assignedRound = 1;
+                    }
+                }
                 
                 keeper.actualRoundCost = assignedRound;
-                usedRounds.add(assignedRound);
             });
             
             return roundCosts;
