@@ -1316,6 +1316,379 @@
             margin-left: 0.5rem;
         }
 
+        /* ===== TRADE MANAGEMENT STYLES ===== */
+        .btn-new-trade {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-new-trade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+        }
+
+        .btn-export-trades {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-export-trades:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
+        .trades-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .no-trades {
+            color: #888;
+            font-style: italic;
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .trade-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .trade-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .trade-card-date {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .trade-card-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+
+        .trade-card-actions button:hover {
+            opacity: 1;
+        }
+
+        .trade-card-body {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .trade-card-side {
+            flex: 1;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .trade-card-team {
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .trade-card-team img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+
+        .trade-card-assets {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .trade-asset-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin: 0.1rem;
+        }
+
+        .trade-asset-tag.player {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .trade-asset-tag.pick {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .trade-asset-tag.money {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .trade-card-arrow {
+            font-size: 1.5rem;
+            color: #1e3c72;
+        }
+
+        .trade-card-notes {
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Trade Modal Styles */
+        .trade-modal-content {
+            max-width: 900px;
+            width: 95vw;
+        }
+
+        .trade-modal-header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 1.25rem 1.5rem;
+            margin: -0px;
+            border-radius: 15px 15px 0 0;
+        }
+
+        .trade-modal-header h2 {
+            margin: 0 0 0.25rem 0;
+            color: #f5d742;
+        }
+
+        .trade-modal-header p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .trade-builder {
+            display: flex;
+            gap: 1rem;
+            padding: 1.5rem;
+            align-items: flex-start;
+        }
+
+        .trade-side {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            min-height: 300px;
+        }
+
+        .trade-team-selector {
+            margin-bottom: 1rem;
+        }
+
+        .trade-team-selector label {
+            display: block;
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+
+        .trade-team-selector select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .trade-team-info {
+            background: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .trade-budget-display {
+            font-size: 0.9rem;
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .trade-assets {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            min-height: 100px;
+        }
+
+        .trade-asset-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 0.75rem;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .trade-asset-item .asset-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .trade-asset-item .asset-type-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .trade-asset-item .asset-type-icon.player { background: #e3f2fd; color: #1565c0; }
+        .trade-asset-item .asset-type-icon.pick { background: #fff3e0; color: #e65100; }
+        .trade-asset-item .asset-type-icon.money { background: #e8f5e9; color: #2e7d32; }
+
+        .trade-asset-item .remove-asset {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.25rem;
+            opacity: 0.6;
+        }
+
+        .trade-asset-item .remove-asset:hover {
+            opacity: 1;
+        }
+
+        .trade-add-asset select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .trade-asset-selector {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .trade-asset-selector select,
+        .trade-asset-selector input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .trade-asset-selector input[type="number"] {
+            width: 80px;
+            flex: none;
+        }
+
+        .trade-asset-selector button {
+            padding: 0.5rem 0.75rem;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .trade-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #1e3c72;
+            padding: 0 0.5rem;
+        }
+
+        .trade-modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 2px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+
+        .trade-notes {
+            margin-bottom: 1rem;
+        }
+
+        .trade-notes label {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 0.25rem;
+        }
+
+        .trade-notes input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        .trade-modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .trade-builder {
+                flex-direction: column;
+            }
+
+            .trade-arrow {
+                transform: rotate(90deg);
+                padding: 0.5rem 0;
+            }
+
+            .trade-card-body {
+                flex-direction: column;
+            }
+
+            .trade-card-arrow {
+                transform: rotate(90deg);
+            }
+        }
+
         @media (max-width: 600px) {
             .keeper-auth-field {
                 flex-direction: column;
@@ -4209,10 +4582,142 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Trade Management Section -->
+            <div style="margin-top: 3rem; border-top: 2px solid #e0e0e0; padding-top: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="color: #1e3c72; margin: 0;">🔄 Trade Management</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-export-trades" onclick="exportTradesForSite()" title="Export JSON for GitHub">📤 Export for Site</button>
+                        <button class="btn-new-trade" onclick="openTradeBuilder()">+ New Trade</button>
+                    </div>
+                </div>
+                
+                <!-- Existing Trades List -->
+                <div id="trades-list-container">
+                    <div id="trades-list" class="trades-list">
+                        <!-- Trade cards will be populated here -->
+                        <p class="no-trades" id="no-trades-msg">No trades recorded yet. Click "New Trade" to add one.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Keeper Selection Modal -->
+    <!-- Export Trades Modal -->
+    <div id="export-trades-modal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="keeper-modal-close" onclick="closeExportModal()">&times;</span>
+            <div class="trade-modal-header">
+                <h2>📤 Export Trades for Site</h2>
+                <p>Copy this JSON and save it to <code>data/keepers/trades_2026.json</code> in your repository.</p>
+            </div>
+            <div style="padding: 1.5rem;">
+                <textarea id="export-json-content" readonly style="width: 100%; height: 300px; font-family: monospace; font-size: 0.85rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa;"></textarea>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button class="keeper-cancel-btn" onclick="closeExportModal()">Close</button>
+                    <button class="keeper-submit-btn" onclick="copyExportJson()">📋 Copy to Clipboard</button>
+                    <button class="keeper-submit-btn" onclick="downloadExportJson()" style="background: linear-gradient(135deg, #1e3c72, #2a5298);">💾 Download File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trade Builder Modal -->
+    <div id="trade-modal" class="modal">
+        <div class="modal-content trade-modal-content">
+            <span class="keeper-modal-close" onclick="closeTradeModal()">&times;</span>
+            
+            <div class="trade-modal-header">
+                <h2>🔄 Create Trade</h2>
+                <p>Select two teams and add assets to each side of the trade.</p>
+            </div>
+            
+            <div class="trade-builder">
+                <!-- Team A Side -->
+                <div class="trade-side" id="trade-side-a">
+                    <div class="trade-team-selector">
+                        <label>Team A:</label>
+                        <select id="trade-team-a" onchange="onTradeTeamSelect('a')">
+                            <option value="">-- Select Team --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="trade-team-info" id="trade-team-a-info" style="display: none;">
+                        <div class="trade-budget-display">
+                            Budget: <span id="trade-budget-a">$50</span>
+                        </div>
+                    </div>
+                    
+                    <div class="trade-assets" id="trade-assets-a">
+                        <!-- Assets Team A is giving up -->
+                    </div>
+                    
+                    <div class="trade-add-asset" id="trade-add-asset-a" style="display: none;">
+                        <select id="trade-asset-type-a" onchange="onAssetTypeChange('a')">
+                            <option value="">+ Add Asset</option>
+                            <option value="player">Player</option>
+                            <option value="pick">Draft Pick</option>
+                            <option value="money">Budget $</option>
+                        </select>
+                        
+                        <div id="trade-asset-selector-a" class="trade-asset-selector" style="display: none;">
+                            <!-- Dynamic selector based on asset type -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Trade Arrow -->
+                <div class="trade-arrow">
+                    <span>⇄</span>
+                </div>
+                
+                <!-- Team B Side -->
+                <div class="trade-side" id="trade-side-b">
+                    <div class="trade-team-selector">
+                        <label>Team B:</label>
+                        <select id="trade-team-b" onchange="onTradeTeamSelect('b')">
+                            <option value="">-- Select Team --</option>
+                        </select>
+                    </div>
+                    
+                    <div class="trade-team-info" id="trade-team-b-info" style="display: none;">
+                        <div class="trade-budget-display">
+                            Budget: <span id="trade-budget-b">$50</span>
+                        </div>
+                    </div>
+                    
+                    <div class="trade-assets" id="trade-assets-b">
+                        <!-- Assets Team B is giving up -->
+                    </div>
+                    
+                    <div class="trade-add-asset" id="trade-add-asset-b" style="display: none;">
+                        <select id="trade-asset-type-b" onchange="onAssetTypeChange('b')">
+                            <option value="">+ Add Asset</option>
+                            <option value="player">Player</option>
+                            <option value="pick">Draft Pick</option>
+                            <option value="money">Budget $</option>
+                        </select>
+                        
+                        <div id="trade-asset-selector-b" class="trade-asset-selector" style="display: none;">
+                            <!-- Dynamic selector based on asset type -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="trade-modal-footer">
+                <div class="trade-notes">
+                    <label for="trade-notes">Trade Notes (optional):</label>
+                    <input type="text" id="trade-notes" placeholder="e.g., Part of larger deal, future considerations...">
+                </div>
+                <div class="trade-modal-actions">
+                    <button class="keeper-cancel-btn" onclick="closeTradeModal()">Cancel</button>
+                    <button class="keeper-submit-btn" onclick="submitTrade()" id="trade-submit-btn" disabled>Record Trade</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="keeper-modal" class="modal">
         <div class="modal-content keeper-modal-content">
             <span class="keeper-modal-close" onclick="closeKeeperModal()">&times;</span>
@@ -7970,6 +8475,9 @@
                 if (!keeperConfig) {
                     await initializeKeeperManagement();
                 }
+                // Initialize trade management
+                await initializeTradeManagement();
+                
                 // Load projections if not already loaded
                 if (allProjectionBatters.length === 0 && allProjectionPitchers.length === 0) {
                     loadProjections();
@@ -9722,10 +10230,11 @@
                 const roundCost = draftInfo ? draftInfo.roundCost : getTotalDraftRounds();
                 const isUndrafted = draftInfo ? draftInfo.isUndrafted : true;
                 
-                // Check budget
+                // Check budget (use team's actual budget which may be affected by trades)
                 const currentBudgetUsed = calculateTeamBudgetUsed(currentKeeperTeam);
-                if (currentBudgetUsed + dollarCost > KEEPER_BUDGET) {
-                    alert(`Adding this player would exceed your $${KEEPER_BUDGET} keeper budget.\n\nCurrent: $${currentBudgetUsed}\nThis player: $${dollarCost}\nTotal would be: $${currentBudgetUsed + dollarCost}`);
+                const teamTotalBudget = getTeamBudget ? getTeamBudget(currentKeeperTeam) : KEEPER_BUDGET;
+                if (currentBudgetUsed + dollarCost > teamTotalBudget) {
+                    alert(`Adding this player would exceed your keeper budget.\n\nYour Budget: $${teamTotalBudget}\nCurrently Used: $${currentBudgetUsed}\nThis player: $${dollarCost}\nTotal would be: $${currentBudgetUsed + dollarCost}`);
                     // Uncheck box
                     const row = document.querySelector(`tr[data-player-name="${playerName}"]`);
                     if (row) {
@@ -9766,21 +10275,22 @@
             const statusEl = document.getElementById('keeper-status');
             const barEl = document.getElementById('keeper-progress-bar');
             
-            // Calculate budget used
+            // Calculate budget used and team's total budget (may be affected by trades)
             const budgetUsed = calculateTeamBudgetUsed(currentKeeperTeam);
-            const budgetRemaining = KEEPER_BUDGET - budgetUsed;
+            const teamTotalBudget = getTeamBudget ? getTeamBudget(currentKeeperTeam) : KEEPER_BUDGET;
+            const budgetRemaining = teamTotalBudget - budgetUsed;
             const keeperCount = teamKeepers.length;
             
             // Update status text to show budget
-            statusEl.textContent = `$${budgetUsed} / $${KEEPER_BUDGET} used (${keeperCount} keeper${keeperCount !== 1 ? 's' : ''})`;
+            statusEl.textContent = `$${budgetUsed} / $${teamTotalBudget} used (${keeperCount} keeper${keeperCount !== 1 ? 's' : ''})`;
             
             // Update progress bar based on budget
             if (barEl) {
-                const percentage = Math.min((budgetUsed / KEEPER_BUDGET) * 100, 100);
+                const percentage = teamTotalBudget > 0 ? Math.min((budgetUsed / teamTotalBudget) * 100, 100) : 0;
                 barEl.style.width = percentage + '%';
                 
                 // Add/remove full class for color change
-                if (budgetUsed >= KEEPER_BUDGET) {
+                if (budgetUsed >= teamTotalBudget) {
                     barEl.classList.add('full');
                     statusEl.classList.add('full');
                 } else {
@@ -9921,6 +10431,7 @@
             for (const [teamKey, teamInfo] of sortedTeams) {
                 const teamKeepers = keeperSelections[teamKey] || [];
                 const budgetUsed = teamKeepers.reduce((sum, k) => sum + (k.dollarCost || 1), 0);
+                const teamTotalBudget = getTeamBudget ? getTeamBudget(teamKey) : KEEPER_BUDGET;
                 
                 const card = document.createElement('div');
                 card.className = 'keeper-team-card';
@@ -9948,8 +10459,9 @@
                     }).join('');
                 }
                 
-                const budgetDisplay = teamKeepers.length > 0 
-                    ? `<span class="keeper-budget-used">$${budgetUsed}/$${KEEPER_BUDGET}</span>`
+                // Show budget - always show if different from default, or if team has keepers
+                const budgetDisplay = (teamTotalBudget !== KEEPER_BUDGET || teamKeepers.length > 0)
+                    ? `<span class="keeper-budget-used">$${budgetUsed}/$${teamTotalBudget}</span>`
                     : '';
                 
                 card.innerHTML = `
@@ -9968,6 +10480,643 @@
                 grid.appendChild(card);
             }
         }
+
+        // ===== TRADE MANAGEMENT =====
+        
+        let tradeData = {
+            trades: []
+        };
+        let currentTrade = {
+            teamA: null,
+            teamB: null,
+            assetsA: [], // Assets Team A gives up
+            assetsB: []  // Assets Team B gives up
+        };
+        let teamRosters = {}; // Cache of team rosters
+        let teamPicksOwned = {}; // Track which picks each team owns
+        let teamBudgets = {}; // Track each team's budget
+        let tradesLoadedFromServer = false; // Track if we loaded from server
+        
+        async function initializeTradeManagement() {
+            // First, try to load trades from the server JSON file
+            try {
+                const response = await fetch('data/keepers/trades_2026.json');
+                if (response.ok) {
+                    const serverTrades = await response.json();
+                    tradeData = serverTrades;
+                    tradesLoadedFromServer = true;
+                    console.log(`Loaded ${tradeData.trades?.length || 0} trades from server`);
+                }
+            } catch (e) {
+                console.log('No server trades file found, checking localStorage');
+            }
+            
+            // If no server trades, check localStorage for commissioner's working copy
+            if (!tradesLoadedFromServer || !tradeData.trades || tradeData.trades.length === 0) {
+                const storedTrades = localStorage.getItem('keeper_trades_2026');
+                if (storedTrades) {
+                    const localTrades = JSON.parse(storedTrades);
+                    // Merge: keep server trades and add any new local trades
+                    if (localTrades.trades && localTrades.trades.length > 0) {
+                        const serverIds = new Set((tradeData.trades || []).map(t => t.id));
+                        const newLocalTrades = localTrades.trades.filter(t => !serverIds.has(t.id));
+                        tradeData.trades = [...(tradeData.trades || []), ...newLocalTrades];
+                    }
+                }
+            }
+            
+            // Ensure trades array exists
+            if (!tradeData.trades) {
+                tradeData.trades = [];
+            }
+            
+            // Initialize team budgets and picks
+            await initializeTeamAssets();
+            
+            // Display existing trades
+            displayTrades();
+        }
+        
+        async function initializeTeamAssets() {
+            const totalRounds = getTotalDraftRounds();
+            
+            // Initialize each team with default budget and all their picks
+            if (keeperConfig && keeperConfig.teams) {
+                for (const teamKey of Object.keys(keeperConfig.teams)) {
+                    // Default budget
+                    teamBudgets[teamKey] = KEEPER_BUDGET;
+                    
+                    // Default picks (team owns all their own picks)
+                    teamPicksOwned[teamKey] = [];
+                    for (let round = 1; round <= totalRounds; round++) {
+                        teamPicksOwned[teamKey].push({
+                            round: round,
+                            originalOwner: teamKey
+                        });
+                    }
+                }
+            }
+            
+            // Apply trades to adjust budgets and picks
+            applyTradesToAssets();
+        }
+        
+        function applyTradesToAssets() {
+            // Reset to defaults first
+            const totalRounds = getTotalDraftRounds();
+            
+            if (keeperConfig && keeperConfig.teams) {
+                for (const teamKey of Object.keys(keeperConfig.teams)) {
+                    teamBudgets[teamKey] = KEEPER_BUDGET;
+                    teamPicksOwned[teamKey] = [];
+                    for (let round = 1; round <= totalRounds; round++) {
+                        teamPicksOwned[teamKey].push({
+                            round: round,
+                            originalOwner: teamKey
+                        });
+                    }
+                }
+            }
+            
+            // Apply each trade
+            tradeData.trades.forEach(trade => {
+                // Process assets Team A gave to Team B
+                trade.assetsA.forEach(asset => {
+                    if (asset.type === 'money') {
+                        teamBudgets[trade.teamA] -= asset.amount;
+                        teamBudgets[trade.teamB] += asset.amount;
+                    } else if (asset.type === 'pick') {
+                        // Remove pick from Team A
+                        const pickIndex = teamPicksOwned[trade.teamA].findIndex(p => 
+                            p.round === asset.round && p.originalOwner === asset.originalOwner
+                        );
+                        if (pickIndex !== -1) {
+                            const pick = teamPicksOwned[trade.teamA].splice(pickIndex, 1)[0];
+                            teamPicksOwned[trade.teamB].push(pick);
+                        }
+                    }
+                });
+                
+                // Process assets Team B gave to Team A
+                trade.assetsB.forEach(asset => {
+                    if (asset.type === 'money') {
+                        teamBudgets[trade.teamB] -= asset.amount;
+                        teamBudgets[trade.teamA] += asset.amount;
+                    } else if (asset.type === 'pick') {
+                        // Remove pick from Team B
+                        const pickIndex = teamPicksOwned[trade.teamB].findIndex(p => 
+                            p.round === asset.round && p.originalOwner === asset.originalOwner
+                        );
+                        if (pickIndex !== -1) {
+                            const pick = teamPicksOwned[trade.teamB].splice(pickIndex, 1)[0];
+                            teamPicksOwned[trade.teamA].push(pick);
+                        }
+                    }
+                });
+            });
+            
+            // Sort picks by round for each team
+            for (const teamKey of Object.keys(teamPicksOwned)) {
+                teamPicksOwned[teamKey].sort((a, b) => a.round - b.round);
+            }
+        }
+        
+        function getTeamBudget(teamKey) {
+            return teamBudgets[teamKey] || KEEPER_BUDGET;
+        }
+        
+        function getTeamPicks(teamKey) {
+            return teamPicksOwned[teamKey] || [];
+        }
+        
+        function displayTrades() {
+            const container = document.getElementById('trades-list');
+            const noTradesMsg = document.getElementById('no-trades-msg');
+            
+            if (!tradeData.trades || tradeData.trades.length === 0) {
+                container.innerHTML = '<p class="no-trades" id="no-trades-msg">No trades recorded yet. Click "New Trade" to add one.</p>';
+                return;
+            }
+            
+            let html = '';
+            tradeData.trades.forEach((trade, index) => {
+                const teamAInfo = keeperConfig?.teams[trade.teamA] || { team_name: 'Unknown', manager: '' };
+                const teamBInfo = keeperConfig?.teams[trade.teamB] || { team_name: 'Unknown', manager: '' };
+                const tradeDate = new Date(trade.timestamp).toLocaleDateString();
+                
+                html += `
+                    <div class="trade-card">
+                        <div class="trade-card-header">
+                            <span class="trade-card-date">📅 ${tradeDate}</span>
+                            <div class="trade-card-actions">
+                                <button onclick="deleteTrade(${index})" title="Delete trade">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="trade-card-body">
+                            <div class="trade-card-side">
+                                <div class="trade-card-team">
+                                    ${teamAInfo.team_logo ? `<img src="${teamAInfo.team_logo}" alt="">` : ''}
+                                    ${teamAInfo.team_name}
+                                </div>
+                                <div class="trade-card-assets">
+                                    ${formatTradeAssets(trade.assetsA)}
+                                </div>
+                            </div>
+                            <div class="trade-card-arrow">⇄</div>
+                            <div class="trade-card-side">
+                                <div class="trade-card-team">
+                                    ${teamBInfo.team_logo ? `<img src="${teamBInfo.team_logo}" alt="">` : ''}
+                                    ${teamBInfo.team_name}
+                                </div>
+                                <div class="trade-card-assets">
+                                    ${formatTradeAssets(trade.assetsB)}
+                                </div>
+                            </div>
+                        </div>
+                        ${trade.notes ? `<div class="trade-card-notes">📝 ${trade.notes}</div>` : ''}
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        function formatTradeAssets(assets) {
+            if (!assets || assets.length === 0) {
+                return '<span style="color: #888; font-style: italic;">Nothing</span>';
+            }
+            
+            return assets.map(asset => {
+                if (asset.type === 'player') {
+                    return `<span class="trade-asset-tag player">👤 ${asset.name}</span>`;
+                } else if (asset.type === 'pick') {
+                    const originalOwner = keeperConfig?.teams[asset.originalOwner]?.team_name || 'Unknown';
+                    const pickLabel = asset.originalOwner !== asset.fromTeam 
+                        ? `Round ${asset.round} (${originalOwner}'s pick)`
+                        : `Round ${asset.round}`;
+                    return `<span class="trade-asset-tag pick">📋 ${pickLabel}</span>`;
+                } else if (asset.type === 'money') {
+                    return `<span class="trade-asset-tag money">💵 $${asset.amount}</span>`;
+                }
+                return '';
+            }).join('');
+        }
+        
+        function openTradeBuilder() {
+            // Reset current trade
+            currentTrade = {
+                teamA: null,
+                teamB: null,
+                assetsA: [],
+                assetsB: []
+            };
+            
+            // Populate team dropdowns
+            populateTradeTeamSelects();
+            
+            // Reset UI
+            document.getElementById('trade-team-a').value = '';
+            document.getElementById('trade-team-b').value = '';
+            document.getElementById('trade-team-a-info').style.display = 'none';
+            document.getElementById('trade-team-b-info').style.display = 'none';
+            document.getElementById('trade-add-asset-a').style.display = 'none';
+            document.getElementById('trade-add-asset-b').style.display = 'none';
+            document.getElementById('trade-assets-a').innerHTML = '';
+            document.getElementById('trade-assets-b').innerHTML = '';
+            document.getElementById('trade-notes').value = '';
+            document.getElementById('trade-submit-btn').disabled = true;
+            
+            // Show modal
+            document.getElementById('trade-modal').classList.add('active');
+        }
+        
+        function closeTradeModal() {
+            document.getElementById('trade-modal').classList.remove('active');
+        }
+        
+        function populateTradeTeamSelects() {
+            const selectA = document.getElementById('trade-team-a');
+            const selectB = document.getElementById('trade-team-b');
+            
+            let options = '<option value="">-- Select Team --</option>';
+            
+            if (keeperConfig && keeperConfig.teams) {
+                const sortedTeams = Object.entries(keeperConfig.teams)
+                    .sort((a, b) => a[1].manager.localeCompare(b[1].manager));
+                
+                sortedTeams.forEach(([teamKey, teamInfo]) => {
+                    options += `<option value="${teamKey}">${teamInfo.team_name} (${teamInfo.manager})</option>`;
+                });
+            }
+            
+            selectA.innerHTML = options;
+            selectB.innerHTML = options;
+        }
+        
+        async function onTradeTeamSelect(side) {
+            const teamKey = document.getElementById(`trade-team-${side}`).value;
+            const infoEl = document.getElementById(`trade-team-${side}-info`);
+            const addAssetEl = document.getElementById(`trade-add-asset-${side}`);
+            const assetsEl = document.getElementById(`trade-assets-${side}`);
+            
+            if (!teamKey) {
+                infoEl.style.display = 'none';
+                addAssetEl.style.display = 'none';
+                currentTrade[side === 'a' ? 'teamA' : 'teamB'] = null;
+                return;
+            }
+            
+            // Update current trade
+            currentTrade[side === 'a' ? 'teamA' : 'teamB'] = teamKey;
+            
+            // Load team roster if not cached
+            if (!teamRosters[teamKey]) {
+                try {
+                    const response = await fetch('data/current_season/player_stats.json');
+                    if (response.ok) {
+                        const allPlayers = await response.json();
+                        teamRosters[teamKey] = allPlayers.filter(p => p.team_key === teamKey);
+                    }
+                } catch (e) {
+                    console.log('Could not load roster');
+                }
+            }
+            
+            // Update budget display
+            const budget = getTeamBudget(teamKey);
+            document.getElementById(`trade-budget-${side}`).textContent = `$${budget}`;
+            
+            infoEl.style.display = 'block';
+            addAssetEl.style.display = 'block';
+            
+            // Reset asset type selector
+            document.getElementById(`trade-asset-type-${side}`).value = '';
+            document.getElementById(`trade-asset-selector-${side}`).style.display = 'none';
+            
+            // Clear assets when team changes
+            assetsEl.innerHTML = '';
+            currentTrade[side === 'a' ? 'assetsA' : 'assetsB'] = [];
+            
+            updateTradeSubmitButton();
+        }
+        
+        function onAssetTypeChange(side) {
+            const assetType = document.getElementById(`trade-asset-type-${side}`).value;
+            const selectorEl = document.getElementById(`trade-asset-selector-${side}`);
+            const teamKey = currentTrade[side === 'a' ? 'teamA' : 'teamB'];
+            
+            if (!assetType || !teamKey) {
+                selectorEl.style.display = 'none';
+                return;
+            }
+            
+            let selectorHtml = '';
+            
+            if (assetType === 'player') {
+                const roster = teamRosters[teamKey] || [];
+                selectorHtml = `
+                    <select id="trade-player-select-${side}">
+                        <option value="">-- Select Player --</option>
+                        ${roster.map(p => `<option value="${p.name}">${p.name} (${p.primary_position})</option>`).join('')}
+                    </select>
+                    <button onclick="addTradeAsset('${side}', 'player')">Add</button>
+                `;
+            } else if (assetType === 'pick') {
+                const picks = getTeamPicks(teamKey);
+                selectorHtml = `
+                    <select id="trade-pick-select-${side}">
+                        <option value="">-- Select Pick --</option>
+                        ${picks.map(p => {
+                            const originalOwner = keeperConfig?.teams[p.originalOwner]?.team_name || 'Unknown';
+                            const label = p.originalOwner !== teamKey 
+                                ? `Round ${p.round} (${originalOwner}'s pick)`
+                                : `Round ${p.round}`;
+                            return `<option value="${p.round}-${p.originalOwner}">${label}</option>`;
+                        }).join('')}
+                    </select>
+                    <button onclick="addTradeAsset('${side}', 'pick')">Add</button>
+                `;
+            } else if (assetType === 'money') {
+                const budget = getTeamBudget(teamKey);
+                selectorHtml = `
+                    <input type="number" id="trade-money-input-${side}" min="1" max="${budget}" value="1" placeholder="$">
+                    <span>/ $${budget}</span>
+                    <button onclick="addTradeAsset('${side}', 'money')">Add</button>
+                `;
+            }
+            
+            selectorEl.innerHTML = selectorHtml;
+            selectorEl.style.display = 'flex';
+        }
+        
+        function addTradeAsset(side, type) {
+            const teamKey = currentTrade[side === 'a' ? 'teamA' : 'teamB'];
+            const assetsKey = side === 'a' ? 'assetsA' : 'assetsB';
+            const assetsEl = document.getElementById(`trade-assets-${side}`);
+            
+            let asset = null;
+            
+            if (type === 'player') {
+                const playerName = document.getElementById(`trade-player-select-${side}`).value;
+                if (!playerName) return;
+                
+                // Check if already added
+                if (currentTrade[assetsKey].some(a => a.type === 'player' && a.name === playerName)) {
+                    alert('This player is already in the trade.');
+                    return;
+                }
+                
+                asset = { type: 'player', name: playerName };
+            } else if (type === 'pick') {
+                const pickValue = document.getElementById(`trade-pick-select-${side}`).value;
+                if (!pickValue) return;
+                
+                const [round, originalOwner] = pickValue.split('-');
+                
+                // Check if already added
+                if (currentTrade[assetsKey].some(a => a.type === 'pick' && a.round === parseInt(round) && a.originalOwner === originalOwner)) {
+                    alert('This pick is already in the trade.');
+                    return;
+                }
+                
+                asset = { type: 'pick', round: parseInt(round), originalOwner: originalOwner, fromTeam: teamKey };
+            } else if (type === 'money') {
+                const amount = parseInt(document.getElementById(`trade-money-input-${side}`).value);
+                if (!amount || amount < 1) return;
+                
+                // Check total money in trade doesn't exceed budget
+                const currentMoney = currentTrade[assetsKey]
+                    .filter(a => a.type === 'money')
+                    .reduce((sum, a) => sum + a.amount, 0);
+                const budget = getTeamBudget(teamKey);
+                
+                if (currentMoney + amount > budget) {
+                    alert(`Cannot add $${amount}. Team only has $${budget - currentMoney} available.`);
+                    return;
+                }
+                
+                asset = { type: 'money', amount: amount };
+            }
+            
+            if (asset) {
+                currentTrade[assetsKey].push(asset);
+                renderTradeAssets(side);
+                
+                // Reset selector
+                document.getElementById(`trade-asset-type-${side}`).value = '';
+                document.getElementById(`trade-asset-selector-${side}`).style.display = 'none';
+                
+                updateTradeSubmitButton();
+            }
+        }
+        
+        function removeTradeAsset(side, index) {
+            const assetsKey = side === 'a' ? 'assetsA' : 'assetsB';
+            currentTrade[assetsKey].splice(index, 1);
+            renderTradeAssets(side);
+            updateTradeSubmitButton();
+        }
+        
+        function renderTradeAssets(side) {
+            const assetsKey = side === 'a' ? 'assetsA' : 'assetsB';
+            const assetsEl = document.getElementById(`trade-assets-${side}`);
+            const teamKey = currentTrade[side === 'a' ? 'teamA' : 'teamB'];
+            
+            if (currentTrade[assetsKey].length === 0) {
+                assetsEl.innerHTML = '<div style="color: #888; font-style: italic; padding: 1rem; text-align: center;">No assets added yet</div>';
+                return;
+            }
+            
+            assetsEl.innerHTML = currentTrade[assetsKey].map((asset, index) => {
+                let icon, label;
+                
+                if (asset.type === 'player') {
+                    icon = '👤';
+                    label = asset.name;
+                } else if (asset.type === 'pick') {
+                    icon = '📋';
+                    const originalOwner = keeperConfig?.teams[asset.originalOwner]?.team_name || 'Unknown';
+                    label = asset.originalOwner !== teamKey 
+                        ? `Round ${asset.round} (${originalOwner}'s pick)`
+                        : `Round ${asset.round}`;
+                } else if (asset.type === 'money') {
+                    icon = '💵';
+                    label = `$${asset.amount}`;
+                }
+                
+                return `
+                    <div class="trade-asset-item">
+                        <div class="asset-info">
+                            <span class="asset-type-icon ${asset.type}">${icon}</span>
+                            <span>${label}</span>
+                        </div>
+                        <button class="remove-asset" onclick="removeTradeAsset('${side}', ${index})">✕</button>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function updateTradeSubmitButton() {
+            const submitBtn = document.getElementById('trade-submit-btn');
+            
+            // Need both teams selected and at least one asset on either side
+            const hasTeams = currentTrade.teamA && currentTrade.teamB && currentTrade.teamA !== currentTrade.teamB;
+            const hasAssets = currentTrade.assetsA.length > 0 || currentTrade.assetsB.length > 0;
+            
+            submitBtn.disabled = !(hasTeams && hasAssets);
+        }
+        
+        function submitTrade() {
+            if (!currentTrade.teamA || !currentTrade.teamB) {
+                alert('Please select both teams.');
+                return;
+            }
+            
+            if (currentTrade.teamA === currentTrade.teamB) {
+                alert('Cannot trade with the same team.');
+                return;
+            }
+            
+            if (currentTrade.assetsA.length === 0 && currentTrade.assetsB.length === 0) {
+                alert('Please add at least one asset to the trade.');
+                return;
+            }
+            
+            const teamAInfo = keeperConfig?.teams[currentTrade.teamA];
+            const teamBInfo = keeperConfig?.teams[currentTrade.teamB];
+            
+            // Build confirmation message
+            let confirmMsg = `Confirm this trade?\n\n`;
+            confirmMsg += `${teamAInfo?.team_name || 'Team A'} sends:\n`;
+            currentTrade.assetsA.forEach(a => {
+                if (a.type === 'player') confirmMsg += `  • ${a.name}\n`;
+                else if (a.type === 'pick') confirmMsg += `  • Round ${a.round} pick\n`;
+                else if (a.type === 'money') confirmMsg += `  • $${a.amount}\n`;
+            });
+            if (currentTrade.assetsA.length === 0) confirmMsg += `  • (nothing)\n`;
+            
+            confirmMsg += `\n${teamBInfo?.team_name || 'Team B'} sends:\n`;
+            currentTrade.assetsB.forEach(a => {
+                if (a.type === 'player') confirmMsg += `  • ${a.name}\n`;
+                else if (a.type === 'pick') confirmMsg += `  • Round ${a.round} pick\n`;
+                else if (a.type === 'money') confirmMsg += `  • $${a.amount}\n`;
+            });
+            if (currentTrade.assetsB.length === 0) confirmMsg += `  • (nothing)\n`;
+            
+            if (!confirm(confirmMsg)) return;
+            
+            // Create trade record
+            const trade = {
+                id: Date.now(),
+                timestamp: new Date().toISOString(),
+                teamA: currentTrade.teamA,
+                teamB: currentTrade.teamB,
+                assetsA: [...currentTrade.assetsA],
+                assetsB: [...currentTrade.assetsB],
+                notes: document.getElementById('trade-notes').value.trim()
+            };
+            
+            // Add to trades
+            tradeData.trades.push(trade);
+            
+            // Save to localStorage
+            localStorage.setItem('keeper_trades_2026', JSON.stringify(tradeData));
+            
+            // Reapply trades to update budgets/picks
+            applyTradesToAssets();
+            
+            // Update displays
+            displayTrades();
+            displayLeagueKeepers(); // Refresh keeper display with new budgets
+            
+            // Close modal
+            closeTradeModal();
+            
+            alert('Trade recorded successfully!');
+        }
+        
+        function deleteTrade(index) {
+            if (!confirm('Are you sure you want to delete this trade?')) return;
+            
+            tradeData.trades.splice(index, 1);
+            localStorage.setItem('keeper_trades_2026', JSON.stringify(tradeData));
+            
+            // Reapply remaining trades
+            applyTradesToAssets();
+            
+            // Update displays
+            displayTrades();
+            displayLeagueKeepers();
+        }
+        
+        // Close trade modal on outside click
+        document.getElementById('trade-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeTradeModal();
+            }
+        });
+        
+        // ===== TRADE EXPORT FUNCTIONS =====
+        
+        function exportTradesForSite() {
+            // Generate clean JSON for the trades file
+            const exportData = {
+                _comment: "Fantasy Baseball Civil War - Keeper Trades for 2026 Season",
+                _updated: new Date().toISOString(),
+                trades: tradeData.trades.map(trade => ({
+                    id: trade.id,
+                    timestamp: trade.timestamp,
+                    teamA: trade.teamA,
+                    teamB: trade.teamB,
+                    assetsA: trade.assetsA,
+                    assetsB: trade.assetsB,
+                    notes: trade.notes || ""
+                }))
+            };
+            
+            const jsonString = JSON.stringify(exportData, null, 2);
+            document.getElementById('export-json-content').value = jsonString;
+            document.getElementById('export-trades-modal').classList.add('active');
+        }
+        
+        function closeExportModal() {
+            document.getElementById('export-trades-modal').classList.remove('active');
+        }
+        
+        function copyExportJson() {
+            const textarea = document.getElementById('export-json-content');
+            textarea.select();
+            document.execCommand('copy');
+            
+            // Show feedback
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '✓ Copied!';
+            setTimeout(() => {
+                btn.textContent = originalText;
+            }, 2000);
+        }
+        
+        function downloadExportJson() {
+            const jsonContent = document.getElementById('export-json-content').value;
+            const blob = new Blob([jsonContent], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'trades_2026.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // Close export modal on outside click
+        document.getElementById('export-trades-modal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeExportModal();
+            }
+        });
 
         // ===== PROJECTION PLAYER DETAIL MODAL =====
         
