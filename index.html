@@ -1308,6 +1308,15 @@
             font-weight: 600;
         }
 
+        .keeper-round-small {
+            background: #1e3c72;
+            color: white;
+            padding: 0.1rem 0.35rem;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
         .keeper-budget-used {
             background: rgba(255, 255, 255, 0.2);
             padding: 0.15rem 0.4rem;
@@ -9463,6 +9472,9 @@
 
         function displayScoringSettings(scoring) {
             const container = document.getElementById('proj-scoring-display');
+            // Element was removed, so just return
+            if (!container) return;
+            
             if (!scoring) {
                 container.innerHTML = '<p>Scoring settings not available.</p>';
                 return;
@@ -10507,6 +10519,9 @@
                 const budgetUsed = teamKeepers.reduce((sum, k) => sum + (k.dollarCost || 1), 0);
                 const teamTotalBudget = getTeamBudget ? getTeamBudget(teamKey) : KEEPER_BUDGET;
                 
+                // Calculate actual round costs for this team's keepers
+                const roundCosts = calculateTeamKeeperRoundCosts(teamKey);
+                
                 const card = document.createElement('div');
                 card.className = 'keeper-team-card';
                 
@@ -10521,11 +10536,17 @@
                     keepersHtml = teamKeepers.map(k => {
                         const projPts = keeperProjectionsMap[k.player_name.toLowerCase().trim()];
                         const projDisplay = projPts ? projPts.toFixed(0) : '-';
+                        
+                        // Find the actual round cost for this keeper
+                        const roundInfo = roundCosts.find(rc => rc.player_name === k.player_name);
+                        const actualRound = roundInfo ? roundInfo.actualRoundCost : k.roundCost;
+                        
                         return `
                             <div class="keeper-player-row">
                                 <span class="keeper-badge">K</span>
                                 <span class="player-name">${k.player_name}</span>
                                 <span class="player-pos">${k.position || ''}</span>
+                                <span class="keeper-round-small">Rd ${actualRound || '?'}</span>
                                 <span class="keeper-cost-small">$${k.dollarCost || 1}</span>
                                 <span class="player-pts">${projDisplay}</span>
                             </div>
