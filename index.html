@@ -738,7 +738,7 @@
         }
 
         .keeper-modal-content {
-            max-width: 700px;
+            max-width: 1100px;
             width: 95vw;
             max-height: 90vh;
             display: flex;
@@ -781,6 +781,15 @@
             padding: 0;
         }
 
+        /* Two column body layout */
+        .keeper-selection-body {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            gap: 1rem;
+            padding: 0 1rem;
+        }
+
         /* Progress Bar Container */
         .keeper-progress-container {
             width: 100%;
@@ -804,6 +813,123 @@
 
         .keeper-progress-bar.full {
             background: linear-gradient(90deg, #d4af37, #f5d742);
+        }
+
+        /* Draft Picks Panel */
+        .keeper-picks-section {
+            width: 220px;
+            flex-shrink: 0;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+        }
+
+        .keeper-picks-section h4 {
+            color: #1e3c72;
+            font-size: 0.95rem;
+            margin: 0 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .keeper-picks-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .keeper-pick-box {
+            aspect-ratio: 1;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #666;
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .keeper-pick-box.traded-away {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+            opacity: 0.6;
+        }
+
+        .keeper-pick-box.traded-for {
+            background: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+        }
+
+        .keeper-pick-box.used-for-keeper {
+            border-color: #d4af37;
+            background: linear-gradient(135deg, #fff9e6, #fff3cd);
+        }
+
+        .keeper-pick-box .pick-round {
+            font-size: 0.7rem;
+            color: #888;
+        }
+
+        .keeper-pick-box .pick-number {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e3c72;
+        }
+
+        .keeper-pick-box .keeper-headshot {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-radius: 6px;
+        }
+
+        .keeper-pick-box .keeper-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.7));
+            padding: 0.25rem;
+            text-align: center;
+        }
+
+        .keeper-pick-box .keeper-overlay span {
+            color: white;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
+
+        .keeper-pick-box .traded-label {
+            font-size: 0.55rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (max-width: 900px) {
+            .keeper-selection-body {
+                flex-direction: column;
+            }
+            
+            .keeper-picks-section {
+                width: 100%;
+                max-height: 150px;
+            }
+            
+            .keeper-picks-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
         }
 
         /* Header Layout */
@@ -896,7 +1022,7 @@
         .keeper-roster-section {
             flex: 1;
             overflow-y: auto;
-            padding: 1rem 1.5rem;
+            padding: 0.5rem 0;
             min-height: 0;
             /* This is key for making the scroll work inside the modal */
             overscroll-behavior: contain;
@@ -4812,28 +4938,39 @@
                     </div>
                 </div>
                 
-                <!-- Scrollable Roster Section -->
-                <div class="keeper-roster-section">
-                    <p style="color: #666; margin-bottom: 1rem;">Select players from your 2025 roster to keep. Budget: <strong>$50</strong>. Player costs are based on draft round.</p>
-                    <div id="keeper-roster-loading" class="loading" style="display: none;">Loading roster...</div>
-                    <div class="keeper-roster-table-wrapper">
-                        <table class="player-table keeper-table" id="keeper-roster-table">
-                            <thead>
-                                <tr>
-                                    <th style="width: 40px;">Keep</th>
-                                    <th style="width: 30px;">#</th>
-                                    <th>Player</th>
-                                    <th>Pos</th>
-                                    <th>2025 Pts</th>
-                                    <th>2026 Proj</th>
-                                    <th style="width: 55px;">Drafted</th>
-                                    <th style="width: 55px;">Rd Cost</th>
-                                    <th style="width: 50px;">$ Cost</th>
-                                </tr>
-                            </thead>
-                            <tbody id="keeper-roster-body">
-                            </tbody>
-                        </table>
+                <!-- Two Column Layout: Roster + Draft Picks -->
+                <div class="keeper-selection-body">
+                    <!-- Left: Scrollable Roster Section -->
+                    <div class="keeper-roster-section">
+                        <p style="color: #666; margin-bottom: 1rem;">Select players from your 2025 roster to keep. Budget: <strong>$50</strong>. Player costs are based on draft round.</p>
+                        <div id="keeper-roster-loading" class="loading" style="display: none;">Loading roster...</div>
+                        <div class="keeper-roster-table-wrapper">
+                            <table class="player-table keeper-table" id="keeper-roster-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 40px;">Keep</th>
+                                        <th style="width: 30px;">#</th>
+                                        <th>Player</th>
+                                        <th>Pos</th>
+                                        <th>2025 Pts</th>
+                                        <th>2026 Proj</th>
+                                        <th style="width: 55px;">Drafted</th>
+                                        <th style="width: 55px;">Rd Cost</th>
+                                        <th style="width: 50px;">$ Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="keeper-roster-body">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Draft Picks Visualization -->
+                    <div class="keeper-picks-section">
+                        <h4>📋 Your 2026 Draft Picks</h4>
+                        <div class="keeper-picks-grid" id="keeper-picks-grid">
+                            <!-- Pick boxes will be populated dynamically -->
+                        </div>
                     </div>
                 </div>
                 
@@ -8524,8 +8661,12 @@
                 if (!keeperConfig) {
                     await initializeKeeperManagement();
                 }
-                // Initialize trade management
+                // Initialize trade management (must be after keeper management)
                 await initializeTradeManagement();
+                
+                // Re-display league keepers now that trades are loaded
+                // This ensures round costs account for traded picks
+                displayLeagueKeepers();
                 
                 // Load projections if not already loaded
                 if (allProjectionBatters.length === 0 && allProjectionPitchers.length === 0) {
@@ -10291,6 +10432,9 @@
                 
                 loadingEl.style.display = 'none';
                 
+                // Update the draft picks display
+                updateKeeperPicksDisplay();
+                
             } catch (e) {
                 console.error('Error loading roster:', e);
                 loadingEl.style.display = 'none';
@@ -10416,6 +10560,108 @@
                     existingBadge.remove();
                 }
             });
+            
+            // Also update the picks display
+            updateKeeperPicksDisplay();
+        }
+        
+        function updateKeeperPicksDisplay() {
+            const grid = document.getElementById('keeper-picks-grid');
+            if (!grid || !currentKeeperTeam) return;
+            
+            const totalRounds = getTotalDraftRounds();
+            const teamPicks = getTeamPicks(currentKeeperTeam);
+            const teamKeepers = keeperSelections[currentKeeperTeam] || [];
+            
+            // Calculate which rounds are used by keepers
+            const roundCosts = calculateTeamKeeperRoundCosts(currentKeeperTeam);
+            
+            // Build a map of round -> keeper info for picks used
+            const keeperByRound = {};
+            roundCosts.forEach(rc => {
+                const keeper = teamKeepers.find(k => k.player_name === rc.player_name);
+                if (keeper) {
+                    keeperByRound[rc.actualRoundCost] = {
+                        name: rc.player_name,
+                        headshot: keeperRosterData.find(p => p.name === rc.player_name)?.headshot_url
+                    };
+                }
+            });
+            
+            // Build a map of which picks we own at each round
+            const picksAtRound = {};
+            teamPicks.forEach(pick => {
+                if (!picksAtRound[pick.round]) {
+                    picksAtRound[pick.round] = [];
+                }
+                picksAtRound[pick.round].push(pick);
+            });
+            
+            // Generate HTML for each round
+            let html = '';
+            for (let round = 1; round <= totalRounds; round++) {
+                const picks = picksAtRound[round] || [];
+                const ownsPick = picks.length > 0;
+                const tradedFor = picks.some(p => p.originalOwner !== currentKeeperTeam);
+                const keeperInfo = keeperByRound[round];
+                
+                // Check if we traded away our pick at this round
+                const tradedAway = !ownsPick;
+                
+                if (ownsPick) {
+                    // Show each pick we own at this round
+                    picks.forEach((pick, idx) => {
+                        const isFromTrade = pick.originalOwner !== currentKeeperTeam;
+                        const originalTeam = keeperConfig?.teams[pick.originalOwner]?.team_name || '';
+                        
+                        // Check if this specific pick slot is used for a keeper
+                        // We use keepers in order, so first keeper at round uses first pick, etc.
+                        const keepersAtThisRound = roundCosts.filter(rc => rc.actualRoundCost === round);
+                        const keeperForThisPick = keepersAtThisRound[idx];
+                        const keeperData = keeperForThisPick ? keeperByRound[round] : null;
+                        
+                        let boxClass = 'keeper-pick-box';
+                        if (isFromTrade) boxClass += ' traded-for';
+                        if (keeperData) boxClass += ' used-for-keeper';
+                        
+                        const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+                        
+                        if (keeperForThisPick && keeperData) {
+                            const keeper = teamKeepers.find(k => k.player_name === keeperForThisPick.player_name);
+                            const headshot = keeperRosterData.find(p => p.name === keeperForThisPick.player_name)?.headshot_url || placeholderImg;
+                            const shortName = keeperForThisPick.player_name.split(' ').pop(); // Last name
+                            
+                            html += `
+                                <div class="${boxClass}" title="${keeperForThisPick.player_name} - Round ${round}">
+                                    <img src="${headshot}" class="keeper-headshot" onerror="this.src='${placeholderImg}'">
+                                    <div class="keeper-overlay">
+                                        <span>Rd ${round}</span>
+                                    </div>
+                                </div>
+                            `;
+                        } else {
+                            html += `
+                                <div class="${boxClass}" title="Round ${round}${isFromTrade ? ' (from ' + originalTeam + ')' : ''}">
+                                    <span class="pick-round">Rd</span>
+                                    <span class="pick-number">${round}</span>
+                                    ${isFromTrade ? '<span class="traded-label">+Trade</span>' : ''}
+                                </div>
+                            `;
+                        }
+                    });
+                } else {
+                    // Traded away
+                    html += `
+                        <div class="keeper-pick-box traded-away" title="Round ${round} - Traded Away">
+                            <span class="pick-round">Rd</span>
+                            <span class="pick-number">${round}</span>
+                            <span class="traded-label">Traded</span>
+                        </div>
+                    `;
+                }
+            }
+            
+            grid.innerHTML = html;
         }
         
         function updateKeeperSelectedSummary() {
