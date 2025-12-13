@@ -2838,13 +2838,18 @@
         /* Position badge with colored background */
         .position-badge {
             display: inline-block;
-            padding: 0.15rem 0.4rem;
+            padding: 0.15rem 0.35rem;
             border-radius: 4px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: white;
             text-align: center;
-            min-width: 28px;
+            min-width: 24px;
+            margin-right: 2px;
+        }
+
+        .position-badge:last-child {
+            margin-right: 0;
         }
 
         .position-badge.pos-C { background: #e74c3c; }
@@ -9594,11 +9599,25 @@
         let projectionSort = { column: 'projected_points', direction: 'desc' };
         let projectionsData = null;
 
-        // Helper function to create position badge with color
+        // Helper function to create position badge(s) with color
+        // Handles multiple positions like "1B, 3B" or "1B/3B"
         function getPositionBadge(position) {
             if (!position || position === '-') return '<span class="position-badge">-</span>';
-            const pos = position.split('/')[0].trim(); // Use first position if multiple
-            return `<span class="position-badge pos-${pos}">${position}</span>`;
+            
+            // Parse positions
+            const positionsArray = position.split(/[,\/]/).map(p => p.trim()).filter(p => p);
+            
+            // Handle Ohtani batter case - if all positions are pitcher positions, show Util
+            const pitcherPositions = ['SP', 'RP', 'P'];
+            const allPitcher = positionsArray.length > 0 && positionsArray.every(p => pitcherPositions.includes(p));
+            if (allPitcher) {
+                return '<span class="position-badge pos-Util">Util</span>';
+            }
+            
+            // Generate a badge for each position
+            return positionsArray.map(pos => {
+                return `<span class="position-badge pos-${pos}">${pos}</span>`;
+            }).join(' ');
         }
 
         async function loadProjections() {
@@ -9721,6 +9740,14 @@
             const positions = position.split(/[,\/]/)
                 .map(p => p.trim())
                 .filter(p => p && !['UTIL', 'NA'].includes(p.toUpperCase()));
+            
+            // Handle Ohtani batter case - if positions are only SP/P but player is a batter
+            // (indicated by having SP AND P but being in batters list), show as Util
+            const pitcherPositions = ['SP', 'RP', 'P'];
+            const allPitcher = positions.length > 0 && positions.every(p => pitcherPositions.includes(p));
+            if (allPitcher) {
+                return 'Util';
+            }
             
             return positions.length > 0 ? positions.join(', ') : '-';
         }
@@ -11098,7 +11125,7 @@
                             <div class="keeper-player-row ${noPick ? 'no-pick-warning' : ''}">
                                 <span class="keeper-badge">K</span>
                                 <span class="player-name">${k.player_name}</span>
-                                <span class="player-pos">${k.position || ''}</span>
+                                ${getPositionBadge(k.position || '')}
                                 ${roundDisplay}
                                 <span class="keeper-cost-small">$${k.dollarCost || 1}</span>
                                 <span class="player-pts">${projDisplay}</span>
