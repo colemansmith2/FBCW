@@ -5091,6 +5091,7 @@
                         <button class="btn-toggle-prospects" id="btn-toggle-prospects" onclick="toggleLeagueProspects()">
                             <span id="toggle-prospects-text">Show Prospects</span>
                         </button>
+                        <button class="btn-adjust-budgets" onclick="clearKeeperCache()" title="Clear local cache and reload from Firebase" style="background: #dc3545; color: white;">🗑️ Clear Cache</button>
                     </div>
                 </div>
                 <div id="keeper-league-loading" class="loading" style="display: none;">Loading keepers...</div>
@@ -10981,6 +10982,10 @@
             loadingEl.style.display = 'block';
             tbody.innerHTML = '';
             
+            // Debug: log current keeper selections for this team
+            console.log('Loading roster for team:', teamKey);
+            console.log('Current keeperSelections for this team:', keeperSelections[teamKey]);
+            
             try {
                 // Load 2025 player stats to get roster
                 const response = await fetch('data/current_season/player_stats.json');
@@ -11277,6 +11282,10 @@
             const teamPicks = getTeamPicks(currentKeeperTeam);
             const currentKeepers = (keeperSelections[currentKeeperTeam] || []).filter(k => !k.isProspect);
             
+            console.log('canKeepPlayerWithPick:', playerName, 'requiredRound:', requiredRound);
+            console.log('Current keepers for team:', currentKeepers.map(k => `${k.player_name} (Rd ${k.roundCost})`));
+            console.log('Team picks:', teamPicks.map(p => `Rd ${p.round}`));
+            
             // Get all picks at or before the required round
             const eligiblePicks = teamPicks.filter(p => p.round <= requiredRound);
             
@@ -11386,6 +11395,55 @@
             const localData = JSON.parse(localStorage.getItem('keeper_selections_2026') || '{}');
             localData[currentKeeperTeam] = keeperSelections[currentKeeperTeam];
             localStorage.setItem('keeper_selections_2026', JSON.stringify(localData));
+        }
+        
+        async function clearKeeperCache() {
+            // Show current state before clearing
+            const localData = localStorage.getItem('keeper_selections_2026');
+            console.log('=== BEFORE CLEAR ===');
+            console.log('localStorage keeper_selections_2026:', localData);
+            console.log('In-memory keeperSelections:', JSON.stringify(keeperSelections, null, 2));
+            
+            if (!confirm('This will clear all locally cached keeper data and reload from Firebase. Continue?')) {
+                return;
+            }
+            
+            // Clear localStorage
+            localStorage.removeItem('keeper_selections_2026');
+            console.log('Cleared keeper_selections_2026 from localStorage');
+            
+            // Reset in-memory data
+            keeperSelections = {};
+            
+            // Reload from Firebase
+            if (firebaseDb) {
+                try {
+                    const snapshot = await firebaseDb.ref('keepers_2026').once('value');
+                    const data = snapshot.val();
+                    console.log('Raw Firebase data:', data);
+                    if (data) {
+                        Object.entries(data).forEach(([sanitizedKey, keepers]) => {
+                            const teamKey = unsanitizeFirebaseKey(sanitizedKey);
+                            if (Array.isArray(keepers)) {
+                                keeperSelections[teamKey] = keepers;
+                            } else if (keepers && typeof keepers === 'object') {
+                                keeperSelections[teamKey] = Object.values(keepers);
+                            }
+                        });
+                    }
+                    console.log('=== AFTER RELOAD ===');
+                    console.log('In-memory keeperSelections:', JSON.stringify(keeperSelections, null, 2));
+                } catch (e) {
+                    console.error('Error reloading from Firebase:', e);
+                }
+            } else {
+                console.log('Firebase not available');
+            }
+            
+            // Refresh display
+            displayLeagueKeepers();
+            
+            alert('✅ Cache cleared! Check console for details.');
         }
         
         function updateKeeperRosterDisplay() {
