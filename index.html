@@ -10404,7 +10404,11 @@
         // Calculate total budget used by a team's keepers
         function calculateTeamBudgetUsed(teamKey) {
             const keepers = keeperSelections[teamKey] || [];
-            return keepers.reduce((total, k) => total + (k.dollarCost || 1), 0);
+            // Only count non-prospect keepers, and use 0 for prospects
+            return keepers.reduce((total, k) => {
+                if (k.isProspect) return total; // Prospects are free
+                return total + (k.dollarCost !== undefined ? k.dollarCost : 1);
+            }, 0);
         }
         
         async function initializeKeeperManagement() {
@@ -11143,32 +11147,53 @@
                 summaryEl.innerHTML = '<span class="no-selection">No keepers selected. Check the boxes next to players you want to keep.</span>';
             } else {
                 const totalCost = calculateTeamBudgetUsed(currentKeeperTeam);
+                const prospectCount = teamKeepers.filter(k => k.isProspect).length;
                 
-                // Calculate actual round costs (handling multiple last-round picks)
+                // Calculate actual round costs (handling multiple last-round picks) - excludes prospects
                 const roundCosts = calculateTeamKeeperRoundCosts(currentKeeperTeam);
                 
-                let summaryHtml = `<div class="keeper-summary-header">Selected Keepers (Total: $${totalCost})</div>`;
+                let headerText = `Selected Keepers (Total: $${totalCost})`;
+                if (prospectCount > 0) {
+                    headerText = `Selected Keepers ($${totalCost} + ${prospectCount} prospect${prospectCount !== 1 ? 's' : ''})`;
+                }
+                
+                let summaryHtml = `<div class="keeper-summary-header">${headerText}</div>`;
                 summaryHtml += '<div class="keeper-summary-list">';
                 summaryHtml += teamKeepers.map(k => {
-                    // Find the actual round cost for this keeper
-                    const roundInfo = roundCosts.find(rc => rc.player_name === k.player_name);
-                    const actualRound = roundInfo ? roundInfo.actualRoundCost : k.roundCost;
-                    const isAdjusted = roundInfo && roundInfo.actualRoundCost !== roundInfo.baseRoundCost;
-                    const noPick = actualRound === null;
+                    const isProspect = k.isProspect || false;
                     
-                    const roundDisplay = noPick 
-                        ? '<span class="keeper-round-tag no-pick">No Pick!</span>'
-                        : `<span class="keeper-round-tag ${isAdjusted ? 'adjusted' : ''}">Rd ${actualRound}</span>`;
-                    
-                    return `
-                    <span class="selected-player ${noPick ? 'no-pick-warning' : ''}">
-                        <span class="keeper-badge">K</span>
-                        ${k.player_name}
-                        <span class="keeper-cost-tag">$${k.dollarCost || 1}</span>
-                        ${roundDisplay}
-                        <span class="remove-keeper" onclick="toggleKeeper('${k.player_name.replace(/'/g, "\\'")}', false)" title="Remove">✕</span>
-                    </span>
-                `}).join('');
+                    if (isProspect) {
+                        // Prospect display - no round cost, $0
+                        return `
+                        <span class="selected-player is-prospect">
+                            <span class="prospect-badge">P</span>
+                            ${k.player_name}
+                            <span class="keeper-cost-tag prospect-free">Free</span>
+                            <span class="remove-keeper" onclick="toggleKeeper('${k.player_name.replace(/'/g, "\\'")}', false)" title="Remove">✕</span>
+                        </span>
+                    `;
+                    } else {
+                        // Regular keeper display
+                        const roundInfo = roundCosts.find(rc => rc.player_name === k.player_name);
+                        const actualRound = roundInfo ? roundInfo.actualRoundCost : k.roundCost;
+                        const isAdjusted = roundInfo && roundInfo.actualRoundCost !== roundInfo.baseRoundCost;
+                        const noPick = actualRound === null;
+                        
+                        const roundDisplay = noPick 
+                            ? '<span class="keeper-round-tag no-pick">No Pick!</span>'
+                            : `<span class="keeper-round-tag ${isAdjusted ? 'adjusted' : ''}">Rd ${actualRound}</span>`;
+                        
+                        return `
+                        <span class="selected-player ${noPick ? 'no-pick-warning' : ''}">
+                            <span class="keeper-badge">K</span>
+                            ${k.player_name}
+                            <span class="keeper-cost-tag">$${k.dollarCost !== undefined ? k.dollarCost : 1}</span>
+                            ${roundDisplay}
+                            <span class="remove-keeper" onclick="toggleKeeper('${k.player_name.replace(/'/g, "\\'")}', false)" title="Remove">✕</span>
+                        </span>
+                    `;
+                    }
+                }).join('');
                 summaryHtml += '</div>';
                 summaryEl.innerHTML = summaryHtml;
             }
@@ -11189,18 +11214,37 @@
                 return;
             }
             
+            // Separate prospects from regular keepers
+            const regularKeepers = teamKeepers.filter(k => !k.isProspect);
+            const prospects = teamKeepers.filter(k => k.isProspect);
+            
             // Calculate total cost and actual round costs
             const totalCost = calculateTeamBudgetUsed(currentKeeperTeam);
             const roundCosts = calculateTeamKeeperRoundCosts(currentKeeperTeam);
             
             // Confirm submission with cost details
             let confirmMsg = `Submit the following keepers for ${teamInfo.team_name}?\n\n`;
-            teamKeepers.forEach(k => {
-                const roundInfo = roundCosts.find(rc => rc.player_name === k.player_name);
-                const actualRound = roundInfo ? roundInfo.actualRoundCost : k.roundCost;
-                confirmMsg += `• ${k.player_name} ($${k.dollarCost || 1}, Round ${actualRound})\n`;
-            });
+            
+            if (regularKeepers.length > 0) {
+                confirmMsg += `KEEPERS:\n`;
+                regularKeepers.forEach(k => {
+                    const roundInfo = roundCosts.find(rc => rc.player_name === k.player_name);
+                    const actualRound = roundInfo ? roundInfo.actualRoundCost : k.roundCost;
+                    confirmMsg += `• ${k.player_name} ($${k.dollarCost !== undefined ? k.dollarCost : 1}, Round ${actualRound})\n`;
+                });
+            }
+            
+            if (prospects.length > 0) {
+                confirmMsg += `\nPROSPECTS (Free):\n`;
+                prospects.forEach(k => {
+                    confirmMsg += `• ${k.player_name}\n`;
+                });
+            }
+            
             confirmMsg += `\nTotal Budget Used: $${totalCost} / $${KEEPER_BUDGET}`;
+            if (prospects.length > 0) {
+                confirmMsg += ` + ${prospects.length} prospect${prospects.length !== 1 ? 's' : ''}`;
+            }
             
             const confirmed = confirm(confirmMsg);
             
@@ -11217,7 +11261,11 @@
             filterProjections(); 
             
             // Show success message
-            alert(`✅ Keepers submitted successfully!\n\nYour ${teamKeepers.length} keeper(s) have been saved.`);
+            const keeperText = regularKeepers.length > 0 ? `${regularKeepers.length} keeper${regularKeepers.length !== 1 ? 's' : ''}` : '';
+            const prospectText = prospects.length > 0 ? `${prospects.length} prospect${prospects.length !== 1 ? 's' : ''}` : '';
+            const totalText = [keeperText, prospectText].filter(t => t).join(' and ');
+            
+            alert(`✅ Keepers submitted successfully!\n\nYour ${totalText} have been saved.`);
             
             // Close the modal
             closeKeeperModal();
