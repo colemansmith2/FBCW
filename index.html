@@ -10467,7 +10467,9 @@
                     const currentTeamData = currentKeeperTeam ? keeperSelections[currentKeeperTeam] : null;
                     
                     keeperSelections = {};
-                    Object.entries(data).forEach(([teamKey, keepers]) => {
+                    Object.entries(data).forEach(([sanitizedKey, keepers]) => {
+                        // Convert sanitized key back to original format (underscores to dots)
+                        const teamKey = unsanitizeFirebaseKey(sanitizedKey);
                         // Convert Firebase format (may have numeric keys) to array
                         if (Array.isArray(keepers)) {
                             keeperSelections[teamKey] = keepers;
@@ -10494,6 +10496,15 @@
         }
         
         // Save keeper selections to Firebase
+        // Firebase paths can't contain ".", "#", "$", "[", or "]" so we sanitize team keys
+        function sanitizeFirebaseKey(key) {
+            return key.replace(/\./g, '_');
+        }
+        
+        function unsanitizeFirebaseKey(key) {
+            return key.replace(/_/g, '.');
+        }
+        
         async function saveKeepersToFirebase(teamKey, keepers) {
             console.log('saveKeepersToFirebase called, firebaseDb:', !!firebaseDb, 'firebaseInitialized:', firebaseInitialized);
             
@@ -10503,8 +10514,9 @@
             }
             
             try {
-                console.log('Attempting to save to Firebase:', teamKey, keepers);
-                await firebaseDb.ref(`keepers_2026/${teamKey}`).set(keepers);
+                const sanitizedKey = sanitizeFirebaseKey(teamKey);
+                console.log('Attempting to save to Firebase:', sanitizedKey, keepers);
+                await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).set(keepers);
                 console.log(`Successfully saved keepers for ${teamKey} to Firebase`);
                 return true;
             } catch (e) {
@@ -10741,7 +10753,9 @@
                         const snapshot = await firebaseDb.ref('keepers_2026').once('value');
                         const data = snapshot.val();
                         if (data) {
-                            Object.entries(data).forEach(([teamKey, keepers]) => {
+                            Object.entries(data).forEach(([sanitizedKey, keepers]) => {
+                                // Convert sanitized key back to original format
+                                const teamKey = unsanitizeFirebaseKey(sanitizedKey);
                                 if (Array.isArray(keepers)) {
                                     keeperSelections[teamKey] = keepers;
                                 } else if (keepers && typeof keepers === 'object') {
