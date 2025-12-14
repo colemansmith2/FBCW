@@ -934,6 +934,26 @@
             letter-spacing: 0.5px;
         }
 
+        .keeper-pick-box.prospect-pick {
+            border-color: #17a2b8;
+            background: linear-gradient(135deg, #e8f7fa, #d1ecf1);
+        }
+
+        .keeper-pick-box .prospect-overlay {
+            background: linear-gradient(transparent, rgba(23, 162, 184, 0.8));
+        }
+
+        .keeper-prospects-divider {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #17a2b8;
+            padding: 0.5rem 0 0.25rem;
+            border-top: 1px dashed #17a2b8;
+            margin-top: 0.5rem;
+        }
+
         @media (max-width: 900px) {
             .keeper-selection-body {
                 flex-direction: column;
@@ -10283,7 +10303,11 @@
         // Calculate the actual round costs for a team's keepers, handling multiple last-round picks
         // This now considers traded picks - if you traded for extra round 22 picks, you can use them
         function calculateTeamKeeperRoundCosts(teamKey) {
-            const keepers = keeperSelections[teamKey] || [];
+            const allKeepers = keeperSelections[teamKey] || [];
+            if (allKeepers.length === 0) return [];
+            
+            // Filter out prospects - they don't use draft picks
+            const keepers = allKeepers.filter(k => !k.isProspect);
             if (keepers.length === 0) return [];
             
             const totalRounds = getTotalDraftRounds();
@@ -10297,7 +10321,7 @@
                 pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
             });
             
-            // Get base round costs for each keeper
+            // Get base round costs for each keeper (excluding prospects)
             let roundCosts = keepers.map(k => ({
                 player_name: k.player_name,
                 baseRoundCost: k.roundCost || totalRounds,
@@ -10906,10 +10930,17 @@
             const budgetUsed = calculateTeamBudgetUsed(currentKeeperTeam);
             const teamTotalBudget = getTeamBudget ? getTeamBudget(currentKeeperTeam) : KEEPER_BUDGET;
             const budgetRemaining = teamTotalBudget - budgetUsed;
-            const keeperCount = teamKeepers.length;
             
-            // Update status text to show budget
-            statusEl.textContent = `$${budgetUsed} / $${teamTotalBudget} used (${keeperCount} keeper${keeperCount !== 1 ? 's' : ''})`;
+            // Count prospects vs regular keepers
+            const prospectCount = teamKeepers.filter(k => k.isProspect).length;
+            const regularCount = teamKeepers.filter(k => !k.isProspect).length;
+            
+            // Update status text to show budget and prospect count
+            let statusText = `$${budgetUsed} / $${teamTotalBudget} used (${regularCount} keeper${regularCount !== 1 ? 's' : ''})`;
+            if (prospectCount > 0) {
+                statusText += ` + ${prospectCount} prospect${prospectCount !== 1 ? 's' : ''}`;
+            }
+            statusEl.textContent = statusText;
             
             // Update progress bar based on budget
             if (barEl) {
@@ -10986,13 +11017,17 @@
             const teamPicks = getTeamPicks(currentKeeperTeam);
             const teamKeepers = keeperSelections[currentKeeperTeam] || [];
             
-            // Calculate which rounds are used by keepers
+            // Separate prospects from regular keepers
+            const regularKeepers = teamKeepers.filter(k => !k.isProspect);
+            const prospects = teamKeepers.filter(k => k.isProspect);
+            
+            // Calculate which rounds are used by regular keepers (not prospects)
             const roundCosts = calculateTeamKeeperRoundCosts(currentKeeperTeam);
             
-            // Build a map of round -> keeper info for picks used
+            // Build a map of round -> keeper info for picks used (only regular keepers)
             const keeperByRound = {};
             roundCosts.forEach(rc => {
-                const keeper = teamKeepers.find(k => k.player_name === rc.player_name);
+                const keeper = regularKeepers.find(k => k.player_name === rc.player_name);
                 if (keeper && rc.actualRoundCost !== null) {
                     if (!keeperByRound[rc.actualRoundCost]) {
                         keeperByRound[rc.actualRoundCost] = [];
@@ -11074,6 +11109,27 @@
                         </div>
                     `;
                 }
+            }
+            
+            // Add prospects section if there are any
+            if (prospects.length > 0) {
+                const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+                
+                html += `<div class="keeper-prospects-divider">Prospects (Free)</div>`;
+                
+                prospects.forEach(prospect => {
+                    const player = keeperRosterData.find(p => p.name === prospect.player_name);
+                    const headshot = player?.headshot_url || placeholderImg;
+                    
+                    html += `
+                        <div class="keeper-pick-box prospect-pick" title="${prospect.player_name} - Free Prospect">
+                            <img src="${headshot}" class="keeper-headshot" onerror="this.src='${placeholderImg}'">
+                            <div class="keeper-overlay prospect-overlay">
+                                <span>P</span>
+                            </div>
+                        </div>
+                    `;
+                });
             }
             
             grid.innerHTML = html;
