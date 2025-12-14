@@ -13,6 +13,10 @@
     <!-- For iOS/Safari bookmarks -->
     <link rel="apple-touch-icon" sizes="180x180" href="league_logo.png">
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <style>
         * {
             margin: 0;
@@ -1458,11 +1462,6 @@
             position: relative;
         }
 
-        /* No hover color change on sortable headers */
-        #keeper-roster-table th.sortable:hover {
-            background: transparent;
-        }
-
         #keeper-roster-table th.sortable::after {
             content: '';
             margin-left: 4px;
@@ -1758,6 +1757,42 @@
             color: #dc3545;
         }
 
+        /* Firebase connection status */
+        .firebase-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .firebase-status .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .firebase-status.connected {
+            background: rgba(40, 167, 69, 0.15);
+            color: #28a745;
+        }
+
+        .firebase-status.connected .status-dot {
+            background: #28a745;
+            box-shadow: 0 0 6px #28a745;
+        }
+
+        .firebase-status.disconnected {
+            background: rgba(108, 117, 125, 0.15);
+            color: #6c757d;
+        }
+
+        .firebase-status.disconnected .status-dot {
+            background: #6c757d;
+        }
+
         /* Scrollable trades list */
         .trades-list-scrollable {
             max-height: 400px;
@@ -1802,11 +1837,6 @@
             font-weight: 600;
             text-align: left;
             border-bottom: 2px solid #1e3c72;
-        }
-
-        /* No hover color change on sortable headers */
-        .proj-table-scrollable thead th.sortable:hover {
-            background: transparent;
         }
 
         .proj-table-scrollable tbody tr {
@@ -2695,10 +2725,6 @@
             position: relative;
         }
 
-        .matchup-table th:hover {
-            background: #1e3c72;
-        }
-
         .matchup-table th.sortable::after {
             content: ' ⇅';
             opacity: 0.5;
@@ -2913,11 +2939,6 @@
             user-select: none;
         }
 
-        /* No hover color change on sortable headers */
-        .player-table th.sortable:hover {
-            background: transparent;
-        }
-
         .player-table th.sort-asc::after {
             content: ' ▲';
             font-size: 0.7rem;
@@ -2934,8 +2955,12 @@
             vertical-align: middle;
         }
 
-        .player-table tr:hover {
+        .player-table tbody tr:hover {
             background: #f0f4f8;
+        }
+
+        .player-table thead tr:hover {
+            background: transparent;
         }
 
         .player-table .stat-col {
@@ -5058,7 +5083,13 @@
             <!-- League Keepers Section -->
             <div style="margin-top: 3rem; border-top: 2px solid #e0e0e0; padding-top: 2rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="color: #1e3c72; margin: 0;">📋 League Keepers</h3>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <h3 style="color: #1e3c72; margin: 0;">📋 League Keepers</h3>
+                        <span id="firebase-status" class="firebase-status disconnected" title="Real-time sync status">
+                            <span class="status-dot"></span>
+                            <span class="status-text">Offline</span>
+                        </span>
+                    </div>
                     <div style="display: flex; gap: 0.5rem;">
                         <button class="btn-adjust-budgets" onclick="openBudgetAdjustmentModal()" title="Manually adjust team budgets">💰 Adjust Budgets</button>
                         <button class="btn-toggle-prospects" id="btn-toggle-prospects" onclick="toggleLeagueProspects()">
@@ -10361,6 +10392,119 @@
 
         // ===== KEEPER MANAGEMENT =====
         
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBDGlo49Hue0-64_kBgDlXuNExtSowCksg",
+            authDomain: "fantasy-baseball-civil-war.firebaseapp.com",
+            databaseURL: "https://fantasy-baseball-civil-war-default-rtdb.firebaseio.com",
+            projectId: "fantasy-baseball-civil-war",
+            storageBucket: "fantasy-baseball-civil-war.firebasestorage.app",
+            messagingSenderId: "629177123282",
+            appId: "1:629177123282:web:f8aac5965be0dea886880b",
+            measurementId: "G-FGGY9F6L6C"
+        };
+        
+        // Initialize Firebase
+        let firebaseApp = null;
+        let firebaseDb = null;
+        let firebaseInitialized = false;
+        
+        function updateFirebaseStatus(connected) {
+            const statusEl = document.getElementById('firebase-status');
+            if (statusEl) {
+                if (connected) {
+                    statusEl.className = 'firebase-status connected';
+                    statusEl.querySelector('.status-text').textContent = 'Live Sync';
+                    statusEl.title = 'Connected to real-time database - changes sync automatically';
+                } else {
+                    statusEl.className = 'firebase-status disconnected';
+                    statusEl.querySelector('.status-text').textContent = 'Offline';
+                    statusEl.title = 'Not connected - changes saved locally only';
+                }
+            }
+        }
+        
+        function initializeFirebase() {
+            try {
+                if (!firebaseInitialized && typeof firebase !== 'undefined') {
+                    firebaseApp = firebase.initializeApp(firebaseConfig);
+                    firebaseDb = firebase.database();
+                    firebaseInitialized = true;
+                    console.log('Firebase initialized successfully');
+                    
+                    // Monitor connection state
+                    firebaseDb.ref('.info/connected').on('value', (snapshot) => {
+                        const connected = snapshot.val() === true;
+                        updateFirebaseStatus(connected);
+                        console.log('Firebase connection:', connected ? 'connected' : 'disconnected');
+                    });
+                    
+                    // Set up real-time listener for keeper selections
+                    setupKeeperListener();
+                }
+            } catch (e) {
+                console.error('Firebase initialization error:', e);
+                updateFirebaseStatus(false);
+            }
+            }
+        }
+        
+        // Listen for real-time keeper updates from Firebase
+        function setupKeeperListener() {
+            if (!firebaseDb) return;
+            
+            const keepersRef = firebaseDb.ref('keepers_2026');
+            keepersRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    // Merge Firebase data with local selections
+                    // Firebase data takes precedence except for current user's team
+                    const currentTeamData = currentKeeperTeam ? keeperSelections[currentKeeperTeam] : null;
+                    
+                    keeperSelections = {};
+                    Object.entries(data).forEach(([teamKey, keepers]) => {
+                        // Convert Firebase format (may have numeric keys) to array
+                        if (Array.isArray(keepers)) {
+                            keeperSelections[teamKey] = keepers;
+                        } else if (keepers && typeof keepers === 'object') {
+                            keeperSelections[teamKey] = Object.values(keepers);
+                        }
+                    });
+                    
+                    // Restore current user's unsaved changes if they're in the modal
+                    if (currentTeamData && currentKeeperTeam) {
+                        // Only restore if modal is open and user has unsaved changes
+                        const modal = document.getElementById('keeper-modal');
+                        if (modal && modal.style.display === 'flex') {
+                            keeperSelections[currentKeeperTeam] = currentTeamData;
+                        }
+                    }
+                    
+                    console.log('Keeper data updated from Firebase');
+                    displayLeagueKeepers();
+                }
+            }, (error) => {
+                console.error('Firebase listener error:', error);
+            });
+        }
+        
+        // Save keeper selections to Firebase
+        async function saveKeepersToFirebase(teamKey, keepers) {
+            if (!firebaseDb) {
+                console.log('Firebase not initialized, saving to localStorage only');
+                return false;
+            }
+            
+            try {
+                await firebaseDb.ref(`keepers_2026/${teamKey}`).set(keepers);
+                console.log(`Saved keepers for ${teamKey} to Firebase`);
+                return true;
+            } catch (e) {
+                console.error('Error saving to Firebase:', e);
+                return false;
+            }
+        }
+        
         let keeperConfig = null;
         let keeperSelections = {};
         let currentKeeperTeam = null;
@@ -10560,6 +10704,9 @@
         
         async function initializeKeeperManagement() {
             try {
+                // Initialize Firebase first
+                initializeFirebase();
+                
                 // Load keeper config
                 const configResponse = await fetch('data/keepers/keeper_config.json');
                 if (configResponse.ok) {
@@ -10580,19 +10727,38 @@
                     console.log('Could not load draft data for keeper costs');
                 }
                 
-                // Load existing keeper selections
-                const selectionsResponse = await fetch('data/keepers/keepers_2026.json');
-                if (selectionsResponse.ok) {
-                    const data = await selectionsResponse.json();
-                    keeperSelections = data.keepers || {};
+                // Load existing keeper selections from Firebase (primary) or fallback to JSON file
+                if (firebaseDb) {
+                    try {
+                        const snapshot = await firebaseDb.ref('keepers_2026').once('value');
+                        const data = snapshot.val();
+                        if (data) {
+                            Object.entries(data).forEach(([teamKey, keepers]) => {
+                                if (Array.isArray(keepers)) {
+                                    keeperSelections[teamKey] = keepers;
+                                } else if (keepers && typeof keepers === 'object') {
+                                    keeperSelections[teamKey] = Object.values(keepers);
+                                }
+                            });
+                            console.log('Loaded keeper selections from Firebase');
+                        }
+                    } catch (e) {
+                        console.log('Could not load from Firebase, trying JSON file:', e);
+                    }
                 }
                 
-                // Also load from localStorage (for unsaved changes)
-                const localKeepers = localStorage.getItem('keeper_selections_2026');
-                if (localKeepers) {
-                    const localData = JSON.parse(localKeepers);
-                    // Merge local with server (local takes precedence for user's team)
-                    Object.assign(keeperSelections, localData);
+                // Fallback: Load from JSON file if Firebase is empty or unavailable
+                if (Object.keys(keeperSelections).length === 0) {
+                    try {
+                        const selectionsResponse = await fetch('data/keepers/keepers_2026.json');
+                        if (selectionsResponse.ok) {
+                            const data = await selectionsResponse.json();
+                            keeperSelections = data.keepers || {};
+                            console.log('Loaded keeper selections from JSON file');
+                        }
+                    } catch (e) {
+                        console.log('No JSON keeper file found');
+                    }
                 }
                 
                 // Populate team selector
@@ -11477,12 +11643,15 @@
                 confirmMsg += ` + ${prospects.length} prospect${prospects.length !== 1 ? 's' : ''}`;
             }
             
+            confirmMsg += `\n\nThis will be visible to all managers.`;
+            
             const confirmed = confirm(confirmMsg);
             
             if (!confirmed) return;
             
-            // Save to localStorage
-            saveKeeperSelections();
+            // Save to Firebase (primary) and localStorage (backup)
+            const firebaseSaved = await saveKeepersToFirebase(currentKeeperTeam, teamKeepers);
+            saveKeeperSelections(); // localStorage backup
             
             // Update the visual display of the league grid
             displayLeagueKeepers();
@@ -11496,7 +11665,11 @@
             const prospectText = prospects.length > 0 ? `${prospects.length} prospect${prospects.length !== 1 ? 's' : ''}` : '';
             const totalText = [keeperText, prospectText].filter(t => t).join(' and ');
             
-            alert(`✅ Keepers submitted successfully!\n\nYour ${totalText} have been saved.`);
+            if (firebaseSaved) {
+                alert(`✅ Keepers submitted successfully!\n\nYour ${totalText} have been saved and are now visible to all managers.`);
+            } else {
+                alert(`⚠️ Keepers saved locally.\n\nYour ${totalText} have been saved, but could not sync to the server. They will sync when connection is restored.`);
+            }
             
             // Close the modal
             closeKeeperModal();
