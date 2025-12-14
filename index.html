@@ -135,42 +135,37 @@
             /* Logo area covers the left box */
             .zone-logo {
                 left: 0;
-                width: 35.5%; 
+                width: 35%; 
             }
 
             /* Icon 1: Calendar */
             .zone-seasons {
                 left: 35%;
-                width: 10.75%;
+                width: 10.5%;
             }
 
             /* Icon 2: Ribbon */
             .zone-awards {
                 left: 45.5%;
-                width: 10.75%;
+                width: 10.5%;
             }
             
             /* Icon 3: Trophy (NEW) */
             .zone-champions {
                 left: 56.0%;
-                width: 10.75%;
+                width: 10.5%;
             }
 
             /* Icon 4: Gauge */
             .zone-scoring {
                 left: 66.5%;
-                width: 10.75%;
+                width: 10.5%;
             }
 
             /* Icon 5: Head */
             .zone-managers {
                 left: 77.0%;
-                width: 10.75%;
-            }
-
-            .zone-preseason {
-                left: 89%;
-                width: 10.75%; /* Takes remaining space */
+                width: 10.5%;
             }
 
             /* Hide desktop nav on mobile */
@@ -1569,6 +1564,8 @@
         .keeper-player-row .player-pts {
             font-weight: 600;
             color: #1e3c72;
+            min-width: 32px;
+            text-align: right;
         }
 
         .keeper-cost-small {
@@ -1664,6 +1661,88 @@
             background: #17a2b8;
             color: white;
             border-color: #17a2b8;
+        }
+
+        .btn-adjust-budgets {
+            padding: 0.4rem 0.8rem;
+            background: #e9ecef;
+            color: #495057;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-adjust-budgets:hover {
+            background: #ffc107;
+            color: #212529;
+            border-color: #ffc107;
+        }
+
+        .budget-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .budget-row:last-child {
+            border-bottom: none;
+        }
+
+        .budget-row .team-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: contain;
+            background: #f0f0f0;
+            padding: 2px;
+        }
+
+        .budget-row .team-info {
+            flex: 1;
+        }
+
+        .budget-row .team-name {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .budget-row .manager-name {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .budget-row .budget-input-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .budget-row .budget-input {
+            width: 70px;
+            padding: 0.4rem 0.5rem;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .budget-row .budget-diff {
+            font-size: 0.8rem;
+            font-weight: 600;
+            min-width: 50px;
+        }
+
+        .budget-row .budget-diff.positive {
+            color: #28a745;
+        }
+
+        .budget-row .budget-diff.negative {
+            color: #dc3545;
         }
 
         /* Scrollable trades list */
@@ -4401,9 +4480,6 @@
             
             <a href="#" class="mobile-zone zone-managers" onclick="showSection('managers'); return false;"
                 title="Manager Profiles"></a>
-
-            <a href="#" class="mobile-zone zone-preseason" onclick="showSection('preseason'); return false;"
-                title="Preseason Tools"></a>
         </div>
     </header>
 
@@ -4968,9 +5044,12 @@
             <div style="margin-top: 3rem; border-top: 2px solid #e0e0e0; padding-top: 2rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h3 style="color: #1e3c72; margin: 0;">📋 League Keepers</h3>
-                    <button class="btn-toggle-prospects" id="btn-toggle-prospects" onclick="toggleLeagueProspects()">
-                        <span id="toggle-prospects-text">Show Prospects</span>
-                    </button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-adjust-budgets" onclick="openBudgetAdjustmentModal()" title="Manually adjust team budgets">💰 Adjust Budgets</button>
+                        <button class="btn-toggle-prospects" id="btn-toggle-prospects" onclick="toggleLeagueProspects()">
+                            <span id="toggle-prospects-text">Show Prospects</span>
+                        </button>
+                    </div>
                 </div>
                 <div id="keeper-league-loading" class="loading" style="display: none;">Loading keepers...</div>
                 <div id="keeper-league-container">
@@ -5015,6 +5094,51 @@
                     <button class="keeper-cancel-btn" onclick="closeExportModal()">Close</button>
                     <button class="keeper-submit-btn" onclick="copyExportJson()">📋 Copy to Clipboard</button>
                     <button class="keeper-submit-btn" onclick="downloadExportJson()" style="background: linear-gradient(135deg, #1e3c72, #2a5298);">💾 Download File</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget Adjustment Modal -->
+    <div id="budget-adjustment-modal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="keeper-modal-close" onclick="closeBudgetModal()">&times;</span>
+            <div class="trade-modal-header">
+                <h2>💰 Adjust Team Budgets</h2>
+                <p>Manually adjust keeper budgets for each team. Export to share with all managers.</p>
+            </div>
+            <div style="padding: 1.5rem;">
+                <div id="budget-adjustment-list" style="max-height: 350px; overflow-y: auto;">
+                    <!-- Team budget rows will be populated here -->
+                </div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0;">
+                    <div style="display: flex; gap: 1rem; justify-content: space-between; align-items: center;">
+                        <button class="keeper-cancel-btn" onclick="resetAllBudgets()" style="background: #dc3545; color: white;">Reset All</button>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-export-trades" onclick="exportBudgetsForSite()">📤 Export for Site</button>
+                            <button class="keeper-cancel-btn" onclick="closeBudgetModal()">Cancel</button>
+                            <button class="keeper-submit-btn" onclick="saveBudgetAdjustments()">💾 Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Budgets Modal -->
+    <div id="export-budgets-modal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <span class="keeper-modal-close" onclick="closeExportBudgetsModal()">&times;</span>
+            <div class="trade-modal-header">
+                <h2>📤 Export Budget Adjustments</h2>
+                <p>Copy this JSON and save it to <code>data/keepers/budget_adjustments_2026.json</code> in your repository.</p>
+            </div>
+            <div style="padding: 1.5rem;">
+                <textarea id="export-budgets-json-content" readonly style="width: 100%; height: 300px; font-family: monospace; font-size: 0.85rem; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; background: #f8f9fa;"></textarea>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button class="keeper-cancel-btn" onclick="closeExportBudgetsModal()">Close</button>
+                    <button class="keeper-submit-btn" onclick="copyExportBudgetsJson()">📋 Copy to Clipboard</button>
+                    <button class="keeper-submit-btn" onclick="downloadExportBudgetsJson()" style="background: linear-gradient(135deg, #1e3c72, #2a5298);">💾 Download File</button>
                 </div>
             </div>
         </div>
@@ -11422,6 +11546,265 @@
             displayLeagueKeepers();
         }
 
+        // ===== BUDGET ADJUSTMENT =====
+        
+        let manualBudgetAdjustments = {}; // Store manual budget adjustments
+        let budgetsLoadedFromServer = false;
+        
+        async function loadManualBudgetAdjustments() {
+            // First try to load from server JSON file
+            try {
+                const response = await fetch('data/keepers/budget_adjustments_2026.json');
+                if (response.ok) {
+                    const serverData = await response.json();
+                    // Extract just the adjustment values from the server data
+                    if (serverData.adjustments) {
+                        Object.entries(serverData.adjustments).forEach(([teamKey, data]) => {
+                            if (typeof data === 'object' && data.adjustment !== undefined) {
+                                manualBudgetAdjustments[teamKey] = data.adjustment;
+                            } else if (typeof data === 'number') {
+                                manualBudgetAdjustments[teamKey] = data;
+                            }
+                        });
+                    }
+                    budgetsLoadedFromServer = true;
+                    console.log(`Loaded budget adjustments from server for ${Object.keys(manualBudgetAdjustments).length} teams`);
+                }
+            } catch (e) {
+                console.log('No server budget adjustments file found, checking localStorage');
+            }
+            
+            // If no server data, check localStorage
+            if (!budgetsLoadedFromServer) {
+                try {
+                    const saved = localStorage.getItem('keeper_budget_adjustments_2026');
+                    if (saved) {
+                        manualBudgetAdjustments = JSON.parse(saved);
+                    }
+                } catch (e) {
+                    console.log('Could not load budget adjustments from localStorage:', e);
+                }
+            }
+        }
+        
+        function saveManualBudgetAdjustments() {
+            try {
+                localStorage.setItem('keeper_budget_adjustments_2026', JSON.stringify(manualBudgetAdjustments));
+            } catch (e) {
+                console.log('Could not save budget adjustments:', e);
+            }
+        }
+        
+        function openBudgetAdjustmentModal() {
+            const modal = document.getElementById('budget-adjustment-modal');
+            const listEl = document.getElementById('budget-adjustment-list');
+            
+            if (!keeperConfig || !keeperConfig.teams) {
+                alert('Keeper configuration not loaded yet.');
+                return;
+            }
+            
+            // Sort teams by manager name
+            const sortedTeams = Object.entries(keeperConfig.teams)
+                .sort((a, b) => a[1].manager.localeCompare(b[1].manager));
+            
+            let html = '';
+            sortedTeams.forEach(([teamKey, teamInfo]) => {
+                const logoImg = teamInfo.team_logo 
+                    ? `<img src="${teamInfo.team_logo}" class="team-logo" alt="">`
+                    : '<div class="team-logo" style="background: #1e3c72;"></div>';
+                
+                // Get current budget (base + trades + manual adjustments)
+                const baseBudget = KEEPER_BUDGET;
+                const tradeAdjustment = getTradeAdjustedBudget(teamKey) - baseBudget;
+                const manualAdjustment = manualBudgetAdjustments[teamKey] || 0;
+                const currentBudget = baseBudget + tradeAdjustment + manualAdjustment;
+                
+                html += `
+                    <div class="budget-row" data-team-key="${teamKey}">
+                        ${logoImg}
+                        <div class="team-info">
+                            <div class="team-name">${teamInfo.team_name}</div>
+                            <div class="manager-name">${teamInfo.manager}</div>
+                        </div>
+                        <div class="budget-input-group">
+                            <span>$</span>
+                            <input type="number" class="budget-input" 
+                                   id="budget-input-${teamKey}" 
+                                   value="${currentBudget}" 
+                                   min="0" max="200"
+                                   data-base="${baseBudget + tradeAdjustment}"
+                                   onchange="updateBudgetDiff('${teamKey}')">
+                            <span class="budget-diff" id="budget-diff-${teamKey}"></span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            listEl.innerHTML = html;
+            
+            // Update all diffs
+            sortedTeams.forEach(([teamKey]) => updateBudgetDiff(teamKey));
+            
+            modal.style.display = 'flex';
+        }
+        
+        function updateBudgetDiff(teamKey) {
+            const input = document.getElementById(`budget-input-${teamKey}`);
+            const diffEl = document.getElementById(`budget-diff-${teamKey}`);
+            
+            if (!input || !diffEl) return;
+            
+            const baseValue = parseFloat(input.dataset.base) || KEEPER_BUDGET;
+            const currentValue = parseFloat(input.value) || 0;
+            const diff = currentValue - baseValue;
+            
+            if (diff > 0) {
+                diffEl.textContent = `+$${diff}`;
+                diffEl.className = 'budget-diff positive';
+            } else if (diff < 0) {
+                diffEl.textContent = `-$${Math.abs(diff)}`;
+                diffEl.className = 'budget-diff negative';
+            } else {
+                diffEl.textContent = '';
+                diffEl.className = 'budget-diff';
+            }
+        }
+        
+        function getTradeAdjustedBudget(teamKey) {
+            // This gets the budget after trades but before manual adjustments
+            let budget = KEEPER_BUDGET;
+            
+            if (tradeData && tradeData.trades) {
+                tradeData.trades.forEach(trade => {
+                    if (trade.teamA === teamKey) {
+                        // Team A receives assets from B, gives up assets to B
+                        trade.assetsB?.forEach(asset => {
+                            if (asset.type === 'money') budget += (asset.amount || 0);
+                        });
+                        trade.assetsA?.forEach(asset => {
+                            if (asset.type === 'money') budget -= (asset.amount || 0);
+                        });
+                    } else if (trade.teamB === teamKey) {
+                        // Team B receives assets from A, gives up assets to A
+                        trade.assetsA?.forEach(asset => {
+                            if (asset.type === 'money') budget += (asset.amount || 0);
+                        });
+                        trade.assetsB?.forEach(asset => {
+                            if (asset.type === 'money') budget -= (asset.amount || 0);
+                        });
+                    }
+                });
+            }
+            
+            return budget;
+        }
+        
+        function saveBudgetAdjustments() {
+            const rows = document.querySelectorAll('.budget-row');
+            
+            rows.forEach(row => {
+                const teamKey = row.dataset.teamKey;
+                const input = row.querySelector('.budget-input');
+                const baseValue = parseFloat(input.dataset.base) || KEEPER_BUDGET;
+                const currentValue = parseFloat(input.value) || KEEPER_BUDGET;
+                const manualAdjustment = currentValue - baseValue;
+                
+                if (manualAdjustment !== 0) {
+                    manualBudgetAdjustments[teamKey] = manualAdjustment;
+                } else {
+                    delete manualBudgetAdjustments[teamKey];
+                }
+            });
+            
+            saveManualBudgetAdjustments();
+            closeBudgetModal();
+            displayLeagueKeepers();
+            
+            alert('✅ Budget adjustments saved!');
+        }
+        
+        function resetAllBudgets() {
+            if (!confirm('Reset all manual budget adjustments to default ($50 + trade adjustments)?')) {
+                return;
+            }
+            
+            manualBudgetAdjustments = {};
+            saveManualBudgetAdjustments();
+            closeBudgetModal();
+            displayLeagueKeepers();
+            
+            alert('✅ All budgets reset to defaults.');
+        }
+        
+        function closeBudgetModal() {
+            document.getElementById('budget-adjustment-modal').style.display = 'none';
+        }
+        
+        function exportBudgetsForSite() {
+            // First save current changes
+            const rows = document.querySelectorAll('.budget-row');
+            rows.forEach(row => {
+                const teamKey = row.dataset.teamKey;
+                const input = row.querySelector('.budget-input');
+                const baseValue = parseFloat(input.dataset.base) || KEEPER_BUDGET;
+                const currentValue = parseFloat(input.value) || KEEPER_BUDGET;
+                const manualAdjustment = currentValue - baseValue;
+                
+                if (manualAdjustment !== 0) {
+                    manualBudgetAdjustments[teamKey] = manualAdjustment;
+                } else {
+                    delete manualBudgetAdjustments[teamKey];
+                }
+            });
+            saveManualBudgetAdjustments();
+            
+            // Build export object with team details for readability
+            const exportData = {
+                "_comment": "Fantasy Baseball Civil War - Budget Adjustments for 2026 Season",
+                "_updated": new Date().toISOString(),
+                "adjustments": {}
+            };
+            
+            // Add adjustments with team names for clarity
+            Object.entries(manualBudgetAdjustments).forEach(([teamKey, adjustment]) => {
+                const teamInfo = keeperConfig?.teams[teamKey];
+                exportData.adjustments[teamKey] = {
+                    team_name: teamInfo?.team_name || 'Unknown',
+                    manager: teamInfo?.manager || 'Unknown',
+                    adjustment: adjustment
+                };
+            });
+            
+            const jsonString = JSON.stringify(exportData, null, 2);
+            document.getElementById('export-budgets-json-content').value = jsonString;
+            document.getElementById('export-budgets-modal').style.display = 'flex';
+        }
+        
+        function closeExportBudgetsModal() {
+            document.getElementById('export-budgets-modal').style.display = 'none';
+        }
+        
+        function copyExportBudgetsJson() {
+            const textarea = document.getElementById('export-budgets-json-content');
+            textarea.select();
+            document.execCommand('copy');
+            alert('✅ Budget adjustments JSON copied to clipboard!');
+        }
+        
+        function downloadExportBudgetsJson() {
+            const content = document.getElementById('export-budgets-json-content').value;
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'budget_adjustments_2026.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
         // ===== TRADE MANAGEMENT =====
         
         let tradeData = {
@@ -11439,6 +11822,9 @@
         let tradesLoadedFromServer = false; // Track if we loaded from server
         
         async function initializeTradeManagement() {
+            // Load manual budget adjustments (now async to check server first)
+            await loadManualBudgetAdjustments();
+            
             // First, try to load trades from the server JSON file
             try {
                 const response = await fetch('data/keepers/trades_2026.json');
@@ -11563,7 +11949,11 @@
         }
         
         function getTeamBudget(teamKey) {
-            return teamBudgets[teamKey] || KEEPER_BUDGET;
+            // Base budget from trades
+            const tradeBudget = teamBudgets[teamKey] || KEEPER_BUDGET;
+            // Add manual adjustments
+            const manualAdjustment = manualBudgetAdjustments[teamKey] || 0;
+            return tradeBudget + manualAdjustment;
         }
         
         function getTeamPicks(teamKey) {
