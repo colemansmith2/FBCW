@@ -10627,11 +10627,18 @@
             // Get the team's available picks (including traded picks)
             const ownedPicks = getTeamPicks(teamKey);
             
+            console.log('=== calculateTeamKeeperRoundCosts DEBUG ===');
+            console.log('Team:', teamKey);
+            console.log('Keepers:', keepers.map(k => `${k.player_name} (baseRoundCost: ${k.roundCost})`));
+            console.log('Owned picks:', ownedPicks.map(p => `Rd ${p.round}`).join(', '));
+            
             // Build a count of how many picks the team has at each round
             const pickCounts = {};
             ownedPicks.forEach(pick => {
                 pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
             });
+            
+            console.log('Pick counts by round:', pickCounts);
             
             // Get base round costs for each keeper (excluding prospects)
             let roundCosts = keepers.map(k => ({
@@ -10642,6 +10649,8 @@
             
             // Sort by round cost (highest/latest rounds first for undrafted)
             roundCosts.sort((a, b) => b.baseRoundCost - a.baseRoundCost);
+            
+            console.log('Sorted keepers (highest round first):', roundCosts.map(k => `${k.player_name} (${k.baseRoundCost})`));
             
             // Track used picks at each round
             const usedPicksAtRound = {};
@@ -10708,7 +10717,11 @@
                 }
                 
                 keeper.actualRoundCost = assignedRound;
+                console.log(`  ${keeper.player_name}: base=${keeper.baseRoundCost} -> actual=${assignedRound}`);
             });
+            
+            console.log('Final assignments:', roundCosts.map(k => `${k.player_name}: Rd ${k.actualRoundCost}`));
+            console.log('=== END DEBUG ===');
             
             return roundCosts;
         }
