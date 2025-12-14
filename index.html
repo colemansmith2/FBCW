@@ -11028,6 +11028,18 @@
                         }
                         return;
                     }
+                    
+                    // Check if there's an available pick at or before the required round
+                    const canKeepResult = canKeepPlayerWithPick(playerName, roundCost);
+                    if (!canKeepResult.canKeep) {
+                        alert(`Cannot keep ${playerName}.\n\n${canKeepResult.reason}\n\nYou need a pick in round ${roundCost} or earlier to keep this player.`);
+                        // Uncheck box
+                        const row = document.querySelector(`tr[data-player-name="${playerName}"]`);
+                        if (row) {
+                            row.querySelector('.keeper-checkbox').checked = false;
+                        }
+                        return;
+                    }
                 }
                 
                 // Add keeper with cost info
@@ -11055,6 +11067,78 @@
             updateKeeperRosterDisplay();
             updateKeeperStatus();
             updateKeeperSelectedSummary();
+        }
+        
+        // Check if a player can be kept given their round cost and current keeper selections
+        function canKeepPlayerWithPick(playerName, requiredRound) {
+            const teamPicks = getTeamPicks(currentKeeperTeam);
+            const currentKeepers = (keeperSelections[currentKeeperTeam] || []).filter(k => !k.isProspect);
+            
+            // Get all picks at or before the required round
+            const eligiblePicks = teamPicks.filter(p => p.round <= requiredRound);
+            
+            if (eligiblePicks.length === 0) {
+                return {
+                    canKeep: false,
+                    reason: `You don't have any draft picks in rounds 1-${requiredRound}.`
+                };
+            }
+            
+            // Count how many picks we have at each eligible round
+            const pickCounts = {};
+            eligiblePicks.forEach(pick => {
+                pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
+            });
+            
+            // Count how many keepers are already using picks at each round
+            // We need to simulate adding this player and see if picks can be assigned
+            const usedPicksAtRound = {};
+            
+            // Get all current keepers sorted by round cost (highest first, so they get assigned first)
+            const keeperRoundCosts = currentKeepers.map(k => ({
+                player_name: k.player_name,
+                roundCost: k.roundCost
+            }));
+            
+            // Add the new player we're trying to keep
+            keeperRoundCosts.push({
+                player_name: playerName,
+                roundCost: requiredRound
+            });
+            
+            // Sort by round cost descending (latest rounds first)
+            keeperRoundCosts.sort((a, b) => b.roundCost - a.roundCost);
+            
+            // Try to assign each keeper to a pick
+            for (const keeper of keeperRoundCosts) {
+                let assigned = false;
+                
+                // Try to find an available pick at or before this keeper's round cost
+                // Start from the keeper's round cost and work backwards
+                for (let round = keeper.roundCost; round >= 1; round--) {
+                    const available = (pickCounts[round] || 0) - (usedPicksAtRound[round] || 0);
+                    if (available > 0) {
+                        usedPicksAtRound[round] = (usedPicksAtRound[round] || 0) + 1;
+                        assigned = true;
+                        break;
+                    }
+                }
+                
+                if (!assigned && keeper.player_name === playerName) {
+                    // This is the player we're trying to add and they couldn't be assigned
+                    const usedRounds = Object.entries(usedPicksAtRound)
+                        .filter(([r, c]) => c > 0)
+                        .map(([r]) => `Rd ${r}`)
+                        .join(', ');
+                    
+                    return {
+                        canKeep: false,
+                        reason: `All your available picks in rounds 1-${requiredRound} are already being used by other keepers${usedRounds ? ` (${usedRounds})` : ''}.`
+                    };
+                }
+            }
+            
+            return { canKeep: true };
         }
 
         function updateKeeperStatus() {
