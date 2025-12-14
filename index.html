@@ -804,6 +804,7 @@
             flex: 1;
             overflow: hidden;
             padding: 0;
+            min-height: 0;
         }
 
         /* Two column body layout */
@@ -813,6 +814,7 @@
             overflow: hidden;
             gap: 1rem;
             padding: 0 1rem;
+            min-height: 0;
         }
 
         /* Progress Bar Container */
@@ -1100,20 +1102,39 @@
             margin-bottom: 0.5rem;
         }
 
-        /* Scrollable Roster Section */
+        /* Roster Section - contains the table which scrolls independently */
         .keeper-roster-section {
             flex: 1;
-            overflow-y: auto;
+            overflow: hidden;
             padding: 0.5rem 0;
             min-height: 0;
-            /* This is key for making the scroll work inside the modal */
-            overscroll-behavior: contain;
+            display: flex;
+            flex-direction: column;
         }
 
         .keeper-roster-table-wrapper {
             border: 1px solid #e0e0e0;
             border-radius: 8px;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .keeper-roster-table-wrapper table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .keeper-roster-table-wrapper thead {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .keeper-roster-table-wrapper thead th {
+            background: linear-gradient(135deg, #1e3c72, #2a5298) !important;
+            color: white;
         }
 
         /* Fixed Footer */
@@ -1403,15 +1424,6 @@
             margin-bottom: 0.75rem;
         }
 
-        /* Fix scrolling: Remove fixed height so the modal's main scrollbar handles everything */
-        .keeper-roster-table-wrapper {
-            max-height: none; /* Was 500px */
-            overflow-y: visible; /* Was auto */
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-        }
-
         .keeper-table .keeper-checkbox {
             width: 20px;
             height: 20px;
@@ -1446,8 +1458,9 @@
             position: relative;
         }
 
+        /* No hover color change on sortable headers */
         #keeper-roster-table th.sortable:hover {
-            background: rgba(0, 0, 0, 0.15) !important;
+            background: transparent;
         }
 
         #keeper-roster-table th.sortable::after {
@@ -1791,8 +1804,9 @@
             border-bottom: 2px solid #1e3c72;
         }
 
+        /* No hover color change on sortable headers */
         .proj-table-scrollable thead th.sortable:hover {
-            background: rgba(0, 0, 0, 0.15) !important;
+            background: transparent;
         }
 
         .proj-table-scrollable tbody tr {
@@ -2899,8 +2913,9 @@
             user-select: none;
         }
 
+        /* No hover color change on sortable headers */
         .player-table th.sortable:hover {
-            background: linear-gradient(135deg, #2a5298, #3a6cc8);
+            background: transparent;
         }
 
         .player-table th.sort-asc::after {
