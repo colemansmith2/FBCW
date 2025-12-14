@@ -717,6 +717,31 @@
             flex-shrink: 0;
         }
 
+        .prospect-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: transparent;
+            border: 2px solid #17a2b8;
+            border-radius: 50%;
+            color: #17a2b8;
+            font-size: 0.6rem;
+            font-weight: bold;
+            margin-left: 4px;
+            flex-shrink: 0;
+        }
+
+        .prospect-free {
+            color: #17a2b8 !important;
+            background: rgba(23, 162, 184, 0.1) !important;
+        }
+
+        .is-prospect {
+            background: rgba(23, 162, 184, 0.08);
+        }
+
         /* Keeper Management Styles */
         .btn-select-keepers {
             padding: 0.5rem 1.25rem;
@@ -1555,6 +1580,12 @@
             margin-left: 0.5rem;
         }
 
+        .prospect-count {
+            color: #17a2b8;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
         /* ===== TRADE MANAGEMENT STYLES ===== */
         .btn-new-trade {
             padding: 0.5rem 1rem;
@@ -1586,6 +1617,28 @@
         .btn-export-trades:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-toggle-prospects {
+            padding: 0.4rem 0.8rem;
+            background: #e9ecef;
+            color: #495057;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-toggle-prospects:hover {
+            background: #dee2e6;
+        }
+
+        .btn-toggle-prospects.active {
+            background: #17a2b8;
+            color: white;
+            border-color: #17a2b8;
         }
 
         /* Scrollable trades list */
@@ -4885,7 +4938,12 @@
 
             <!-- League Keepers Section -->
             <div style="margin-top: 3rem; border-top: 2px solid #e0e0e0; padding-top: 2rem;">
-                <h3 style="color: #1e3c72; margin-bottom: 1rem;">📋 League Keepers</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="color: #1e3c72; margin: 0;">📋 League Keepers</h3>
+                    <button class="btn-toggle-prospects" id="btn-toggle-prospects" onclick="toggleLeagueProspects()">
+                        <span id="toggle-prospects-text">Show Prospects</span>
+                    </button>
+                </div>
                 <div id="keeper-league-loading" class="loading" style="display: none;">Loading keepers...</div>
                 <div id="keeper-league-container">
                     <div class="keeper-league-grid" id="keeper-league-grid">
@@ -10143,6 +10201,7 @@
         let keeperProjectionsMap = {};
         let keeperDraftData = {}; // Store draft data for cost calculations
         let showTradedPicks = false; // Toggle state for showing traded picks (default hidden)
+        let showLeagueProspects = false; // Toggle state for showing prospects in league keepers (default hidden)
         const KEEPER_BUDGET = 50; // $50 per team
         
         // Password hashing function (simple SHA-256)
@@ -10619,18 +10678,33 @@
                     const draftRoundDisplay = draftInfo && draftInfo.round ? `Rd ${draftInfo.round}` : 'FA';
                     const isUndrafted = draftInfo ? draftInfo.isUndrafted : true;
                     
+                    // Check if player qualifies as a prospect (free keeper)
+                    // Must be undrafted AND have limited playing time
+                    const stats = player.stats || {};
+                    const isPitcher = ['SP', 'RP', 'P'].includes(player.primary_position);
+                    const hasLimitedTime = isPitcher 
+                        ? (stats.IP || 0) < 50 
+                        : (stats.AB || 0) < 130;
+                    const isProspect = isUndrafted && hasLimitedTime;
+                    
                     const row = document.createElement('tr');
                     row.className = isKept ? 'is-keeper' : '';
+                    if (isProspect) row.classList.add('is-prospect');
                     row.dataset.playerName = player.name;
-                    row.dataset.dollarCost = dollarCost;
-                    row.dataset.roundCost = roundCost;
+                    row.dataset.dollarCost = isProspect ? 0 : dollarCost;
+                    row.dataset.roundCost = isProspect ? 0 : roundCost;
                     row.dataset.pts2025 = player.fantasy_points || 0;
                     row.dataset.pts2026 = projPts || 0;
                     row.dataset.position = player.primary_position || '';
                     row.dataset.drafted = draftRound;
+                    row.dataset.isProspect = isProspect ? '1' : '0';
                     
                     const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
                     const headshot = player.headshot_url || placeholderImg;
+                    
+                    // Display cost info - prospects are free
+                    const rdCostDisplay = isProspect ? '<span class="keeper-round-cost prospect-free">Free</span>' : `<span class="keeper-round-cost">Rd ${roundCost}</span>`;
+                    const dollarCostDisplay = isProspect ? '<span class="keeper-dollar-cost prospect-free">$0</span>' : `<span class="keeper-dollar-cost">$${dollarCost}</span>`;
                     
                     row.innerHTML = `
                         <td style="text-align: center;">
@@ -10643,6 +10717,7 @@
                                 <img src="${headshot}" class="player-headshot" onerror="this.src='${placeholderImg}'">
                                 <span class="player-name">${player.name}</span>
                                 ${isKept ? '<span class="keeper-badge">K</span>' : ''}
+                                ${isProspect ? '<span class="prospect-badge">P</span>' : ''}
                             </div>
                         </td>
                         <td>${getPositionBadge(player.primary_position || '-', player.name)}</td>
@@ -10652,10 +10727,10 @@
                             <span class="keeper-draft-round">${draftRoundDisplay}</span>
                         </td>
                         <td class="keeper-cost-col">
-                            <span class="keeper-round-cost">Rd ${roundCost}</span>
+                            ${rdCostDisplay}
                         </td>
                         <td class="keeper-cost-col">
-                            <span class="keeper-dollar-cost">$${dollarCost}</span>
+                            ${dollarCostDisplay}
                         </td>
                     `;
                     
@@ -10763,28 +10838,40 @@
             const existingIndex = teamKeepers.findIndex(k => k.player_name.toLowerCase() === playerName.toLowerCase());
             
             if (isKeeping) {
-                // Get player cost info
+                // Get player data to check prospect status
+                const player = keeperRosterData.find(p => p.name === playerName);
                 const draftInfo = getPlayerDraftInfo(playerName);
-                const dollarCost = draftInfo ? draftInfo.dollarCost : 1;
-                const roundCost = draftInfo ? draftInfo.roundCost : getTotalDraftRounds();
                 const isUndrafted = draftInfo ? draftInfo.isUndrafted : true;
                 
-                // Check budget (use team's actual budget which may be affected by trades)
-                const currentBudgetUsed = calculateTeamBudgetUsed(currentKeeperTeam);
-                const teamTotalBudget = getTeamBudget ? getTeamBudget(currentKeeperTeam) : KEEPER_BUDGET;
-                if (currentBudgetUsed + dollarCost > teamTotalBudget) {
-                    alert(`Adding this player would exceed your keeper budget.\n\nYour Budget: $${teamTotalBudget}\nCurrently Used: $${currentBudgetUsed}\nThis player: $${dollarCost}\nTotal would be: $${currentBudgetUsed + dollarCost}`);
-                    // Uncheck box
-                    const row = document.querySelector(`tr[data-player-name="${playerName}"]`);
-                    if (row) {
-                        row.querySelector('.keeper-checkbox').checked = false;
+                // Check if player qualifies as a prospect (free keeper)
+                const stats = player?.stats || {};
+                const isPitcher = ['SP', 'RP', 'P'].includes(player?.primary_position);
+                const hasLimitedTime = isPitcher 
+                    ? (stats.IP || 0) < 50 
+                    : (stats.AB || 0) < 130;
+                const isProspect = isUndrafted && hasLimitedTime;
+                
+                // Prospects are free - no dollar or round cost
+                const dollarCost = isProspect ? 0 : (draftInfo ? draftInfo.dollarCost : 1);
+                const roundCost = isProspect ? 0 : (draftInfo ? draftInfo.roundCost : getTotalDraftRounds());
+                
+                // Check budget (only for non-prospects)
+                if (!isProspect) {
+                    const currentBudgetUsed = calculateTeamBudgetUsed(currentKeeperTeam);
+                    const teamTotalBudget = getTeamBudget ? getTeamBudget(currentKeeperTeam) : KEEPER_BUDGET;
+                    if (currentBudgetUsed + dollarCost > teamTotalBudget) {
+                        alert(`Adding this player would exceed your keeper budget.\n\nYour Budget: $${teamTotalBudget}\nCurrently Used: $${currentBudgetUsed}\nThis player: $${dollarCost}\nTotal would be: $${currentBudgetUsed + dollarCost}`);
+                        // Uncheck box
+                        const row = document.querySelector(`tr[data-player-name="${playerName}"]`);
+                        if (row) {
+                            row.querySelector('.keeper-checkbox').checked = false;
+                        }
+                        return;
                     }
-                    return;
                 }
                 
                 // Add keeper with cost info
                 if (existingIndex === -1) {
-                    const player = keeperRosterData.find(p => p.name === playerName);
                     teamKeepers.push({
                         player_name: playerName,
                         player_id: player?.player_key || '',
@@ -10793,7 +10880,8 @@
                         dollarCost: dollarCost,
                         roundCost: roundCost,
                         draftRound: draftInfo?.round || null,
-                        isUndrafted: isUndrafted
+                        isUndrafted: isUndrafted,
+                        isProspect: isProspect
                     });
                 }
             } else {
@@ -11088,13 +11176,42 @@
             
             grid.innerHTML = '';
             
+            // Ensure projections are loaded for display
+            if (Object.keys(keeperProjectionsMap).length === 0) {
+                try {
+                    if (allProjectionBatters.length > 0 || allProjectionPitchers.length > 0) {
+                        [...allProjectionBatters, ...allProjectionPitchers].forEach(p => {
+                            const normalizedName = p.name.toLowerCase().trim();
+                            keeperProjectionsMap[normalizedName] = p.projected_points || 0;
+                        });
+                    } else {
+                        const projResponse = await fetch('data/projections/projections_steamer.json');
+                        if (projResponse.ok) {
+                            const projData = await projResponse.json();
+                            [...(projData.batters || []), ...(projData.pitchers || [])].forEach(p => {
+                                const normalizedName = p.name.toLowerCase().trim();
+                                keeperProjectionsMap[normalizedName] = p.projected_points || 0;
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.log('Could not load projections for league keepers:', e);
+                }
+            }
+            
             // Sort teams by manager name
             const sortedTeams = Object.entries(keeperConfig.teams)
                 .sort((a, b) => a[1].manager.localeCompare(b[1].manager));
             
             for (const [teamKey, teamInfo] of sortedTeams) {
                 const teamKeepers = keeperSelections[teamKey] || [];
-                const budgetUsed = teamKeepers.reduce((sum, k) => sum + (k.dollarCost || 1), 0);
+                
+                // Filter out prospects if toggle is off
+                const displayKeepers = showLeagueProspects 
+                    ? teamKeepers 
+                    : teamKeepers.filter(k => !k.isProspect);
+                
+                const budgetUsed = teamKeepers.reduce((sum, k) => sum + (k.dollarCost || 0), 0);
                 const teamTotalBudget = getTeamBudget ? getTeamBudget(teamKey) : KEEPER_BUDGET;
                 
                 // Calculate actual round costs for this team's keepers
@@ -11108,39 +11225,57 @@
                     : '';
                 
                 let keepersHtml = '';
-                if (teamKeepers.length === 0) {
+                if (displayKeepers.length === 0) {
                     keepersHtml = '<div class="no-keepers">No keepers selected yet</div>';
                 } else {
-                    keepersHtml = teamKeepers.map(k => {
+                    keepersHtml = displayKeepers.map(k => {
                         const projPts = keeperProjectionsMap[k.player_name.toLowerCase().trim()];
-                        const projDisplay = projPts ? projPts.toFixed(0) : '-';
+                        const projDisplay = typeof projPts === 'number' ? projPts.toFixed(0) : '-';
+                        const isProspect = k.isProspect || false;
                         
                         // Find the actual round cost for this keeper
                         const roundInfo = roundCosts.find(rc => rc.player_name === k.player_name);
                         const actualRound = roundInfo ? roundInfo.actualRoundCost : k.roundCost;
-                        const noPick = actualRound === null;
+                        const noPick = actualRound === null && !isProspect;
                         
-                        const roundDisplay = noPick 
-                            ? '<span class="keeper-round-small no-pick">No Pick!</span>'
-                            : `<span class="keeper-round-small">Rd ${actualRound}</span>`;
+                        let roundDisplay;
+                        if (isProspect) {
+                            roundDisplay = '<span class="keeper-round-small prospect-free">Free</span>';
+                        } else if (noPick) {
+                            roundDisplay = '<span class="keeper-round-small no-pick">No Pick!</span>';
+                        } else {
+                            roundDisplay = `<span class="keeper-round-small">Rd ${actualRound}</span>`;
+                        }
+                        
+                        const costDisplay = isProspect 
+                            ? '<span class="keeper-cost-small prospect-free">$0</span>'
+                            : `<span class="keeper-cost-small">$${k.dollarCost || 0}</span>`;
                         
                         return `
-                            <div class="keeper-player-row ${noPick ? 'no-pick-warning' : ''}">
-                                <span class="keeper-badge">K</span>
+                            <div class="keeper-player-row ${noPick ? 'no-pick-warning' : ''} ${isProspect ? 'is-prospect' : ''}">
+                                ${isProspect ? '<span class="prospect-badge">P</span>' : '<span class="keeper-badge">K</span>'}
                                 <span class="player-name">${k.player_name}</span>
                                 ${getPositionBadge(k.position || '', k.player_name)}
                                 ${roundDisplay}
-                                <span class="keeper-cost-small">$${k.dollarCost || 1}</span>
+                                ${costDisplay}
                                 <span class="player-pts">${projDisplay}</span>
                             </div>
                         `;
                     }).join('');
                 }
                 
+                // Count prospects vs regular keepers
+                const prospectCount = teamKeepers.filter(k => k.isProspect).length;
+                const regularCount = teamKeepers.filter(k => !k.isProspect).length;
+                
                 // Show budget - always show if different from default, or if team has keepers
-                const budgetDisplay = (teamTotalBudget !== KEEPER_BUDGET || teamKeepers.length > 0)
-                    ? `<span class="keeper-budget-used">$${budgetUsed}/$${teamTotalBudget}</span>`
-                    : '';
+                let budgetDisplay = '';
+                if (teamTotalBudget !== KEEPER_BUDGET || teamKeepers.length > 0) {
+                    budgetDisplay = `<span class="keeper-budget-used">$${budgetUsed}/$${teamTotalBudget}</span>`;
+                    if (prospectCount > 0 && showLeagueProspects) {
+                        budgetDisplay += ` <span class="prospect-count">(+${prospectCount}P)</span>`;
+                    }
+                }
                 
                 card.innerHTML = `
                     <div class="keeper-team-card-header">
@@ -11157,6 +11292,22 @@
                 
                 grid.appendChild(card);
             }
+        }
+        
+        function toggleLeagueProspects() {
+            showLeagueProspects = !showLeagueProspects;
+            const btn = document.getElementById('btn-toggle-prospects');
+            const text = document.getElementById('toggle-prospects-text');
+            
+            if (showLeagueProspects) {
+                btn.classList.add('active');
+                text.textContent = 'Hide Prospects';
+            } else {
+                btn.classList.remove('active');
+                text.textContent = 'Show Prospects';
+            }
+            
+            displayLeagueKeepers();
         }
 
         // ===== TRADE MANAGEMENT =====
