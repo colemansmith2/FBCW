@@ -11861,8 +11861,8 @@
                 const teamKeepers = keeperSelections[teamKey] || [];
                 
                 // Filter out prospects if toggle is off
-                const displayKeepers = showLeagueProspects 
-                    ? teamKeepers 
+                let displayKeepers = showLeagueProspects 
+                    ? [...teamKeepers]
                     : teamKeepers.filter(k => !k.isProspect);
                 
                 const budgetUsed = teamKeepers.reduce((sum, k) => sum + (k.dollarCost || 0), 0);
@@ -11870,6 +11870,45 @@
                 
                 // Calculate actual round costs for this team's keepers
                 const roundCosts = calculateTeamKeeperRoundCosts(teamKey);
+                
+                // Sort keepers: regular keepers first (by round asc, then proj pts desc), then prospects (by proj pts desc, then position)
+                displayKeepers.sort((a, b) => {
+                    const aIsProspect = a.isProspect || false;
+                    const bIsProspect = b.isProspect || false;
+                    
+                    // Regular keepers come before prospects
+                    if (aIsProspect !== bIsProspect) {
+                        return aIsProspect ? 1 : -1;
+                    }
+                    
+                    // Get projected points for sorting
+                    const aProjPts = keeperProjectionsMap[a.player_name.toLowerCase().trim()] || 0;
+                    const bProjPts = keeperProjectionsMap[b.player_name.toLowerCase().trim()] || 0;
+                    
+                    if (aIsProspect) {
+                        // Both are prospects: sort by projected points desc, then position alphabetically
+                        if (bProjPts !== aProjPts) {
+                            return bProjPts - aProjPts;
+                        }
+                        return (a.position || '').localeCompare(b.position || '');
+                    } else {
+                        // Both are regular keepers: sort by round asc, then projected points desc
+                        const aRoundInfo = roundCosts.find(rc => rc.player_name === a.player_name);
+                        const bRoundInfo = roundCosts.find(rc => rc.player_name === b.player_name);
+                        const aRound = aRoundInfo ? aRoundInfo.actualRoundCost : (a.roundCost || 99);
+                        const bRound = bRoundInfo ? bRoundInfo.actualRoundCost : (b.roundCost || 99);
+                        
+                        // Handle null rounds (no pick) - sort them last among regular keepers
+                        const aRoundVal = aRound === null ? 999 : aRound;
+                        const bRoundVal = bRound === null ? 999 : bRound;
+                        
+                        if (aRoundVal !== bRoundVal) {
+                            return aRoundVal - bRoundVal;
+                        }
+                        // Same round: sort by projected points descending
+                        return bProjPts - aProjPts;
+                    }
+                });
                 
                 const card = document.createElement('div');
                 card.className = 'keeper-team-card';
