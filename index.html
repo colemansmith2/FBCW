@@ -13,10 +13,6 @@
     <!-- For iOS/Safari bookmarks -->
     <link rel="apple-touch-icon" sizes="180x180" href="league_logo.png">
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-
     <style>
         * {
             margin: 0;
@@ -5402,6 +5398,10 @@
         <p>&copy; 2024 Yahoo Fantasy Baseball League | Powered by Python & Yahoo Fantasy API</p>
     </footer>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+
     <script>
         // ===== GLOBAL STATE =====
         let availableSeasons = [];
@@ -10445,7 +10445,6 @@
             } catch (e) {
                 console.error('Firebase initialization error:', e);
                 updateFirebaseStatus(false);
-            }
             }
         }
         
