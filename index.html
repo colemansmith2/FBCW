@@ -135,42 +135,37 @@
             /* Logo area covers the left box */
             .zone-logo {
                 left: 0;
-                width: 35.5%; 
+                width: 35%; 
             }
 
             /* Icon 1: Calendar */
             .zone-seasons {
                 left: 35%;
-                width: 10.75%;
+                width: 10.5%;
             }
 
             /* Icon 2: Ribbon */
             .zone-awards {
                 left: 45.5%;
-                width: 10.75%;
+                width: 10.5%;
             }
             
             /* Icon 3: Trophy (NEW) */
             .zone-champions {
                 left: 56.0%;
-                width: 10.75%;
+                width: 10.5%;
             }
 
             /* Icon 4: Gauge */
             .zone-scoring {
                 left: 66.5%;
-                width: 10.75%;
+                width: 10.5%;
             }
 
             /* Icon 5: Head */
             .zone-managers {
                 left: 77.0%;
-                width: 10.75%;
-            }
-
-            .zone-preseason {
-                left: 89%;
-                width: 10.75%; /* Takes remaining space */
+                width: 10.5%;
             }
 
             /* Hide desktop nav on mobile */
@@ -1613,6 +1608,44 @@
             border-radius: 8px;
             font-size: 0.75rem;
             margin-left: 0.5rem;
+        }
+
+        /* League Keeper Budget Bar */
+        .league-budget-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .league-budget-bar-wrapper {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+
+        .league-budget-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            border-radius: 4px;
+            transition: width 0.3s ease-out, background 0.3s;
+        }
+
+        .league-budget-bar.full {
+            background: linear-gradient(90deg, #d4af37, #f5d742);
+        }
+
+        .league-budget-bar.over {
+            background: linear-gradient(90deg, #dc3545, #ff6b6b);
+        }
+
+        .league-budget-text {
+            font-size: 0.7rem;
+            opacity: 0.9;
+            white-space: nowrap;
         }
 
         .prospect-count {
@@ -4521,9 +4554,6 @@
             
             <a href="#" class="mobile-zone zone-managers" onclick="showSection('managers'); return false;"
                 title="Manager Profiles"></a>
-
-            <a href="#" class="mobile-zone zone-preseason" onclick="showSection('preseason'); return false;"
-                title="Preseason Tools"></a>
         </div>
     </header>
 
@@ -6564,6 +6594,16 @@
             "422.l.6780.t.4": "Logan C",   // Draft Pool
             "422.l.6780.t.12": "Logan S"   // Peanut Butter & Elly
         };
+
+        // Simple helper to capitalize manager names for display
+        function capitalizeManagerName(name) {
+            if (!name) return '';
+            return name.trim()
+                .toLowerCase()
+                .split(' ')
+                .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                .join(' ');
+        }
 
         function normalizeManagerName(managerName, year = null, teamName = null, teamKey = null) {
             // Convert to title case
@@ -10879,7 +10919,7 @@
             for (const [teamKey, teamInfo] of sortedTeams) {
                 const option = document.createElement('option');
                 option.value = teamKey;
-                option.textContent = `${teamInfo.manager} - ${teamInfo.team_name}`;
+                option.textContent = `${capitalizeManagerName(teamInfo.manager)} - ${teamInfo.team_name}`;
                 select.appendChild(option);
             }
         }
@@ -11882,13 +11922,24 @@
                 const prospectCount = teamKeepers.filter(k => k.isProspect).length;
                 const regularCount = teamKeepers.filter(k => !k.isProspect).length;
                 
-                // Show budget - always show if different from default, or if team has keepers
+                // Calculate budget bar - width proportional to team's total budget relative to default
+                const maxBudgetForWidth = Math.max(KEEPER_BUDGET, teamTotalBudget);
+                const barWidth = Math.round((teamTotalBudget / maxBudgetForWidth) * 100); // 100px max width scaled
+                const fillPercentage = teamTotalBudget > 0 ? Math.min((budgetUsed / teamTotalBudget) * 100, 100) : 0;
+                const barClass = budgetUsed > teamTotalBudget ? 'over' : (budgetUsed >= teamTotalBudget ? 'full' : '');
+                
+                // Build budget bar display
                 let budgetDisplay = '';
                 if (teamTotalBudget !== KEEPER_BUDGET || teamKeepers.length > 0) {
-                    budgetDisplay = `<span class="keeper-budget-used">$${budgetUsed}/$${teamTotalBudget}</span>`;
-                    if (prospectCount > 0 && showLeagueProspects) {
-                        budgetDisplay += ` <span class="prospect-count">(+${prospectCount}P)</span>`;
-                    }
+                    budgetDisplay = `
+                        <div class="league-budget-container">
+                            <div class="league-budget-bar-wrapper" style="width: ${barWidth}px;">
+                                <div class="league-budget-bar ${barClass}" style="width: ${fillPercentage}%;"></div>
+                            </div>
+                            <span class="league-budget-text">$${budgetUsed}/$${teamTotalBudget}</span>
+                            ${prospectCount > 0 && showLeagueProspects ? `<span class="prospect-count">(+${prospectCount}P)</span>` : ''}
+                        </div>
+                    `;
                 }
                 
                 card.innerHTML = `
@@ -11896,7 +11947,8 @@
                         ${logoImg}
                         <div class="keeper-team-card-info">
                             <h5>${teamInfo.team_name}</h5>
-                            <span>${teamInfo.manager} ${budgetDisplay}</span>
+                            <span>${capitalizeManagerName(teamInfo.manager)}</span>
+                            ${budgetDisplay}
                         </div>
                     </div>
                     <div class="keeper-team-card-body">
