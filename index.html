@@ -10426,7 +10426,13 @@
         
         function initializeFirebase() {
             try {
-                if (!firebaseInitialized && typeof firebase !== 'undefined') {
+                if (typeof firebase === 'undefined') {
+                    console.error('Firebase SDK not loaded');
+                    updateFirebaseStatus(false);
+                    return;
+                }
+                
+                if (!firebaseInitialized) {
                     firebaseApp = firebase.initializeApp(firebaseConfig);
                     firebaseDb = firebase.database();
                     firebaseInitialized = true;
@@ -10489,14 +10495,17 @@
         
         // Save keeper selections to Firebase
         async function saveKeepersToFirebase(teamKey, keepers) {
+            console.log('saveKeepersToFirebase called, firebaseDb:', !!firebaseDb, 'firebaseInitialized:', firebaseInitialized);
+            
             if (!firebaseDb) {
                 console.log('Firebase not initialized, saving to localStorage only');
                 return false;
             }
             
             try {
+                console.log('Attempting to save to Firebase:', teamKey, keepers);
                 await firebaseDb.ref(`keepers_2026/${teamKey}`).set(keepers);
-                console.log(`Saved keepers for ${teamKey} to Firebase`);
+                console.log(`Successfully saved keepers for ${teamKey} to Firebase`);
                 return true;
             } catch (e) {
                 console.error('Error saving to Firebase:', e);
