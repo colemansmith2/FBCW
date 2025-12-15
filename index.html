@@ -11135,13 +11135,13 @@
                         ? (stats.IP || 0) < 50 
                         : (stats.AB || 0) < 130;
                     
-                    // Check if player has any previous season history in the league
+                    // Check if player has any previous season history in the league WITH points scored
                     const normalizedName = player.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                     const playerHistory = playerHistoryData[normalizedName];
                     const hasPreviousSeasons = playerHistory && playerHistory.seasons && 
-                        playerHistory.seasons.some(s => s.year < 2025);
+                        playerHistory.seasons.some(s => s.year < 2025 && (s.fantasy_points || 0) > 0);
                     
-                    // Only a prospect if undrafted, limited time, AND no previous seasons
+                    // Only a prospect if undrafted, limited time, AND no previous seasons with points
                     const isProspect = isUndrafted && hasLimitedTime && !hasPreviousSeasons;
                     
                     const row = document.createElement('tr');
@@ -11307,13 +11307,13 @@
                     ? (stats.IP || 0) < 50 
                     : (stats.AB || 0) < 130;
                 
-                // Check if player has any previous season history in the league
+                // Check if player has any previous season history in the league WITH points scored
                 const normalizedName = playerName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                 const playerHistory = playerHistoryData[normalizedName];
                 const hasPreviousSeasons = playerHistory && playerHistory.seasons && 
-                    playerHistory.seasons.some(s => s.year < 2025);
+                    playerHistory.seasons.some(s => s.year < 2025 && (s.fantasy_points || 0) > 0);
                 
-                // Only a prospect if undrafted, limited time, AND no previous seasons
+                // Only a prospect if undrafted, limited time, AND no previous seasons with points
                 const isProspect = isUndrafted && hasLimitedTime && !hasPreviousSeasons;
                 
                 // Prospects are free - no dollar or round cost
