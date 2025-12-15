@@ -3825,6 +3825,127 @@
         }
 
         /* Hall of Champions Styles */
+        
+        /* Champion Year Selector - Logo Row */
+        .champion-year-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+
+        .champion-year-selector::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .champion-year-selector::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .champion-year-selector::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 3px;
+        }
+
+        .champion-logo-btn {
+            position: relative;
+            flex-shrink: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 3px solid #e0e0e0;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .champion-logo-btn:hover {
+            transform: scale(1.1);
+            border-color: #1e3c72;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+        }
+
+        .champion-logo-btn.active {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+            transform: scale(1.1);
+        }
+
+        .champion-logo-btn img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .champion-logo-btn .placeholder-logo {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border-radius: 50%;
+        }
+
+        /* Tooltip for champion logo buttons */
+        .champion-logo-btn .champion-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+            z-index: 100;
+            pointer-events: none;
+            text-align: center;
+        }
+
+        .champion-logo-btn .champion-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .champion-logo-btn:hover .champion-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .champion-tooltip .tooltip-year {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #ffd700;
+        }
+
+        .champion-tooltip .tooltip-team {
+            font-size: 0.75rem;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
         .champion-header {
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
             color: white;
@@ -4462,6 +4583,23 @@
                 width: 100%;
             }
 
+            /* Mobile adjustments for Champion Year Selector */
+            .champion-year-selector {
+                gap: 0.75rem;
+                padding: 0.75rem;
+                justify-content: flex-start;
+            }
+
+            .champion-logo-btn {
+                width: 50px;
+                height: 50px;
+            }
+
+            .champion-logo-btn .champion-tooltip {
+                font-size: 0.7rem;
+                padding: 0.4rem 0.6rem;
+            }
+
             .champion-schedule-table th,
             .champion-schedule-table td {
                 padding: 0.4rem 0.2rem; /* Tighten padding */
@@ -4822,11 +4960,9 @@
         <div id="champions" class="section">
             <h2>🏆 Hall of Champions</h2>
 
-            <div class="season-selector">
-                <label for="champions-season">Select Championship Season:</label>
-                <select id="champions-season" onchange="loadChampionData()">
-                    <!-- Will be populated dynamically -->
-                </select>
+            <!-- Champion Year Selector - Logo Row -->
+            <div class="champion-year-selector" id="champion-year-selector">
+                <!-- Will be populated dynamically with champion logos -->
             </div>
 
             <div id="champions-loading" class="loading">Loading champion data...</div>
@@ -9134,94 +9270,178 @@
         // ===== HALL OF CHAMPIONS =====
         let championsDataLoaded = false;
         let allChampionsData = {};
+        let selectedChampionYear = null;
 
-        async function loadChampionData() {
+        // Initialize the champion year selector with logos
+        async function initializeChampionSelector() {
+            const selectorEl = document.getElementById('champion-year-selector');
+            const loadingEl = document.getElementById('champions-loading');
+            
+            if (championsDataLoaded) {
+                // Already initialized, just show current selection
+                if (selectedChampionYear) {
+                    displayChampionForYear(selectedChampionYear);
+                }
+                return;
+            }
+            
+            loadingEl.style.display = 'block';
+            selectorEl.innerHTML = '';
+            
+            const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025]; // Oldest to newest (left to right)
+            
+            for (const year of seasons) {
+                try {
+                    const isCurrentSeason = year === 2025;
+                    const dataPath = isCurrentSeason ? 'data/current_season' : `data/historical/${year}`;
+                    
+                    // Load standings to find champion
+                    const standingsFile = isCurrentSeason ? 'standings.json' : 'final_standings.json';
+                    const standingsResponse = await fetch(`${dataPath}/${standingsFile}`);
+                    if (!standingsResponse.ok) continue;
+                    
+                    let standings = await standingsResponse.json();
+                    standings = normalizeStandingsData(standings, year);
+                    
+                    // Find champion (rank 1)
+                    const champion = standings.find(team => team.rank === 1);
+                    if (!champion) continue;
+                    
+                    // Load teams data for logo
+                    const teamsResponse = await fetch(`${dataPath}/teams.json`);
+                    let teams = [];
+                    if (teamsResponse.ok) {
+                        teams = await teamsResponse.json();
+                    }
+                    const championTeam = teams.find(t => t.team_key === champion.team_key);
+                    const teamLogo = championTeam?.team_logo || '';
+                    
+                    // Store champion data for later use
+                    allChampionsData[year] = {
+                        champion,
+                        teamLogo,
+                        teams,
+                        isCurrentSeason
+                    };
+                    
+                    // Create logo button
+                    const btn = document.createElement('button');
+                    btn.className = 'champion-logo-btn';
+                    btn.dataset.year = year;
+                    btn.onclick = () => selectChampionYear(year);
+                    
+                    // Logo image or placeholder
+                    const logoHtml = teamLogo 
+                        ? `<img src="${teamLogo}" alt="${champion.team_name}">`
+                        : `<div class="placeholder-logo">${champion.manager.charAt(0)}</div>`;
+                    
+                    // Tooltip with year and team info
+                    const tooltipHtml = `
+                        <div class="champion-tooltip">
+                            <div class="tooltip-year">${year}${isCurrentSeason ? ' (Current)' : ''}</div>
+                            <div class="tooltip-team">${champion.team_name}</div>
+                            <div class="tooltip-team">(${capitalizeManagerName(champion.manager)})</div>
+                        </div>
+                    `;
+                    
+                    btn.innerHTML = logoHtml + tooltipHtml;
+                    selectorEl.appendChild(btn);
+                    
+                } catch (e) {
+                    console.log(`Could not load champion for ${year}:`, e);
+                }
+            }
+            
+            championsDataLoaded = true;
+            loadingEl.style.display = 'none';
+            
+            // Select the most recent year by default
+            const availableYears = Object.keys(allChampionsData).map(Number).sort((a, b) => b - a);
+            if (availableYears.length > 0) {
+                selectChampionYear(availableYears[0]);
+            }
+        }
+
+        function selectChampionYear(year) {
+            selectedChampionYear = year;
+            
+            // Update active state on buttons
+            document.querySelectorAll('.champion-logo-btn').forEach(btn => {
+                btn.classList.toggle('active', parseInt(btn.dataset.year) === year);
+            });
+            
+            // Display champion data for selected year
+            displayChampionForYear(year);
+        }
+
+        async function displayChampionForYear(year) {
             const loadingEl = document.getElementById('champions-loading');
             const errorEl = document.getElementById('champions-error');
             const contentEl = document.getElementById('champions-content');
-            const seasonSelect = document.getElementById('champions-season');
-
+            
+            const data = allChampionsData[year];
+            if (!data) {
+                errorEl.textContent = `No champion data available for ${year}`;
+                errorEl.style.display = 'block';
+                contentEl.style.display = 'none';
+                return;
+            }
+            
             try {
                 loadingEl.style.display = 'block';
                 errorEl.style.display = 'none';
                 contentEl.style.display = 'none';
-
-                // Populate season dropdown if not already done
-                if (seasonSelect.options.length === 0) {
-                    const seasons = [2025, 2024, 2023, 2022, 2021, 2020, 2019];
-                    seasons.forEach(year => {
-                        const option = document.createElement('option');
-                        option.value = year;
-                        option.textContent = year === 2025 ? '2025 (Current)' : year;
-                        seasonSelect.appendChild(option);
-                    });
-                }
-
-                const selectedYear = parseInt(seasonSelect.value) || 2025;
-                const isCurrentSeason = selectedYear === 2025;
-                const dataPath = isCurrentSeason ? 'data/current_season' : `data/historical/${selectedYear}`;
-
-                // Load standings to find champion
-                const standingsFile = isCurrentSeason ? 'standings.json' : 'final_standings.json';
-                const standingsResponse = await fetch(`${dataPath}/${standingsFile}`);
-                if (!standingsResponse.ok) throw new Error(`No data for ${selectedYear}`);
-                let standings = await standingsResponse.json();
-                standings = normalizeStandingsData(standings, selectedYear);
-
-                // Find champion (rank 1)
-                const champion = standings.find(team => team.rank === 1);
-                if (!champion) throw new Error('Champion not found');
-
-                // Load teams data for logo
-                const teamsResponse = await fetch(`${dataPath}/teams.json`);
-                let teams = [];
-                if (teamsResponse.ok) {
-                    teams = await teamsResponse.json();
-                }
-                const championTeam = teams.find(t => t.team_key === champion.team_key);
-                const teamLogo = championTeam?.team_logo || '';
-
-                // Load scores for schedule
+                
+                const { champion, teamLogo, teams, isCurrentSeason } = data;
+                const dataPath = isCurrentSeason ? 'data/current_season' : `data/historical/${year}`;
+                
+                // Load scores for schedule (load fresh each time to save memory)
                 const scoresResponse = await fetch(`${dataPath}/all_scores.json`);
                 let scores = [];
                 if (scoresResponse.ok) {
                     scores = await scoresResponse.json();
                 }
-
+                
+                // Load standings for additional data
+                const standingsFile = isCurrentSeason ? 'standings.json' : 'final_standings.json';
+                const standingsResponse = await fetch(`${dataPath}/${standingsFile}`);
+                let standings = [];
+                if (standingsResponse.ok) {
+                    standings = await standingsResponse.json();
+                    standings = normalizeStandingsData(standings, year);
+                }
+                
                 // Load player stats for roster
                 const playerStatsResponse = await fetch(`${dataPath}/player_stats.json`);
                 let playerStats = [];
                 if (playerStatsResponse.ok) {
                     playerStats = await playerStatsResponse.json();
                 }
-
-                // Count championships for this manager (and check for back-to-back)
-                const championshipInfo = await countManagerChampionships(champion.manager, selectedYear);
-
-                // Render champion header
-                renderChampionHeader(champion, teamLogo, selectedYear, isCurrentSeason);
-
-                // Render championship count
+                
+                // Count championships for this manager
+                const championshipInfo = await countManagerChampionships(champion.manager, year);
+                
+                // Render all champion sections
+                renderChampionHeader(champion, teamLogo, year, isCurrentSeason);
                 renderChampionshipCount(championshipInfo);
-
-                // Render stats
                 renderChampionStats(champion, scores, standings);
-
-                // Render schedule
                 renderChampionSchedule(champion, scores, standings, teams);
-
-                // Render roster
                 renderChampionRoster(champion, playerStats);
-
+                
                 loadingEl.style.display = 'none';
                 contentEl.style.display = 'block';
-
+                
             } catch (error) {
                 console.error('Error loading champion data:', error);
                 loadingEl.style.display = 'none';
                 errorEl.textContent = `Error: ${error.message}`;
                 errorEl.style.display = 'block';
             }
+        }
+
+        // Legacy function name for compatibility - now just initializes the selector
+        async function loadChampionData() {
+            await initializeChampionSelector();
         }
 
         async function countManagerChampionships(managerName, upToYear) {
