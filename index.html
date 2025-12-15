@@ -10623,9 +10623,9 @@
         // Calculate next year's draft round cost for keeping a player
         function getKeeperRoundCost(previousRound, totalRounds = 20) {
             if (!previousRound || previousRound < 1) return totalRounds; // Undrafted costs last round
-            // Rounds 1-2: costs a 1st rounder
-            if (previousRound <= 2) return 1;
-            // Rounds 3-10: costs 3 rounds earlier
+            // Rounds 1-3: costs a 1st rounder
+            if (previousRound <= 3) return 1;
+            // Rounds 4-10: costs 3 rounds earlier
             if (previousRound <= 10) return previousRound - 3;
             // Rounds 11+: costs 4 rounds earlier
             return Math.max(1, previousRound - 4);
