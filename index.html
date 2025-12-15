@@ -13274,22 +13274,19 @@
             const minPts = Math.min(...topPlayers.map(p => p.projected_points || 0));
             const maxPts = Math.max(...topPlayers.map(p => p.projected_points || 0));
             
-            // Round to nice values
             const tickInterval = 50;
             const niceMin = Math.floor(minPts / tickInterval) * tickInterval;
             const niceMax = Math.ceil(maxPts / tickInterval) * tickInterval;
             const range = niceMax - niceMin || 1;
             
-            // Scale function
             const scaleY = (val) => padding.top + (height - padding.top - padding.bottom) - ((val - niceMin) / range * (height - padding.top - padding.bottom));
             
-            // Build SVG with responsive width
+            // CHANGED: Use width="100%" and viewBox to stretch across the container
             let svg = `<svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" style="display: block;">`;
             
             // Y-axis line
             svg += `<line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" class="chart-axis"/>`;
             
-            // Y-axis ticks and grid
             for (let val = niceMin; val <= niceMax; val += tickInterval) {
                 const y = scaleY(val);
                 svg += `<line x1="${padding.left - 5}" y1="${y}" x2="${padding.left}" y2="${y}" class="chart-axis"/>`;
@@ -13300,27 +13297,23 @@
             // Y-axis label
             svg += `<text x="12" y="${height / 2}" text-anchor="middle" transform="rotate(-90, 12, ${height / 2})" class="chart-axis-label" style="font-weight: bold;">Proj Pts</text>`;
             
-            // X-axis (baseline)
+            // X-axis
             svg += `<line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" class="chart-axis"/>`;
             
             const chartWidth = width - padding.left - padding.right;
             const dotSpacing = chartWidth / (topPlayers.length + 1);
             
-            // First pass: non-selected dots
+            // Dots
             topPlayers.forEach((player, i) => {
                 if (player.name === selectedPlayer.name) return;
                 const x = padding.left + dotSpacing * (i + 1);
                 const y = scaleY(player.projected_points || 0);
                 const pts = (player.projected_points || 0).toFixed(1);
-                
-                // --- NEW: Check if keeper ---
                 const isKeeper = getPlayerKeeperInfo(player.name) !== null;
                 const keeperClass = isKeeper ? 'keeper-dot' : '';
-                
                 svg += `<circle cx="${x}" cy="${y}" r="5" class="chart-dot ${keeperClass}" data-name="${player.name}" data-pts="${pts}"/>`;
             });
             
-            // Second pass: selected dot (on top)
             topPlayers.forEach((player, i) => {
                 if (player.name !== selectedPlayer.name) return;
                 const x = padding.left + dotSpacing * (i + 1);
@@ -13329,7 +13322,6 @@
                 svg += `<circle cx="${x}" cy="${y}" r="8" class="chart-dot highlighted" data-name="${player.name}" data-pts="${pts}"/>`;
             });
             
-            // Position label
             svg += `<text x="${width / 2}" y="${height - 5}" text-anchor="middle" class="chart-axis-label" style="font-weight: bold;">${primaryPos.toUpperCase()} Rankings</text>`;
             
             svg += '</svg>';
@@ -13338,7 +13330,6 @@
             container.innerHTML = svg;
             container.style.position = 'relative';
             
-            // Re-attach listeners (same as before)
             const tooltip = container.querySelector('.chart-tooltip');
             container.querySelectorAll('.chart-dot').forEach(dot => {
                 dot.addEventListener('mouseenter', (e) => {
@@ -13370,7 +13361,6 @@
             const height = 180;
             const padding = { top: 15, right: 20, bottom: 30, left: 50 };
             
-            // Calculate ranges
             const xValues = validPlayers.map(p => getXValue(p));
             const yValues = validPlayers.map(p => p.projected_points || 0);
             const minX = Math.min(...xValues);
@@ -13381,21 +13371,21 @@
             const yTickInterval = 50;
             const niceMinY = Math.floor(minY / yTickInterval) * yTickInterval;
             const niceMaxY = Math.ceil(maxY / yTickInterval) * yTickInterval;
-            const rangeY = niceMaxY - niceMinY || 1;
             
-            const xTickInterval = isBatter ? 100 : 50;
+            // CHANGED: Tick interval is now 100 for everyone (Batters/Pitchers)
+            const xTickInterval = 100;
             const niceMinX = Math.floor(minX / xTickInterval) * xTickInterval;
             const niceMaxX = Math.ceil(maxX / xTickInterval) * xTickInterval;
-            const rangeX = niceMaxX - niceMinX || 1;
             
+            const rangeY = niceMaxY - niceMinY || 1;
+            const rangeX = niceMaxX - niceMinX || 1;
             const chartWidth = width - padding.left - padding.right;
             const chartHeight = height - padding.top - padding.bottom;
             
-            // Scale functions
             const scaleX = (val) => padding.left + ((val - niceMinX) / rangeX * chartWidth);
             const scaleY = (val) => padding.top + chartHeight - ((val - niceMinY) / rangeY * chartHeight);
             
-            // Build SVG with responsive width
+            // CHANGED: Use width="100%" and viewBox
             let svg = `<svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" style="display: block;">`;
             
             // Axes and Grid
@@ -13411,30 +13401,28 @@
             svg += `<text x="12" y="${height / 2}" text-anchor="middle" transform="rotate(-90, 12, ${height / 2})" class="chart-axis-label" style="font-weight: bold;">Proj Pts</text>`;
             svg += `<line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" class="chart-axis"/>`;
             
-            const numXTicks = 5;
-            for (let i = 0; i <= numXTicks; i++) {
-                const val = niceMinX + (rangeX * i / numXTicks);
+            // CHANGED: X-axis loop to use 100 interval
+            for (let val = niceMinX; val <= niceMaxX; val += xTickInterval) {
                 const x = scaleX(val);
-                svg += `<line x1="${x}" y1="${height - padding.bottom}" x2="${x}" y2="${height - padding.bottom + 5}" class="chart-axis"/>`;
-                svg += `<text x="${x}" y="${height - padding.bottom + 15}" text-anchor="middle" class="chart-axis-label">${Math.round(val)}</text>`;
+                // Only draw if within bounds (prevents overflow on right edge)
+                if (x <= width - padding.right) {
+                    svg += `<line x1="${x}" y1="${height - padding.bottom}" x2="${x}" y2="${height - padding.bottom + 5}" class="chart-axis"/>`;
+                    svg += `<text x="${x}" y="${height - padding.bottom + 15}" text-anchor="middle" class="chart-axis-label">${Math.round(val)}</text>`;
+                }
             }
             
-            // Plot dots (non-selected first)
+            // Dots
             validPlayers.forEach(player => {
                 if (player.name === selectedPlayer.name) return;
                 const x = scaleX(getXValue(player));
                 const y = scaleY(player.projected_points || 0);
                 const pts = (player.projected_points || 0).toFixed(1);
                 const xVal = isBatter ? getXValue(player) : getXValue(player).toFixed(1);
-                
-                // --- NEW: Check if keeper ---
                 const isKeeper = getPlayerKeeperInfo(player.name) !== null;
                 const keeperClass = isKeeper ? 'keeper-dot' : '';
-                
                 svg += `<circle cx="${x}" cy="${y}" r="4" class="chart-dot ${keeperClass}" data-name="${player.name}" data-pts="${pts}" data-x="${xVal}"/>`;
             });
             
-            // Plot selected dot on top
             validPlayers.forEach(player => {
                 if (player.name !== selectedPlayer.name) return;
                 const x = scaleX(getXValue(player));
@@ -13451,7 +13439,6 @@
             container.innerHTML = svg;
             container.style.position = 'relative';
             
-            // Re-attach listeners
             const tooltip = container.querySelector('.chart-tooltip');
             const xLabel = isBatter ? 'PA' : 'IP';
             container.querySelectorAll('.chart-dot').forEach(dot => {
