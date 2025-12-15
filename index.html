@@ -3677,6 +3677,19 @@
             opacity: 1;
         }
 
+        /* Keeper dot style for charts */
+        .chart-dot.keeper-dot {
+            fill: #f5d742; /* Gold */
+            stroke: #b8860b; /* Darker gold border for visibility */
+            stroke-width: 1px;
+            opacity: 0.9;
+        }
+        
+        .chart-dot.keeper-dot:hover {
+            fill: #ffd700;
+            opacity: 1;
+        }
+
         .chart-axis {
             stroke: #ccc;
             stroke-width: 1;
@@ -13247,6 +13260,9 @@
             
             // Sort by projected points and take top players
             positionPlayers.sort((a, b) => (a.projected_points || 0) - (b.projected_points || 0));
+
+            // Set limit to 75 for SP, 50 for all others
+            const limit = primaryPos.toUpperCase() === 'SP' ? 75 : 50;
             const topPlayers = positionPlayers.slice(-50); // Top 50 for the chart
             
             // Chart dimensions
@@ -13270,7 +13286,7 @@
             const scaleY = (val) => padding.top + chartHeight - ((val - niceMin) / range * chartHeight);
             
             // Build SVG
-            let svg = `<svg width="${width}" height="${height}" style="display: block;">`;
+            let svg = `<svg width="100%" height="${height}" style="display: block;">`;
             
             // Y-axis line
             svg += `<line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" class="chart-axis"/>`;
@@ -13298,6 +13314,10 @@
                 const x = padding.left + dotSpacing * (i + 1);
                 const y = scaleY(player.projected_points || 0);
                 const pts = (player.projected_points || 0).toFixed(1);
+
+                const isKeeper = getPlayerKeeperInfo(player.name) !== null;
+                const keeperClass = isKeeper ? 'keeper-dot' : '';
+                
                 svg += `<circle cx="${x}" cy="${y}" r="5" class="chart-dot" data-name="${player.name}" data-pts="${pts}"/>`;
             });
             
@@ -13389,7 +13409,7 @@
             const scaleY = (val) => padding.top + chartHeight - ((val - niceMinY) / rangeY * chartHeight);
             
             // Build SVG
-            let svg = `<svg width="${width}" height="${height}" style="display: block;">`;
+            let svg = `<svg width="100%" height="${height}" style="display: block;">`;
             
             // Y-axis
             svg += `<line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" class="chart-axis"/>`;
@@ -13434,6 +13454,10 @@
                 const y = scaleY(player.projected_points || 0);
                 const pts = (player.projected_points || 0).toFixed(1);
                 const xVal = isBatter ? getXValue(player) : getXValue(player).toFixed(1);
+
+                const isKeeper = getPlayerKeeperInfo(player.name) !== null;
+                const keeperClass = isKeeper ? 'keeper-dot' : '';
+                
                 svg += `<circle cx="${x}" cy="${y}" r="8" class="chart-dot highlighted" data-name="${player.name}" data-pts="${pts}" data-x="${xVal}"/>`;
             });
             
