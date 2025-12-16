@@ -4536,75 +4536,6 @@
             margin-top: 2rem;
             color: #666;
         }
-
-        /* Toggle Switch Container */
-        .toggle-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-left: 20px; /* Spacing from other inputs */
-        }
-        
-        /* The Switch Box */
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 46px;
-            height: 24px;
-        }
-        
-        /* Hide default checkbox */
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        /* The Slider */
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        
-        /* Checked State (Gold/Green) */
-        input:checked + .slider {
-            background-color: #28a745; /* Green for "Showing" */
-        }
-        
-        input:focus + .slider {
-            box-shadow: 0 0 1px #28a745;
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-        
-        /* Label Text */
-        .toggle-label-text {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: white;
-            user-select: none;
-        }
     </style>
 </head>
 
@@ -5172,16 +5103,8 @@
                     </div>
                 </div>
 
-                <div class="player-search" style="display: flex; align-items: center;">
+                <div class="player-search">
                     <input type="text" id="proj-player-search" placeholder="Search players..." oninput="filterProjections()">
-                    
-                    <div class="toggle-container">
-                        <label class="toggle-switch">
-                            <input type="checkbox" id="toggle-show-keepers" checked onchange="filterProjections()">
-                            <span class="slider"></span>
-                        </label>
-                        <span class="toggle-label-text">Show Keepers</span>
-                    </div>
                 </div>
             </div>
 
@@ -10235,51 +10158,75 @@
         }
 
         function filterProjections() {
-            // 1. Get all filter values
-            // Note: We use optional chaining (?.) just in case an element is missing
-            const positionSelect = document.getElementById('proj-position-filter');
-            const searchInput = document.getElementById('proj-player-search');
-            const toggleInput = document.getElementById('toggle-show-keepers');
+            const positionFilter = document.getElementById('proj-position-filter').value;
+            const searchTerm = document.getElementById('proj-player-search').value.toLowerCase();
+        
+            let data = [];
             
-            const positionFilter = positionSelect ? positionSelect.value.toLowerCase() : 'all';
-            const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
-            const showKeepers = toggleInput ? toggleInput.checked : true;
-            
-            // 2. Combine batters and pitchers
-            let allPlayers = [...allProjectionBatters, ...allProjectionPitchers];
-            
-            // 3. Filter the data
-            currentFilteredProjections = allPlayers.filter(player => {
-                // Position Match
-                // Note: Your select uses specific codes (1B, SP), so we check loosely
-                let posMatch = true;
-                if (positionFilter !== 'all') {
-                    if (positionFilter === 'b') {
-                        posMatch = player.type === 'batter';
-                    } else if (positionFilter === 'p') {
-                        posMatch = player.type === 'pitcher';
-                    } else {
-                        // Check if the specific position (e.g., "SP") is in the player's position string
-                        posMatch = (player.position || '').toUpperCase().includes(positionFilter.toUpperCase());
-                    }
+            if (currentProjectionPlayerType === 'all') {
+                data = [...allProjectionBatters, ...allProjectionPitchers];
+            } else if (currentProjectionPlayerType === 'batters') {
+                data = [...allProjectionBatters];
+            } else {
+                data = [...allProjectionPitchers];
+            }
+        
+            // Apply position filter
+            if (positionFilter !== 'all') {
+                if (positionFilter === 'B') {
+                    data = data.filter(p => p.type === 'batter');
+                } else if (positionFilter === 'P') {
+                    data = data.filter(p => p.type === 'pitcher');
+                } else {
+                    data = data.filter(p => {
+                        const pos = (p.position || '').toUpperCase();
+                        if (positionFilter === 'OF') {
+                            return pos.includes('LF') || pos.includes('CF') || pos.includes('RF') || pos.includes('OF');
+                        }
+                        return pos.includes(positionFilter);
+                    });
+                }
+            }
+        
+            // Apply search filter
+            if (searchTerm) {
+                data = data.filter(p => 
+                    (p.name || '').toLowerCase().includes(searchTerm) ||
+                    (p.team || '').toLowerCase().includes(searchTerm)
+                );
+            }
+        
+            // Sort data
+            data.sort((a, b) => {
+                const col = projectionSort.column;
+                
+                // === HELPER: Check both main object AND stats object ===
+                const getVal = (obj) => {
+                    // 1. Check main object (Rank, Name, Projected Points, Games)
+                    if (obj[col] !== undefined) return obj[col];
+                    
+                    // 2. Check stats object (HR, RBI, ERA, WHIP, etc.)
+                    if (obj.stats && obj.stats[col] !== undefined) return obj.stats[col];
+                    
+                    // 3. Handle 'K' vs 'SO' mapping if needed
+                    if (col === 'K' && obj.stats && obj.stats.SO !== undefined) return obj.stats.SO;
+                    
+                    return 0; // Default for missing data
+                };
+        
+                let aVal = getVal(a);
+                let bVal = getVal(b);
+                
+                if (typeof aVal === 'string') {
+                    return projectionSort.direction === 'asc' 
+                        ? (aVal || '').localeCompare(bVal || '') 
+                        : (bVal || '').localeCompare(aVal || '');
                 }
                 
-                // Name Match
-                const nameMatch = !searchTerm || player.name.toLowerCase().includes(searchTerm);
-                
-                // Keeper Visibility Logic
-                if (!showKeepers) {
-                    const isKeeper = getPlayerKeeperInfo(player.name) !== null;
-                    if (isKeeper) return false; // Hide if they are a keeper and toggle is off
-                }
-                
-                return posMatch && nameMatch;
+                return projectionSort.direction === 'asc' ? (aVal - bVal) : (bVal - aVal);
             });
-            
-            // 4. Sort (Projected Points Descending)
-            currentFilteredProjections.sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
-            
-            // 5. Render the table
+        
+            filteredProjections = data;
             renderProjectionTable();
         }
 
@@ -13550,8 +13497,6 @@
 
             // Load manager profiles
             loadManagerProfiles();
-
-            loadKeeperConfig();
         });
     </script>
 </body>
