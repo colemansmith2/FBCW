@@ -675,73 +675,6 @@
             text-overflow: ellipsis;
         }
 
-        .draft-player-pos {
-            font-size: 0.65rem;
-            font-weight: 600;
-            padding: 0.1rem 0.35rem;
-            border-radius: 3px;
-            display: inline-block;
-            width: fit-content;
-        }
-
-        .draft-player-pos.pos-util {
-            background: #e0e0e0;
-            color: #505050;
-        }
-
-        .draft-player-pos.pos-c {
-            background: #e8d4f0;
-            color: #6b2d8b;
-        }
-
-        .draft-player-pos.pos-1b {
-            background: #d4e8f0;
-            color: #1e5a7a;
-        }
-
-        .draft-player-pos.pos-2b {
-            background: #e8d4f0;
-            color: #6b2d8b;
-        }
-
-        .draft-player-pos.pos-ss {
-            background: #ffeb9c;
-            color: #9c5700;
-        }
-
-        .draft-player-pos.pos-3b {
-            background: #f0d4e8;
-            color: #7a1e5a;
-        }
-
-        .draft-player-pos.pos-of,
-        .draft-player-pos.pos-lf,
-        .draft-player-pos.pos-cf,
-        .draft-player-pos.pos-rf {
-            background: #d4f0d4;
-            color: #2d6b2d;
-        }
-
-        .draft-player-pos.pos-sp {
-            background: #f0d4d4;
-            color: #8b2d2d;
-        }
-
-        .draft-player-pos.pos-rp {
-            background: #f0e0d4;
-            color: #8b4d2d;
-        }
-
-        .draft-player-pos.pos-p {
-            background: #f0d4d4;
-            color: #8b2d2d;
-        }
-
-        .draft-player-pos.pos-dh {
-            background: #e0e0e0;
-            color: #505050;
-        }
-
         .keeper-badge {
             display: inline-flex;
             align-items: center;
@@ -3119,75 +3052,100 @@
             color: #555;
         }
 
-        /* Position badge with colored background */
+        .player-points {
+            font-weight: bold;
+            color: #1e3c72;
+        }
+
+        /* =========================================
+           UNIVERSAL POSITION COLOR SYSTEM
+           ========================================= */
+        :root {
+            /* --- POSITION PLAYERS --- */
+            --pos-c-color:    #8e44ad; /* C: Purple */
+            --pos-1b-color:   #2980b9; /* 1B: Strong Blue */
+            --pos-2b-color:   #e67e22; /* 2B: Carrot Orange */
+            --pos-3b-color:   #c0392b; /* 3B: Dark Red */
+            --pos-ss-color:   #16a085; /* SS: Teal */
+            --pos-of-color:   #27ae60; /* OF: Green */
+            --pos-dh-color:   #7f8c8d; /* DH: Grey */
+        
+            /* --- PITCHERS (Now Unique) --- */
+            --pos-sp-color:   #2c3e50; /* SP: Navy / Midnight Blue */
+            --pos-rp-color:   #c2185b; /* RP: Magenta / Berry */
+            --pos-p-color:    #5d4037; /* P:  Brown */
+            
+            /* --- BACKGROUNDS (20% Opacity) --- */
+            --pos-c-bg:       rgba(142, 68, 173, 0.15);
+            --pos-1b-bg:      rgba(41, 128, 185, 0.15);
+            --pos-2b-bg:      rgba(230, 126, 34, 0.15);
+            --pos-3b-bg:      rgba(192, 57, 43, 0.15);
+            --pos-ss-bg:      rgba(22, 160, 133, 0.15);
+            --pos-of-bg:      rgba(39, 174, 96, 0.15);
+            --pos-dh-bg:      rgba(127, 140, 141, 0.15);
+            
+            --pos-sp-bg:      rgba(44, 62, 80, 0.15);   /* Matching Navy */
+            --pos-rp-bg:      rgba(194, 24, 91, 0.15);  /* Matching Berry */
+            --pos-p-bg:       rgba(93, 64, 55, 0.15);   /* Matching Brown */
+        }
+        
+        /* 1. SOLID BADGES (For Cards & Modals) 
+           Usage: class="position-badge pos-C" */
         .position-badge {
             display: inline-block;
             padding: 0.15rem 0.35rem;
             border-radius: 4px;
             font-size: 0.7rem;
-            font-weight: 600;
-            color: white;
+            font-weight: 700;
+            color: white; /* Always white text */
             text-align: center;
             min-width: 24px;
             margin-right: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
-
-        .position-badge:last-child {
-            margin-right: 0;
+        
+        .position-badge.pos-C  { background-color: var(--pos-c-color); }
+        .position-badge.pos-1B { background-color: var(--pos-1b-color); }
+        .position-badge.pos-2B { background-color: var(--pos-2b-color); }
+        .position-badge.pos-3B { background-color: var(--pos-3b-color); }
+        .position-badge.pos-SS { background-color: var(--pos-ss-color); }
+        .position-badge.pos-OF, 
+        .position-badge.pos-LF, 
+        .position-badge.pos-CF, 
+        .position-badge.pos-RF { background-color: var(--pos-of-color); }
+        .position-badge.pos-DH, 
+        .position-badge.pos-Util { background-color: var(--pos-dh-color); }
+        .position-badge.pos-SP { background-color: var(--pos-sp-color); }
+        .position-badge.pos-RP { background-color: var(--pos-rp-color); }
+        .position-badge.pos-P  { background-color: var(--pos-p-color); }
+        
+        /* 2. PASTEL BADGES (For Data Tables & Draft) 
+           Usage: class="draft-player-pos pos-c" */
+        .draft-player-pos {
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            display: inline-block;
+            width: fit-content;
+            text-transform: uppercase;
         }
-
-        .position-badge.pos-C {
-            background: #e74c3c;
-        }
-
-        .position-badge.pos-1B {
-            background: #d4e8f0;
-            color: #1e5a7a;
-        }
-
-        .position-badge.pos-2B {
-            background: #e8d4f0;
-            color: #6b2d8b;
-        }
-
-        .position-badge.pos-3B {
-            background: #e67e22;
-        }
-
-        .position-badge.pos-SS {
-            background: #ffeb9c;
-            color: #9c5700;
-        }
-
-        .position-badge.pos-LF,
-        .position-badge.pos-CF,
-        .position-badge.pos-RF,
-        .position-badge.pos-OF {
-            background: #d4f0d4;
-            color: #2d6b2d;
-        }
-
-        .position-badge.pos-DH,
-        .position-badge.pos-Util {
-            background: #7f8c8d;
-        }
-
-        .position-badge.pos-SP {
-            background: #c0392b;
-        }
-
-        .position-badge.pos-RP {
-            background: #8e44ad;
-        }
-
-        .position-badge.pos-P {
-            background: #d35400;
-        }
-
-        .player-points {
-            font-weight: bold;
-            color: #1e3c72;
-        }
+        
+        /* Text color is the Base Color, Background is the Light Variant */
+        .draft-player-pos.pos-c  { color: var(--pos-c-color); background-color: var(--pos-c-bg); }
+        .draft-player-pos.pos-1b { color: var(--pos-1b-color); background-color: var(--pos-1b-bg); }
+        .draft-player-pos.pos-2b { color: var(--pos-2b-color); background-color: var(--pos-2b-bg); }
+        .draft-player-pos.pos-3b { color: var(--pos-3b-color); background-color: var(--pos-3b-bg); }
+        .draft-player-pos.pos-ss { color: var(--pos-ss-color); background-color: var(--pos-ss-bg); }
+        .draft-player-pos.pos-of,
+        .draft-player-pos.pos-lf,
+        .draft-player-pos.pos-cf,
+        .draft-player-pos.pos-rf { color: var(--pos-of-color); background-color: var(--pos-of-bg); }
+        .draft-player-pos.pos-dh,
+        .draft-player-pos.pos-util { color: var(--pos-dh-color); background-color: var(--pos-dh-bg); }
+        .draft-player-pos.pos-sp { color: var(--pos-sp-color); background-color: var(--pos-sp-bg); }
+        .draft-player-pos.pos-rp { color: var(--pos-rp-color); background-color: var(--pos-rp-bg); }
+        .draft-player-pos.pos-p  { color: var(--pos-p-color); background-color: var(--pos-p-bg); }
 
         /* Hide batter/pitcher stats based on filter */
         .show-batters .pitcher-stat,
@@ -7429,17 +7387,27 @@
 
         function getDraftPosClass(position) {
             const pos = (position || '').toUpperCase();
+            
+            // Infield
             if (pos === 'C') return 'pos-c';
             if (pos === '1B') return 'pos-1b';
             if (pos === '2B') return 'pos-2b';
             if (pos === '3B') return 'pos-3b';
             if (pos === 'SS') return 'pos-ss';
+            
+            // Outfield
             if (['OF', 'LF', 'CF', 'RF'].includes(pos)) return 'pos-of';
-            if (pos === 'UTIL' || pos === 'DH') return 'pos-util';
+            
+            // Designated Hitter / Utility
+            if (pos === 'DH') return 'pos-dh';
+            if (pos === 'UTIL') return 'pos-util';
+            
+            // Pitchers (Now distinct)
             if (pos === 'SP') return 'pos-sp';
             if (pos === 'RP') return 'pos-rp';
             if (pos === 'P') return 'pos-p';
-            return '';
+            
+            return 'pos-util'; // Fallback
         }
 
         // ===== SEASON CHART FUNCTIONS =====
