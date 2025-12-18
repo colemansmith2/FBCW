@@ -3059,93 +3059,105 @@
 
         /* =========================================
            UNIVERSAL POSITION COLOR SYSTEM
+           9 distinct colors with dark text on light backgrounds
            ========================================= */
         :root {
-            /* --- POSITION PLAYERS --- */
-            --pos-c-color:    #8e44ad; /* C: Purple */
-            --pos-1b-color:   #2980b9; /* 1B: Strong Blue */
-            --pos-2b-color:   #e67e22; /* 2B: Carrot Orange */
-            --pos-3b-color:   #c0392b; /* 3B: Dark Red */
-            --pos-ss-color:   #16a085; /* SS: Teal */
-            --pos-of-color:   #27ae60; /* OF: Green */
-            --pos-dh-color:   #7f8c8d; /* DH: Grey */
+            /* --- POSITION PLAYERS (Dark text colors) --- */
+            --pos-c-dark:     #7b1fa2; /* C: Deep Purple */
+            --pos-c-light:    rgba(123, 31, 162, 0.15);
+            
+            --pos-1b-dark:    #1565c0; /* 1B: Strong Blue */
+            --pos-1b-light:   rgba(21, 101, 192, 0.15);
+            
+            --pos-2b-dark:    #e65100; /* 2B: Deep Orange */
+            --pos-2b-light:   rgba(230, 81, 0, 0.15);
+            
+            --pos-3b-dark:    #c62828; /* 3B: Deep Red */
+            --pos-3b-light:   rgba(198, 40, 40, 0.15);
+            
+            --pos-ss-dark:    #00838f; /* SS: Cyan/Teal */
+            --pos-ss-light:   rgba(0, 131, 143, 0.15);
+            
+            --pos-of-dark:    #2e7d32; /* OF: Forest Green */
+            --pos-of-light:   rgba(46, 125, 50, 0.15);
+            
+            --pos-dh-dark:    #546e7a; /* DH/Util: Blue Grey */
+            --pos-dh-light:   rgba(84, 110, 122, 0.15);
         
-            /* --- PITCHERS (Now Unique) --- */
-            --pos-sp-color:   #2c3e50; /* SP: Navy / Midnight Blue */
-            --pos-rp-color:   #c2185b; /* RP: Magenta / Berry */
-            --pos-p-color:    #5d4037; /* P:  Brown */
+            /* --- PITCHERS --- */
+            --pos-sp-dark:    #283593; /* SP: Indigo */
+            --pos-sp-light:   rgba(40, 53, 147, 0.15);
             
-            /* --- BACKGROUNDS (20% Opacity) --- */
-            --pos-c-bg:       rgba(142, 68, 173, 0.15);
-            --pos-1b-bg:      rgba(41, 128, 185, 0.15);
-            --pos-2b-bg:      rgba(230, 126, 34, 0.15);
-            --pos-3b-bg:      rgba(192, 57, 43, 0.15);
-            --pos-ss-bg:      rgba(22, 160, 133, 0.15);
-            --pos-of-bg:      rgba(39, 174, 96, 0.15);
-            --pos-dh-bg:      rgba(127, 140, 141, 0.15);
+            --pos-rp-dark:    #ad1457; /* RP: Pink/Magenta */
+            --pos-rp-light:   rgba(173, 20, 87, 0.15);
             
-            --pos-sp-bg:      rgba(44, 62, 80, 0.15);   /* Matching Navy */
-            --pos-rp-bg:      rgba(194, 24, 91, 0.15);  /* Matching Berry */
-            --pos-p-bg:       rgba(93, 64, 55, 0.15);   /* Matching Brown */
+            /* P uses same as SP for consistency */
+            --pos-p-dark:     #283593;
+            --pos-p-light:    rgba(40, 53, 147, 0.15);
         }
         
-        /* 1. SOLID BADGES (For Cards & Modals) 
-           Usage: class="position-badge pos-C" */
+        /* UNIFIED POSITION BADGE STYLE
+           Dark text on light background for all contexts */
         .position-badge {
             display: inline-block;
-            padding: 0.15rem 0.35rem;
+            padding: 0.15rem 0.4rem;
             border-radius: 4px;
             font-size: 0.7rem;
             font-weight: 700;
-            color: white; /* Always white text */
             text-align: center;
-            min-width: 24px;
+            min-width: 26px;
             margin-right: 2px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        
-        .position-badge.pos-C  { background-color: var(--pos-c-color); }
-        .position-badge.pos-1B { background-color: var(--pos-1b-color); }
-        .position-badge.pos-2B { background-color: var(--pos-2b-color); }
-        .position-badge.pos-3B { background-color: var(--pos-3b-color); }
-        .position-badge.pos-SS { background-color: var(--pos-ss-color); }
-        .position-badge.pos-OF, 
-        .position-badge.pos-LF, 
-        .position-badge.pos-CF, 
-        .position-badge.pos-RF { background-color: var(--pos-of-color); }
-        .position-badge.pos-DH, 
-        .position-badge.pos-Util { background-color: var(--pos-dh-color); }
-        .position-badge.pos-SP { background-color: var(--pos-sp-color); }
-        .position-badge.pos-RP { background-color: var(--pos-rp-color); }
-        .position-badge.pos-P  { background-color: var(--pos-p-color); }
-        
-        /* 2. PASTEL BADGES (For Data Tables & Draft) 
-           Usage: class="draft-player-pos pos-c" */
-        .draft-player-pos {
-            font-size: 0.65rem;
-            font-weight: 700;
-            padding: 0.15rem 0.4rem;
-            border-radius: 4px;
-            display: inline-block;
-            width: fit-content;
             text-transform: uppercase;
         }
         
-        /* Text color is the Base Color, Background is the Light Variant */
-        .draft-player-pos.pos-c  { color: var(--pos-c-color); background-color: var(--pos-c-bg); }
-        .draft-player-pos.pos-1b { color: var(--pos-1b-color); background-color: var(--pos-1b-bg); }
-        .draft-player-pos.pos-2b { color: var(--pos-2b-color); background-color: var(--pos-2b-bg); }
-        .draft-player-pos.pos-3b { color: var(--pos-3b-color); background-color: var(--pos-3b-bg); }
-        .draft-player-pos.pos-ss { color: var(--pos-ss-color); background-color: var(--pos-ss-bg); }
+        /* Position-specific colors */
+        .position-badge.pos-C  { color: var(--pos-c-dark); background-color: var(--pos-c-light); }
+        .position-badge.pos-1B { color: var(--pos-1b-dark); background-color: var(--pos-1b-light); }
+        .position-badge.pos-2B { color: var(--pos-2b-dark); background-color: var(--pos-2b-light); }
+        .position-badge.pos-3B { color: var(--pos-3b-dark); background-color: var(--pos-3b-light); }
+        .position-badge.pos-SS { color: var(--pos-ss-dark); background-color: var(--pos-ss-light); }
+        .position-badge.pos-OF, 
+        .position-badge.pos-LF, 
+        .position-badge.pos-CF, 
+        .position-badge.pos-RF { color: var(--pos-of-dark); background-color: var(--pos-of-light); }
+        .position-badge.pos-DH, 
+        .position-badge.pos-Util { color: var(--pos-dh-dark); background-color: var(--pos-dh-light); }
+        .position-badge.pos-SP { color: var(--pos-sp-dark); background-color: var(--pos-sp-light); }
+        .position-badge.pos-RP { color: var(--pos-rp-dark); background-color: var(--pos-rp-light); }
+        .position-badge.pos-P  { color: var(--pos-p-dark); background-color: var(--pos-p-light); }
+        
+        /* Default/unknown position */
+        .position-badge:not([class*="pos-"]) {
+            color: #666;
+            background-color: rgba(0, 0, 0, 0.08);
+        }
+        
+        /* 2. DRAFT TABLE BADGES - Same style, lowercase class names for compatibility */
+        .draft-player-pos {
+            display: inline-block;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-align: center;
+            min-width: 26px;
+            text-transform: uppercase;
+        }
+        
+        .draft-player-pos.pos-c  { color: var(--pos-c-dark); background-color: var(--pos-c-light); }
+        .draft-player-pos.pos-1b { color: var(--pos-1b-dark); background-color: var(--pos-1b-light); }
+        .draft-player-pos.pos-2b { color: var(--pos-2b-dark); background-color: var(--pos-2b-light); }
+        .draft-player-pos.pos-3b { color: var(--pos-3b-dark); background-color: var(--pos-3b-light); }
+        .draft-player-pos.pos-ss { color: var(--pos-ss-dark); background-color: var(--pos-ss-light); }
         .draft-player-pos.pos-of,
         .draft-player-pos.pos-lf,
         .draft-player-pos.pos-cf,
-        .draft-player-pos.pos-rf { color: var(--pos-of-color); background-color: var(--pos-of-bg); }
+        .draft-player-pos.pos-rf { color: var(--pos-of-dark); background-color: var(--pos-of-light); }
         .draft-player-pos.pos-dh,
-        .draft-player-pos.pos-util { color: var(--pos-dh-color); background-color: var(--pos-dh-bg); }
-        .draft-player-pos.pos-sp { color: var(--pos-sp-color); background-color: var(--pos-sp-bg); }
-        .draft-player-pos.pos-rp { color: var(--pos-rp-color); background-color: var(--pos-rp-bg); }
-        .draft-player-pos.pos-p  { color: var(--pos-p-color); background-color: var(--pos-p-bg); }
+        .draft-player-pos.pos-util { color: var(--pos-dh-dark); background-color: var(--pos-dh-light); }
+        .draft-player-pos.pos-sp { color: var(--pos-sp-dark); background-color: var(--pos-sp-light); }
+        .draft-player-pos.pos-rp { color: var(--pos-rp-dark); background-color: var(--pos-rp-light); }
+        .draft-player-pos.pos-p  { color: var(--pos-p-dark); background-color: var(--pos-p-light); }
 
         /* Hide batter/pitcher stats based on filter */
         .show-batters .pitcher-stat,
