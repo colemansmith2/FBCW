@@ -13089,188 +13089,196 @@
             const loadingEl = document.getElementById('keeper-value-loading');
             const contentEl = document.getElementById('keeper-value-content');
 
+            if (!loadingEl || !contentEl) {
+                console.error('Keeper value elements not found');
+                return;
+            }
+
             loadingEl.style.display = 'block';
             contentEl.style.display = 'none';
 
+            // Step 1: Calculate expected points (this should always work)
             try {
-                // Calculate expected points if not already done
                 if (Object.keys(expectedPointsByRound).length === 0) {
                     await calculateExpectedPoints();
                 }
+            } catch (e) {
+                console.error('Error calculating expected points:', e);
+            }
 
-                // Get current keeper selections and projections
+            // Step 2: Always render expected points chart
+            try {
+                renderExpectedPointsChart();
+            } catch (e) {
+                console.error('Error rendering expected points chart:', e);
+            }
+
+            // Step 3: Try to load teams data
+            let teamsData = [];
+            try {
                 const teamsResponse = await fetch('data/current_season/teams.json');
-                if (!teamsResponse.ok) {
-                    throw new Error('Could not load teams data');
+                if (teamsResponse.ok) {
+                    teamsData = await teamsResponse.json();
                 }
-                const teamsData = await teamsResponse.json();
-                
-                // Build projections map if needed
-                let localProjectionsMap = {};
-                
+            } catch (e) {
+                console.log('Could not load teams data:', e);
+            }
+
+            // Step 4: Build projections map
+            let localProjectionsMap = {};
+            try {
                 // First try to use global projections if loaded
                 if (allProjectionBatters.length > 0 || allProjectionPitchers.length > 0) {
                     [...allProjectionBatters, ...allProjectionPitchers].forEach(p => {
                         localProjectionsMap[p.name.toLowerCase().trim()] = p.projected_points || 0;
                     });
-                    console.log(`Using ${Object.keys(localProjectionsMap).length} projections from global data`);
-                } 
+                }
                 
                 // If still empty, try loading from file
                 if (Object.keys(localProjectionsMap).length === 0) {
-                    try {
-                        const projResponse = await fetch('data/projections/projections_steamer.json');
-                        if (projResponse.ok) {
-                            const projData = await projResponse.json();
-                            [...(projData.batters || []), ...(projData.pitchers || [])].forEach(p => {
-                                localProjectionsMap[p.name.toLowerCase().trim()] = p.projected_points || 0;
-                            });
-                            console.log(`Loaded ${Object.keys(localProjectionsMap).length} projections from file`);
-                        }
-                    } catch (e) {
-                        console.log('Could not load projections file:', e);
-                    }
-                }
-
-                // Check if we have keeper selections
-                if (Object.keys(keeperSelections).length === 0) {
-                    // Still show expected points chart, but indicate no keepers yet
-                    console.log('No keeper selections in memory yet');
-                    
-                    // Render expected points chart (valuable even without keepers)
-                    renderExpectedPointsChart();
-                    
-                    // Show placeholder for other sections
-                    document.getElementById('value-rankings-body').innerHTML = 
-                        '<tr><td colspan="4" style="text-align: center; color: #666; font-style: italic; padding: 1rem;">Waiting for keeper selections...</td></tr>';
-                    document.getElementById('team-value-grid').innerHTML = 
-                        '<p style="color: #666; font-style: italic; grid-column: 1 / -1;">Team keeper breakdowns will appear once keeper selections have been made.</p>';
-                    document.getElementById('prospects-value-section').style.display = 'none';
-                    
-                    // Hide scatter plot until we have data
-                    const scatterWrapper = document.querySelector('.value-scatter-wrapper');
-                    if (scatterWrapper) scatterWrapper.style.display = 'none';
-                    
-                    loadingEl.style.display = 'none';
-                    contentEl.style.display = 'block';
-                    return;
-                }
-
-                // Process each team's keepers
-                const teamValues = [];
-                const allKeepers = [];
-                const prospects = [];
-
-                for (const team of teamsData) {
-                    const teamKeepers = keeperSelections[team.team_key] || [];
-                    
-                    if (teamKeepers.length === 0) continue;
-
-                    let totalProjected = 0;
-                    let totalExpected = 0;
-                    const keeperDetails = [];
-
-                    for (const keeper of teamKeepers) {
-                        const playerNameNorm = keeper.player_name.toLowerCase().trim();
-                        const projectedPts = localProjectionsMap[playerNameNorm] || keeperProjectionsMap[playerNameNorm] || 0;
-                        const isProspect = keeper.isProspect || false;
-                        const roundCost = keeper.roundCost || 0;
-                        const expectedPts = isProspect ? 0 : (expectedPointsByRound[roundCost]?.avg || 0);
-                        const value = projectedPts - expectedPts;
-
-                        const keeperData = {
-                            player_name: keeper.player_name,
-                            team_key: team.team_key,
-                            team_name: team.team_name,
-                            manager: team.manager,
-                            team_logo: team.team_logo,
-                            position: keeper.position || '',
-                            roundCost: roundCost,
-                            isProspect: isProspect,
-                            projectedPts: projectedPts,
-                            expectedPts: expectedPts,
-                            value: value
-                        };
-
-                        if (isProspect) {
-                            prospects.push(keeperData);
-                        } else {
-                            keeperDetails.push(keeperData);
-                            allKeepers.push(keeperData);
-                            totalProjected += projectedPts;
-                            totalExpected += expectedPts;
-                        }
-                    }
-
-                    // Sort keepers by round
-                    keeperDetails.sort((a, b) => a.roundCost - b.roundCost);
-
-                    if (keeperDetails.length > 0) {
-                        teamValues.push({
-                            team_key: team.team_key,
-                            team_name: team.team_name,
-                            manager: capitalizeManagerName(team.manager),
-                            team_logo: team.team_logo,
-                            keepers: keeperDetails,
-                            totalProjected: totalProjected,
-                            totalExpected: totalExpected,
-                            totalValue: totalProjected - totalExpected,
-                            keeperCount: keeperDetails.length
+                    const projResponse = await fetch('data/projections/projections_steamer.json');
+                    if (projResponse.ok) {
+                        const projData = await projResponse.json();
+                        [...(projData.batters || []), ...(projData.pitchers || [])].forEach(p => {
+                            localProjectionsMap[p.name.toLowerCase().trim()] = p.projected_points || 0;
                         });
                     }
                 }
+            } catch (e) {
+                console.log('Could not load projections:', e);
+            }
 
-                // Sort teams by total value
-                teamValues.sort((a, b) => b.totalValue - a.totalValue);
+            // Step 5: Check if we have keeper selections from Firebase
+            const hasKeeperSelections = Object.keys(keeperSelections).length > 0;
+            
+            if (!hasKeeperSelections) {
+                // Show placeholder messages but keep the expected points chart visible
+                const rankingsBody = document.getElementById('value-rankings-body');
+                if (rankingsBody) {
+                    rankingsBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #666; font-style: italic; padding: 1rem;">Waiting for keeper selections from Firebase...</td></tr>';
+                }
+                
+                const teamGrid = document.getElementById('team-value-grid');
+                if (teamGrid) {
+                    teamGrid.innerHTML = '<p style="color: #666; font-style: italic; grid-column: 1 / -1; text-align: center; padding: 2rem;">Team keeper breakdowns will appear once keeper selections have been made.</p>';
+                }
+                
+                const prospectsSection = document.getElementById('prospects-value-section');
+                if (prospectsSection) prospectsSection.style.display = 'none';
+                
+                const scatterWrapper = document.querySelector('.value-scatter-wrapper');
+                if (scatterWrapper) scatterWrapper.style.display = 'none';
+                
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
+                return;
+            }
 
-                // Sort prospects by projected points
-                prospects.sort((a, b) => b.projectedPts - a.projectedPts);
+            // Step 6: Process each team's keepers
+            const teamValues = [];
+            const allKeepers = [];
+            const prospects = [];
 
-                keeperValueData = {
-                    teams: teamValues,
-                    prospects: prospects,
-                    allKeepers: allKeepers
-                };
+            for (const team of teamsData) {
+                const teamKeepers = keeperSelections[team.team_key] || [];
+                
+                if (teamKeepers.length === 0) continue;
 
-                // Check if we have any data to display
-                if (teamValues.length === 0 && prospects.length === 0) {
-                    // Still show expected points chart
-                    renderExpectedPointsChart();
-                    
-                    document.getElementById('value-rankings-body').innerHTML = 
-                        '<tr><td colspan="4" style="text-align: center; color: #666; font-style: italic; padding: 1rem;">No keepers selected yet</td></tr>';
-                    document.getElementById('team-value-grid').innerHTML = 
-                        '<p style="color: #666; font-style: italic; grid-column: 1 / -1;">Select keepers above to see value analysis.</p>';
-                    document.getElementById('prospects-value-section').style.display = 'none';
-                    
-                    const scatterWrapper = document.querySelector('.value-scatter-wrapper');
-                    if (scatterWrapper) scatterWrapper.style.display = 'none';
-                    
-                    loadingEl.style.display = 'none';
-                    contentEl.style.display = 'block';
-                    return;
+                let totalProjected = 0;
+                let totalExpected = 0;
+                const keeperDetails = [];
+
+                for (const keeper of teamKeepers) {
+                    const playerNameNorm = (keeper.player_name || '').toLowerCase().trim();
+                    const projectedPts = localProjectionsMap[playerNameNorm] || keeperProjectionsMap[playerNameNorm] || 0;
+                    const isProspect = keeper.isProspect || false;
+                    const roundCost = keeper.roundCost || 0;
+                    const expectedPts = isProspect ? 0 : (expectedPointsByRound[roundCost]?.avg || 0);
+                    const value = projectedPts - expectedPts;
+
+                    const keeperData = {
+                        player_name: keeper.player_name,
+                        team_key: team.team_key,
+                        team_name: team.team_name,
+                        manager: team.manager,
+                        team_logo: team.team_logo,
+                        position: keeper.position || '',
+                        roundCost: roundCost,
+                        isProspect: isProspect,
+                        projectedPts: projectedPts,
+                        expectedPts: expectedPts,
+                        value: value
+                    };
+
+                    if (isProspect) {
+                        prospects.push(keeperData);
+                    } else {
+                        keeperDetails.push(keeperData);
+                        allKeepers.push(keeperData);
+                        totalProjected += projectedPts;
+                        totalExpected += expectedPts;
+                    }
                 }
 
-                // Show scatter plot
+                // Sort keepers by round
+                keeperDetails.sort((a, b) => a.roundCost - b.roundCost);
+
+                if (keeperDetails.length > 0) {
+                    teamValues.push({
+                        team_key: team.team_key,
+                        team_name: team.team_name,
+                        manager: capitalizeManagerName(team.manager || 'Unknown'),
+                        team_logo: team.team_logo,
+                        keepers: keeperDetails,
+                        totalProjected: totalProjected,
+                        totalExpected: totalExpected,
+                        totalValue: totalProjected - totalExpected,
+                        keeperCount: keeperDetails.length
+                    });
+                }
+            }
+
+            // Sort teams by total value
+            teamValues.sort((a, b) => b.totalValue - a.totalValue);
+
+            // Sort prospects by projected points
+            prospects.sort((a, b) => b.projectedPts - a.projectedPts);
+
+            keeperValueData = {
+                teams: teamValues,
+                prospects: prospects,
+                allKeepers: allKeepers
+            };
+
+            // Step 7: Render all components
+            try {
+                renderValueRankings(teamValues);
+            } catch (e) {
+                console.error('Error rendering value rankings:', e);
+            }
+            
+            try {
+                renderTeamValueCards(teamValues);
+            } catch (e) {
+                console.error('Error rendering team value cards:', e);
+            }
+            
+            try {
+                renderProspectsSection(prospects);
+            } catch (e) {
+                console.error('Error rendering prospects section:', e);
+            }
+            
+            try {
                 const scatterWrapper = document.querySelector('.value-scatter-wrapper');
                 if (scatterWrapper) scatterWrapper.style.display = 'block';
-
-                // Render all components
-                renderExpectedPointsChart();
-                renderValueRankings(teamValues);
-                renderTeamValueCards(teamValues);
-                renderProspectsSection(prospects);
                 renderValueScatterChart(allKeepers, prospects);
-
-                loadingEl.style.display = 'none';
-                contentEl.style.display = 'block';
-
-            } catch (error) {
-                console.error('Error analyzing keeper values:', error);
-                loadingEl.style.display = 'none';
-                contentEl.innerHTML = `<p style="color: #666; font-style: italic;">Keeper value analysis will appear once keeper selections have been made.</p>`;
-                contentEl.style.display = 'block';
+            } catch (e) {
+                console.error('Error rendering scatter chart:', e);
             }
+
+            loadingEl.style.display = 'none';
+            contentEl.style.display = 'block';
         }
 
         function renderExpectedPointsChart() {
