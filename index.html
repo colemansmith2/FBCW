@@ -4590,12 +4590,27 @@
            MOBILE PRESEASON TOOLS OPTIMIZATION
            ========================================= */
         @media (max-width: 768px) {
+            /* Prevent body scroll when any modal is open */
+            body.modal-open,
+            body.keeper-modal-open {
+                overflow: hidden;
+                position: fixed;
+                width: 100%;
+                height: 100%;
+            }
+
             /* Player Modal - Enable Scrolling */
-            #player-modal .modal-content,
-            #player-modal .player-modal-content {
-                max-height: 90vh;
+            #player-modal.active {
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
+            }
+
+            #player-modal .modal-content,
+            #player-modal .player-modal-content {
+                max-height: none;
+                height: auto;
+                margin: 1rem auto;
+                overflow: visible;
             }
 
             #player-modal .modal-body-scroll {
@@ -4646,8 +4661,8 @@
             .keeper-modal-content {
                 width: 100vw;
                 max-width: 100vw;
-                max-height: 100vh;
-                height: 100vh;
+                max-height: 100dvh; /* Use dynamic viewport height */
+                height: 100dvh;
                 border-radius: 0;
                 margin: 0;
             }
@@ -4658,22 +4673,26 @@
                 gap: 0.5rem;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
+                flex: 1;
+                min-height: 0;
             }
 
-            /* Hide picks section on mobile - show in footer instead */
+            /* Hide picks section on mobile */
             .keeper-picks-section {
                 display: none;
             }
 
             .keeper-roster-section {
-                flex: none;
-                max-height: 55vh;
-                min-height: 300px;
+                flex: 1;
+                min-height: 0;
+                max-height: none;
             }
 
             .keeper-roster-table-wrapper {
-                overflow-x: auto;
+                overflow: auto;
                 -webkit-overflow-scrolling: touch;
+                flex: 1;
+                min-height: 0;
             }
 
             .keeper-roster-table-wrapper table {
@@ -4803,8 +4822,40 @@
                 padding: 0;
             }
 
+            .keeper-modal-header {
+                padding: 0.5rem 0.75rem;
+                min-height: auto;
+            }
+
+            .keeper-modal-header h3 {
+                font-size: 0.9rem;
+                margin: 0;
+            }
+
+            .keeper-status {
+                font-size: 0.7rem;
+            }
+
+            .keeper-progress-container {
+                height: 6px;
+                margin: 0.25rem 0;
+            }
+
+            .keeper-modal-footer {
+                padding: 0.5rem;
+                max-height: 25vh;
+                overflow-y: auto;
+            }
+
+            .keeper-selected-summary {
+                padding: 0.4rem;
+                margin-bottom: 0.4rem;
+                font-size: 0.7rem;
+            }
+
             .keeper-roster-section {
-                max-height: 50vh;
+                flex: 1;
+                min-height: 0;
             }
 
             .keeper-roster-table-wrapper table {
@@ -6931,10 +6982,12 @@
 
             bodyEl.innerHTML = cardHTML;
             modal.classList.add('active');
+            document.body.classList.add('modal-open');
         }
 
         function closePlayerModal() {
             document.getElementById('player-modal').classList.remove('active');
+            document.body.classList.remove('modal-open');
         }
 
         // Close player modal on outside click
@@ -13613,6 +13666,7 @@
 
             // 2. SHOW MODAL FIRST (Fixes width calculation)
             modal.classList.add('active');
+            document.body.classList.add('modal-open');
 
             // 3. Render Charts (Now they can see the real width)
             renderPositionRankChart(player, posChartEl);
@@ -13856,6 +13910,7 @@
 
         function closeProjectionModal() {
             document.getElementById('projection-modal').classList.remove('active');
+            document.body.classList.remove('modal-open');
         }
 
         // Close projection modal on outside click
