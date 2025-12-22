@@ -3059,108 +3059,93 @@
 
         /* =========================================
            UNIVERSAL POSITION COLOR SYSTEM
-           9 distinct colors with dark text on light backgrounds
            ========================================= */
         :root {
-            /* --- POSITION PLAYERS (Dark text colors) --- */
-            --pos-c-dark:     #4a148c; /* C: Deep Purple */
-            --pos-c-light:    rgba(74, 20, 140, 0.15);
-            
-            --pos-1b-dark:    #1565c0; /* 1B: Blue */
-            --pos-1b-light:   rgba(21, 101, 192, 0.15);
-            
-            --pos-2b-dark:    #e65100; /* 2B: Orange */
-            --pos-2b-light:   rgba(230, 81, 0, 0.15);
-            
-            --pos-3b-dark:    #b71c1c; /* 3B: Red */
-            --pos-3b-light:   rgba(183, 28, 28, 0.15);
-            
-            --pos-ss-dark:    #9c7c00; /* SS: Gold */
-            --pos-ss-light:   rgba(200, 160, 0, 0.18);
-            
-            --pos-of-dark:    #2e7d32; /* OF: Green */
-            --pos-of-light:   rgba(46, 125, 50, 0.15);
-            
-            --pos-dh-dark:    #546e7a; /* DH/Util: Grey */
-            --pos-dh-light:   rgba(84, 110, 122, 0.15);
+            /* --- POSITION PLAYERS --- */
+            --pos-c-color:    #8e44ad; /* C: Purple */
+            --pos-1b-color:   #2980b9; /* 1B: Strong Blue */
+            --pos-2b-color:   #e67e22; /* 2B: Carrot Orange */
+            --pos-3b-color:   #c0392b; /* 3B: Dark Red */
+            --pos-ss-color:   #16a085; /* SS: Teal */
+            --pos-of-color:   #27ae60; /* OF: Green */
+            --pos-dh-color:   #7f8c8d; /* DH: Grey */
         
-            /* --- PITCHERS --- */
-            --pos-sp-dark:    #7e57c2; /* SP: Faded Light Purple/Lavender */
-            --pos-sp-light:   rgba(126, 87, 194, 0.15);
+            /* --- PITCHERS (Now Unique) --- */
+            --pos-sp-color:   #2c3e50; /* SP: Navy / Midnight Blue */
+            --pos-rp-color:   #c2185b; /* RP: Magenta / Berry */
+            --pos-p-color:    #5d4037; /* P:  Brown */
             
-            --pos-rp-dark:    #00838f; /* RP: Cyan/Teal */
-            --pos-rp-light:   rgba(0, 131, 143, 0.15);
+            /* --- BACKGROUNDS (20% Opacity) --- */
+            --pos-c-bg:       rgba(142, 68, 173, 0.15);
+            --pos-1b-bg:      rgba(41, 128, 185, 0.15);
+            --pos-2b-bg:      rgba(230, 126, 34, 0.15);
+            --pos-3b-bg:      rgba(192, 57, 43, 0.15);
+            --pos-ss-bg:      rgba(22, 160, 133, 0.15);
+            --pos-of-bg:      rgba(39, 174, 96, 0.15);
+            --pos-dh-bg:      rgba(127, 140, 141, 0.15);
             
-            /* P uses same as SP for consistency */
-            --pos-p-dark:     #7e57c2;
-            --pos-p-light:    rgba(126, 87, 194, 0.15);
+            --pos-sp-bg:      rgba(44, 62, 80, 0.15);   /* Matching Navy */
+            --pos-rp-bg:      rgba(194, 24, 91, 0.15);  /* Matching Berry */
+            --pos-p-bg:       rgba(93, 64, 55, 0.15);   /* Matching Brown */
         }
         
-        /* UNIFIED POSITION BADGE STYLE
-           Dark text on light background for all contexts */
+        /* 1. SOLID BADGES (For Cards & Modals) 
+           Usage: class="position-badge pos-C" */
         .position-badge {
             display: inline-block;
-            padding: 0.15rem 0.4rem;
+            padding: 0.15rem 0.35rem;
             border-radius: 4px;
             font-size: 0.7rem;
             font-weight: 700;
+            color: white; /* Always white text */
             text-align: center;
-            min-width: 26px;
-            width: fit-content;
+            min-width: 24px;
             margin-right: 2px;
-            text-transform: uppercase;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
-        /* Position-specific colors */
-        .position-badge.pos-C  { color: var(--pos-c-dark); background-color: var(--pos-c-light); }
-        .position-badge.pos-1B { color: var(--pos-1b-dark); background-color: var(--pos-1b-light); }
-        .position-badge.pos-2B { color: var(--pos-2b-dark); background-color: var(--pos-2b-light); }
-        .position-badge.pos-3B { color: var(--pos-3b-dark); background-color: var(--pos-3b-light); }
-        .position-badge.pos-SS { color: var(--pos-ss-dark); background-color: var(--pos-ss-light); }
+        .position-badge.pos-C  { background-color: var(--pos-c-color); }
+        .position-badge.pos-1B { background-color: var(--pos-1b-color); }
+        .position-badge.pos-2B { background-color: var(--pos-2b-color); }
+        .position-badge.pos-3B { background-color: var(--pos-3b-color); }
+        .position-badge.pos-SS { background-color: var(--pos-ss-color); }
         .position-badge.pos-OF, 
         .position-badge.pos-LF, 
         .position-badge.pos-CF, 
-        .position-badge.pos-RF { color: var(--pos-of-dark); background-color: var(--pos-of-light); }
+        .position-badge.pos-RF { background-color: var(--pos-of-color); }
         .position-badge.pos-DH, 
-        .position-badge.pos-Util { color: var(--pos-dh-dark); background-color: var(--pos-dh-light); }
-        .position-badge.pos-SP { color: var(--pos-sp-dark); background-color: var(--pos-sp-light); }
-        .position-badge.pos-RP { color: var(--pos-rp-dark); background-color: var(--pos-rp-light); }
-        .position-badge.pos-P  { color: var(--pos-p-dark); background-color: var(--pos-p-light); }
+        .position-badge.pos-Util { background-color: var(--pos-dh-color); }
+        .position-badge.pos-SP { background-color: var(--pos-sp-color); }
+        .position-badge.pos-RP { background-color: var(--pos-rp-color); }
+        .position-badge.pos-P  { background-color: var(--pos-p-color); }
         
-        /* Default/unknown position */
-        .position-badge:not([class*="pos-"]) {
-            color: #666;
-            background-color: rgba(0, 0, 0, 0.08);
-        }
-        
-        /* 2. DRAFT TABLE BADGES - Same style, lowercase class names for compatibility */
+        /* 2. PASTEL BADGES (For Data Tables & Draft) 
+           Usage: class="draft-player-pos pos-c" */
         .draft-player-pos {
-            display: inline-block;
-            padding: 0.15rem 0.4rem;
-            border-radius: 4px;
             font-size: 0.65rem;
             font-weight: 700;
-            text-align: center;
-            min-width: 26px;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            display: inline-block;
             width: fit-content;
-            align-self: flex-start;
             text-transform: uppercase;
         }
         
-        .draft-player-pos.pos-c  { color: var(--pos-c-dark); background-color: var(--pos-c-light); }
-        .draft-player-pos.pos-1b { color: var(--pos-1b-dark); background-color: var(--pos-1b-light); }
-        .draft-player-pos.pos-2b { color: var(--pos-2b-dark); background-color: var(--pos-2b-light); }
-        .draft-player-pos.pos-3b { color: var(--pos-3b-dark); background-color: var(--pos-3b-light); }
-        .draft-player-pos.pos-ss { color: var(--pos-ss-dark); background-color: var(--pos-ss-light); }
+        /* Text color is the Base Color, Background is the Light Variant */
+        .draft-player-pos.pos-c  { color: var(--pos-c-color); background-color: var(--pos-c-bg); }
+        .draft-player-pos.pos-1b { color: var(--pos-1b-color); background-color: var(--pos-1b-bg); }
+        .draft-player-pos.pos-2b { color: var(--pos-2b-color); background-color: var(--pos-2b-bg); }
+        .draft-player-pos.pos-3b { color: var(--pos-3b-color); background-color: var(--pos-3b-bg); }
+        .draft-player-pos.pos-ss { color: var(--pos-ss-color); background-color: var(--pos-ss-bg); }
         .draft-player-pos.pos-of,
         .draft-player-pos.pos-lf,
         .draft-player-pos.pos-cf,
-        .draft-player-pos.pos-rf { color: var(--pos-of-dark); background-color: var(--pos-of-light); }
+        .draft-player-pos.pos-rf { color: var(--pos-of-color); background-color: var(--pos-of-bg); }
         .draft-player-pos.pos-dh,
-        .draft-player-pos.pos-util { color: var(--pos-dh-dark); background-color: var(--pos-dh-light); }
-        .draft-player-pos.pos-sp { color: var(--pos-sp-dark); background-color: var(--pos-sp-light); }
-        .draft-player-pos.pos-rp { color: var(--pos-rp-dark); background-color: var(--pos-rp-light); }
-        .draft-player-pos.pos-p  { color: var(--pos-p-dark); background-color: var(--pos-p-light); }
+        .draft-player-pos.pos-util { color: var(--pos-dh-color); background-color: var(--pos-dh-bg); }
+        .draft-player-pos.pos-sp { color: var(--pos-sp-color); background-color: var(--pos-sp-bg); }
+        .draft-player-pos.pos-rp { color: var(--pos-rp-color); background-color: var(--pos-rp-bg); }
+        .draft-player-pos.pos-p  { color: var(--pos-p-color); background-color: var(--pos-p-bg); }
 
         /* Hide batter/pitcher stats based on filter */
         .show-batters .pitcher-stat,
@@ -4598,6 +4583,256 @@
 
             .week-text {
                 display: none;
+            }
+        }
+
+        /* =========================================
+           MOBILE PRESEASON TOOLS OPTIMIZATION
+           ========================================= */
+        @media (max-width: 768px) {
+            /* Player Modal - Enable Scrolling */
+            #player-modal .modal-content,
+            #player-modal .player-modal-content {
+                max-height: 90vh;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            #player-modal .modal-body-scroll {
+                overflow: visible;
+                max-height: none;
+                padding: 0;
+            }
+
+            #player-modal .baseball-card {
+                max-height: none;
+                overflow: visible;
+            }
+
+            .card-scrollable {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            /* Projections Table Mobile */
+            .proj-table-scrollable {
+                max-height: 60vh;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .proj-table-scrollable table {
+                min-width: 600px;
+                font-size: 0.75rem;
+            }
+
+            .proj-table-scrollable thead th {
+                padding: 0.5rem 0.3rem;
+                font-size: 0.7rem;
+                white-space: nowrap;
+            }
+
+            .proj-table-scrollable tbody td {
+                padding: 0.4rem 0.3rem;
+            }
+
+            /* Hide less important columns on mobile */
+            #proj-table th:nth-child(4),
+            #proj-table td:nth-child(4) {
+                display: none; /* Hide 2025 column */
+            }
+
+            /* Keeper Modal Mobile Layout */
+            .keeper-modal-content {
+                width: 100vw;
+                max-width: 100vw;
+                max-height: 100vh;
+                height: 100vh;
+                border-radius: 0;
+                margin: 0;
+            }
+
+            .keeper-selection-body {
+                flex-direction: column;
+                padding: 0 0.5rem;
+                gap: 0.5rem;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            /* Hide picks section on mobile - show in footer instead */
+            .keeper-picks-section {
+                display: none;
+            }
+
+            .keeper-roster-section {
+                flex: none;
+                max-height: 55vh;
+                min-height: 300px;
+            }
+
+            .keeper-roster-table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .keeper-roster-table-wrapper table {
+                min-width: 500px;
+                font-size: 0.75rem;
+            }
+
+            .keeper-roster-table-wrapper thead th {
+                padding: 0.5rem 0.3rem;
+                font-size: 0.7rem;
+                white-space: nowrap;
+            }
+
+            .keeper-roster-table-wrapper tbody td {
+                padding: 0.4rem 0.3rem;
+            }
+
+            /* Make checkboxes larger for touch */
+            .keeper-table .keeper-checkbox {
+                width: 24px;
+                height: 24px;
+                cursor: pointer;
+            }
+
+            /* Player name cell adjustments */
+            .player-name-cell {
+                gap: 0.3rem;
+            }
+
+            .player-name-cell .player-headshot {
+                width: 28px;
+                height: 28px;
+            }
+
+            .player-name-cell .player-name {
+                font-size: 0.75rem;
+                max-width: 100px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            /* Keeper modal header adjustments */
+            .keeper-modal-header {
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .keeper-modal-header h3 {
+                font-size: 1rem;
+                flex-basis: 100%;
+            }
+
+            .keeper-status {
+                font-size: 0.8rem;
+            }
+
+            .keeper-progress-container {
+                max-width: 100%;
+            }
+
+            /* Keeper modal footer */
+            .keeper-modal-footer {
+                padding: 0.75rem;
+            }
+
+            .keeper-selected-summary {
+                padding: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .keeper-selected-list {
+                font-size: 0.75rem;
+            }
+
+            /* League Keepers Cards */
+            .keeper-team-card {
+                padding: 0.75rem;
+            }
+
+            .keeper-team-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .keeper-list {
+                gap: 0.4rem;
+            }
+
+            .keeper-item {
+                font-size: 0.75rem;
+                padding: 0.3rem 0.5rem;
+            }
+
+            /* Preseason section controls */
+            #preseason .stat-type-toggle {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #preseason .toggle-buttons {
+                display: flex;
+                width: 100%;
+            }
+
+            #preseason .toggle-btn {
+                flex: 1;
+                padding: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            /* Player search on mobile */
+            #preseason .player-search-container {
+                width: 100%;
+            }
+
+            #preseason .player-search-container input {
+                width: 100%;
+            }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .keeper-modal-content {
+                padding: 0;
+            }
+
+            .keeper-roster-section {
+                max-height: 50vh;
+            }
+
+            .keeper-roster-table-wrapper table {
+                min-width: 450px;
+                font-size: 0.7rem;
+            }
+
+            /* Hide more columns on very small screens */
+            #keeper-roster-table th:nth-child(4),
+            #keeper-roster-table td:nth-child(4),
+            #keeper-roster-table th:nth-child(5),
+            #keeper-roster-table td:nth-child(5) {
+                display: none; /* Hide 2025 and 2026 columns */
+            }
+
+            .player-name-cell .player-name {
+                max-width: 80px;
+            }
+
+            /* Projections table - hide more columns */
+            #proj-table th:nth-child(5),
+            #proj-table td:nth-child(5) {
+                display: none; /* Hide 2026 column too */
+            }
+
+            .proj-table-scrollable table {
+                min-width: 400px;
+                font-size: 0.7rem;
             }
         }
 
