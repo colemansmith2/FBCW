@@ -4616,11 +4616,13 @@
                 left: 0;
             }
 
-            /* Make the modal backdrop scrollable */
+            /* Make the modal backdrop scrollable and align content to top */
             #player-modal.active,
             #projection-modal.active {
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
+                align-items: flex-start;
+                padding: 1rem 0;
             }
 
             /* Let content flow naturally */
@@ -4630,8 +4632,9 @@
             #projection-modal .projection-modal-content {
                 max-height: none;
                 height: auto;
-                margin: 1rem auto;
+                margin: 0 auto;
                 overflow: visible;
+                flex-shrink: 0;
             }
 
             #player-modal .modal-body-scroll,
