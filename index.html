@@ -10164,8 +10164,8 @@
                 // Pre-calculate games and PPG for sorting
                 allProjectionBatters.forEach(p => {
                     const stats = p.stats || {};
-                    // Estimate games from PA (avg ~4.5 PA per game)
-                    p.games = Math.round((stats.PA || 0) / 4.5);
+                    // Use actual G from projections
+                    p.games = stats.G || 0;
                     p.ppg = p.games > 0 ? (p.projected_points || 0) / p.games : 0;
                 });
 
