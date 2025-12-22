@@ -1449,6 +1449,356 @@
             opacity: 1;
         }
 
+        /* =========================================
+           KEEPER VALUE ANALYSIS STYLES
+           ========================================= */
+        .keeper-value-section {
+            margin-top: 3rem;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 2rem;
+        }
+
+        .keeper-value-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .keeper-value-header h3 {
+            color: #1e3c72;
+            margin: 0;
+        }
+
+        /* Expected Points Chart Container */
+        .expected-points-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .expected-points-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .expected-points-chart-wrapper {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .expected-points-chart-wrapper h4 {
+            margin: 0 0 1rem 0;
+            color: #1e3c72;
+            font-size: 1rem;
+        }
+
+        .expected-points-chart {
+            height: 300px;
+            position: relative;
+        }
+
+        /* League Rankings Table */
+        .value-rankings-wrapper {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .value-rankings-wrapper h4 {
+            margin: 0 0 1rem 0;
+            color: #1e3c72;
+            font-size: 1rem;
+        }
+
+        .value-rankings-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .value-rankings-table th {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 0.6rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .value-rankings-table th:first-child {
+            border-radius: 6px 0 0 0;
+        }
+
+        .value-rankings-table th:last-child {
+            border-radius: 0 6px 0 0;
+            text-align: right;
+        }
+
+        .value-rankings-table td {
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .value-rankings-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .value-rankings-table .rank-cell {
+            font-weight: 700;
+            color: #1e3c72;
+            width: 40px;
+        }
+
+        .value-rankings-table .team-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .value-rankings-table .team-logo-small {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: contain;
+        }
+
+        .value-rankings-table .value-cell {
+            text-align: right;
+            font-weight: 700;
+        }
+
+        .value-positive {
+            color: #28a745;
+        }
+
+        .value-negative {
+            color: #dc3545;
+        }
+
+        .value-neutral {
+            color: #6c757d;
+        }
+
+        /* Team Value Cards Grid */
+        .team-value-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .team-value-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .team-value-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+        }
+
+        .team-value-card-header .team-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .team-value-card-header .team-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: white;
+            object-fit: contain;
+            padding: 2px;
+        }
+
+        .team-value-card-header .team-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .team-value-card-header .team-manager {
+            font-size: 0.8rem;
+            opacity: 0.85;
+        }
+
+        .team-value-card-header .total-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .team-value-card-header .total-value.positive {
+            background: rgba(40, 167, 69, 0.3);
+        }
+
+        .team-value-card-header .total-value.negative {
+            background: rgba(220, 53, 69, 0.3);
+        }
+
+        .team-value-card-body {
+            padding: 0;
+        }
+
+        .team-value-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .team-value-table th {
+            background: #f8f9fa;
+            padding: 0.5rem 0.6rem;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .team-value-table th:nth-child(3),
+        .team-value-table th:nth-child(4),
+        .team-value-table th:nth-child(5) {
+            text-align: right;
+        }
+
+        .team-value-table td {
+            padding: 0.5rem 0.6rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .team-value-table td:nth-child(3),
+        .team-value-table td:nth-child(4),
+        .team-value-table td:nth-child(5) {
+            text-align: right;
+        }
+
+        .team-value-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .team-value-table .player-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .team-value-table .player-headshot-tiny {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .team-value-card-footer {
+            padding: 0.6rem 1rem;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        .team-value-card-footer .label {
+            color: #666;
+        }
+
+        .team-value-card-footer .value {
+            font-weight: 600;
+        }
+
+        /* Prospects Section */
+        .prospects-value-section {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(23, 162, 184, 0.08);
+            border-radius: 12px;
+            border: 1px solid rgba(23, 162, 184, 0.2);
+        }
+
+        .prospects-value-section h4 {
+            color: #17a2b8;
+            margin: 0 0 1rem 0;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .prospects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .prospect-value-item {
+            background: white;
+            padding: 0.6rem 0.75rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .prospect-value-item .prospect-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .prospect-value-item .prospect-team-logo {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+
+        .prospect-value-item .prospect-pts {
+            font-weight: 600;
+            color: #17a2b8;
+        }
+
+        /* Scatter Plot Container */
+        .value-scatter-wrapper {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 1.5rem;
+        }
+
+        .value-scatter-wrapper h4 {
+            margin: 0 0 1rem 0;
+            color: #1e3c72;
+            font-size: 1rem;
+        }
+
+        .value-scatter-chart {
+            height: 350px;
+            position: relative;
+        }
+
+        /* Loading state */
+        .keeper-value-loading {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+
         /* League Keepers Grid */
         .keeper-league-grid {
             display: grid;
@@ -5313,6 +5663,76 @@
                 <div id="keeper-league-container">
                     <div class="keeper-league-grid" id="keeper-league-grid">
                         <!-- Keeper cards for each team -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keeper Value Analysis Section -->
+            <div class="keeper-value-section" id="keeper-value-section">
+                <div class="keeper-value-header">
+                    <h3>📊 Keeper Value Analysis</h3>
+                    <div style="font-size: 0.85rem; color: #666;">
+                        Comparing keeper projections vs. historical draft pick value (2019-2025)
+                    </div>
+                </div>
+
+                <div id="keeper-value-loading" class="keeper-value-loading" style="display: none;">
+                    Analyzing keeper values...
+                </div>
+
+                <div id="keeper-value-content">
+                    <!-- Expected Points Chart + Rankings -->
+                    <div class="expected-points-container">
+                        <div class="expected-points-chart-wrapper">
+                            <h4>📈 Expected Points by Draft Round</h4>
+                            <div class="expected-points-chart">
+                                <canvas id="expected-points-chart"></canvas>
+                            </div>
+                        </div>
+                        <div class="value-rankings-wrapper">
+                            <h4>🏆 Team Value Rankings</h4>
+                            <table class="value-rankings-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Team</th>
+                                        <th>Keepers</th>
+                                        <th style="text-align: right;">Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="value-rankings-body">
+                                    <!-- Populated by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Team Value Cards -->
+                    <h4 style="color: #1e3c72; margin: 1.5rem 0 1rem;">📋 Team Keeper Breakdown</h4>
+                    <div class="team-value-grid" id="team-value-grid">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <!-- Prospects Section -->
+                    <div class="prospects-value-section" id="prospects-value-section" style="display: none;">
+                        <h4>🌟 Prospect Value (Free Keepers)</h4>
+                        <p style="font-size: 0.85rem; color: #666; margin: 0 0 1rem;">
+                            Prospects cost nothing to keep, so their entire projection is pure value.
+                        </p>
+                        <div class="prospects-grid" id="prospects-value-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Scatter Plot -->
+                    <div class="value-scatter-wrapper">
+                        <h4>🎯 All Keepers: Projected Points vs. Keeper Cost</h4>
+                        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.75rem;">
+                            Hover over points to see player details. Green = above expected, Red = below expected.
+                        </div>
+                        <div class="value-scatter-chart">
+                            <canvas id="value-scatter-chart"></canvas>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -12261,6 +12681,9 @@
 
                 grid.appendChild(card);
             }
+
+            // Update keeper value analysis
+            initializeKeeperValueAnalysis();
         }
 
         function toggleLeagueProspects() {
@@ -12536,6 +12959,585 @@
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
+        }
+
+        // ===== KEEPER VALUE ANALYSIS =====
+
+        let expectedPointsByRound = {};
+        let keeperValueData = {
+            teams: [],
+            prospects: [],
+            allKeepers: []
+        };
+        let expectedPointsChart = null;
+        let valueScatterChart = null;
+
+        async function calculateExpectedPoints() {
+            // Load draft data from all years (2019-2025)
+            const years = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+            const weights = {
+                2025: 2.0,   // Most recent, highest weight
+                2024: 1.75,
+                2023: 1.5,
+                2022: 1.25,
+                2021: 1.0,
+                2020: 0.75,  // COVID year, lower weight
+                2019: 0.75
+            };
+
+            // Load keepers data to exclude from calculations
+            let allKeepersData = {};
+            try {
+                const keepersResponse = await fetch('data/keepers.json');
+                if (keepersResponse.ok) {
+                    allKeepersData = await keepersResponse.json();
+                }
+            } catch (e) {
+                console.log('Could not load keepers data for exclusion');
+            }
+
+            const roundStats = {}; // { round: { totalPoints: 0, totalWeight: 0, picks: [] } }
+
+            for (const year of years) {
+                try {
+                    // Load draft data
+                    const draftPath = year === 2025 
+                        ? 'data/current_season/draft.json' 
+                        : `data/historical/${year}/draft.json`;
+                    const draftResponse = await fetch(draftPath);
+                    if (!draftResponse.ok) continue;
+                    const draftData = await draftResponse.json();
+
+                    // Load player stats for that year
+                    const statsPath = year === 2025 
+                        ? 'data/current_season/player_stats.json' 
+                        : `data/historical/${year}/player_stats.json`;
+                    const statsResponse = await fetch(statsPath);
+                    if (!statsResponse.ok) continue;
+                    const statsData = await statsResponse.json();
+
+                    // Create player lookup by name
+                    const playerStatsByName = {};
+                    statsData.forEach(p => {
+                        if (p.name) {
+                            playerStatsByName[p.name.toLowerCase().trim()] = p;
+                        }
+                    });
+
+                    // Get keepers for this year to exclude
+                    const yearKeepers = allKeepersData[year.toString()] || {};
+                    const keeperNamesLower = Object.keys(yearKeepers).map(n => n.toLowerCase().trim());
+
+                    const weight = weights[year] || 1.0;
+
+                    // Process each draft pick
+                    draftData.forEach(pick => {
+                        const round = pick.round;
+                        const playerName = pick.player_name || '';
+                        
+                        // Skip if this player was a keeper
+                        if (keeperNamesLower.includes(playerName.toLowerCase().trim())) {
+                            return;
+                        }
+
+                        // Find player stats
+                        const playerStats = playerStatsByName[playerName.toLowerCase().trim()];
+                        const fantasyPoints = playerStats?.fantasy_points || 0;
+
+                        // Initialize round if needed
+                        if (!roundStats[round]) {
+                            roundStats[round] = { totalPoints: 0, totalWeight: 0, picks: [] };
+                        }
+
+                        // Add weighted points
+                        roundStats[round].totalPoints += fantasyPoints * weight;
+                        roundStats[round].totalWeight += weight;
+                        roundStats[round].picks.push({
+                            year,
+                            player: playerName,
+                            points: fantasyPoints,
+                            weight
+                        });
+                    });
+
+                } catch (e) {
+                    console.log(`Error processing year ${year}:`, e);
+                }
+            }
+
+            // Calculate weighted averages
+            const result = {};
+            for (let round = 1; round <= 23; round++) {
+                const stats = roundStats[round];
+                if (stats && stats.totalWeight > 0) {
+                    result[round] = {
+                        avg: Math.round(stats.totalPoints / stats.totalWeight),
+                        sampleSize: stats.picks.length,
+                        picks: stats.picks
+                    };
+                } else {
+                    result[round] = { avg: 0, sampleSize: 0, picks: [] };
+                }
+            }
+
+            expectedPointsByRound = result;
+            console.log('Expected points by round:', expectedPointsByRound);
+            return result;
+        }
+
+        async function analyzeKeeperValues() {
+            const loadingEl = document.getElementById('keeper-value-loading');
+            const contentEl = document.getElementById('keeper-value-content');
+
+            loadingEl.style.display = 'block';
+            contentEl.style.display = 'none';
+
+            try {
+                // Calculate expected points if not already done
+                if (Object.keys(expectedPointsByRound).length === 0) {
+                    await calculateExpectedPoints();
+                }
+
+                // Get current keeper selections and projections
+                const teamsData = await fetch('data/current_season/teams.json').then(r => r.json());
+                
+                // Load projections if not already loaded
+                if (Object.keys(keeperProjectionsMap).length === 0 && allProjectionBatters.length === 0) {
+                    const projResponse = await fetch('data/projections/projections_steamer.json');
+                    if (projResponse.ok) {
+                        const projData = await projResponse.json();
+                        [...(projData.batters || []), ...(projData.pitchers || [])].forEach(p => {
+                            keeperProjectionsMap[normalizePlayerName(p.name)] = p.projected_points || 0;
+                        });
+                    }
+                } else if (allProjectionBatters.length > 0 || allProjectionPitchers.length > 0) {
+                    [...allProjectionBatters, ...allProjectionPitchers].forEach(p => {
+                        keeperProjectionsMap[normalizePlayerName(p.name)] = p.projected_points || 0;
+                    });
+                }
+
+                // Process each team's keepers
+                const teamValues = [];
+                const allKeepers = [];
+                const prospects = [];
+
+                for (const team of teamsData) {
+                    const teamKeepers = keeperSelections[team.team_key] || [];
+                    
+                    if (teamKeepers.length === 0) continue;
+
+                    let totalProjected = 0;
+                    let totalExpected = 0;
+                    const keeperDetails = [];
+
+                    for (const keeper of teamKeepers) {
+                        const projectedPts = keeperProjectionsMap[normalizePlayerName(keeper.player_name)] || 0;
+                        const isProspect = keeper.isProspect || false;
+                        const roundCost = keeper.roundCost || 0;
+                        const expectedPts = isProspect ? 0 : (expectedPointsByRound[roundCost]?.avg || 0);
+                        const value = projectedPts - expectedPts;
+
+                        const keeperData = {
+                            player_name: keeper.player_name,
+                            team_key: team.team_key,
+                            team_name: team.team_name,
+                            manager: team.manager,
+                            team_logo: team.team_logo,
+                            position: keeper.position || '',
+                            roundCost: roundCost,
+                            isProspect: isProspect,
+                            projectedPts: projectedPts,
+                            expectedPts: expectedPts,
+                            value: value
+                        };
+
+                        if (isProspect) {
+                            prospects.push(keeperData);
+                        } else {
+                            keeperDetails.push(keeperData);
+                            allKeepers.push(keeperData);
+                            totalProjected += projectedPts;
+                            totalExpected += expectedPts;
+                        }
+                    }
+
+                    // Sort keepers by round
+                    keeperDetails.sort((a, b) => a.roundCost - b.roundCost);
+
+                    if (keeperDetails.length > 0) {
+                        teamValues.push({
+                            team_key: team.team_key,
+                            team_name: team.team_name,
+                            manager: capitalizeManagerName(team.manager),
+                            team_logo: team.team_logo,
+                            keepers: keeperDetails,
+                            totalProjected: totalProjected,
+                            totalExpected: totalExpected,
+                            totalValue: totalProjected - totalExpected,
+                            keeperCount: keeperDetails.length
+                        });
+                    }
+                }
+
+                // Sort teams by total value
+                teamValues.sort((a, b) => b.totalValue - a.totalValue);
+
+                // Sort prospects by projected points
+                prospects.sort((a, b) => b.projectedPts - a.projectedPts);
+
+                keeperValueData = {
+                    teams: teamValues,
+                    prospects: prospects,
+                    allKeepers: allKeepers
+                };
+
+                // Render all components
+                renderExpectedPointsChart();
+                renderValueRankings(teamValues);
+                renderTeamValueCards(teamValues);
+                renderProspectsSection(prospects);
+                renderValueScatterChart(allKeepers, prospects);
+
+                loadingEl.style.display = 'none';
+                contentEl.style.display = 'block';
+
+            } catch (error) {
+                console.error('Error analyzing keeper values:', error);
+                loadingEl.style.display = 'none';
+                contentEl.innerHTML = '<p style="color: #dc3545;">Error loading keeper value analysis. Make sure keeper selections have been made.</p>';
+                contentEl.style.display = 'block';
+            }
+        }
+
+        function renderExpectedPointsChart() {
+            const ctx = document.getElementById('expected-points-chart');
+            if (!ctx) return;
+
+            // Destroy existing chart
+            if (expectedPointsChart) {
+                expectedPointsChart.destroy();
+            }
+
+            const rounds = Object.keys(expectedPointsByRound).map(Number).sort((a, b) => a - b);
+            const data = rounds.map(r => expectedPointsByRound[r]?.avg || 0);
+
+            expectedPointsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: rounds.map(r => `Rd ${r}`),
+                    datasets: [{
+                        label: 'Expected Points',
+                        data: data,
+                        backgroundColor: rounds.map(r => {
+                            const val = expectedPointsByRound[r]?.avg || 0;
+                            if (val > 300) return 'rgba(30, 60, 114, 0.8)';
+                            if (val > 200) return 'rgba(42, 82, 152, 0.8)';
+                            if (val > 100) return 'rgba(74, 124, 194, 0.8)';
+                            return 'rgba(130, 160, 210, 0.8)';
+                        }),
+                        borderRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const round = context.dataIndex + 1;
+                                    const stats = expectedPointsByRound[round];
+                                    return [
+                                        `Expected: ${stats?.avg || 0} pts`,
+                                        `Sample size: ${stats?.sampleSize || 0} picks`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Expected Points'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Draft Round'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderValueRankings(teamValues) {
+            const tbody = document.getElementById('value-rankings-body');
+            if (!tbody) return;
+
+            tbody.innerHTML = teamValues.map((team, idx) => {
+                const valueClass = team.totalValue > 0 ? 'value-positive' : 
+                                  team.totalValue < 0 ? 'value-negative' : 'value-neutral';
+                const valuePrefix = team.totalValue > 0 ? '+' : '';
+
+                return `
+                    <tr>
+                        <td class="rank-cell">${idx + 1}</td>
+                        <td>
+                            <div class="team-cell">
+                                ${team.team_logo ? `<img src="${team.team_logo}" class="team-logo-small" alt="">` : ''}
+                                <div>
+                                    <div style="font-weight: 500;">${team.team_name}</div>
+                                    <div style="font-size: 0.75rem; color: #666;">${team.manager}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${team.keeperCount}</td>
+                        <td class="value-cell ${valueClass}">${valuePrefix}${Math.round(team.totalValue)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderTeamValueCards(teamValues) {
+            const container = document.getElementById('team-value-grid');
+            if (!container) return;
+
+            container.innerHTML = teamValues.map(team => {
+                const valueClass = team.totalValue > 0 ? 'positive' : team.totalValue < 0 ? 'negative' : '';
+                const valuePrefix = team.totalValue > 0 ? '+' : '';
+
+                const keepersHtml = team.keepers.map(k => {
+                    const kValueClass = k.value > 0 ? 'value-positive' : k.value < 0 ? 'value-negative' : 'value-neutral';
+                    const kValuePrefix = k.value > 0 ? '+' : '';
+                    
+                    return `
+                        <tr>
+                            <td>
+                                <div class="player-cell">
+                                    ${getPositionBadge(k.position, k.player_name)}
+                                    <span>${k.player_name}</span>
+                                </div>
+                            </td>
+                            <td>Rd ${k.roundCost}</td>
+                            <td>${Math.round(k.projectedPts)}</td>
+                            <td>${Math.round(k.expectedPts)}</td>
+                            <td class="${kValueClass}">${kValuePrefix}${Math.round(k.value)}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="team-value-card">
+                        <div class="team-value-card-header">
+                            <div class="team-info">
+                                ${team.team_logo ? `<img src="${team.team_logo}" class="team-logo" alt="">` : ''}
+                                <div>
+                                    <div class="team-name">${team.team_name}</div>
+                                    <div class="team-manager">${team.manager}</div>
+                                </div>
+                            </div>
+                            <div class="total-value ${valueClass}">${valuePrefix}${Math.round(team.totalValue)}</div>
+                        </div>
+                        <div class="team-value-card-body">
+                            <table class="team-value-table">
+                                <thead>
+                                    <tr>
+                                        <th>Player</th>
+                                        <th>Cost</th>
+                                        <th>Proj</th>
+                                        <th>Exp</th>
+                                        <th>Value</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${keepersHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="team-value-card-footer">
+                            <div>
+                                <span class="label">Total Projected:</span>
+                                <span class="value">${Math.round(team.totalProjected)} pts</span>
+                            </div>
+                            <div>
+                                <span class="label">Expected:</span>
+                                <span class="value">${Math.round(team.totalExpected)} pts</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderProspectsSection(prospects) {
+            const section = document.getElementById('prospects-value-section');
+            const grid = document.getElementById('prospects-value-grid');
+            if (!section || !grid) return;
+
+            if (prospects.length === 0) {
+                section.style.display = 'none';
+                return;
+            }
+
+            section.style.display = 'block';
+            grid.innerHTML = prospects.map(p => `
+                <div class="prospect-value-item">
+                    <div class="prospect-info">
+                        ${p.team_logo ? `<img src="${p.team_logo}" class="prospect-team-logo" alt="">` : ''}
+                        <span>${p.player_name}</span>
+                    </div>
+                    <span class="prospect-pts">+${Math.round(p.projectedPts)}</span>
+                </div>
+            `).join('');
+        }
+
+        function renderValueScatterChart(keepers, prospects) {
+            const ctx = document.getElementById('value-scatter-chart');
+            if (!ctx) return;
+
+            // Destroy existing chart
+            if (valueScatterChart) {
+                valueScatterChart.destroy();
+            }
+
+            // Prepare data points for regular keepers
+            const keeperPoints = keepers.map(k => ({
+                x: k.roundCost,
+                y: k.projectedPts,
+                player: k.player_name,
+                team: k.team_name,
+                value: k.value,
+                expected: k.expectedPts
+            }));
+
+            // Prepare data points for prospects (x = 24 to put them after round 23)
+            const prospectPoints = prospects.map(p => ({
+                x: 24,
+                y: p.projectedPts,
+                player: p.player_name,
+                team: p.team_name,
+                value: p.projectedPts,
+                expected: 0
+            }));
+
+            // Expected value line data
+            const expectedLine = [];
+            for (let r = 1; r <= 23; r++) {
+                expectedLine.push({
+                    x: r,
+                    y: expectedPointsByRound[r]?.avg || 0
+                });
+            }
+
+            valueScatterChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Above Expected',
+                            data: keeperPoints.filter(p => p.value > 0),
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                        },
+                        {
+                            label: 'Below Expected',
+                            data: keeperPoints.filter(p => p.value <= 0),
+                            backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                            borderColor: 'rgba(220, 53, 69, 1)',
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                        },
+                        {
+                            label: 'Prospects (Free)',
+                            data: prospectPoints,
+                            backgroundColor: 'rgba(23, 162, 184, 0.7)',
+                            borderColor: 'rgba(23, 162, 184, 1)',
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                            pointStyle: 'triangle',
+                        },
+                        {
+                            label: 'Expected Value',
+                            data: expectedLine,
+                            type: 'line',
+                            borderColor: 'rgba(30, 60, 114, 0.5)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    if (!point.player) return `Expected: ${point.y} pts`;
+                                    const valuePrefix = point.value > 0 ? '+' : '';
+                                    return [
+                                        `${point.player}`,
+                                        `Team: ${point.team}`,
+                                        `Projected: ${Math.round(point.y)} pts`,
+                                        `Expected: ${Math.round(point.expected)} pts`,
+                                        `Value: ${valuePrefix}${Math.round(point.value)}`
+                                    ];
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Keeper Cost (Round)'
+                            },
+                            min: 0.5,
+                            max: 25,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value === 24) return 'Free';
+                                    if (value % 2 === 0 || value === 1) return value;
+                                    return '';
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Projected Points'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Initialize keeper value analysis when keepers are displayed
+        function initializeKeeperValueAnalysis() {
+            // Wait for keeper data to be loaded
+            if (Object.keys(keeperSelections).length > 0) {
+                analyzeKeeperValues();
+            }
         }
 
         // ===== TRADE MANAGEMENT =====
