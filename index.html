@@ -9736,9 +9736,12 @@
                 // Initialize trade management (must be after keeper management)
                 await initializeTradeManagement();
 
-                // Re-display league keepers now that trades are loaded
-                // This ensures round costs account for traded picks
-                displayLeagueKeepers();
+                // Refresh league keepers display once after everything is loaded
+                // This ensures round costs properly account for traded picks
+                // Only call if keeperConfig exists (meaning initialization already happened)
+                if (keeperConfig) {
+                    displayLeagueKeepers();
+                }
 
                 // Load projections if not already loaded
                 if (allProjectionBatters.length === 0 && allProjectionPitchers.length === 0) {
@@ -12505,14 +12508,24 @@
             closeKeeperModal();
         }
 
+        let displayLeagueKeepersRunning = false;
+        
         async function displayLeagueKeepers() {
-            const grid = document.getElementById('keeper-league-grid');
-            if (!keeperConfig || !keeperConfig.teams) {
-                grid.innerHTML = '<p style="color: #888;">Keeper data not available.</p>';
+            // Prevent multiple simultaneous calls
+            if (displayLeagueKeepersRunning) {
+                console.log('displayLeagueKeepers already running, skipping');
                 return;
             }
+            displayLeagueKeepersRunning = true;
+            
+            try {
+                const grid = document.getElementById('keeper-league-grid');
+                if (!keeperConfig || !keeperConfig.teams) {
+                    grid.innerHTML = '<p style="color: #888;">Keeper data not available.</p>';
+                    return;
+                }
 
-            grid.innerHTML = '';
+                grid.innerHTML = '';
 
             // Ensure projections are loaded for display
             if (Object.keys(keeperProjectionsMap).length === 0) {
@@ -12684,6 +12697,9 @@
 
             // Update keeper value analysis
             initializeKeeperValueAnalysis();
+            } finally {
+                displayLeagueKeepersRunning = false;
+            }
         }
 
         function toggleLeagueProspects() {
@@ -13283,7 +13299,10 @@
 
         function renderExpectedPointsChart() {
             const ctx = document.getElementById('expected-points-chart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.log('Expected points chart canvas not found');
+                return;
+            }
 
             // Destroy existing chart
             if (expectedPointsChart) {
@@ -13292,6 +13311,17 @@
 
             const rounds = Object.keys(expectedPointsByRound).map(Number).sort((a, b) => a - b);
             const data = rounds.map(r => expectedPointsByRound[r]?.avg || 0);
+            
+            console.log('Rendering expected points chart with', rounds.length, 'rounds');
+            
+            // If no data yet, show a message
+            if (rounds.length === 0) {
+                const container = ctx.parentElement;
+                if (container) {
+                    container.innerHTML = '<p style="color: #666; text-align: center; padding: 2rem;">Loading historical draft data...</p><canvas id="expected-points-chart"></canvas>';
+                }
+                return;
+            }
 
             expectedPointsChart = new Chart(ctx, {
                 type: 'bar',
@@ -13451,13 +13481,16 @@
             const grid = document.getElementById('prospects-value-grid');
             if (!section || !grid) return;
 
-            if (prospects.length === 0) {
+            // Filter out prospects with 0 projected points
+            const displayProspects = prospects.filter(p => p.projectedPts > 0);
+
+            if (displayProspects.length === 0) {
                 section.style.display = 'none';
                 return;
             }
 
             section.style.display = 'block';
-            grid.innerHTML = prospects.map(p => `
+            grid.innerHTML = displayProspects.map(p => `
                 <div class="prospect-value-item">
                     <div class="prospect-info">
                         ${p.team_logo ? `<img src="${p.team_logo}" class="prospect-team-logo" alt="">` : ''}
@@ -13488,7 +13521,8 @@
             }));
 
             // Prepare data points for prospects (x = 24 to put them after round 23)
-            const prospectPoints = prospects.map(p => ({
+            // Only include prospects with projected points > 0
+            const prospectPoints = prospects.filter(p => p.projectedPts > 0).map(p => ({
                 x: 24,
                 y: p.projectedPts,
                 player: p.player_name,
