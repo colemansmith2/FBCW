@@ -13021,22 +13021,36 @@
                         ? 'data/current_season/draft.json' 
                         : `data/historical/${year}/draft.json`;
                     const draftResponse = await fetch(draftPath);
-                    if (!draftResponse.ok) continue;
+                    if (!draftResponse.ok) {
+                        console.log(`Draft data not found for ${year}: ${draftPath}`);
+                        continue;
+                    }
                     const draftData = await draftResponse.json();
+                    console.log(`Loaded ${draftData.length} draft picks for ${year}`);
 
                     // Load player stats for that year
                     const statsPath = year === 2025 
                         ? 'data/current_season/player_stats.json' 
                         : `data/historical/${year}/player_stats.json`;
                     const statsResponse = await fetch(statsPath);
-                    if (!statsResponse.ok) continue;
+                    if (!statsResponse.ok) {
+                        console.log(`Player stats not found for ${year}: ${statsPath}`);
+                        continue;
+                    }
                     const statsData = await statsResponse.json();
+                    console.log(`Loaded ${statsData.length} player stats for ${year}`);
 
-                    // Create player lookup by name
+                    // Create player lookup by name (handle Ohtani special case)
                     const playerStatsByName = {};
                     statsData.forEach(p => {
                         if (p.name) {
-                            playerStatsByName[p.name.toLowerCase().trim()] = p;
+                            const nameLower = p.name.toLowerCase().trim();
+                            playerStatsByName[nameLower] = p;
+                            // Also store without (Batter)/(Pitcher) suffix for matching
+                            const baseName = nameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                            if (baseName !== nameLower && !playerStatsByName[baseName]) {
+                                playerStatsByName[baseName] = p;
+                            }
                         }
                     });
 
@@ -13146,7 +13160,8 @@
                 // First try to use global projections if loaded
                 if (allProjectionBatters.length > 0 || allProjectionPitchers.length > 0) {
                     [...allProjectionBatters, ...allProjectionPitchers].forEach(p => {
-                        localProjectionsMap[p.name.toLowerCase().trim()] = p.projected_points || 0;
+                        const nameLower = p.name.toLowerCase().trim();
+                        localProjectionsMap[nameLower] = p.projected_points || 0;
                     });
                 }
                 
@@ -13156,7 +13171,8 @@
                     if (projResponse.ok) {
                         const projData = await projResponse.json();
                         [...(projData.batters || []), ...(projData.pitchers || [])].forEach(p => {
-                            localProjectionsMap[p.name.toLowerCase().trim()] = p.projected_points || 0;
+                            const nameLower = p.name.toLowerCase().trim();
+                            localProjectionsMap[nameLower] = p.projected_points || 0;
                         });
                     }
                 }
@@ -13206,7 +13222,17 @@
 
                 for (const keeper of teamKeepers) {
                     const playerNameNorm = (keeper.player_name || '').toLowerCase().trim();
-                    const projectedPts = localProjectionsMap[playerNameNorm] || keeperProjectionsMap[playerNameNorm] || 0;
+                    // Try exact match first, then try without (Batter)/(Pitcher) suffix
+                    let projectedPts = localProjectionsMap[playerNameNorm] || keeperProjectionsMap[playerNameNorm];
+                    if (projectedPts === undefined || projectedPts === 0) {
+                        // Try without suffix (for players like "Shohei Ohtani (Batter)")
+                        const baseNameNorm = playerNameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                        if (baseNameNorm !== playerNameNorm) {
+                            projectedPts = localProjectionsMap[baseNameNorm] || keeperProjectionsMap[baseNameNorm] || 0;
+                        }
+                    }
+                    projectedPts = projectedPts || 0;
+                    
                     const isProspect = keeper.isProspect || false;
                     const roundCost = keeper.roundCost || 0;
                     const expectedPts = isProspect ? 0 : (expectedPointsByRound[roundCost]?.avg || 0);
