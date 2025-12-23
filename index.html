@@ -1475,29 +1475,16 @@
         /* Expected Points Chart Container */
         .expected-points-container {
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
+            grid-template-columns: 1fr;
             gap: 1.25rem;
             margin-bottom: 2rem;
-        }
-
-        @media (max-width: 1200px) {
-            .expected-points-container {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-
-        @media (max-width: 900px) {
-            .expected-points-container {
-                grid-template-columns: 1fr;
-            }
         }
 
         .expected-points-chart-wrapper {
             background: white;
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1rem 1.25rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            min-width: 0; /* Allow shrinking */
         }
 
         .expected-points-chart-wrapper h4 {
@@ -1507,7 +1494,7 @@
         }
 
         .expected-points-chart {
-            height: 280px;
+            height: 200px;
             position: relative;
         }
 
@@ -1517,41 +1504,37 @@
             border-radius: 12px;
             padding: 1.25rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            min-width: 280px; /* Ensure rankings have enough space */
         }
-
-        .value-rankings-wrapper h4 {
-            margin: 0 0 1rem 0;
-            color: #1e3c72;
-            font-size: 1rem;
-        }
-
+        
         .value-rankings-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.85rem;
         }
-
+        
         .value-rankings-table th {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             color: white;
-            padding: 0.6rem 0.75rem;
+            padding: 0.5rem 0.6rem;
             text-align: left;
             font-weight: 600;
+            font-size: 0.8rem;
         }
 
         .value-rankings-table th:first-child {
             border-radius: 6px 0 0 0;
+            width: 35px;
         }
 
         .value-rankings-table th:last-child {
             border-radius: 0 6px 0 0;
             text-align: right;
         }
-
+        
         .value-rankings-table td {
-            padding: 0.6rem 0.75rem;
+            padding: 0.5rem 0.6rem;
             border-bottom: 1px solid #eee;
+            vertical-align: middle;
         }
 
         .value-rankings-table tr:hover {
@@ -1561,7 +1544,8 @@
         .value-rankings-table .rank-cell {
             font-weight: 700;
             color: #1e3c72;
-            width: 40px;
+            width: 35px;
+            text-align: center;
         }
 
         .value-rankings-table .team-cell {
@@ -1571,8 +1555,8 @@
         }
 
         .value-rankings-table .team-logo-small {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             object-fit: contain;
         }
@@ -1580,6 +1564,53 @@
         .value-rankings-table .value-cell {
             text-align: right;
             font-weight: 700;
+        }
+        
+        /* Best player cell in rankings */
+        .best-player-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+        }
+        
+        .best-player-cell .player-headshot-mini {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .best-player-cell .player-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+        
+        .best-player-cell .player-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
+        }
+        
+        .best-player-cell .player-details {
+            color: #666;
+            font-size: 0.7rem;
+        }
+        
+        .best-player-cell .player-value {
+            font-weight: 600;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        .value-rankings-wrapper h4 {
+            margin: 0 0 1rem 0;
+            color: #1e3c72;
+            font-size: 1rem;
         }
 
         .value-positive {
@@ -5704,8 +5735,8 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Team</th>
-                                        <th>Keepers</th>
-                                        <th style="text-align: right;">Value</th>
+                                        <th>Best Value Player</th>
+                                        <th style="text-align: right;">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody id="value-rankings-body">
@@ -13423,6 +13454,22 @@
                 }
                 return;
             }
+            
+            // Create gradient for bars
+            const chartArea = ctx.getContext('2d');
+            const gradient = chartArea.createLinearGradient(0, 0, ctx.width, 0);
+            gradient.addColorStop(0, 'rgba(30, 60, 114, 0.85)');    // Dark blue for early rounds
+            gradient.addColorStop(0.5, 'rgba(42, 82, 152, 0.75)');  // Medium blue
+            gradient.addColorStop(1, 'rgba(100, 150, 200, 0.65)');  // Light blue for late rounds
+            
+            // Create individual bar colors based on round
+            const barColors = rounds.map((r, i) => {
+                const ratio = i / (rounds.length - 1);
+                const r1 = Math.round(30 + ratio * 70);
+                const g1 = Math.round(60 + ratio * 90);
+                const b1 = Math.round(114 + ratio * 86);
+                return `rgba(${r1}, ${g1}, ${b1}, 0.8)`;
+            });
 
             expectedPointsChart = new Chart(ctx, {
                 type: 'bar',
@@ -13430,10 +13477,10 @@
                     labels: rounds.map(r => `${r}`),
                     datasets: [
                         {
-                            label: 'Actual Expected Points',
+                            label: 'Historical Average',
                             data: data,
-                            backgroundColor: 'rgba(30, 60, 114, 0.7)',
-                            borderRadius: 4,
+                            backgroundColor: barColors,
+                            borderRadius: 3,
                             order: 2
                         },
                         {
@@ -13509,6 +13556,35 @@
                 const valueClass = team.totalValue > 0 ? 'value-positive' : 
                                   team.totalValue < 0 ? 'value-negative' : 'value-neutral';
                 const valuePrefix = team.totalValue > 0 ? '+' : '';
+                
+                // Find best value player on this team
+                const bestPlayer = team.keepers.reduce((best, k) => 
+                    (!best || k.value > best.value) ? k : best, null);
+                
+                // Get headshot for best player
+                let bestPlayerHeadshot = '';
+                if (bestPlayer) {
+                    // Try to find headshot from keeperRosterData or keeperDraftData
+                    const playerNameLower = bestPlayer.player_name.toLowerCase().trim();
+                    const rosterPlayer = keeperRosterData.find(p => 
+                        p.name && p.name.toLowerCase().trim() === playerNameLower);
+                    const draftPlayer = keeperDraftData.find(p => 
+                        p.player_name && p.player_name.toLowerCase().trim() === playerNameLower);
+                    bestPlayerHeadshot = rosterPlayer?.headshot_url || draftPlayer?.headshot_url || '';
+                }
+                
+                const bestPlayerHtml = bestPlayer ? `
+                    <div class="best-player-cell">
+                        ${bestPlayerHeadshot ? 
+                            `<img src="${bestPlayerHeadshot}" class="player-headshot-mini" alt="" onerror="this.style.display='none'">` : 
+                            '<div class="player-headshot-mini" style="background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:10px;">⚾</div>'}
+                        <div class="player-info">
+                            <span class="player-name">${bestPlayer.player_name}</span>
+                            <span class="player-details">${bestPlayer.position?.split(',')[0] || ''} · Rd ${bestPlayer.roundCost}</span>
+                        </div>
+                        <span class="player-value value-positive">+${Math.round(bestPlayer.value)}</span>
+                    </div>
+                ` : '<span style="color:#999;font-size:0.75rem;">-</span>';
 
                 return `
                     <tr>
@@ -13518,11 +13594,11 @@
                                 ${team.team_logo ? `<img src="${team.team_logo}" class="team-logo-small" alt="">` : ''}
                                 <div>
                                     <div style="font-weight: 500;">${team.team_name}</div>
-                                    <div style="font-size: 0.75rem; color: #666;">${team.manager}</div>
+                                    <div style="font-size: 0.7rem; color: #666;">${team.manager}</div>
                                 </div>
                             </div>
                         </td>
-                        <td>${team.keeperCount}</td>
+                        <td>${bestPlayerHtml}</td>
                         <td class="value-cell ${valueClass}">${valuePrefix}${Math.round(team.totalValue)}</td>
                     </tr>
                 `;
