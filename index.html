@@ -1626,6 +1626,40 @@
             gap: 0.75rem;
             flex-wrap: wrap;
         }
+        
+        /* Draft pick circles in rankings */
+        .top-picks-cell {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .pick-value-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.15rem;
+        }
+        
+        .pick-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #4a148c;
+            border: 2px solid #d4af37;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #d4af37;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+        
+        .pick-expected {
+            font-size: 0.65rem;
+            color: #666;
+            font-weight: 500;
+        }
 
         .value-rankings-wrapper h4 {
             margin: 0 0 1rem 0;
@@ -5756,6 +5790,7 @@
                                         <th>#</th>
                                         <th>Team</th>
                                         <th>Top Value Players</th>
+                                        <th>Top Picks</th>
                                         <th style="text-align: right;">Total</th>
                                     </tr>
                                 </thead>
@@ -13392,6 +13427,35 @@
                 keeperDetails.sort((a, b) => a.roundCost - b.roundCost);
 
                 if (keeperDetails.length > 0) {
+                    // Calculate pick value for this team
+                    const teamPicks = getTeamPicks(team.team_key) || [];
+                    const roundCostsForTeam = calculateTeamKeeperRoundCosts(team.team_key);
+                    
+                    // Count used rounds
+                    const usedRounds = {};
+                    roundCostsForTeam.forEach(rc => {
+                        usedRounds[rc.actualRoundCost] = (usedRounds[rc.actualRoundCost] || 0) + 1;
+                    });
+                    
+                    // Count available picks at each round
+                    const pickCounts = {};
+                    teamPicks.forEach(pick => {
+                        pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
+                    });
+                    
+                    // Calculate total unused pick value
+                    let totalPickValue = 0;
+                    Object.keys(pickCounts).forEach(round => {
+                        const roundNum = parseInt(round);
+                        const available = pickCounts[roundNum] || 0;
+                        const used = usedRounds[roundNum] || 0;
+                        const unused = available - used;
+                        if (unused > 0) {
+                            const expectedPts = expectedPointsByRound[roundNum]?.avg || 0;
+                            totalPickValue += expectedPts * unused;
+                        }
+                    });
+                    
                     teamValues.push({
                         team_key: team.team_key,
                         team_name: team.team_name,
@@ -13401,13 +13465,15 @@
                         totalProjected: totalProjected,
                         totalExpected: totalExpected,
                         totalValue: totalProjected - totalExpected,
+                        totalPickValue: totalPickValue,
+                        combinedTotal: (totalProjected - totalExpected) + totalPickValue,
                         keeperCount: keeperDetails.length
                     });
                 }
             }
 
-            // Sort teams by total value
-            teamValues.sort((a, b) => b.totalValue - a.totalValue);
+            // Sort teams by combined total (keeper value + pick value)
+            teamValues.sort((a, b) => b.combinedTotal - a.combinedTotal);
 
             // Sort prospects by projected points
             prospects.sort((a, b) => b.projectedPts - a.projectedPts);
@@ -13617,6 +13683,57 @@
                         </div>
                     `;
                 }).join('');
+                
+                // Get team's available picks and calculate which ones are NOT used for keepers
+                const teamPicks = getTeamPicks(team.team_key) || [];
+                const teamKeepers = keeperSelections[team.team_key] || [];
+                const nonProspectKeepers = teamKeepers.filter(k => !k.isProspect);
+                
+                // Calculate which rounds are used by keepers
+                const usedRounds = {};
+                const roundCosts = calculateTeamKeeperRoundCosts(team.team_key);
+                roundCosts.forEach(rc => {
+                    usedRounds[rc.actualRoundCost] = (usedRounds[rc.actualRoundCost] || 0) + 1;
+                });
+                
+                // Count available picks at each round
+                const pickCounts = {};
+                teamPicks.forEach(pick => {
+                    pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
+                });
+                
+                // Find unused picks (available picks minus keeper-used picks)
+                const unusedPicks = [];
+                Object.keys(pickCounts).forEach(round => {
+                    const roundNum = parseInt(round);
+                    const available = pickCounts[roundNum] || 0;
+                    const used = usedRounds[roundNum] || 0;
+                    const unused = available - used;
+                    for (let i = 0; i < unused; i++) {
+                        unusedPicks.push({
+                            round: roundNum,
+                            expectedPts: expectedPointsByRound[roundNum]?.avg || 0
+                        });
+                    }
+                });
+                
+                // Sort by expected points (highest value first) and take top 3
+                unusedPicks.sort((a, b) => b.expectedPts - a.expectedPts);
+                const topPicks = unusedPicks.slice(0, 3);
+                
+                // Calculate total pick value for team total
+                const totalPickValue = unusedPicks.reduce((sum, p) => sum + p.expectedPts, 0);
+                const combinedTotal = team.totalValue + totalPickValue;
+                const combinedValueClass = combinedTotal > 0 ? 'value-positive' : 
+                                          combinedTotal < 0 ? 'value-negative' : 'value-neutral';
+                const combinedValuePrefix = combinedTotal > 0 ? '+' : '';
+                
+                const topPicksHtml = topPicks.length > 0 ? topPicks.map(pick => `
+                    <div class="pick-value-item">
+                        <div class="pick-circle">${pick.round}</div>
+                        <span class="pick-expected">${Math.round(pick.expectedPts)}</span>
+                    </div>
+                `).join('') : '<span style="color:#999;font-size:0.7rem;">—</span>';
 
                 return `
                     <tr>
@@ -13631,7 +13748,8 @@
                             </div>
                         </td>
                         <td class="top-players-cell">${topPlayersHtml}</td>
-                        <td class="value-cell ${valueClass}">${valuePrefix}${Math.round(team.totalValue)}</td>
+                        <td class="top-picks-cell">${topPicksHtml}</td>
+                        <td class="value-cell ${combinedValueClass}">${combinedValuePrefix}${Math.round(combinedTotal)}</td>
                     </tr>
                 `;
             }).join('');
