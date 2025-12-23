@@ -5813,9 +5813,9 @@
                                     <tr>
                                         <th>Team</th>
                                         <th>Top Value Players</th>
-                                        <th class="sortable-header" data-sort="keeperValue" onclick="sortValueRankings('keeperValue')">Keeper Value <span class="sort-icon">▼</span></th>
+                                        <th class="sortable-header" data-sort="keeperValue" onclick="sortValueRankings('keeperValue')">Keeper<br>Value <span class="sort-icon">▼</span></th>
                                         <th>Top Picks</th>
-                                        <th class="sortable-header" data-sort="draftValue" onclick="sortValueRankings('draftValue')">Draft Value <span class="sort-icon"></span></th>
+                                        <th class="sortable-header" data-sort="draftValue" onclick="sortValueRankings('draftValue')">Draft<br>Value <span class="sort-icon"></span></th>
                                         <th class="sortable-header" data-sort="total" onclick="sortValueRankings('total')" style="text-align: right;">Total <span class="sort-icon"></span></th>
                                     </tr>
                                 </thead>
@@ -13815,19 +13815,25 @@
             // Get rows and sort
             const rows = Array.from(tbody.querySelectorAll('tr'));
             
-            const dataAttr = column === 'keeperValue' ? 'keeper-value' : 
-                            column === 'draftValue' ? 'draft-value' : 'total';
-            
             rows.sort((a, b) => {
-                const aVal = parseFloat(a.dataset[dataAttr.replace(/-([a-z])/g, (g) => g[1].toUpperCase())]) || 0;
-                const bVal = parseFloat(b.dataset[dataAttr.replace(/-([a-z])/g, (g) => g[1].toUpperCase())]) || 0;
+                let aVal, bVal;
+                if (column === 'keeperValue') {
+                    aVal = parseFloat(a.dataset.keeperValue) || 0;
+                    bVal = parseFloat(b.dataset.keeperValue) || 0;
+                } else if (column === 'draftValue') {
+                    aVal = parseFloat(a.dataset.draftValue) || 0;
+                    bVal = parseFloat(b.dataset.draftValue) || 0;
+                } else {
+                    aVal = parseFloat(a.dataset.total) || 0;
+                    bVal = parseFloat(b.dataset.total) || 0;
+                }
                 return valueRankingsSortDirection === 'desc' ? bVal - aVal : aVal - bVal;
             });
             
-            // Re-render with new rank numbers
-            rows.forEach((row, idx) => {
-                row.querySelector('.rank-cell').textContent = idx + 1;
+            // Re-append rows in new order
+            rows.forEach(row => {
                 tbody.appendChild(row);
+            });
             });
         }
 
