@@ -1669,6 +1669,27 @@
             color: #1e3c72;
             font-size: 1rem;
         }
+        
+        /* Sortable headers */
+        .value-rankings-table .sortable-header {
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        
+        .value-rankings-table .sortable-header:hover {
+            background: linear-gradient(135deg, #2a5298, #3a62a8);
+        }
+        
+        .value-rankings-table .sortable-header .sort-icon {
+            font-size: 0.7rem;
+            margin-left: 0.25rem;
+            opacity: 0.5;
+        }
+        
+        .value-rankings-table .sortable-header.active .sort-icon {
+            opacity: 1;
+        }
 
         .value-positive {
             color: #28a745;
@@ -5787,14 +5808,16 @@
                         </div>
                         <div class="value-rankings-wrapper">
                             <h4>🏆 Team Value Rankings</h4>
-                            <table class="value-rankings-table">
+                            <table class="value-rankings-table" id="value-rankings-table">
                                 <thead>
                                     <tr>
                                         <th>#</th>
                                         <th>Team</th>
                                         <th>Top Value Players</th>
+                                        <th class="sortable-header" data-sort="keeperValue" onclick="sortValueRankings('keeperValue')">Keeper Value <span class="sort-icon">▼</span></th>
                                         <th>Top Picks</th>
-                                        <th style="text-align: right;">Total</th>
+                                        <th class="sortable-header" data-sort="draftValue" onclick="sortValueRankings('draftValue')">Draft Value <span class="sort-icon"></span></th>
+                                        <th class="sortable-header" data-sort="total" onclick="sortValueRankings('total')" style="text-align: right;">Total <span class="sort-icon"></span></th>
                                     </tr>
                                 </thead>
                                 <tbody id="value-rankings-body">
@@ -13658,9 +13681,9 @@
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
 
             tbody.innerHTML = teamValues.map((team, idx) => {
-                const valueClass = team.totalValue > 0 ? 'value-positive' : 
+                const keeperValueClass = team.totalValue > 0 ? 'value-positive' : 
                                   team.totalValue < 0 ? 'value-negative' : 'value-neutral';
-                const valuePrefix = team.totalValue > 0 ? '+' : '';
+                const keeperValuePrefix = team.totalValue > 0 ? '+' : '';
                 
                 // Get top 3 best value players on this team
                 const topPlayers = [...team.keepers]
@@ -13726,6 +13749,8 @@
                 
                 // Calculate total pick value for team total
                 const totalPickValue = unusedPicks.reduce((sum, p) => sum + p.expectedPts, 0);
+                const draftValueClass = totalPickValue > 0 ? 'value-positive' : 'value-neutral';
+                
                 const combinedTotal = team.totalValue + totalPickValue;
                 const combinedValueClass = combinedTotal > 0 ? 'value-positive' : 
                                           combinedTotal < 0 ? 'value-negative' : 'value-neutral';
@@ -13739,7 +13764,7 @@
                 `).join('') : '<span style="color:#999;font-size:0.7rem;">—</span>';
 
                 return `
-                    <tr>
+                    <tr data-keeper-value="${team.totalValue}" data-draft-value="${totalPickValue}" data-total="${combinedTotal}">
                         <td class="rank-cell">${idx + 1}</td>
                         <td>
                             <div class="team-cell">
@@ -13751,11 +13776,61 @@
                             </div>
                         </td>
                         <td><div class="top-players-cell">${topPlayersHtml}</div></td>
+                        <td class="value-cell ${keeperValueClass}">${keeperValuePrefix}${Math.round(team.totalValue)}</td>
                         <td><div class="top-picks-cell">${topPicksHtml}</div></td>
+                        <td class="value-cell ${draftValueClass}">+${Math.round(totalPickValue)}</td>
                         <td class="value-cell ${combinedValueClass}">${combinedValuePrefix}${Math.round(combinedTotal)}</td>
                     </tr>
                 `;
             }).join('');
+        }
+        
+        // Sorting state for value rankings
+        let valueRankingsSortColumn = 'total';
+        let valueRankingsSortDirection = 'desc';
+        
+        function sortValueRankings(column) {
+            const table = document.getElementById('value-rankings-table');
+            const tbody = document.getElementById('value-rankings-body');
+            if (!table || !tbody) return;
+            
+            // Toggle direction if same column, otherwise default to desc
+            if (valueRankingsSortColumn === column) {
+                valueRankingsSortDirection = valueRankingsSortDirection === 'desc' ? 'asc' : 'desc';
+            } else {
+                valueRankingsSortColumn = column;
+                valueRankingsSortDirection = 'desc';
+            }
+            
+            // Update header icons
+            table.querySelectorAll('.sortable-header').forEach(th => {
+                const icon = th.querySelector('.sort-icon');
+                if (th.dataset.sort === column) {
+                    th.classList.add('active');
+                    icon.textContent = valueRankingsSortDirection === 'desc' ? '▼' : '▲';
+                } else {
+                    th.classList.remove('active');
+                    icon.textContent = '';
+                }
+            });
+            
+            // Get rows and sort
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            const dataAttr = column === 'keeperValue' ? 'keeper-value' : 
+                            column === 'draftValue' ? 'draft-value' : 'total';
+            
+            rows.sort((a, b) => {
+                const aVal = parseFloat(a.dataset[dataAttr.replace(/-([a-z])/g, (g) => g[1].toUpperCase())]) || 0;
+                const bVal = parseFloat(b.dataset[dataAttr.replace(/-([a-z])/g, (g) => g[1].toUpperCase())]) || 0;
+                return valueRankingsSortDirection === 'desc' ? bVal - aVal : aVal - bVal;
+            });
+            
+            // Re-render with new rank numbers
+            rows.forEach((row, idx) => {
+                row.querySelector('.rank-cell').textContent = idx + 1;
+                tbody.appendChild(row);
+            });
         }
 
         function renderTeamValueCards(teamValues) {
