@@ -1570,22 +1570,25 @@
         .best-player-cell {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.35rem;
             font-size: 0.75rem;
+            padding: 0.2rem 0;
         }
         
         .best-player-cell .player-headshot-mini {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             object-fit: cover;
             border: 1px solid #e0e0e0;
+            flex-shrink: 0;
         }
         
         .best-player-cell .player-info {
             display: flex;
             flex-direction: column;
-            line-height: 1.2;
+            line-height: 1.15;
+            min-width: 0;
         }
         
         .best-player-cell .player-name {
@@ -1593,18 +1596,35 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 100px;
+            max-width: 85px;
+            font-size: 0.7rem;
         }
         
         .best-player-cell .player-details {
             color: #666;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .best-player-cell .player-details .pos-badge {
+            font-size: 0.55rem;
+            padding: 0.1rem 0.25rem;
         }
         
         .best-player-cell .player-value {
             font-weight: 600;
+            font-size: 0.7rem;
             margin-left: auto;
             white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .top-players-cell {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
         }
 
         .value-rankings-wrapper h4 {
@@ -5735,7 +5755,7 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Team</th>
-                                        <th>Best Value Player</th>
+                                        <th>Top Value Players</th>
                                         <th style="text-align: right;">Total</th>
                                     </tr>
                                 </thead>
@@ -13551,40 +13571,52 @@
         function renderValueRankings(teamValues) {
             const tbody = document.getElementById('value-rankings-body');
             if (!tbody) return;
+            
+            // Build a headshot lookup from projections data
+            const headshotLookup = {};
+            [...allProjectionBatters, ...allProjectionPitchers].forEach(p => {
+                if (p.name && p.headshot_url) {
+                    const nameLower = p.name.toLowerCase().trim();
+                    headshotLookup[nameLower] = p.headshot_url;
+                    // Also store without (Batter)/(Pitcher) suffix
+                    const baseName = nameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                    if (baseName !== nameLower) {
+                        headshotLookup[baseName] = p.headshot_url;
+                    }
+                }
+            });
+            
+            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
 
             tbody.innerHTML = teamValues.map((team, idx) => {
                 const valueClass = team.totalValue > 0 ? 'value-positive' : 
                                   team.totalValue < 0 ? 'value-negative' : 'value-neutral';
                 const valuePrefix = team.totalValue > 0 ? '+' : '';
                 
-                // Find best value player on this team
-                const bestPlayer = team.keepers.reduce((best, k) => 
-                    (!best || k.value > best.value) ? k : best, null);
+                // Get top 3 best value players on this team
+                const topPlayers = [...team.keepers]
+                    .sort((a, b) => b.value - a.value)
+                    .slice(0, 3);
                 
-                // Get headshot for best player
-                let bestPlayerHeadshot = '';
-                if (bestPlayer) {
-                    // Try to find headshot from keeperRosterData or keeperDraftData
-                    const playerNameLower = bestPlayer.player_name.toLowerCase().trim();
-                    const rosterPlayer = keeperRosterData.find(p => 
-                        p.name && p.name.toLowerCase().trim() === playerNameLower);
-                    const draftPlayer = keeperDraftData.find(p => 
-                        p.player_name && p.player_name.toLowerCase().trim() === playerNameLower);
-                    bestPlayerHeadshot = rosterPlayer?.headshot_url || draftPlayer?.headshot_url || '';
-                }
-                
-                const bestPlayerHtml = bestPlayer ? `
-                    <div class="best-player-cell">
-                        ${bestPlayerHeadshot ? 
-                            `<img src="${bestPlayerHeadshot}" class="player-headshot-mini" alt="" onerror="this.style.display='none'">` : 
-                            '<div class="player-headshot-mini" style="background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:10px;">⚾</div>'}
-                        <div class="player-info">
-                            <span class="player-name">${bestPlayer.player_name}</span>
-                            <span class="player-details">${bestPlayer.position?.split(',')[0] || ''} · Rd ${bestPlayer.roundCost}</span>
+                const topPlayersHtml = topPlayers.map(player => {
+                    const playerNameLower = player.player_name.toLowerCase().trim();
+                    const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                    const headshot = headshotLookup[playerNameLower] || headshotLookup[baseNameLower] || placeholderImg;
+                    const playerValueClass = player.value > 0 ? 'value-positive' : player.value < 0 ? 'value-negative' : 'value-neutral';
+                    const playerValuePrefix = player.value > 0 ? '+' : '';
+                    const displayName = player.player_name.replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '');
+                    
+                    return `
+                        <div class="best-player-cell">
+                            <img src="${headshot}" class="player-headshot-mini" alt="" onerror="this.src='${placeholderImg}'">
+                            <div class="player-info">
+                                <span class="player-name">${displayName}</span>
+                                <span class="player-details">${getPositionBadge(player.position, player.player_name)} Rd ${player.roundCost}</span>
+                            </div>
+                            <span class="player-value ${playerValueClass}">${playerValuePrefix}${Math.round(player.value)}</span>
                         </div>
-                        <span class="player-value value-positive">+${Math.round(bestPlayer.value)}</span>
-                    </div>
-                ` : '<span style="color:#999;font-size:0.75rem;">-</span>';
+                    `;
+                }).join('');
 
                 return `
                     <tr>
@@ -13598,7 +13630,7 @@
                                 </div>
                             </div>
                         </td>
-                        <td>${bestPlayerHtml}</td>
+                        <td class="top-players-cell">${topPlayersHtml}</td>
                         <td class="value-cell ${valueClass}">${valuePrefix}${Math.round(team.totalValue)}</td>
                     </tr>
                 `;
