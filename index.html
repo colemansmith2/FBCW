@@ -10653,6 +10653,81 @@
         let showKeptPlayers = true;
         let projectionSort = { column: 'projected_points', direction: 'desc' };
         let projectionsData = null;
+        
+        // Average projections across all systems for keeper displays
+        let averageProjectionsMap = {}; // { playerName: { avgPoints, systems: [...], headshot } }
+        let averageProjectionsLoaded = false;
+        
+        // Load all projection systems and calculate averages
+        async function loadAverageProjections() {
+            if (averageProjectionsLoaded) return;
+            
+            const projectionSystems = ['steamer', 'zips', 'depthcharts'];
+            const playerProjections = {}; // { playerName: { points: [], headshot, position } }
+            
+            for (const system of projectionSystems) {
+                try {
+                    const response = await fetch(`data/projections/projections_${system}.json`);
+                    if (!response.ok) continue;
+                    
+                    const data = await response.json();
+                    const allPlayers = [...(data.batters || []), ...(data.pitchers || [])];
+                    
+                    allPlayers.forEach(player => {
+                        if (!player.name || !player.projected_points) return;
+                        
+                        const nameLower = player.name.toLowerCase().trim();
+                        
+                        if (!playerProjections[nameLower]) {
+                            playerProjections[nameLower] = {
+                                points: [],
+                                headshot: player.headshot_url || '',
+                                position: player.primary_position || ''
+                            };
+                        }
+                        
+                        playerProjections[nameLower].points.push(player.projected_points);
+                        
+                        // Update headshot if we don't have one yet
+                        if (!playerProjections[nameLower].headshot && player.headshot_url) {
+                            playerProjections[nameLower].headshot = player.headshot_url;
+                        }
+                    });
+                } catch (e) {
+                    console.log(`Could not load ${system} projections for averaging:`, e);
+                }
+            }
+            
+            // Calculate averages
+            Object.entries(playerProjections).forEach(([name, data]) => {
+                if (data.points.length > 0) {
+                    const avg = data.points.reduce((sum, p) => sum + p, 0) / data.points.length;
+                    averageProjectionsMap[name] = {
+                        avgPoints: Math.round(avg * 10) / 10, // Round to 1 decimal
+                        systems: data.points.length,
+                        headshot: data.headshot,
+                        position: data.position
+                    };
+                    
+                    // Also store without (Batter)/(Pitcher) suffix for Ohtani matching
+                    const baseName = name.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                    if (baseName !== name && !averageProjectionsMap[baseName]) {
+                        averageProjectionsMap[baseName] = averageProjectionsMap[name];
+                    }
+                }
+            });
+            
+            console.log(`Loaded average projections for ${Object.keys(averageProjectionsMap).length} players`);
+            averageProjectionsLoaded = true;
+        }
+        
+        // Get average projection for a player
+        function getAverageProjection(playerName) {
+            const nameLower = (playerName || '').toLowerCase().trim();
+            const baseName = nameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+            return averageProjectionsMap[nameLower]?.avgPoints || 
+                   averageProjectionsMap[baseName]?.avgPoints || 0;
+        }
 
         // Helper function to create position badge(s) with color
         // Handles multiple positions like "1B, 3B" or "1B/3B"
@@ -12647,27 +12722,11 @@
 
                 grid.innerHTML = '';
 
-            // Ensure projections are loaded for display
-            if (Object.keys(keeperProjectionsMap).length === 0) {
-                try {
-                    if (allProjectionBatters.length > 0 || allProjectionPitchers.length > 0) {
-                        [...allProjectionBatters, ...allProjectionPitchers].forEach(p => {
-                            const normalizedName = p.name.toLowerCase().trim();
-                            keeperProjectionsMap[normalizedName] = p.projected_points || 0;
-                        });
-                    } else {
-                        const projResponse = await fetch('data/projections/projections_steamer.json');
-                        if (projResponse.ok) {
-                            const projData = await projResponse.json();
-                            [...(projData.batters || []), ...(projData.pitchers || [])].forEach(p => {
-                                const normalizedName = p.name.toLowerCase().trim();
-                                keeperProjectionsMap[normalizedName] = p.projected_points || 0;
-                            });
-                        }
-                    }
-                } catch (e) {
-                    console.log('Could not load projections for league keepers:', e);
-                }
+            // Ensure average projections are loaded for display
+            try {
+                await loadAverageProjections();
+            } catch (e) {
+                console.log('Could not load average projections for league keepers:', e);
             }
 
             // Sort teams by manager name
@@ -12698,9 +12757,9 @@
                         return aIsProspect ? 1 : -1;
                     }
 
-                    // Get projected points for sorting
-                    const aProjPts = keeperProjectionsMap[a.player_name.toLowerCase().trim()] || 0;
-                    const bProjPts = keeperProjectionsMap[b.player_name.toLowerCase().trim()] || 0;
+                    // Get average projected points for sorting
+                    const aProjPts = getAverageProjection(a.player_name);
+                    const bProjPts = getAverageProjection(b.player_name);
 
                     if (aIsProspect) {
                         // Both are prospects: sort by projected points desc, then position alphabetically
@@ -12739,8 +12798,8 @@
                     keepersHtml = '<div class="no-keepers">No keepers selected yet</div>';
                 } else {
                     keepersHtml = displayKeepers.map(k => {
-                        const projPts = keeperProjectionsMap[k.player_name.toLowerCase().trim()];
-                        const projDisplay = typeof projPts === 'number' ? projPts.toFixed(0) : '-';
+                        const projPts = getAverageProjection(k.player_name);
+                        const projDisplay = projPts > 0 ? projPts.toFixed(0) : '-';
                         const isProspect = k.isProspect || false;
 
                         // Find the actual round cost for this keeper
@@ -13340,30 +13399,11 @@
                 console.log('Could not load teams data:', e);
             }
 
-            // Step 4: Build projections map
-            let localProjectionsMap = {};
+            // Step 4: Load average projections for keeper displays
             try {
-                // First try to use global projections if loaded
-                if (allProjectionBatters.length > 0 || allProjectionPitchers.length > 0) {
-                    [...allProjectionBatters, ...allProjectionPitchers].forEach(p => {
-                        const nameLower = p.name.toLowerCase().trim();
-                        localProjectionsMap[nameLower] = p.projected_points || 0;
-                    });
-                }
-                
-                // If still empty, try loading from file
-                if (Object.keys(localProjectionsMap).length === 0) {
-                    const projResponse = await fetch('data/projections/projections_steamer.json');
-                    if (projResponse.ok) {
-                        const projData = await projResponse.json();
-                        [...(projData.batters || []), ...(projData.pitchers || [])].forEach(p => {
-                            const nameLower = p.name.toLowerCase().trim();
-                            localProjectionsMap[nameLower] = p.projected_points || 0;
-                        });
-                    }
-                }
+                await loadAverageProjections();
             } catch (e) {
-                console.log('Could not load projections:', e);
+                console.log('Could not load average projections:', e);
             }
 
             // Step 5: Check if we have keeper selections from Firebase
@@ -13407,17 +13447,8 @@
                 const keeperDetails = [];
 
                 for (const keeper of teamKeepers) {
-                    const playerNameNorm = (keeper.player_name || '').toLowerCase().trim();
-                    // Try exact match first, then try without (Batter)/(Pitcher) suffix
-                    let projectedPts = localProjectionsMap[playerNameNorm] || keeperProjectionsMap[playerNameNorm];
-                    if (projectedPts === undefined || projectedPts === 0) {
-                        // Try without suffix (for players like "Shohei Ohtani (Batter)")
-                        const baseNameNorm = playerNameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
-                        if (baseNameNorm !== playerNameNorm) {
-                            projectedPts = localProjectionsMap[baseNameNorm] || keeperProjectionsMap[baseNameNorm] || 0;
-                        }
-                    }
-                    projectedPts = projectedPts || 0;
+                    // Use average projection across all systems
+                    const projectedPts = getAverageProjection(keeper.player_name);
                     
                     const isProspect = keeper.isProspect || false;
                     const roundCost = keeper.roundCost || 0;
@@ -13663,15 +13694,26 @@
             const tbody = document.getElementById('value-rankings-body');
             if (!tbody) return;
             
-            // Build a headshot lookup from projections data
+            // Build headshot lookup - use averageProjectionsMap which has headshots, fallback to current projections
             const headshotLookup = {};
+            
+            // First add from averageProjectionsMap
+            Object.entries(averageProjectionsMap).forEach(([name, data]) => {
+                if (data.headshot) {
+                    headshotLookup[name] = data.headshot;
+                }
+            });
+            
+            // Fallback: also check current projection data
             [...allProjectionBatters, ...allProjectionPitchers].forEach(p => {
                 if (p.name && p.headshot_url) {
                     const nameLower = p.name.toLowerCase().trim();
-                    headshotLookup[nameLower] = p.headshot_url;
+                    if (!headshotLookup[nameLower]) {
+                        headshotLookup[nameLower] = p.headshot_url;
+                    }
                     // Also store without (Batter)/(Pitcher) suffix
                     const baseName = nameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
-                    if (baseName !== nameLower) {
+                    if (baseName !== nameLower && !headshotLookup[baseName]) {
                         headshotLookup[baseName] = p.headshot_url;
                     }
                 }
