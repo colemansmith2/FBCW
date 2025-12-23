@@ -1475,12 +1475,18 @@
         /* Expected Points Chart Container */
         .expected-points-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 1.25rem;
             margin-bottom: 2rem;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
+            .expected-points-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
             .expected-points-container {
                 grid-template-columns: 1fr;
             }
@@ -1489,18 +1495,19 @@
         .expected-points-chart-wrapper {
             background: white;
             border-radius: 12px;
-            padding: 1.25rem;
+            padding: 1rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-width: 0; /* Allow shrinking */
         }
 
         .expected-points-chart-wrapper h4 {
-            margin: 0 0 1rem 0;
+            margin: 0 0 0.75rem 0;
             color: #1e3c72;
-            font-size: 1rem;
+            font-size: 0.95rem;
         }
 
         .expected-points-chart {
-            height: 300px;
+            height: 280px;
             position: relative;
         }
 
@@ -1510,6 +1517,7 @@
             border-radius: 12px;
             padding: 1.25rem;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-width: 280px; /* Ensure rankings have enough space */
         }
 
         .value-rankings-wrapper h4 {
@@ -13074,6 +13082,11 @@
                         // Find player stats
                         const playerStats = playerStatsByName[playerName.toLowerCase().trim()];
                         const fantasyPoints = playerStats?.fantasy_points || 0;
+                        
+                        // Skip players with 0 points (injured, didn't play, etc.)
+                        if (fantasyPoints === 0) {
+                            return;
+                        }
 
                         // Initialize round if needed
                         if (!roundStats[round]) {
@@ -13112,8 +13125,69 @@
             }
 
             expectedPointsByRound = result;
+            
+            // Fit exponential decay model: y = a * e^(-b * x) + c
+            // Using least squares fitting on the log-transformed data
+            fitExpectedPointsModel(result);
+            
             console.log('Expected points by round:', expectedPointsByRound);
             return result;
+        }
+        
+        // Model parameters for expected points prediction
+        let expectedPointsModel = { a: 400, b: 0.15, c: 50 };
+        
+        function fitExpectedPointsModel(data) {
+            // Collect data points for fitting
+            const points = [];
+            for (let round = 1; round <= 23; round++) {
+                if (data[round] && data[round].avg > 0) {
+                    points.push({ x: round, y: data[round].avg });
+                }
+            }
+            
+            if (points.length < 3) return;
+            
+            // Use iterative least squares to fit y = a * e^(-b * x) + c
+            // Start with reasonable initial guesses
+            let a = points[0].y - points[points.length - 1].y;
+            let b = 0.12;
+            let c = points[points.length - 1].y * 0.8;
+            
+            // Simple gradient descent optimization
+            const learningRate = 0.0001;
+            const iterations = 1000;
+            
+            for (let iter = 0; iter < iterations; iter++) {
+                let gradA = 0, gradB = 0, gradC = 0;
+                
+                for (const p of points) {
+                    const predicted = a * Math.exp(-b * p.x) + c;
+                    const error = predicted - p.y;
+                    const expTerm = Math.exp(-b * p.x);
+                    
+                    gradA += error * expTerm;
+                    gradB += error * a * (-p.x) * expTerm;
+                    gradC += error;
+                }
+                
+                a -= learningRate * gradA;
+                b -= learningRate * 0.01 * gradB; // Smaller learning rate for b
+                c -= learningRate * gradC;
+                
+                // Keep parameters in reasonable bounds
+                a = Math.max(100, Math.min(800, a));
+                b = Math.max(0.05, Math.min(0.3, b));
+                c = Math.max(0, Math.min(200, c));
+            }
+            
+            expectedPointsModel = { a, b, c };
+            console.log('Fitted model parameters:', expectedPointsModel);
+        }
+        
+        function predictExpectedPoints(round) {
+            const { a, b, c } = expectedPointsModel;
+            return Math.round(a * Math.exp(-b * round) + c);
         }
 
         async function analyzeKeeperValues() {
@@ -13353,33 +13427,52 @@
             expectedPointsChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: rounds.map(r => `Rd ${r}`),
-                    datasets: [{
-                        label: 'Expected Points',
-                        data: data,
-                        backgroundColor: rounds.map(r => {
-                            const val = expectedPointsByRound[r]?.avg || 0;
-                            if (val > 300) return 'rgba(30, 60, 114, 0.8)';
-                            if (val > 200) return 'rgba(42, 82, 152, 0.8)';
-                            if (val > 100) return 'rgba(74, 124, 194, 0.8)';
-                            return 'rgba(130, 160, 210, 0.8)';
-                        }),
-                        borderRadius: 4,
-                    }]
+                    labels: rounds.map(r => `${r}`),
+                    datasets: [
+                        {
+                            label: 'Actual Expected Points',
+                            data: data,
+                            backgroundColor: 'rgba(30, 60, 114, 0.7)',
+                            borderRadius: 4,
+                            order: 2
+                        },
+                        {
+                            label: 'Model Prediction',
+                            data: rounds.map(r => predictExpectedPoints(r)),
+                            type: 'line',
+                            borderColor: 'rgba(220, 53, 69, 0.9)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.4,
+                            order: 1
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false },
+                        legend: { 
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 8,
+                                font: { size: 10 }
+                            }
+                        },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
                                     const round = context.dataIndex + 1;
+                                    if (context.dataset.label === 'Model Prediction') {
+                                        return `Model: ${context.raw} pts`;
+                                    }
                                     const stats = expectedPointsByRound[round];
                                     return [
-                                        `Expected: ${stats?.avg || 0} pts`,
-                                        `Sample size: ${stats?.sampleSize || 0} picks`
+                                        `Actual: ${stats?.avg || 0} pts`,
+                                        `Sample: ${stats?.sampleSize || 0} picks`
                                     ];
                                 }
                             }
@@ -13390,14 +13483,18 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Expected Points'
-                            }
+                                text: 'Points',
+                                font: { size: 10 }
+                            },
+                            ticks: { font: { size: 9 } }
                         },
                         x: {
                             title: {
                                 display: true,
-                                text: 'Draft Round'
-                            }
+                                text: 'Round',
+                                font: { size: 10 }
+                            },
+                            ticks: { font: { size: 9 } }
                         }
                     }
                 }
