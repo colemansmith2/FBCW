@@ -3219,6 +3219,194 @@
             margin-left: 0.5rem;
         }
 
+        /* Draft Performance Ticker */
+        .draft-performance-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .draft-ticker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .draft-ticker-viewport {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .draft-ticker-track {
+            display: flex;
+            gap: 1rem;
+            transition: transform 0.5s ease;
+        }
+        
+        .draft-ticker-card {
+            flex: 0 0 320px;
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            border-left: 4px solid;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            opacity: 0.7;
+        }
+        
+        .draft-ticker-card.active,
+        .draft-ticker-card:hover {
+            opacity: 1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .ticker-nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            background: #1e3c72;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .ticker-nav-btn:hover {
+            background: #2a5298;
+        }
+        
+        .ticker-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .ticker-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        
+        .ticker-dot:hover {
+            background: #999;
+        }
+        
+        .ticker-dot.active {
+            background: #1e3c72;
+            transform: scale(1.2);
+        }
+        
+        .draft-perf-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .draft-perf-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: contain;
+        }
+        
+        .draft-perf-logo-placeholder {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+        }
+        
+        .draft-perf-team-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .draft-perf-team-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .draft-perf-manager {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .draft-perf-grade {
+            font-size: 1.5rem;
+            font-weight: 700;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            min-width: 45px;
+            text-align: center;
+        }
+        
+        .draft-perf-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #eee;
+        }
+        
+        .draft-perf-stat {
+            text-align: center;
+        }
+        
+        .draft-perf-stat-value {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .draft-perf-stat-label {
+            color: #888;
+            font-size: 0.7rem;
+        }
+        
+        .draft-perf-diff-positive {
+            color: #28a745;
+        }
+        
+        .draft-perf-diff-negative {
+            color: #dc3545;
+        }
+        
+        .draft-perf-percentile {
+            font-size: 0.75rem;
+            color: #666;
+            text-align: center;
+            margin-top: 0.25rem;
+        }
+        
+        @media (max-width: 768px) {
+            .draft-ticker-card {
+                flex: 0 0 280px;
+            }
+            
+            .ticker-nav-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 1.2rem;
+            }
+        }
+
         .matchup-table {
             width: 100%;
             border-collapse: collapse;
@@ -5316,6 +5504,14 @@
                 </div>
                 <div id="season-chart"
                     style="position: relative; width: 100%; min-height: 500px; background: #fafafa; border-radius: 8px; overflow: visible;">
+                </div>
+            </div>
+            
+            <!-- Draft Performance Ticker -->
+            <div id="draft-performance-ticker" style="display: none; margin-top: 2rem;">
+                <h3 style="color: #1e3c72; margin: 0 0 1rem 0;">📊 Draft Performance</h3>
+                <div id="draft-performance-cards" class="draft-performance-grid">
+                    <!-- Populated by JS -->
                 </div>
             </div>
         </div>
@@ -7789,6 +7985,9 @@
 
                 // Load and render the season chart
                 await loadSeasonChart(seasonNum, isCurrentSeason, standings, teamLogos, teamData);
+                
+                // Load draft performance ticker
+                await loadDraftPerformanceTicker(seasonNum, isCurrentSeason, teamLogos, teamData);
 
             } catch (error) {
                 console.error('Error loading standings:', error);
@@ -8555,6 +8754,263 @@
             if (tooltip) {
                 tooltip.style.display = 'none';
             }
+        }
+
+        // ===== DRAFT PERFORMANCE TICKER =====
+        let draftTickerInterval = null;
+        let currentTickerIndex = 0;
+        
+        async function loadDraftPerformanceTicker(seasonNum, isCurrentSeason, teamLogos, teamData) {
+            const tickerContainer = document.getElementById('draft-performance-ticker');
+            const cardsContainer = document.getElementById('draft-performance-cards');
+            
+            if (!tickerContainer || !cardsContainer) return;
+            
+            // Clear any existing interval
+            if (draftTickerInterval) {
+                clearInterval(draftTickerInterval);
+                draftTickerInterval = null;
+            }
+            
+            try {
+                // Ensure expectedPointsByRound is calculated
+                if (Object.keys(expectedPointsByRound).length === 0) {
+                    await calculateExpectedPoints();
+                }
+                
+                // Load keepers data
+                let allKeepersData = {};
+                try {
+                    const keepersResponse = await fetch('data/keepers.json');
+                    if (keepersResponse.ok) {
+                        allKeepersData = await keepersResponse.json();
+                    }
+                } catch (e) {
+                    console.log('Could not load keepers data');
+                }
+                
+                // Load draft data
+                const draftPath = isCurrentSeason 
+                    ? 'data/current_season/draft.json'
+                    : `data/historical/${seasonNum}/draft.json`;
+                const draftResponse = await fetch(draftPath);
+                if (!draftResponse.ok) {
+                    tickerContainer.style.display = 'none';
+                    return;
+                }
+                const draftData = await draftResponse.json();
+                
+                // Load player stats
+                const statsPath = isCurrentSeason
+                    ? 'data/current_season/player_stats.json'
+                    : `data/historical/${seasonNum}/player_stats.json`;
+                const statsResponse = await fetch(statsPath);
+                if (!statsResponse.ok) {
+                    tickerContainer.style.display = 'none';
+                    return;
+                }
+                const statsData = await statsResponse.json();
+                
+                const playerStatsByName = {};
+                statsData.forEach(p => {
+                    if (p.name) {
+                        playerStatsByName[p.name.toLowerCase().trim()] = p;
+                    }
+                });
+                
+                // Build team info lookup
+                const teamInfoByKey = {};
+                teamData.forEach(team => {
+                    teamInfoByKey[team.team_key] = {
+                        team_name: team.team_name || team.name,
+                        manager: normalizeManagerName(team.manager, seasonNum, team.team_name, team.team_key),
+                        logo: teamLogos[team.team_key] || ''
+                    };
+                });
+                
+                // Get keepers for this year
+                const yearKeepers = allKeepersData[seasonNum.toString()] || {};
+                const keeperNamesLower = Object.keys(yearKeepers).map(n => n.toLowerCase().trim());
+                
+                // Group picks by team and calculate performance
+                const teamPerformance = {};
+                
+                draftData.forEach(pick => {
+                    const teamKey = pick.team_key;
+                    const playerName = pick.player_name || '';
+                    const round = pick.round || 0;
+                    
+                    // Skip keepers
+                    if (keeperNamesLower.includes(playerName.toLowerCase().trim())) {
+                        return;
+                    }
+                    
+                    if (!teamPerformance[teamKey]) {
+                        teamPerformance[teamKey] = {
+                            expected: 0,
+                            actual: 0,
+                            picks: []
+                        };
+                    }
+                    
+                    const playerStats = playerStatsByName[playerName.toLowerCase().trim()];
+                    const actualPoints = playerStats?.fantasy_points || 0;
+                    const expectedPoints = expectedPointsByRound[round]?.avg || 0;
+                    
+                    teamPerformance[teamKey].expected += expectedPoints;
+                    teamPerformance[teamKey].actual += actualPoints;
+                    teamPerformance[teamKey].picks.push({ playerName, round, actualPoints, expectedPoints });
+                });
+                
+                // Calculate scores and collect for percentile ranking
+                const allScores = [];
+                const teamResults = [];
+                
+                for (const [teamKey, perf] of Object.entries(teamPerformance)) {
+                    const score = perf.expected > 0 ? ((perf.actual - perf.expected) / perf.expected) * 100 : 0;
+                    const teamInfo = teamInfoByKey[teamKey] || { team_name: 'Unknown', manager: 'Unknown', logo: '' };
+                    
+                    teamResults.push({
+                        teamKey,
+                        teamName: teamInfo.team_name,
+                        manager: teamInfo.manager,
+                        logo: teamInfo.logo,
+                        expected: perf.expected,
+                        actual: perf.actual,
+                        score: score,
+                        picks: perf.picks.length
+                    });
+                    
+                    allScores.push(score);
+                }
+                
+                allScores.sort((a, b) => a - b);
+                
+                // Add percentile and grade to each team
+                teamResults.forEach(team => {
+                    team.percentile = calculatePercentile(team.score, allScores);
+                    team.grade = percentileToGrade(team.percentile);
+                });
+                
+                // Sort by score descending (best drafters first)
+                teamResults.sort((a, b) => b.score - a.score);
+                
+                if (teamResults.length === 0) {
+                    tickerContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Render ticker
+                renderDraftTicker(cardsContainer, teamResults);
+                tickerContainer.style.display = 'block';
+                
+                // Start auto-scroll
+                currentTickerIndex = 0;
+                draftTickerInterval = setInterval(() => {
+                    currentTickerIndex = (currentTickerIndex + 1) % teamResults.length;
+                    scrollToTickerCard(currentTickerIndex);
+                }, 15000);
+                
+            } catch (e) {
+                console.error('Error loading draft performance ticker:', e);
+                tickerContainer.style.display = 'none';
+            }
+        }
+        
+        function renderDraftTicker(container, teamResults) {
+            container.innerHTML = `
+                <div class="draft-ticker-wrapper">
+                    <button class="ticker-nav-btn ticker-prev" onclick="tickerPrev()">‹</button>
+                    <div class="draft-ticker-viewport">
+                        <div class="draft-ticker-track" id="draft-ticker-track">
+                            ${teamResults.map((team, idx) => {
+                                const gradeColor = getGradeColor(team.grade);
+                                const bgColor = getGradeBackgroundColor(team.grade);
+                                const diff = team.actual - team.expected;
+                                const diffSign = diff >= 0 ? '+' : '';
+                                const diffClass = diff >= 0 ? 'draft-perf-diff-positive' : 'draft-perf-diff-negative';
+                                
+                                return `
+                                    <div class="draft-ticker-card" data-index="${idx}" onclick="scrollToTickerCard(${idx})" style="border-left-color: ${gradeColor};">
+                                        <div class="draft-perf-header">
+                                            ${team.logo ? `<img src="${team.logo}" class="draft-perf-logo" alt="">` : '<div class="draft-perf-logo-placeholder"></div>'}
+                                            <div class="draft-perf-team-info">
+                                                <div class="draft-perf-team-name">${team.teamName}</div>
+                                                <div class="draft-perf-manager">${team.manager}</div>
+                                            </div>
+                                            <div class="draft-perf-grade" style="background: ${bgColor}; color: ${gradeColor};">${team.grade}</div>
+                                        </div>
+                                        <div class="draft-perf-stats">
+                                            <div class="draft-perf-stat">
+                                                <div class="draft-perf-stat-value">${Math.round(team.expected).toLocaleString()}</div>
+                                                <div class="draft-perf-stat-label">Expected</div>
+                                            </div>
+                                            <div class="draft-perf-stat">
+                                                <div class="draft-perf-stat-value">${Math.round(team.actual).toLocaleString()}</div>
+                                                <div class="draft-perf-stat-label">Actual</div>
+                                            </div>
+                                            <div class="draft-perf-stat">
+                                                <div class="draft-perf-stat-value ${diffClass}">${diffSign}${Math.round(diff).toLocaleString()}</div>
+                                                <div class="draft-perf-stat-label">Diff</div>
+                                            </div>
+                                        </div>
+                                        <div class="draft-perf-percentile">${Math.round(team.percentile)}th percentile • ${team.picks} picks</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    <button class="ticker-nav-btn ticker-next" onclick="tickerNext()">›</button>
+                </div>
+                <div class="ticker-dots" id="ticker-dots">
+                    ${teamResults.map((_, idx) => `<span class="ticker-dot ${idx === 0 ? 'active' : ''}" onclick="scrollToTickerCard(${idx})"></span>`).join('')}
+                </div>
+            `;
+        }
+        
+        function scrollToTickerCard(index) {
+            const track = document.getElementById('draft-ticker-track');
+            const dots = document.querySelectorAll('.ticker-dot');
+            const cards = document.querySelectorAll('.draft-ticker-card');
+            
+            if (!track || cards.length === 0) return;
+            
+            currentTickerIndex = index;
+            const cardWidth = cards[0].offsetWidth + 16; // card width + gap
+            track.style.transform = `translateX(-${index * cardWidth}px)`;
+            
+            // Update dots
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            
+            // Update card active state
+            cards.forEach((card, i) => {
+                card.classList.toggle('active', i === index);
+            });
+            
+            // Reset interval on manual navigation
+            if (draftTickerInterval) {
+                clearInterval(draftTickerInterval);
+                draftTickerInterval = setInterval(() => {
+                    currentTickerIndex = (currentTickerIndex + 1) % cards.length;
+                    scrollToTickerCard(currentTickerIndex);
+                }, 15000);
+            }
+        }
+        
+        function tickerPrev() {
+            const cards = document.querySelectorAll('.draft-ticker-card');
+            if (cards.length === 0) return;
+            currentTickerIndex = (currentTickerIndex - 1 + cards.length) % cards.length;
+            scrollToTickerCard(currentTickerIndex);
+        }
+        
+        function tickerNext() {
+            const cards = document.querySelectorAll('.draft-ticker-card');
+            if (cards.length === 0) return;
+            currentTickerIndex = (currentTickerIndex + 1) % cards.length;
+            scrollToTickerCard(currentTickerIndex);
         }
 
         // ===== CALCULATE MANAGER AWARDS =====
