@@ -3174,6 +3174,50 @@
             background: #c0c0c0;
             color: #000;
         }
+        
+        /* Draft Grade Styles */
+        .draft-grade-section {
+            margin: 1rem 0;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .draft-grade-overall {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            border: 2px solid;
+            min-width: 150px;
+        }
+        
+        .draft-grade-letter {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        
+        .draft-grade-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+        
+        .draft-grade-score {
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+        
+        .draft-grade-badge {
+            display: inline-block;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
 
         .matchup-table {
             width: 100%;
@@ -8751,6 +8795,234 @@
             return managerAwards;
         }
 
+        // ===== DRAFT GRADE CALCULATION =====
+        let managerDraftGrades = {}; // { managerName: { grades: [{year, score, grade}], avgScore, avgGrade } }
+        let draftGradesLoaded = false;
+        
+        async function calculateDraftGrades() {
+            if (draftGradesLoaded) return managerDraftGrades;
+            
+            console.log('Calculating draft grades...');
+            
+            // Load keepers data
+            let allKeepersData = {};
+            try {
+                const keepersResponse = await fetch('data/keepers.json');
+                if (keepersResponse.ok) {
+                    allKeepersData = await keepersResponse.json();
+                }
+            } catch (e) {
+                console.log('Could not load keepers data for draft grades');
+            }
+            
+            // Ensure expectedPointsByRound is calculated (reuse from preseason tools)
+            if (Object.keys(expectedPointsByRound).length === 0) {
+                await calculateExpectedPoints();
+            }
+            
+            console.log('Using expected points by round:', expectedPointsByRound);
+            
+            // Years to analyze (completed seasons only)
+            const years = [2019, 2020, 2021, 2022, 2023, 2024];
+            
+            // Calculate each manager's draft performance per year
+            const managerDraftPerformance = {}; // { managerName: { year: { expected, actual, score } } }
+            
+            for (const year of years) {
+                try {
+                    // Load draft data
+                    const draftPath = `data/historical/${year}/draft.json`;
+                    const draftResponse = await fetch(draftPath);
+                    if (!draftResponse.ok) continue;
+                    const draftData = await draftResponse.json();
+                    
+                    // Load teams to map team_key to manager
+                    const teamsPath = `data/historical/${year}/teams.json`;
+                    const teamsResponse = await fetch(teamsPath);
+                    if (!teamsResponse.ok) continue;
+                    const teamsData = await teamsResponse.json();
+                    
+                    const teamKeyToManager = {};
+                    teamsData.forEach(team => {
+                        teamKeyToManager[team.team_key] = team.manager;
+                    });
+                    
+                    // Load player stats for actual points
+                    const statsPath = `data/historical/${year}/player_stats.json`;
+                    const statsResponse = await fetch(statsPath);
+                    if (!statsResponse.ok) continue;
+                    const statsData = await statsResponse.json();
+                    
+                    const playerStatsByName = {};
+                    statsData.forEach(p => {
+                        if (p.name) {
+                            playerStatsByName[p.name.toLowerCase().trim()] = p;
+                        }
+                    });
+                    
+                    // Get keepers for this year
+                    const yearKeepers = allKeepersData[year.toString()] || {};
+                    const keeperNamesLower = Object.keys(yearKeepers).map(n => n.toLowerCase().trim());
+                    
+                    // Group picks by manager (excluding keepers)
+                    const managerPicks = {}; // { managerName: [picks] }
+                    
+                    draftData.forEach(pick => {
+                        const teamKey = pick.team_key;
+                        const manager = teamKeyToManager[teamKey];
+                        if (!manager) return;
+                        
+                        const playerName = pick.player_name || '';
+                        const round = pick.round || 0;
+                        
+                        // Skip if this player was a keeper
+                        if (keeperNamesLower.includes(playerName.toLowerCase().trim())) {
+                            return;
+                        }
+                        
+                        if (!managerPicks[manager]) {
+                            managerPicks[manager] = [];
+                        }
+                        
+                        // Get actual fantasy points for this player
+                        const playerStats = playerStatsByName[playerName.toLowerCase().trim()];
+                        const actualPoints = playerStats?.fantasy_points || 0;
+                        const expectedPoints = expectedPointsByRound[round]?.avg || 0;
+                        
+                        managerPicks[manager].push({
+                            playerName,
+                            round,
+                            actualPoints,
+                            expectedPoints
+                        });
+                    });
+                    
+                    // Calculate score for each manager this year
+                    for (const [manager, picks] of Object.entries(managerPicks)) {
+                        if (picks.length === 0) continue;
+                        
+                        const totalExpected = picks.reduce((sum, p) => sum + p.expectedPoints, 0);
+                        const totalActual = picks.reduce((sum, p) => sum + p.actualPoints, 0);
+                        
+                        // Score = (actual - expected) / expected * 100, as a percentage over/under expectation
+                        const score = totalExpected > 0 ? ((totalActual - totalExpected) / totalExpected) * 100 : 0;
+                        
+                        if (!managerDraftPerformance[manager]) {
+                            managerDraftPerformance[manager] = {};
+                        }
+                        
+                        managerDraftPerformance[manager][year] = {
+                            expected: totalExpected,
+                            actual: totalActual,
+                            score: score,
+                            picks: picks.length
+                        };
+                    }
+                    
+                } catch (e) {
+                    console.log(`Error processing draft grades for ${year}:`, e);
+                }
+            }
+            
+            // Collect all scores across all managers to calculate percentiles
+            const allScores = [];
+            for (const manager of Object.keys(managerDraftPerformance)) {
+                for (const year of Object.keys(managerDraftPerformance[manager])) {
+                    allScores.push(managerDraftPerformance[manager][year].score);
+                }
+            }
+            allScores.sort((a, b) => a - b);
+            
+            console.log('All draft scores for percentile calculation:', allScores);
+            
+            // Calculate grade for each manager
+            for (const [manager, yearData] of Object.entries(managerDraftPerformance)) {
+                const grades = [];
+                
+                for (const [year, data] of Object.entries(yearData)) {
+                    // Calculate percentile rank for this score
+                    const percentile = calculatePercentile(data.score, allScores);
+                    const grade = percentileToGrade(percentile);
+                    
+                    grades.push({
+                        year: parseInt(year),
+                        score: data.score,
+                        grade: grade,
+                        expected: data.expected,
+                        actual: data.actual,
+                        picks: data.picks,
+                        percentile: percentile
+                    });
+                }
+                
+                // Calculate average score and grade
+                const avgScore = grades.length > 0 
+                    ? grades.reduce((sum, g) => sum + g.score, 0) / grades.length 
+                    : 0;
+                const avgPercentile = calculatePercentile(avgScore, allScores);
+                const avgGrade = percentileToGrade(avgPercentile);
+                
+                managerDraftGrades[manager] = {
+                    grades: grades.sort((a, b) => b.year - a.year),
+                    avgScore: avgScore,
+                    avgGrade: avgGrade,
+                    avgPercentile: avgPercentile
+                };
+            }
+            
+            console.log('Draft grades calculated:', Object.keys(managerDraftGrades).length, 'managers');
+            console.log('Sample draft grades:', managerDraftGrades);
+            draftGradesLoaded = true;
+            return managerDraftGrades;
+        }
+        
+        function calculatePercentile(value, sortedArray) {
+            if (sortedArray.length === 0) return 50;
+            let count = 0;
+            for (const v of sortedArray) {
+                if (v < value) count++;
+            }
+            return (count / sortedArray.length) * 100;
+        }
+        
+        function percentileToGrade(percentile) {
+            if (percentile >= 95) return 'A+';
+            if (percentile >= 90) return 'A';
+            if (percentile >= 85) return 'A-';
+            if (percentile >= 80) return 'B+';
+            if (percentile >= 70) return 'B';
+            if (percentile >= 60) return 'B-';
+            if (percentile >= 50) return 'C+';
+            if (percentile >= 40) return 'C';
+            if (percentile >= 30) return 'C-';
+            if (percentile >= 20) return 'D+';
+            if (percentile >= 10) return 'D';
+            if (percentile >= 5) return 'D-';
+            return 'F';
+        }
+        
+        function getGradeColor(grade) {
+            const gradeColors = {
+                'A+': '#0d6e0d', 'A': '#1a8f1a', 'A-': '#2eaa2e',
+                'B+': '#5cb85c', 'B': '#7bc87b', 'B-': '#9ad89a',
+                'C+': '#f0ad4e', 'C': '#ec971f', 'C-': '#d58512',
+                'D+': '#e07020', 'D': '#d9534f', 'D-': '#c9302c',
+                'F': '#a02020'
+            };
+            return gradeColors[grade] || '#666';
+        }
+        
+        function getGradeBackgroundColor(grade) {
+            const bgColors = {
+                'A+': 'rgba(13, 110, 13, 0.15)', 'A': 'rgba(26, 143, 26, 0.15)', 'A-': 'rgba(46, 170, 46, 0.15)',
+                'B+': 'rgba(92, 184, 92, 0.15)', 'B': 'rgba(123, 200, 123, 0.15)', 'B-': 'rgba(154, 216, 154, 0.15)',
+                'C+': 'rgba(240, 173, 78, 0.15)', 'C': 'rgba(236, 151, 31, 0.15)', 'C-': 'rgba(213, 133, 18, 0.15)',
+                'D+': 'rgba(224, 112, 32, 0.15)', 'D': 'rgba(217, 83, 79, 0.15)', 'D-': 'rgba(201, 48, 44, 0.15)',
+                'F': 'rgba(160, 32, 32, 0.15)'
+            };
+            return bgColors[grade] || 'transparent';
+        }
+
         // ===== LOAD MANAGER PROFILES =====
         async function loadManagerProfiles() {
             const loadingEl = document.getElementById('managers-loading');
@@ -8792,6 +9064,9 @@
                 // Calculate awards for all managers
                 const managerAwards = await calculateManagerAwards();
                 managerAwardsData = managerAwards; // Store globally for modal access
+                
+                // Calculate draft grades for all managers
+                await calculateDraftGrades();
 
                 // Now build manager logos using cached data
                 const managerLogos = {};
@@ -9471,8 +9746,10 @@
                 }
             }
 
-            // Build season timeline
+            // Build season timeline with draft grades
             const seasonHistory = manager.season_history.sort((a, b) => b.year - a.year);
+            const managerGrades = managerDraftGrades[manager.manager_name] || { grades: [] };
+            
             let timelineHTML = seasonHistory.map(season => {
                 let rankClass = '';
                 let rankText = `#${season.rank}`;
@@ -9486,12 +9763,28 @@
                 }
 
                 const logo = seasonLogos[season.year] ? `<img src="${seasonLogos[season.year]}" class="timeline-logo" alt="${season.team_name}">` : '';
+                
+                // Get draft grade for this season
+                const seasonGrade = managerGrades.grades.find(g => g.year === season.year);
+                let draftGradeHTML = '';
+                if (seasonGrade) {
+                    const gradeColor = getGradeColor(seasonGrade.grade);
+                    const bgColor = getGradeBackgroundColor(seasonGrade.grade);
+                    const scoreSign = seasonGrade.score >= 0 ? '+' : '';
+                    draftGradeHTML = `
+                        <span class="draft-grade-badge" style="background: ${bgColor}; color: ${gradeColor}; border: 1px solid ${gradeColor};" 
+                              title="Draft: ${seasonGrade.actual.toFixed(0)} pts vs ${seasonGrade.expected.toFixed(0)} expected (${scoreSign}${seasonGrade.score.toFixed(1)}%)">
+                            Draft: ${seasonGrade.grade}
+                        </span>
+                    `;
+                }
 
                 return `
                     <div class="timeline-item">
                         <div class="year">${season.year}</div>
                         <div class="details">
                             <span class="rank ${rankClass}">${rankText}</span>
+                            ${draftGradeHTML}
                             <span>${season.wins}-${season.losses} | ${season.points_for.toLocaleString()} pts</span>
                             <div style="margin-top: 0.25rem; color: #666; font-size: 0.9rem;">
                                 Team: ${season.team_name}
@@ -9536,6 +9829,23 @@
                 `;
             }
 
+            // Build draft grade section
+            let draftGradeSectionHTML = '';
+            if (managerGrades.avgGrade) {
+                const avgGradeColor = getGradeColor(managerGrades.avgGrade);
+                const avgBgColor = getGradeBackgroundColor(managerGrades.avgGrade);
+                const avgScoreSign = managerGrades.avgScore >= 0 ? '+' : '';
+                draftGradeSectionHTML = `
+                    <div class="draft-grade-section">
+                        <div class="draft-grade-overall" style="background: ${avgBgColor}; border-color: ${avgGradeColor};">
+                            <div class="draft-grade-letter" style="color: ${avgGradeColor};">${managerGrades.avgGrade}</div>
+                            <div class="draft-grade-label">Draft Grade</div>
+                            <div class="draft-grade-score" style="color: ${avgGradeColor};">${avgScoreSign}${managerGrades.avgScore.toFixed(1)}% vs expected</div>
+                        </div>
+                    </div>
+                `;
+            }
+
             modalBody.innerHTML = `
                 <div class="modal-stats">
                     <div class="stat-box">
@@ -9563,6 +9873,8 @@
                         <div class="label">Career Points</div>
                     </div>
                 </div>
+                
+                ${draftGradeSectionHTML}
                 
                 <div class="timeline">
                     <h3>Season-by-Season Timeline</h3>
