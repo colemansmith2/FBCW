@@ -3223,7 +3223,7 @@
         .draft-performance-grid {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.5rem;
         }
         
         .draft-ticker-wrapper {
@@ -3240,39 +3240,36 @@
         
         .draft-ticker-track {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             transition: transform 0.5s ease;
         }
         
         .draft-ticker-card {
-            flex: 0 0 320px;
+            flex: 0 0 100%;
             background: white;
-            border-radius: 10px;
-            padding: 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
             border-left: 4px solid;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            opacity: 0.7;
         }
         
-        .draft-ticker-card.active,
         .draft-ticker-card:hover {
-            opacity: 1;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
         
         .ticker-nav-btn {
-            width: 40px;
-            height: 40px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             border: none;
             background: #1e3c72;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.1rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -3288,13 +3285,13 @@
         .ticker-dots {
             display: flex;
             justify-content: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
+            gap: 0.35rem;
+            margin-top: 0.5rem;
         }
         
         .ticker-dot {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: #ccc;
             cursor: pointer;
@@ -3313,19 +3310,19 @@
         .draft-perf-header {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
         }
         
         .draft-perf-logo {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: contain;
         }
         
         .draft-perf-logo-placeholder {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: #e0e0e0;
         }
@@ -3337,32 +3334,32 @@
         
         .draft-perf-team-name {
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         
         .draft-perf-manager {
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             color: #666;
         }
         
         .draft-perf-grade {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 700;
-            padding: 0.25rem 0.5rem;
-            border-radius: 6px;
-            min-width: 45px;
+            padding: 0.2rem 0.4rem;
+            border-radius: 5px;
+            min-width: 38px;
             text-align: center;
         }
         
         .draft-perf-stats {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-            padding-top: 0.5rem;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            padding-top: 0.4rem;
             border-top: 1px solid #eee;
         }
         
@@ -3372,12 +3369,12 @@
         
         .draft-perf-stat-value {
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
         }
         
         .draft-perf-stat-label {
             color: #888;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
         }
         
         .draft-perf-diff-positive {
@@ -3386,25 +3383,6 @@
         
         .draft-perf-diff-negative {
             color: #dc3545;
-        }
-        
-        .draft-perf-percentile {
-            font-size: 0.75rem;
-            color: #666;
-            text-align: center;
-            margin-top: 0.25rem;
-        }
-        
-        @media (max-width: 768px) {
-            .draft-ticker-card {
-                flex: 0 0 280px;
-            }
-            
-            .ticker-nav-btn {
-                width: 32px;
-                height: 32px;
-                font-size: 1.2rem;
-            }
         }
 
         .matchup-table {
@@ -5464,6 +5442,14 @@
                             </tbody>
                         </table>
                     </div>
+                    
+                    <!-- Draft Performance Ticker - placed under standings -->
+                    <div id="draft-performance-ticker" style="display: none; margin-top: 1rem;">
+                        <h3 class="panel-title" style="font-size: 1rem;">📊 Draft Performance</h3>
+                        <div id="draft-performance-cards" class="draft-performance-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Draft Results Table -->
@@ -5504,14 +5490,6 @@
                 </div>
                 <div id="season-chart"
                     style="position: relative; width: 100%; min-height: 500px; background: #fafafa; border-radius: 8px; overflow: visible;">
-                </div>
-            </div>
-            
-            <!-- Draft Performance Ticker -->
-            <div id="draft-performance-ticker" style="display: none; margin-top: 2rem;">
-                <h3 style="color: #1e3c72; margin: 0 0 1rem 0;">📊 Draft Performance</h3>
-                <div id="draft-performance-cards" class="draft-performance-grid">
-                    <!-- Populated by JS -->
                 </div>
             </div>
         </div>
@@ -8954,7 +8932,6 @@
                                                 <div class="draft-perf-stat-label">Diff</div>
                                             </div>
                                         </div>
-                                        <div class="draft-perf-percentile">${Math.round(team.percentile)}th percentile • ${team.picks} picks</div>
                                     </div>
                                 `;
                             }).join('')}
@@ -8976,17 +8953,16 @@
             if (!track || cards.length === 0) return;
             
             currentTickerIndex = index;
-            const cardWidth = cards[0].offsetWidth + 16; // card width + gap
-            track.style.transform = `translateX(-${index * cardWidth}px)`;
+            
+            // Use percentage-based translation (100% per card + gap)
+            const viewport = track.parentElement;
+            const viewportWidth = viewport.offsetWidth;
+            const gap = 12; // 0.75rem gap
+            track.style.transform = `translateX(-${index * (viewportWidth + gap)}px)`;
             
             // Update dots
             dots.forEach((dot, i) => {
                 dot.classList.toggle('active', i === index);
-            });
-            
-            // Update card active state
-            cards.forEach((card, i) => {
-                card.classList.toggle('active', i === index);
             });
             
             // Reset interval on manual navigation
