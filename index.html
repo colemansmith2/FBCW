@@ -2802,14 +2802,20 @@
 
             .draft-panel {
                 flex: 1;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
             }
 
             .draft-table-wrapper {
                 max-height: 350px;
+                max-width: 100%;
+                overflow-x: auto;
             }
 
             .draft-table {
                 font-size: 0.75rem;
+                min-width: 300px;
             }
 
             .draft-table th,
@@ -2833,6 +2839,35 @@
             .draft-team-logo {
                 width: 16px;
                 height: 16px;
+            }
+            
+            /* Draft Grades Ticker mobile fix */
+            #draft-performance-ticker {
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                overflow: hidden;
+            }
+            
+            .draft-performance-grid {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .draft-ticker-wrapper {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .draft-ticker-viewport {
+                width: calc(100% - 58px);
+                max-width: calc(100% - 58px);
+            }
+            
+            .draft-ticker-card {
+                flex: 0 0 100%;
+                max-width: 100%;
+                box-sizing: border-box;
             }
         }
 
@@ -3224,18 +3259,24 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
         }
         
         .draft-ticker-wrapper {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            width: 100%;
+            max-width: 100%;
         }
         
         .draft-ticker-viewport {
             flex: 1;
             overflow: hidden;
             position: relative;
+            min-width: 0;
         }
         
         .draft-ticker-track {
@@ -3256,6 +3297,7 @@
             border-left: 4px solid;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
         }
         
         .draft-ticker-card:hover {
