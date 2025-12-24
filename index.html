@@ -3384,6 +3384,80 @@
         .draft-perf-diff-negative {
             color: #dc3545;
         }
+        
+        /* Mobile optimization for draft ticker */
+        @media (max-width: 768px) {
+            #draft-performance-ticker {
+                margin-top: 1rem;
+            }
+            
+            .draft-ticker-wrapper {
+                gap: 0.25rem;
+            }
+            
+            .ticker-nav-btn {
+                width: 24px;
+                height: 24px;
+                font-size: 1rem;
+                min-width: 24px;
+            }
+            
+            .draft-ticker-card {
+                padding: 0.6rem;
+                gap: 0.4rem;
+            }
+            
+            .draft-perf-logo {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .draft-perf-logo-placeholder {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .draft-perf-header {
+                gap: 0.4rem;
+            }
+            
+            .draft-perf-team-name {
+                font-size: 0.75rem;
+            }
+            
+            .draft-perf-manager {
+                font-size: 0.65rem;
+            }
+            
+            .draft-perf-grade {
+                font-size: 1.1rem;
+                padding: 0.15rem 0.35rem;
+                min-width: 34px;
+            }
+            
+            .draft-perf-stats {
+                gap: 0.2rem;
+                padding-top: 0.35rem;
+            }
+            
+            .draft-perf-stat-value {
+                font-size: 0.8rem;
+            }
+            
+            .draft-perf-stat-label {
+                font-size: 0.6rem;
+            }
+            
+            .ticker-dots {
+                gap: 0.25rem;
+                margin-top: 0.4rem;
+            }
+            
+            .ticker-dot {
+                width: 6px;
+                height: 6px;
+            }
+        }
 
         .matchup-table {
             width: 100%;
@@ -5468,7 +5542,7 @@
                     
                     <!-- Draft Performance Ticker - placed under draft results -->
                     <div id="draft-performance-ticker" style="display: none; margin-top: 1rem;">
-                        <h3 class="panel-title" style="font-size: 1rem;">📊 Draft Performance</h3>
+                        <h3 class="panel-title" style="font-size: 1rem;">Draft Grades</h3>
                         <div id="draft-performance-cards" class="draft-performance-grid">
                             <!-- Populated by JS -->
                         </div>
