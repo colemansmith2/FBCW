@@ -9331,8 +9331,8 @@
             // Years to analyze (completed seasons only)
             const years = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
             
-            // Calculate each manager's draft performance per year
-            const managerDraftPerformance = {}; // { managerName: { year: { expected, actual, score } } }
+            // Store yearly results with grades calculated per-season
+            const yearlyResults = {}; // { year: { manager: { expected, actual, score, grade, percentile } } }
             
             for (const year of years) {
                 try {
@@ -9412,6 +9412,9 @@
                     });
                     
                     // Calculate score for each manager this year
+                    const yearScores = [];
+                    const yearManagerData = {};
+                    
                     for (const [manager, picks] of Object.entries(managerPicks)) {
                         if (picks.length === 0) continue;
                         
@@ -9421,67 +9424,88 @@
                         // Score = (actual - expected) / expected * 100, as a percentage over/under expectation
                         const score = totalExpected > 0 ? ((totalActual - totalExpected) / totalExpected) * 100 : 0;
                         
-                        if (!managerDraftPerformance[manager]) {
-                            managerDraftPerformance[manager] = {};
-                        }
-                        
-                        managerDraftPerformance[manager][year] = {
+                        yearManagerData[manager] = {
                             expected: totalExpected,
                             actual: totalActual,
                             score: score,
                             picks: picks.length
                         };
+                        
+                        yearScores.push(score);
                     }
+                    
+                    // Sort scores for percentile calculation within this year
+                    yearScores.sort((a, b) => a - b);
+                    
+                    // Calculate percentiles and grades within this year
+                    for (const [manager, data] of Object.entries(yearManagerData)) {
+                        const percentile = calculatePercentile(data.score, yearScores);
+                        const grade = percentileToGrade(percentile);
+                        
+                        yearManagerData[manager].percentile = percentile;
+                        yearManagerData[manager].grade = grade;
+                    }
+                    
+                    yearlyResults[year] = yearManagerData;
                     
                 } catch (e) {
                     console.log(`Error processing draft grades for ${year}:`, e);
                 }
             }
             
-            // Collect all scores across all managers to calculate percentiles
-            const allScores = [];
-            for (const manager of Object.keys(managerDraftPerformance)) {
-                for (const year of Object.keys(managerDraftPerformance[manager])) {
-                    allScores.push(managerDraftPerformance[manager][year].score);
+            // Now build managerDraftGrades from yearlyResults
+            const allManagerNames = new Set();
+            for (const year of Object.keys(yearlyResults)) {
+                for (const manager of Object.keys(yearlyResults[year])) {
+                    allManagerNames.add(manager);
                 }
             }
-            allScores.sort((a, b) => a - b);
             
-            console.log('All draft scores for percentile calculation:', allScores);
-            
-            // Calculate grade for each manager
-            for (const [manager, yearData] of Object.entries(managerDraftPerformance)) {
+            for (const manager of allManagerNames) {
                 const grades = [];
                 
-                for (const [year, data] of Object.entries(yearData)) {
-                    // Calculate percentile rank for this score
-                    const percentile = calculatePercentile(data.score, allScores);
-                    const grade = percentileToGrade(percentile);
-                    
-                    grades.push({
-                        year: parseInt(year),
-                        score: data.score,
-                        grade: grade,
-                        expected: data.expected,
-                        actual: data.actual,
-                        picks: data.picks,
-                        percentile: percentile
-                    });
+                for (const year of years) {
+                    const yearData = yearlyResults[year]?.[manager];
+                    if (yearData) {
+                        grades.push({
+                            year: year,
+                            score: yearData.score,
+                            grade: yearData.grade,
+                            expected: yearData.expected,
+                            actual: yearData.actual,
+                            picks: yearData.picks,
+                            percentile: yearData.percentile
+                        });
+                    }
                 }
                 
-                // Calculate average score and grade
-                const avgScore = grades.length > 0 
-                    ? grades.reduce((sum, g) => sum + g.score, 0) / grades.length 
-                    : 0;
-                const avgPercentile = calculatePercentile(avgScore, allScores);
-                const avgGrade = percentileToGrade(avgPercentile);
-                
-                managerDraftGrades[manager] = {
-                    grades: grades.sort((a, b) => b.year - a.year),
-                    avgScore: avgScore,
-                    avgGrade: avgGrade,
-                    avgPercentile: avgPercentile
-                };
+                if (grades.length > 0) {
+                    // Calculate average score
+                    const avgScore = grades.reduce((sum, g) => sum + g.score, 0) / grades.length;
+                    
+                    // For avg grade, collect all scores from all years this manager participated in
+                    // and calculate percentile against those year's scores
+                    const allYearScores = [];
+                    for (const g of grades) {
+                        const yearData = yearlyResults[g.year];
+                        if (yearData) {
+                            for (const m of Object.keys(yearData)) {
+                                allYearScores.push(yearData[m].score);
+                            }
+                        }
+                    }
+                    allYearScores.sort((a, b) => a - b);
+                    
+                    const avgPercentile = calculatePercentile(avgScore, allYearScores);
+                    const avgGrade = percentileToGrade(avgPercentile);
+                    
+                    managerDraftGrades[manager] = {
+                        grades: grades.sort((a, b) => b.year - a.year),
+                        avgScore: avgScore,
+                        avgGrade: avgGrade,
+                        avgPercentile: avgPercentile
+                    };
+                }
             }
             
             console.log('Draft grades calculated:', Object.keys(managerDraftGrades).length, 'managers');
