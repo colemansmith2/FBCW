@@ -8846,9 +8846,11 @@
                     if (!teamsResponse.ok) continue;
                     const teamsData = await teamsResponse.json();
                     
+                    // Map team_key to normalized manager name
                     const teamKeyToManager = {};
                     teamsData.forEach(team => {
-                        teamKeyToManager[team.team_key] = team.manager;
+                        const normalizedManager = normalizeManagerName(team.manager, year, team.team_name, team.team_key);
+                        teamKeyToManager[team.team_key] = normalizedManager;
                     });
                     
                     // Load player stats for actual points
