@@ -8823,7 +8823,7 @@
             console.log('Using expected points by round:', expectedPointsByRound);
             
             // Years to analyze (completed seasons only)
-            const years = [2019, 2020, 2021, 2022, 2023, 2024];
+            const years = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
             
             // Calculate each manager's draft performance per year
             const managerDraftPerformance = {}; // { managerName: { year: { expected, actual, score } } }
@@ -8831,13 +8831,17 @@
             for (const year of years) {
                 try {
                     // Load draft data
-                    const draftPath = `data/historical/${year}/draft.json`;
+                    const draftPath = year === 2025 
+                        ? 'data/current_season/draft.json'
+                        : `data/historical/${year}/draft.json`;
                     const draftResponse = await fetch(draftPath);
                     if (!draftResponse.ok) continue;
                     const draftData = await draftResponse.json();
                     
                     // Load teams to map team_key to manager
-                    const teamsPath = `data/historical/${year}/teams.json`;
+                    const teamsPath = year === 2025
+                        ? 'data/current_season/teams.json'
+                        : `data/historical/${year}/teams.json`;
                     const teamsResponse = await fetch(teamsPath);
                     if (!teamsResponse.ok) continue;
                     const teamsData = await teamsResponse.json();
@@ -8848,7 +8852,9 @@
                     });
                     
                     // Load player stats for actual points
-                    const statsPath = `data/historical/${year}/player_stats.json`;
+                    const statsPath = year === 2025
+                        ? 'data/current_season/player_stats.json'
+                        : `data/historical/${year}/player_stats.json`;
                     const statsResponse = await fetch(statsPath);
                     if (!statsResponse.ok) continue;
                     const statsData = await statsResponse.json();
