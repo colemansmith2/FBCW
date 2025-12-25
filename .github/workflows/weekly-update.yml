@@ -70,15 +70,23 @@ jobs:
       
       # 5. Create oauth2.json from secrets
       - name: Create OAuth credentials file
+        env:
+          YAHOO_CLIENT_ID: ${{ secrets.YAHOO_CLIENT_ID }}
+          YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
         run: |
-          cat > oauth2.json << EOF
-          {
-            "consumer_key": "${{ secrets.YAHOO_CLIENT_ID }}",
-            "consumer_secret": "${{ secrets.YAHOO_CLIENT_SECRET }}",
-            "refresh_token": "${{ secrets.YAHOO_REFRESH_TOKEN }}",
-            "token_type": "bearer"
+          python -c "
+          import json
+          import os
+          data = {
+              'consumer_key': os.environ['YAHOO_CLIENT_ID'],
+              'consumer_secret': os.environ['YAHOO_CLIENT_SECRET'],
+              'refresh_token': os.environ['YAHOO_REFRESH_TOKEN'],
+              'token_type': 'bearer'
           }
-          EOF
+          with open('oauth2.json', 'w') as f:
+              json.dump(data, f)
+          "
       
       # 6. Run the weekly stats collection
       - name: Collect weekly stats
