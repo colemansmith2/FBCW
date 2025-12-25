@@ -3501,6 +3501,289 @@
             }
         }
 
+        /* ===== IN-SEASON TOOLS STYLES ===== */
+        .inseason-section {
+            background: white;
+            border-radius: 10px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .top-performers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .top-performers-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .performers-column h4 {
+            color: #1e3c72;
+            margin: 0 0 0.75rem 0;
+            font-size: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .performers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .performer-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #2a5298;
+        }
+        
+        .performer-rank {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #1e3c72;
+            min-width: 24px;
+        }
+        
+        .performer-headshot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .performer-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .performer-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .performer-team {
+            font-size: 0.7rem;
+            color: #666;
+        }
+        
+        .performer-points {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #28a745;
+        }
+        
+        .category-leaders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+        }
+        
+        .category-leader-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 8px;
+            padding: 0.75rem;
+            text-align: center;
+            border: 1px solid #dee2e6;
+        }
+        
+        .category-name {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+        
+        .category-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3c72;
+        }
+        
+        .category-leader-name {
+            font-size: 0.8rem;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .category-leader-team {
+            font-size: 0.65rem;
+            color: #888;
+        }
+        
+        /* Stats Heatmap Table */
+        .stats-table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        
+        .stats-heatmap-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            min-width: 800px;
+        }
+        
+        .stats-heatmap-table th {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 0.6rem 0.4rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+        
+        .stats-heatmap-table th:first-child,
+        .stats-heatmap-table th:nth-child(2) {
+            text-align: left;
+            position: sticky;
+            left: 0;
+            z-index: 2;
+        }
+        
+        .stats-heatmap-table td {
+            padding: 0.5rem 0.4rem;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .stats-heatmap-table td:first-child {
+            text-align: center;
+            font-weight: 700;
+            color: #1e3c72;
+        }
+        
+        .stats-heatmap-table td:nth-child(2) {
+            text-align: left;
+            white-space: nowrap;
+        }
+        
+        .stats-heatmap-table tbody tr:hover {
+            background: rgba(42, 82, 152, 0.05);
+        }
+        
+        .stats-team-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .stats-team-logo {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+        }
+        
+        .stats-team-name {
+            font-weight: 500;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 150px;
+        }
+        
+        /* Heatmap colors */
+        .heat-1 { background-color: #1a9641; color: white; }
+        .heat-2 { background-color: #52b947; color: white; }
+        .heat-3 { background-color: #8dd35f; }
+        .heat-4 { background-color: #c4e687; }
+        .heat-5 { background-color: #e6f5a3; }
+        .heat-6 { background-color: #ffffbf; }
+        .heat-7 { background-color: #fee99d; }
+        .heat-8 { background-color: #fdca7d; }
+        .heat-9 { background-color: #f99d59; }
+        .heat-10 { background-color: #e85b3a; color: white; }
+        .heat-11 { background-color: #d62f27; color: white; }
+        .heat-12 { background-color: #a50026; color: white; }
+        
+        /* Inverse heatmap for stats where lower is better (ERA, L, ER, etc) */
+        .heat-inv-1 { background-color: #a50026; color: white; }
+        .heat-inv-2 { background-color: #d62f27; color: white; }
+        .heat-inv-3 { background-color: #e85b3a; color: white; }
+        .heat-inv-4 { background-color: #f99d59; }
+        .heat-inv-5 { background-color: #fdca7d; }
+        .heat-inv-6 { background-color: #fee99d; }
+        .heat-inv-7 { background-color: #ffffbf; }
+        .heat-inv-8 { background-color: #e6f5a3; }
+        .heat-inv-9 { background-color: #c4e687; }
+        .heat-inv-10 { background-color: #8dd35f; }
+        .heat-inv-11 { background-color: #52b947; color: white; }
+        .heat-inv-12 { background-color: #1a9641; color: white; }
+        
+        .week-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+        
+        .week-selector label {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+        
+        .week-selector select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background: white;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 2rem;
+            color: #888;
+            font-style: italic;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-heatmap-table {
+                font-size: 0.7rem;
+                min-width: 600px;
+            }
+            
+            .stats-heatmap-table th,
+            .stats-heatmap-table td {
+                padding: 0.4rem 0.25rem;
+            }
+            
+            .stats-team-name {
+                max-width: 100px;
+            }
+            
+            .category-leaders-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 0.5rem;
+            }
+            
+            .category-leader-card {
+                padding: 0.5rem;
+            }
+            
+            .category-value {
+                font-size: 1.2rem;
+            }
+        }
+
         .matchup-table {
             width: 100%;
             border-collapse: collapse;
@@ -5606,6 +5889,66 @@
                 </div>
                 <div id="season-chart"
                     style="position: relative; width: 100%; min-height: 500px; background: #fafafa; border-radius: 8px; overflow: visible;">
+                </div>
+            </div>
+            
+            <!-- 2026 In-Season Tools -->
+            <div id="inseason-tools-container" style="display: none; margin-top: 2rem;">
+                <!-- Top Performers Section -->
+                <div class="inseason-section">
+                    <h3 class="panel-title">🔥 Top Performers This Week</h3>
+                    <div class="top-performers-grid">
+                        <div class="performers-column">
+                            <h4>Top Hitters</h4>
+                            <div id="top-hitters-list" class="performers-list">
+                                <div class="no-data">Season has not started</div>
+                            </div>
+                        </div>
+                        <div class="performers-column">
+                            <h4>Top Pitchers</h4>
+                            <div id="top-pitchers-list" class="performers-list">
+                                <div class="no-data">Season has not started</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Weekly Category Leaders -->
+                <div class="inseason-section" style="margin-top: 1.5rem;">
+                    <h3 class="panel-title">👑 Weekly Category Leaders</h3>
+                    <div class="category-leaders-grid" id="category-leaders-grid">
+                        <div class="no-data">Season has not started</div>
+                    </div>
+                </div>
+                
+                <!-- Team Stats Heatmap -->
+                <div class="inseason-section" style="margin-top: 1.5rem;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                        <h3 class="panel-title" style="margin-bottom: 0;">📊 Team Stats</h3>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <button id="btn-hitting-stats" class="chart-toggle-btn active" onclick="setStatsType('hitting')">Hitting</button>
+                            <button id="btn-pitching-stats" class="chart-toggle-btn" onclick="setStatsType('pitching')">Pitching</button>
+                        </div>
+                    </div>
+                    <div id="team-stats-container">
+                        <div class="stats-table-wrapper">
+                            <table class="stats-heatmap-table" id="hitting-stats-table" style="display: none;">
+                                <thead id="hitting-stats-header"></thead>
+                                <tbody id="hitting-stats-body"></tbody>
+                            </table>
+                            <table class="stats-heatmap-table" id="pitching-stats-table" style="display: none;">
+                                <thead id="pitching-stats-header"></thead>
+                                <tbody id="pitching-stats-body"></tbody>
+                            </table>
+                        </div>
+                        <div id="stats-no-data" class="no-data">Season has not started</div>
+                    </div>
+                    <div class="week-selector" style="margin-top: 1rem;">
+                        <label for="stats-week-select">Select Week:</label>
+                        <select id="stats-week-select" onchange="loadWeeklyStats()">
+                            <option value="cumulative">Cumulative (Season Total)</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         </div>
@@ -7946,7 +8289,7 @@
             try {
                 const response = await fetch('data/current_season/standings.json');
                 if (response.ok) {
-                    availableSeasons.push({ year: 2025, isCurrent: true });
+                    availableSeasons.push({ year: 2025, isCurrent: false, label: '2025' });
                 }
             } catch (e) { }
 
@@ -7955,9 +8298,21 @@
                 try {
                     const response = await fetch(`data/historical/${year}/final_standings.json`);
                     if (response.ok) {
-                        availableSeasons.push({ year: year, isCurrent: false });
+                        availableSeasons.push({ year: year, isCurrent: false, label: year.toString() });
                     }
                 } catch (e) { }
+            }
+            
+            // Add 2026 as upcoming/in-season year
+            try {
+                const response = await fetch('data/2026/teams.json');
+                if (response.ok) {
+                    availableSeasons.push({ year: 2026, isCurrent: true, label: '2026 (In Progress)' });
+                }
+            } catch (e) { 
+                // Still add 2026 if teams file doesn't exist yet but we want to show it
+                // Comment this out if you only want to show 2026 when data exists
+                // availableSeasons.push({ year: 2026, isCurrent: true, label: '2026 (Upcoming)' });
             }
 
             // Sort by year descending
@@ -7968,7 +8323,11 @@
             availableSeasons.forEach(season => {
                 const option = document.createElement('option');
                 option.value = season.year;
-                option.textContent = season.isCurrent ? `${season.year} (Current)` : season.year;
+                option.textContent = season.label;
+                // Default to 2025
+                if (season.year === 2025) {
+                    option.selected = true;
+                }
                 standingsSelect.appendChild(option);
             });
 
@@ -7986,19 +8345,32 @@
             const errorEl = document.getElementById('standings-error');
             const tableEl = document.getElementById('standings-table');
             const chartContainer = document.getElementById('season-chart-container');
+            const inseasonContainer = document.getElementById('inseason-tools-container');
+            const draftGradesTicker = document.getElementById('draft-performance-ticker');
 
             if (!season) {
                 return; // No season selected yet
+            }
+            
+            const seasonNum = parseInt(season);
+            
+            // Hide all containers initially
+            chartContainer.style.display = 'none';
+            inseasonContainer.style.display = 'none';
+            if (draftGradesTicker) draftGradesTicker.style.display = 'none';
+
+            // Special handling for 2026 (in-season/upcoming)
+            if (seasonNum === 2026) {
+                await load2026Season();
+                return;
             }
 
             try {
                 loadingEl.style.display = 'block';
                 errorEl.style.display = 'none';
                 tableEl.style.display = 'none';
-                chartContainer.style.display = 'none';
 
                 let response;
-                const seasonNum = parseInt(season);
 
                 // Check if this is current season (2025) or historical
                 const currentSeasonCheck = await fetch('data/current_season/standings.json');
@@ -8080,7 +8452,7 @@
                 // Load and render the season chart
                 await loadSeasonChart(seasonNum, isCurrentSeason, standings, teamLogos, teamData);
                 
-                // Load draft performance ticker
+                // Load draft performance ticker (for completed seasons)
                 await loadDraftPerformanceTicker(seasonNum, isCurrentSeason, teamLogos, teamData);
 
             } catch (error) {
@@ -8089,6 +8461,313 @@
                 errorEl.textContent = `Error loading ${season} standings: ${error.message}`;
                 errorEl.style.display = 'block';
             }
+        }
+        
+        // ===== LOAD 2026 SEASON (IN-SEASON TOOLS) =====
+        let current2026StatsType = 'hitting';
+        
+        async function load2026Season() {
+            const loadingEl = document.getElementById('standings-loading');
+            const errorEl = document.getElementById('standings-error');
+            const tableEl = document.getElementById('standings-table');
+            const chartContainer = document.getElementById('season-chart-container');
+            const inseasonContainer = document.getElementById('inseason-tools-container');
+            const draftGradesTicker = document.getElementById('draft-performance-ticker');
+            
+            loadingEl.style.display = 'block';
+            errorEl.style.display = 'none';
+            tableEl.style.display = 'none';
+            chartContainer.style.display = 'none';
+            if (draftGradesTicker) draftGradesTicker.style.display = 'none';
+            
+            try {
+                // Load teams data for 2026
+                const teamsResponse = await fetch('data/2026/teams.json');
+                let teamData = [];
+                let teamLogos = {};
+                
+                if (teamsResponse.ok) {
+                    teamData = await teamsResponse.json();
+                    teamData.forEach(team => {
+                        teamLogos[team.team_key] = team.team_logo;
+                    });
+                }
+                
+                // Try to load standings (may not exist yet)
+                let standings = [];
+                try {
+                    const standingsResponse = await fetch('data/2026/standings.json');
+                    if (standingsResponse.ok) {
+                        standings = await standingsResponse.json();
+                        standings = normalizeStandingsData(standings, 2026);
+                        standings.sort((a, b) => a.rank - b.rank);
+                    }
+                } catch (e) {
+                    console.log('No 2026 standings yet');
+                }
+                
+                // Populate standings table if we have data
+                const tbody = document.getElementById('standings-body');
+                tbody.innerHTML = '';
+                
+                if (standings.length > 0) {
+                    standings.forEach(team => {
+                        const row = document.createElement('tr');
+                        const logo = teamLogos[team.team_key] ? `<img src="${teamLogos[team.team_key]}" class="team-logo" alt="Team Logo">` : '';
+                        
+                        let medal = '';
+                        if (team.rank === 1) medal = '<span class="medal">🥇</span>';
+                        else if (team.rank === 2) medal = '<span class="medal">🥈</span>';
+                        else if (team.rank === 3) medal = '<span class="medal">🥉</span>';
+                        
+                        row.innerHTML = `
+                            <td>${medal}${team.rank}</td>
+                            <td><div class="manager-cell">${team.manager}</div></td>
+                            <td><div class="team-cell-content">${logo}<span>${team.team_name}</span></div></td>
+                            <td>${team.wins || 0}</td>
+                            <td>${team.losses || 0}</td>
+                            <td>${(team.win_pct || 0).toFixed(3)}</td>
+                            <td>${Math.round(team.points_for || 0).toLocaleString()}</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    tableEl.style.display = 'table';
+                } else if (teamData.length > 0) {
+                    // Show teams without standings
+                    teamData.forEach((team, idx) => {
+                        const row = document.createElement('tr');
+                        const logo = team.team_logo ? `<img src="${team.team_logo}" class="team-logo" alt="Team Logo">` : '';
+                        const manager = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
+                        
+                        row.innerHTML = `
+                            <td>-</td>
+                            <td><div class="manager-cell">${manager}</div></td>
+                            <td><div class="team-cell-content">${logo}<span>${team.team_name}</span></div></td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    tableEl.style.display = 'table';
+                }
+                
+                // Load draft results for 2026
+                await loadDraftResults(2026, false, teamLogos, teamData);
+                
+                // Show in-season tools instead of summary chart
+                inseasonContainer.style.display = 'block';
+                
+                // Load in-season stats
+                await loadInSeasonStats(teamData, teamLogos);
+                
+                loadingEl.style.display = 'none';
+                
+            } catch (error) {
+                console.error('Error loading 2026 season:', error);
+                loadingEl.style.display = 'none';
+                errorEl.textContent = `Error loading 2026 season: ${error.message}`;
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // ===== IN-SEASON STATS FUNCTIONS =====
+        async function loadInSeasonStats(teamData, teamLogos) {
+            // Try to load weekly stats data
+            try {
+                const statsResponse = await fetch('data/2026/weekly_stats.json');
+                if (statsResponse.ok) {
+                    const weeklyStats = await statsResponse.json();
+                    renderWeeklyStats(weeklyStats, teamData, teamLogos);
+                    populateWeekSelector(weeklyStats);
+                    await loadTopPerformers(weeklyStats);
+                    await loadCategoryLeaders(weeklyStats);
+                } else {
+                    // No stats yet - show placeholder
+                    document.getElementById('stats-no-data').style.display = 'block';
+                    document.getElementById('hitting-stats-table').style.display = 'none';
+                    document.getElementById('pitching-stats-table').style.display = 'none';
+                }
+            } catch (e) {
+                console.log('No weekly stats available yet:', e);
+                document.getElementById('stats-no-data').style.display = 'block';
+            }
+        }
+        
+        function populateWeekSelector(weeklyStats) {
+            const select = document.getElementById('stats-week-select');
+            select.innerHTML = '<option value="cumulative">Cumulative (Season Total)</option>';
+            
+            if (weeklyStats && weeklyStats.weeks) {
+                const weeks = Object.keys(weeklyStats.weeks).map(Number).sort((a, b) => b - a);
+                weeks.forEach(week => {
+                    const option = document.createElement('option');
+                    option.value = week;
+                    option.textContent = `Week ${week}`;
+                    select.appendChild(option);
+                });
+            }
+        }
+        
+        function setStatsType(type) {
+            current2026StatsType = type;
+            
+            document.getElementById('btn-hitting-stats').classList.toggle('active', type === 'hitting');
+            document.getElementById('btn-pitching-stats').classList.toggle('active', type === 'pitching');
+            
+            document.getElementById('hitting-stats-table').style.display = type === 'hitting' ? 'table' : 'none';
+            document.getElementById('pitching-stats-table').style.display = type === 'pitching' ? 'table' : 'none';
+        }
+        
+        function loadWeeklyStats() {
+            // Reload stats for selected week
+            const week = document.getElementById('stats-week-select').value;
+            console.log('Loading stats for week:', week);
+            // This would reload the appropriate week's data
+        }
+        
+        function renderWeeklyStats(weeklyStats, teamData, teamLogos) {
+            // Hitting stats columns
+            const hittingCols = ['1B', '2B', '3B', 'HR', 'RBI', 'SB', 'CS', 'BB', 'IBB', 'HBP', 'K', 'CYC', 'SLAM', 'Points'];
+            const hittingInverse = ['CS', 'K']; // Lower is better
+            
+            // Pitching stats columns  
+            const pitchingCols = ['IP', 'W', 'L', 'CG', 'SHO', 'SV', 'H', 'ER', 'BB', 'K', 'HLD', 'PICK', 'NH', 'QS', 'ERA', 'K/9', 'Points'];
+            const pitchingInverse = ['L', 'H', 'ER', 'BB', 'ERA']; // Lower is better
+            
+            renderStatsTable('hitting', hittingCols, hittingInverse, weeklyStats, teamData, teamLogos);
+            renderStatsTable('pitching', pitchingCols, pitchingInverse, weeklyStats, teamData, teamLogos);
+            
+            document.getElementById('stats-no-data').style.display = 'none';
+            setStatsType(current2026StatsType);
+        }
+        
+        function renderStatsTable(type, columns, inverseCols, weeklyStats, teamData, teamLogos) {
+            const headerEl = document.getElementById(`${type}-stats-header`);
+            const bodyEl = document.getElementById(`${type}-stats-body`);
+            
+            // Build header
+            headerEl.innerHTML = `
+                <tr>
+                    <th>#</th>
+                    <th>Team</th>
+                    ${columns.map(col => `<th>${col}</th>`).join('')}
+                </tr>
+            `;
+            
+            // Get cumulative stats
+            const stats = weeklyStats.cumulative?.[type] || [];
+            
+            // Calculate column ranks for heatmap
+            const colRanks = {};
+            columns.forEach(col => {
+                const values = stats.map(s => s[col] || 0).sort((a, b) => {
+                    return inverseCols.includes(col) ? a - b : b - a;
+                });
+                colRanks[col] = values;
+            });
+            
+            // Build body
+            bodyEl.innerHTML = stats.map((team, idx) => {
+                const logo = teamLogos[team.team_key] || '';
+                const teamName = team.team_name || 'Unknown';
+                
+                return `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>
+                            <div class="stats-team-cell">
+                                ${logo ? `<img src="${logo}" class="stats-team-logo" alt="">` : ''}
+                                <span class="stats-team-name">${teamName}</span>
+                            </div>
+                        </td>
+                        ${columns.map(col => {
+                            const value = team[col] || 0;
+                            const rank = colRanks[col].indexOf(value) + 1;
+                            const heatClass = inverseCols.includes(col) ? `heat-inv-${rank}` : `heat-${rank}`;
+                            const displayValue = typeof value === 'number' && !Number.isInteger(value) ? value.toFixed(2) : value;
+                            return `<td class="${heatClass}">${displayValue}</td>`;
+                        }).join('')}
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        async function loadTopPerformers(weeklyStats) {
+            const hittersList = document.getElementById('top-hitters-list');
+            const pitchersList = document.getElementById('top-pitchers-list');
+            
+            if (!weeklyStats.currentWeek) {
+                hittersList.innerHTML = '<div class="no-data">Season has not started</div>';
+                pitchersList.innerHTML = '<div class="no-data">Season has not started</div>';
+                return;
+            }
+            
+            const currentWeek = weeklyStats.currentWeek;
+            const topHitters = weeklyStats.weeks?.[currentWeek]?.topHitters || [];
+            const topPitchers = weeklyStats.weeks?.[currentWeek]?.topPitchers || [];
+            
+            hittersList.innerHTML = topHitters.slice(0, 5).map((player, idx) => `
+                <div class="performer-item">
+                    <span class="performer-rank">${idx + 1}</span>
+                    <img src="${player.headshot || ''}" class="performer-headshot" alt="" onerror="this.style.display='none'">
+                    <div class="performer-info">
+                        <div class="performer-name">${player.name}</div>
+                        <div class="performer-team">${player.team_name}</div>
+                    </div>
+                    <span class="performer-points">${player.points.toFixed(1)}</span>
+                </div>
+            `).join('') || '<div class="no-data">No data available</div>';
+            
+            pitchersList.innerHTML = topPitchers.slice(0, 5).map((player, idx) => `
+                <div class="performer-item">
+                    <span class="performer-rank">${idx + 1}</span>
+                    <img src="${player.headshot || ''}" class="performer-headshot" alt="" onerror="this.style.display='none'">
+                    <div class="performer-info">
+                        <div class="performer-name">${player.name}</div>
+                        <div class="performer-team">${player.team_name}</div>
+                    </div>
+                    <span class="performer-points">${player.points.toFixed(1)}</span>
+                </div>
+            `).join('') || '<div class="no-data">No data available</div>';
+        }
+        
+        async function loadCategoryLeaders(weeklyStats) {
+            const leadersGrid = document.getElementById('category-leaders-grid');
+            
+            if (!weeklyStats.currentWeek) {
+                leadersGrid.innerHTML = '<div class="no-data">Season has not started</div>';
+                return;
+            }
+            
+            const currentWeek = weeklyStats.currentWeek;
+            const leaders = weeklyStats.weeks?.[currentWeek]?.categoryLeaders || {};
+            
+            const categories = [
+                { key: 'HR', label: 'HR' },
+                { key: 'RBI', label: 'RBI' },
+                { key: 'SB', label: 'SB' },
+                { key: 'AVG', label: 'AVG' },
+                { key: 'W', label: 'Wins' },
+                { key: 'K', label: 'K (P)' },
+                { key: 'SV', label: 'Saves' },
+                { key: 'ERA', label: 'ERA' }
+            ];
+            
+            leadersGrid.innerHTML = categories.map(cat => {
+                const leader = leaders[cat.key];
+                if (!leader) return '';
+                
+                return `
+                    <div class="category-leader-card">
+                        <div class="category-name">${cat.label}</div>
+                        <div class="category-value">${leader.value}</div>
+                        <div class="category-leader-name">${leader.player_name}</div>
+                        <div class="category-leader-team">${leader.team_name}</div>
+                    </div>
+                `;
+            }).join('') || '<div class="no-data">No data available</div>';
         }
 
         // ===== DRAFT RESULTS FUNCTIONS =====
@@ -8118,7 +8797,9 @@
             try {
                 // Load draft data
                 let draftResponse;
-                if (isCurrentSeason) {
+                if (seasonNum === 2026) {
+                    draftResponse = await fetch('data/2026/draft.json');
+                } else if (isCurrentSeason) {
                     draftResponse = await fetch('data/current_season/draft.json');
                 } else {
                     draftResponse = await fetch(`data/historical/${seasonNum}/draft.json`);
