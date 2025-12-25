@@ -3427,6 +3427,178 @@
             color: #dc3545;
         }
         
+        /* Matchups Ticker Styles */
+        .matchups-ticker-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
+        }
+        
+        .matchups-ticker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 100%;
+        }
+        
+        .matchups-ticker-viewport {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            min-width: 0;
+        }
+        
+        .matchups-ticker-track {
+            display: flex;
+            gap: 0.75rem;
+            transition: transform 0.5s ease;
+        }
+        
+        .matchup-ticker-card {
+            flex: 0 0 100%;
+            background: white;
+            border-radius: 8px;
+            padding: 0.75rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            box-sizing: border-box;
+        }
+        
+        .matchup-teams {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+        
+        .matchup-team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .matchup-team.winner .matchup-score {
+            color: #28a745;
+        }
+        
+        .matchup-team.loser .matchup-score {
+            color: #dc3545;
+        }
+        
+        .matchup-team-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: contain;
+            margin-bottom: 0.25rem;
+        }
+        
+        .matchup-team-name {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+        
+        .matchup-manager {
+            font-size: 0.65rem;
+            color: #666;
+        }
+        
+        .matchup-record {
+            font-size: 0.6rem;
+            color: #888;
+        }
+        
+        .matchup-score {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        
+        .matchup-vs {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #999;
+            padding: 0 0.25rem;
+        }
+        
+        .matchup-ticker-nav-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: none;
+            background: #1e3c72;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .matchup-ticker-nav-btn:hover {
+            background: #2a5298;
+        }
+        
+        .matchup-ticker-dots {
+            display: flex;
+            justify-content: center;
+            gap: 0.3rem;
+            margin-top: 0.4rem;
+        }
+        
+        .matchup-ticker-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #ccc;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.2s;
+        }
+        
+        .matchup-ticker-dot:hover {
+            background: #999;
+        }
+        
+        .matchup-ticker-dot.active {
+            background: #1e3c72;
+            transform: scale(1.2);
+        }
+        
+        @media (max-width: 768px) {
+            .matchup-team-logo {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .matchup-team-name {
+                font-size: 0.65rem;
+            }
+            
+            .matchup-score {
+                font-size: 0.95rem;
+            }
+            
+            .matchup-ticker-nav-btn {
+                width: 20px;
+                height: 20px;
+                font-size: 0.85rem;
+            }
+        }
+        
         /* Mobile optimization for draft ticker */
         @media (max-width: 768px) {
             #draft-performance-ticker {
@@ -5869,6 +6041,14 @@
                     <div id="draft-performance-ticker" style="display: none; margin-top: 1rem;">
                         <h3 class="panel-title" style="font-size: 1rem;">Draft Grades</h3>
                         <div id="draft-performance-cards" class="draft-performance-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- Weekly Matchups Ticker (for 2026 in-season) -->
+                    <div id="matchups-ticker" style="display: none; margin-top: 1rem;">
+                        <h3 class="panel-title" style="font-size: 1rem;">Week <span id="matchups-week-num">0</span> Matchups</h3>
+                        <div id="matchups-cards" class="matchups-ticker-grid">
                             <!-- Populated by JS -->
                         </div>
                     </div>
@@ -8559,8 +8739,8 @@
                 // Show in-season tools instead of summary chart
                 inseasonContainer.style.display = 'block';
                 
-                // Load in-season stats
-                await loadInSeasonStats(teamData, teamLogos);
+                // Load in-season stats (pass standings for matchups ticker)
+                await loadInSeasonStats(teamData, teamLogos, standings);
                 
                 loadingEl.style.display = 'none';
                 
@@ -8573,7 +8753,7 @@
         }
         
         // ===== IN-SEASON STATS FUNCTIONS =====
-        async function loadInSeasonStats(teamData, teamLogos) {
+        async function loadInSeasonStats(teamData, teamLogos, standings) {
             // Try to load weekly stats data
             try {
                 const statsResponse = await fetch('data/2026/weekly_stats.json');
@@ -8583,6 +8763,7 @@
                     populateWeekSelector(weeklyStats);
                     await loadTopPerformers(weeklyStats);
                     await loadCategoryLeaders(weeklyStats);
+                    await loadMatchupsTicker(weeklyStats, teamData, teamLogos, standings);
                 } else {
                     // No stats yet - show placeholder
                     document.getElementById('stats-no-data').style.display = 'block';
@@ -8748,11 +8929,9 @@
                 { key: 'HR', label: 'HR' },
                 { key: 'RBI', label: 'RBI' },
                 { key: 'SB', label: 'SB' },
-                { key: 'AVG', label: 'AVG' },
-                { key: 'W', label: 'Wins' },
-                { key: 'K', label: 'K (P)' },
-                { key: 'SV', label: 'Saves' },
-                { key: 'ERA', label: 'ERA' }
+                { key: 'IP', label: 'IP' },
+                { key: 'K', label: 'K' },
+                { key: 'SV', label: 'SV' }
             ];
             
             leadersGrid.innerHTML = categories.map(cat => {
@@ -8768,6 +8947,160 @@
                     </div>
                 `;
             }).join('') || '<div class="no-data">No data available</div>';
+        }
+        
+        // ===== MATCHUPS TICKER =====
+        let matchupsTickerInterval = null;
+        let currentMatchupIndex = 0;
+        
+        async function loadMatchupsTicker(weeklyStats, teamData, teamLogos, standings) {
+            const tickerContainer = document.getElementById('matchups-ticker');
+            const cardsContainer = document.getElementById('matchups-cards');
+            const weekNumEl = document.getElementById('matchups-week-num');
+            
+            if (!tickerContainer || !cardsContainer) return;
+            
+            // Clear existing interval
+            if (matchupsTickerInterval) {
+                clearInterval(matchupsTickerInterval);
+                matchupsTickerInterval = null;
+            }
+            
+            if (!weeklyStats.currentWeek || !weeklyStats.weeks?.[weeklyStats.currentWeek]?.matchups) {
+                tickerContainer.style.display = 'none';
+                return;
+            }
+            
+            const currentWeek = weeklyStats.currentWeek;
+            const matchups = weeklyStats.weeks[currentWeek].matchups || [];
+            
+            if (matchups.length === 0) {
+                tickerContainer.style.display = 'none';
+                return;
+            }
+            
+            // Build standings lookup
+            const standingsLookup = {};
+            if (standings && standings.length > 0) {
+                standings.forEach(team => {
+                    standingsLookup[team.team_key] = {
+                        rank: team.rank,
+                        wins: team.wins,
+                        losses: team.losses
+                    };
+                });
+            }
+            
+            // Build team info lookup
+            const teamInfoLookup = {};
+            teamData.forEach(team => {
+                teamInfoLookup[team.team_key] = {
+                    name: team.team_name,
+                    manager: normalizeManagerName(team.manager, 2026, team.team_name, team.team_key),
+                    logo: teamLogos[team.team_key] || ''
+                };
+            });
+            
+            weekNumEl.textContent = currentWeek;
+            
+            // Render matchups ticker
+            renderMatchupsTicker(cardsContainer, matchups, teamInfoLookup, standingsLookup);
+            tickerContainer.style.display = 'block';
+            
+            // Start auto-scroll
+            currentMatchupIndex = 0;
+            matchupsTickerInterval = setInterval(() => {
+                currentMatchupIndex = (currentMatchupIndex + 1) % matchups.length;
+                scrollToMatchupCard(currentMatchupIndex);
+            }, 15000);
+        }
+        
+        function renderMatchupsTicker(container, matchups, teamInfo, standings) {
+            container.innerHTML = `
+                <div class="matchups-ticker-wrapper">
+                    <button class="matchup-ticker-nav-btn" onclick="matchupTickerPrev()">‹</button>
+                    <div class="matchups-ticker-viewport">
+                        <div class="matchups-ticker-track" id="matchups-ticker-track">
+                            ${matchups.map((matchup, idx) => {
+                                const team1 = teamInfo[matchup.team1_key] || { name: 'Unknown', manager: 'Unknown', logo: '' };
+                                const team2 = teamInfo[matchup.team2_key] || { name: 'Unknown', manager: 'Unknown', logo: '' };
+                                const standing1 = standings[matchup.team1_key] || { rank: '-', wins: 0, losses: 0 };
+                                const standing2 = standings[matchup.team2_key] || { rank: '-', wins: 0, losses: 0 };
+                                
+                                const team1Winner = matchup.team1_score > matchup.team2_score;
+                                const team2Winner = matchup.team2_score > matchup.team1_score;
+                                
+                                return `
+                                    <div class="matchup-ticker-card" data-index="${idx}">
+                                        <div class="matchup-teams">
+                                            <div class="matchup-team ${team1Winner ? 'winner' : (team2Winner ? 'loser' : '')}">
+                                                ${team1.logo ? `<img src="${team1.logo}" class="matchup-team-logo" alt="">` : '<div class="matchup-team-logo" style="background:#e0e0e0;"></div>'}
+                                                <div class="matchup-team-name">${team1.name}</div>
+                                                <div class="matchup-manager">${team1.manager}</div>
+                                                <div class="matchup-record">(${standing1.wins}-${standing1.losses}) #${standing1.rank}</div>
+                                                <div class="matchup-score">${matchup.team1_score.toFixed(1)}</div>
+                                            </div>
+                                            <div class="matchup-vs">VS</div>
+                                            <div class="matchup-team ${team2Winner ? 'winner' : (team1Winner ? 'loser' : '')}">
+                                                ${team2.logo ? `<img src="${team2.logo}" class="matchup-team-logo" alt="">` : '<div class="matchup-team-logo" style="background:#e0e0e0;"></div>'}
+                                                <div class="matchup-team-name">${team2.name}</div>
+                                                <div class="matchup-manager">${team2.manager}</div>
+                                                <div class="matchup-record">(${standing2.wins}-${standing2.losses}) #${standing2.rank}</div>
+                                                <div class="matchup-score">${matchup.team2_score.toFixed(1)}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                    <button class="matchup-ticker-nav-btn" onclick="matchupTickerNext()">›</button>
+                </div>
+                <div class="matchup-ticker-dots" id="matchup-ticker-dots">
+                    ${matchups.map((_, idx) => `<span class="matchup-ticker-dot ${idx === 0 ? 'active' : ''}" onclick="scrollToMatchupCard(${idx})"></span>`).join('')}
+                </div>
+            `;
+        }
+        
+        function scrollToMatchupCard(index) {
+            const track = document.getElementById('matchups-ticker-track');
+            const dots = document.querySelectorAll('.matchup-ticker-dot');
+            const cards = document.querySelectorAll('.matchup-ticker-card');
+            
+            if (!track || cards.length === 0) return;
+            
+            currentMatchupIndex = index;
+            
+            const viewport = track.parentElement;
+            const viewportWidth = viewport.offsetWidth;
+            const gap = 12;
+            track.style.transform = `translateX(-${index * (viewportWidth + gap)}px)`;
+            
+            dots.forEach((dot, i) => {
+                dot.classList.toggle('active', i === index);
+            });
+            
+            if (matchupsTickerInterval) {
+                clearInterval(matchupsTickerInterval);
+                matchupsTickerInterval = setInterval(() => {
+                    currentMatchupIndex = (currentMatchupIndex + 1) % cards.length;
+                    scrollToMatchupCard(currentMatchupIndex);
+                }, 15000);
+            }
+        }
+        
+        function matchupTickerPrev() {
+            const cards = document.querySelectorAll('.matchup-ticker-card');
+            if (cards.length === 0) return;
+            currentMatchupIndex = (currentMatchupIndex - 1 + cards.length) % cards.length;
+            scrollToMatchupCard(currentMatchupIndex);
+        }
+        
+        function matchupTickerNext() {
+            const cards = document.querySelectorAll('.matchup-ticker-card');
+            if (cards.length === 0) return;
+            currentMatchupIndex = (currentMatchupIndex + 1) % cards.length;
+            scrollToMatchupCard(currentMatchupIndex);
         }
 
         // ===== DRAFT RESULTS FUNCTIONS =====
