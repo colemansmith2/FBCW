@@ -15481,7 +15481,12 @@
                     const isProspect = keeper.isProspect || false;
                     const roundCost = keeper.roundCost || 0;
                     const expectedPts = isProspect ? 0 : (expectedPointsByRound[roundCost]?.avg || 0);
-                    const value = projectedPts - expectedPts;
+                    
+                    // Keeper value = Projected Points + Surplus Value
+                    // This captures their full contribution: what they'll produce PLUS the bonus of getting them at a discount
+                    // For example: 400pt player kept in round 5 (expected 350) = 400 + (400-350) = 450 value
+                    const surplusValue = projectedPts - expectedPts;
+                    const value = projectedPts + surplusValue;  // = 2 * projectedPts - expectedPts
 
                     const keeperData = {
                         player_name: keeper.player_name,
@@ -15494,6 +15499,7 @@
                         isProspect: isProspect,
                         projectedPts: projectedPts,
                         expectedPts: expectedPts,
+                        surplusValue: surplusValue,
                         value: value
                     };
 
@@ -15511,6 +15517,9 @@
                 keeperDetails.sort((a, b) => a.roundCost - b.roundCost);
 
                 if (keeperDetails.length > 0) {
+                    // Calculate total keeper value (sum of individual keeper values)
+                    const totalKeeperValue = keeperDetails.reduce((sum, k) => sum + k.value, 0);
+                    
                     // Calculate pick value for this team
                     const teamPicks = getTeamPicks(team.team_key) || [];
                     const roundCostsForTeam = calculateTeamKeeperRoundCosts(team.team_key);
@@ -15548,9 +15557,9 @@
                         keepers: keeperDetails,
                         totalProjected: totalProjected,
                         totalExpected: totalExpected,
-                        totalValue: totalProjected - totalExpected,
+                        totalValue: totalKeeperValue,
                         totalPickValue: totalPickValue,
-                        combinedTotal: (totalProjected - totalExpected) + totalPickValue,
+                        combinedTotal: totalKeeperValue + totalPickValue,
                         keeperCount: keeperDetails.length
                     });
                 }
@@ -15750,9 +15759,8 @@
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
 
             tbody.innerHTML = teamValues.map((team, idx) => {
-                const keeperValueClass = team.totalValue > 0 ? 'value-positive' : 
-                                  team.totalValue < 0 ? 'value-negative' : 'value-neutral';
-                const keeperValuePrefix = team.totalValue > 0 ? '+' : '';
+                // Keeper value is now total value (always positive), no need for prefix
+                const keeperValueClass = 'value-positive';
                 
                 // Get top 3 best value players on this team
                 const topPlayers = [...team.keepers]
@@ -15763,8 +15771,8 @@
                     const playerNameLower = player.player_name.toLowerCase().trim();
                     const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
                     const headshot = headshotLookup[playerNameLower] || headshotLookup[baseNameLower] || placeholderImg;
-                    const playerValueClass = player.value > 0 ? 'value-positive' : player.value < 0 ? 'value-negative' : 'value-neutral';
-                    const playerValuePrefix = player.value > 0 ? '+' : '';
+                    // Color based on surplus value
+                    const playerValueClass = player.surplusValue > 0 ? 'value-positive' : player.surplusValue < 0 ? 'value-negative' : 'value-neutral';
                     const displayName = player.player_name.replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '');
                     
                     return `
@@ -15774,7 +15782,7 @@
                                 <span class="player-name">${displayName}</span>
                                 <span class="player-details">${getPositionBadge(player.position, player.player_name)} Rd ${player.roundCost}</span>
                             </div>
-                            <span class="player-value ${playerValueClass}">${playerValuePrefix}${Math.round(player.value)}</span>
+                            <span class="player-value ${playerValueClass}">${Math.round(player.value)}</span>
                         </div>
                     `;
                 }).join('');
@@ -15821,9 +15829,8 @@
                 const draftValueClass = totalPickValue > 0 ? 'value-positive' : 'value-neutral';
                 
                 const combinedTotal = team.totalValue + totalPickValue;
-                const combinedValueClass = combinedTotal > 0 ? 'value-positive' : 
-                                          combinedTotal < 0 ? 'value-negative' : 'value-neutral';
-                const combinedValuePrefix = combinedTotal > 0 ? '+' : '';
+                // Combined total is always positive now
+                const combinedValueClass = 'value-positive';
                 
                 const topPicksHtml = topPicks.length > 0 ? topPicks.map(pick => `
                     <div class="pick-value-item">
@@ -15844,10 +15851,10 @@
                             </div>
                         </td>
                         <td><div class="top-players-cell">${topPlayersHtml}</div></td>
-                        <td class="value-cell ${keeperValueClass}">${keeperValuePrefix}${Math.round(team.totalValue)}</td>
+                        <td class="value-cell ${keeperValueClass}">${Math.round(team.totalValue)}</td>
                         <td><div class="top-picks-cell">${topPicksHtml}</div></td>
-                        <td class="value-cell ${draftValueClass}">+${Math.round(totalPickValue)}</td>
-                        <td class="value-cell ${combinedValueClass}">${combinedValuePrefix}${Math.round(combinedTotal)}</td>
+                        <td class="value-cell ${draftValueClass}">${Math.round(totalPickValue)}</td>
+                        <td class="value-cell ${combinedValueClass}">${Math.round(combinedTotal)}</td>
                     </tr>
                 `;
             }).join('');
@@ -15911,12 +15918,12 @@
             if (!container) return;
 
             container.innerHTML = teamValues.map(team => {
-                const valueClass = team.totalValue > 0 ? 'positive' : team.totalValue < 0 ? 'negative' : '';
-                const valuePrefix = team.totalValue > 0 ? '+' : '';
+                // Total value is now always positive (projected + surplus), so just use positive styling
+                const valueClass = 'positive';
 
                 const keepersHtml = team.keepers.map(k => {
-                    const kValueClass = k.value > 0 ? 'value-positive' : k.value < 0 ? 'value-negative' : 'value-neutral';
-                    const kValuePrefix = k.value > 0 ? '+' : '';
+                    // Color based on surplus (above/below expected), but display total value
+                    const kValueClass = k.surplusValue > 0 ? 'value-positive' : k.surplusValue < 0 ? 'value-negative' : 'value-neutral';
                     
                     return `
                         <tr>
@@ -15929,7 +15936,7 @@
                             <td>Rd ${k.roundCost}</td>
                             <td>${Math.round(k.projectedPts)}</td>
                             <td>${Math.round(k.expectedPts)}</td>
-                            <td class="${kValueClass}">${kValuePrefix}${Math.round(k.value)}</td>
+                            <td class="${kValueClass}">${Math.round(k.value)}</td>
                         </tr>
                     `;
                 }).join('');
@@ -15944,7 +15951,7 @@
                                     <div class="team-manager">${team.manager}</div>
                                 </div>
                             </div>
-                            <div class="total-value ${valueClass}">${valuePrefix}${Math.round(team.totalValue)}</div>
+                            <div class="total-value ${valueClass}">${Math.round(team.totalValue)}</div>
                         </div>
                         <div class="team-value-card-body">
                             <table class="team-value-table">
@@ -16012,12 +16019,14 @@
             }
 
             // Prepare data points for regular keepers
+            // Use surplusValue for color coding (above/below expected line)
             const keeperPoints = keepers.map(k => ({
                 x: k.roundCost,
                 y: k.projectedPts,
                 player: k.player_name,
                 team: k.team_name,
                 value: k.value,
+                surplusValue: k.surplusValue,
                 expected: k.expectedPts
             }));
 
@@ -16029,6 +16038,7 @@
                 player: p.player_name,
                 team: p.team_name,
                 value: p.projectedPts,
+                surplusValue: p.projectedPts,
                 expected: 0
             }));
 
@@ -16047,7 +16057,7 @@
                     datasets: [
                         {
                             label: 'Above Expected',
-                            data: keeperPoints.filter(p => p.value > 0),
+                            data: keeperPoints.filter(p => p.surplusValue > 0),
                             backgroundColor: 'rgba(40, 167, 69, 0.7)',
                             borderColor: 'rgba(40, 167, 69, 1)',
                             pointRadius: 8,
@@ -16055,7 +16065,7 @@
                         },
                         {
                             label: 'Below Expected',
-                            data: keeperPoints.filter(p => p.value <= 0),
+                            data: keeperPoints.filter(p => p.surplusValue <= 0),
                             backgroundColor: 'rgba(220, 53, 69, 0.7)',
                             borderColor: 'rgba(220, 53, 69, 1)',
                             pointRadius: 8,
