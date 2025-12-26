@@ -7015,7 +7015,7 @@
                     <!-- Left: Scrollable Roster Section -->
                     <div class="keeper-roster-section">
                         <p style="color: #666; margin-bottom: 1rem;">Select players from your 2025 roster to keep.
-                            Budget: <strong>$50</strong>. Player costs are based on draft round.</p>
+                            Budget: <strong id="keeper-budget-display">$50</strong>. Player costs are based on draft round.</p>
                         <div id="keeper-roster-loading" class="loading" style="display: none;">Loading roster...</div>
                         <div class="keeper-roster-table-wrapper">
                             <table class="player-table keeper-table" id="keeper-roster-table">
@@ -13859,6 +13859,13 @@
             // Update header with team name and logo
             document.getElementById('keeper-current-team').textContent = `${teamInfo.team_name}`;
 
+            // Update budget display with team's actual budget
+            const teamBudget = typeof getTeamBudget === 'function' ? getTeamBudget(teamKey) : KEEPER_BUDGET;
+            const budgetDisplay = document.getElementById('keeper-budget-display');
+            if (budgetDisplay) {
+                budgetDisplay.textContent = `$${teamBudget}`;
+            }
+
             // Set team logo
             const logoEl = document.getElementById('keeper-team-logo');
             if (teamInfo.team_logo) {
@@ -15706,7 +15713,8 @@
                     },
                     scales: {
                         y: {
-                            beginAtZero: true,
+                            min: 100,
+                            max: 400,
                             title: {
                                 display: true,
                                 text: 'Points',
