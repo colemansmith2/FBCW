@@ -6758,7 +6758,7 @@
                         </div>
                     </div>
 
-                    <!-- Scatter Plot -->
+                    <!-- Scatter Plot - Projected Points -->
                     <div class="value-scatter-wrapper">
                         <h4>🎯 All Keepers: Projected Points vs. Keeper Cost</h4>
                         <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.75rem;">
@@ -6766,6 +6766,17 @@
                         </div>
                         <div class="value-scatter-chart">
                             <canvas id="value-scatter-chart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Scatter Plot - Keeper Value -->
+                    <div class="value-scatter-wrapper">
+                        <h4>💎 All Keepers: Total Value vs. Keeper Cost</h4>
+                        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.75rem;">
+                            Value = Projected Points + Surplus. Green = above expected, Red = below expected. Prospects shown at round 24.
+                        </div>
+                        <div class="value-scatter-chart">
+                            <canvas id="value-vs-cost-scatter-chart"></canvas>
                         </div>
                     </div>
                 </div>
@@ -15201,6 +15212,7 @@
         };
         let expectedPointsChart = null;
         let valueScatterChart = null;
+        let valueVsCostScatterChart = null;
 
         async function calculateExpectedPoints() {
             // Load draft data from all years (2019-2025)
@@ -15607,6 +15619,7 @@
                 const scatterWrapper = document.querySelector('.value-scatter-wrapper');
                 if (scatterWrapper) scatterWrapper.style.display = 'block';
                 renderValueScatterChart(allKeepers, prospects);
+                renderValueVsCostScatterChart(allKeepers, prospects);
             } catch (e) {
                 console.error('Error rendering scatter chart:', e);
             }
@@ -16149,6 +16162,147 @@
                             title: {
                                 display: true,
                                 text: 'Projected Points'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderValueVsCostScatterChart(keepers, prospects) {
+            const ctx = document.getElementById('value-vs-cost-scatter-chart');
+            if (!ctx) return;
+
+            // Destroy existing chart
+            if (valueVsCostScatterChart) {
+                valueVsCostScatterChart.destroy();
+            }
+
+            // Prepare data points for regular keepers - Y axis is now VALUE
+            const keeperPoints = keepers.map(k => ({
+                x: k.roundCost,
+                y: k.value,  // Total value (projected + surplus)
+                player: k.player_name,
+                team: k.team_name,
+                value: k.value,
+                surplusValue: k.surplusValue,
+                projectedPts: k.projectedPts,
+                expected: k.expectedPts
+            }));
+
+            // Prepare data points for prospects (x = 24 to put them after round 23)
+            // For prospects, value = projected points (since they're free)
+            const prospectPoints = prospects.filter(p => p.projectedPts > 0).map(p => ({
+                x: 24,
+                y: p.projectedPts,  // Value = projected points for prospects
+                player: p.player_name,
+                team: p.team_name,
+                value: p.projectedPts,
+                surplusValue: p.projectedPts,
+                projectedPts: p.projectedPts,
+                expected: 0
+            }));
+
+            // Expected value line - represents break-even (when projected = expected, value = expected)
+            const expectedLine = [];
+            for (let r = 1; r <= 23; r++) {
+                const exp = expectedPointsByRound[r]?.avg || 0;
+                expectedLine.push({
+                    x: r,
+                    y: exp  // Break-even value when projected = expected
+                });
+            }
+
+            valueVsCostScatterChart = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Above Expected',
+                            data: keeperPoints.filter(p => p.surplusValue > 0),
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                        },
+                        {
+                            label: 'Below Expected',
+                            data: keeperPoints.filter(p => p.surplusValue <= 0),
+                            backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                            borderColor: 'rgba(220, 53, 69, 1)',
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                        },
+                        {
+                            label: 'Prospects (Free)',
+                            data: prospectPoints,
+                            backgroundColor: 'rgba(23, 162, 184, 0.7)',
+                            borderColor: 'rgba(23, 162, 184, 1)',
+                            pointRadius: 8,
+                            pointHoverRadius: 10,
+                            pointStyle: 'triangle',
+                        },
+                        {
+                            label: 'Break-Even Value',
+                            data: expectedLine,
+                            type: 'line',
+                            borderColor: 'rgba(30, 60, 114, 0.5)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    if (!point.player) return `Break-even: ${point.y} pts`;
+                                    return [
+                                        `${point.player}`,
+                                        `Team: ${point.team}`,
+                                        `Total Value: ${Math.round(point.value)}`,
+                                        `Projected: ${Math.round(point.projectedPts)} pts`,
+                                        `Surplus: ${point.surplusValue > 0 ? '+' : ''}${Math.round(point.surplusValue)}`
+                                    ];
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 15
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Keeper Cost (Round)'
+                            },
+                            min: 0.5,
+                            max: 25,
+                            ticks: {
+                                callback: function(value) {
+                                    if (value === 24) return 'Free';
+                                    if (value % 2 === 0 || value === 1) return value;
+                                    return '';
+                                }
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Keeper Value'
                             },
                             beginAtZero: true
                         }
