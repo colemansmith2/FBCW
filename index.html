@@ -12741,6 +12741,11 @@
         function getPositionBadge(position, playerName) {
             if (!position || position === '-') return '<span class="position-badge">-</span>';
 
+            // Handle Util position directly
+            if (position.toLowerCase() === 'util') {
+                return '<span class="position-badge pos-Util">Util</span>';
+            }
+
             // Parse positions
             const positionsArray = position.split(/[,\/]/).map(p => p.trim()).filter(p => p);
 
@@ -12861,6 +12866,8 @@
             batters.forEach((player, index) => {
                 if (!player.position_ranks) player.position_ranks = {};
                 player.position_ranks['B'] = index + 1;
+                // UTIL rank is same as overall batter rank
+                player.position_ranks['UTIL'] = index + 1;
             });
 
             const pitchers = allPlayers.filter(p => p.type === 'pitcher')
@@ -12873,12 +12880,12 @@
 
         function formatProjectionPosition(position, playerName) {
             // Format position string, excluding "Util"
-            if (!position) return '-';
+            if (!position) return 'Util';
 
             // Split by comma or slash and filter out Util
             const positions = position.split(/[,\/]/)
                 .map(p => p.trim())
-                .filter(p => p && !['UTIL', 'NA'].includes(p.toUpperCase()));
+                .filter(p => p && !['UTIL', 'NA', 'B'].includes(p.toUpperCase()));
 
             // Handle Ohtani batter case specifically - if Shohei Ohtani has only pitcher positions, show as Util
             const pitcherPositions = ['SP', 'RP', 'P'];
@@ -12889,18 +12896,23 @@
                 return 'Util';
             }
 
-            return positions.length > 0 ? positions.join(', ') : '-';
+            // If no valid positions after filtering, return Util
+            return positions.length > 0 ? positions.join(', ') : 'Util';
         }
 
         function getProjectionPositionRank(player) {
-            if (!player.position_ranks || !player.position) return '-';
+            if (!player.position_ranks) return '-';
 
             // Get the first non-Util position
             const positions = (player.position || '').split(/[,\/]/)
                 .map(p => p.trim())
-                .filter(p => p && !['UTIL', 'NA'].includes(p.toUpperCase()));
+                .filter(p => p && !['UTIL', 'NA', 'B'].includes(p.toUpperCase()));
 
-            if (positions.length === 0) return '-';
+            // If no valid positions, use UTIL rank (which is same as B rank)
+            if (positions.length === 0) {
+                const utilRank = player.position_ranks['UTIL'] || player.position_ranks['B'];
+                return utilRank ? `UTIL${utilRank}` : '-';
+            }
 
             // Get the primary position (first one)
             let primaryPos = positions[0].toUpperCase();
@@ -12916,6 +12928,12 @@
             const rank = player.position_ranks[primaryPos];
             if (rank) {
                 return `${primaryPos}${rank}`;
+            }
+
+            // Fallback to UTIL rank for batters without recognized position
+            if (player.type === 'batter') {
+                const utilRank = player.position_ranks['UTIL'] || player.position_ranks['B'];
+                return utilRank ? `UTIL${utilRank}` : positions[0];
             }
 
             return positions[0];
@@ -13215,9 +13233,12 @@
                 const found = keepers.find(k => k.player_name.toLowerCase().trim() === normalizedName);
                 if (found) {
                     const teamInfo = keeperConfig.teams[teamKey];
+                    const rawManager = teamInfo?.manager || 'Unknown';
+                    // Use normalizeManagerName to get consistent manager display
+                    const normalizedManager = normalizeManagerName(rawManager, 2026, teamInfo?.team_name || '', teamKey);
                     return {
                         teamKey,
-                        manager: teamInfo?.manager || 'Unknown',
+                        manager: normalizedManager,
                         teamName: teamInfo?.team_name || 'Unknown'
                     };
                 }
