@@ -5483,6 +5483,194 @@
             color: #999;
         }
 
+        /* Championship Logo Selector Styles */
+        .championship-logo-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1.25rem 0.5rem;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, rgba(30, 60, 114, 0.05) 0%, rgba(42, 82, 152, 0.1) 100%);
+            border-radius: 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .championship-logo-item {
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                        box-shadow 0.2s ease;
+        }
+
+        .championship-logo-item .logo-wrapper {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #c9d1d9;
+            background: white;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .championship-logo-item .logo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .championship-logo-item:hover {
+            transform: scale(1.2);
+            z-index: 10;
+        }
+
+        .championship-logo-item:hover .logo-wrapper {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5), 
+                        0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .championship-logo-item.active .logo-wrapper {
+            border-color: #ffd700;
+            border-width: 4px;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.6), 
+                        0 4px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .championship-logo-item.active {
+            transform: scale(1.15);
+        }
+
+        /* Tooltip for championship logo */
+        .championship-logo-item .logo-tooltip {
+            position: absolute;
+            bottom: calc(100% + 12px);
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+            z-index: 100;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.4);
+            pointer-events: none;
+        }
+
+        .championship-logo-item .logo-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 8px solid transparent;
+            border-top-color: #2a5298;
+        }
+
+        .championship-logo-item:hover .logo-tooltip,
+        .championship-logo-item.tooltip-active .logo-tooltip {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(-50%) scale(1);
+        }
+
+        .logo-tooltip .tooltip-year {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 0.2rem;
+        }
+
+        .logo-tooltip .tooltip-team {
+            font-size: 0.85rem;
+            opacity: 0.95;
+        }
+
+        .logo-tooltip .tooltip-manager {
+            font-size: 0.75rem;
+            opacity: 0.75;
+            margin-top: 0.15rem;
+        }
+
+        /* Year indicator below logo */
+        .championship-logo-item .year-indicator {
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #666;
+            margin-top: 0.35rem;
+            transition: color 0.2s ease;
+        }
+
+        .championship-logo-item:hover .year-indicator,
+        .championship-logo-item.active .year-indicator {
+            color: #1e3c72;
+        }
+
+        /* Trophy icon for current champion */
+        .championship-logo-item.current-season .logo-wrapper::after {
+            content: '👑';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 1rem;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.3));
+        }
+
+        /* Mobile styles for championship logo selector */
+        @media (max-width: 768px) {
+            .championship-logo-selector {
+                gap: 0.5rem;
+                padding: 1rem 0.75rem;
+                justify-content: flex-start;
+            }
+
+            .championship-logo-item .logo-wrapper {
+                width: 48px;
+                height: 48px;
+                border-width: 2px;
+            }
+
+            .championship-logo-item.active .logo-wrapper {
+                border-width: 3px;
+            }
+
+            .championship-logo-item .year-indicator {
+                font-size: 0.65rem;
+            }
+
+            /* Tooltip positioned below on mobile for better visibility */
+            .championship-logo-item .logo-tooltip {
+                bottom: auto;
+                top: calc(100% + 45px);
+                padding: 0.5rem 0.75rem;
+            }
+
+            .championship-logo-item .logo-tooltip::after {
+                top: auto;
+                bottom: 100%;
+                border-top-color: transparent;
+                border-bottom-color: #2a5298;
+            }
+
+            .championship-logo-item:hover {
+                transform: scale(1.1);
+            }
+
+            .championship-logo-item.active {
+                transform: scale(1.1);
+            }
+        }
+
         /* Mobile styles for Player Scoring */
         @media (max-width: 768px) {
             .player-control-row {
@@ -6358,12 +6546,15 @@
         <div id="champions" class="section">
             <h2>🏆 Hall of Champions</h2>
 
-            <div class="season-selector">
-                <label for="champions-season">Select Championship Season:</label>
-                <select id="champions-season" onchange="loadChampionData()">
-                    <!-- Will be populated dynamically -->
-                </select>
+            <!-- Championship Logo Selector - will be populated dynamically -->
+            <div id="championship-logo-selector" class="championship-logo-selector">
+                <!-- Logos will be inserted here by JavaScript -->
             </div>
+
+            <!-- Hidden select for maintaining state -->
+            <select id="champions-season" style="display: none;" onchange="loadChampionData()">
+                <!-- Will be populated dynamically -->
+            </select>
 
             <div id="champions-loading" class="loading">Loading champion data...</div>
             <div id="champions-error" class="error" style="display: none;"></div>
@@ -11894,6 +12085,148 @@
         // ===== HALL OF CHAMPIONS =====
         let championsDataLoaded = false;
         let allChampionsData = {};
+        let championLogoSelectorInitialized = false;
+
+        // Initialize the championship logo selector with all champions
+        async function initChampionshipLogoSelector() {
+            if (championLogoSelectorInitialized) return;
+            
+            const selectorContainer = document.getElementById('championship-logo-selector');
+            const seasonSelect = document.getElementById('champions-season');
+            const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+            const placeholderLogo = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFhMWEyZSIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZCI+8J+PhjwvdGV4dD48L3N2Zz4=';
+            
+            // Populate hidden select for state management
+            if (seasonSelect.options.length === 0) {
+                seasons.slice().reverse().forEach(year => {
+                    const option = document.createElement('option');
+                    option.value = year;
+                    option.textContent = year === 2025 ? '2025 (Current)' : year;
+                    seasonSelect.appendChild(option);
+                });
+            }
+
+            // Load champion data for all seasons
+            const championsInfo = [];
+            
+            for (const year of seasons) {
+                try {
+                    const isCurrentSeason = year === 2025;
+                    const dataPath = isCurrentSeason ? 'data/current_season' : `data/historical/${year}`;
+                    const standingsFile = isCurrentSeason ? 'standings.json' : 'final_standings.json';
+                    
+                    const standingsResponse = await fetch(`${dataPath}/${standingsFile}`);
+                    if (!standingsResponse.ok) {
+                        championsInfo.push({ year, champion: null, logo: placeholderLogo, teamName: 'Unknown', manager: 'Unknown' });
+                        continue;
+                    }
+                    
+                    let standings = await standingsResponse.json();
+                    standings = normalizeStandingsData(standings, year);
+                    const champion = standings.find(team => team.rank === 1);
+                    
+                    if (!champion) {
+                        championsInfo.push({ year, champion: null, logo: placeholderLogo, teamName: 'Unknown', manager: 'Unknown' });
+                        continue;
+                    }
+                    
+                    // Load teams data for logo
+                    const teamsResponse = await fetch(`${dataPath}/teams.json`);
+                    let logo = placeholderLogo;
+                    if (teamsResponse.ok) {
+                        const teams = await teamsResponse.json();
+                        const championTeam = teams.find(t => t.team_key === champion.team_key);
+                        logo = championTeam?.team_logo || placeholderLogo;
+                    }
+                    
+                    championsInfo.push({
+                        year,
+                        champion,
+                        logo,
+                        teamName: champion.team_name,
+                        manager: champion.manager
+                    });
+                } catch (e) {
+                    console.log(`Error loading ${year} champion:`, e);
+                    championsInfo.push({ year, champion: null, logo: placeholderLogo, teamName: 'Unknown', manager: 'Unknown' });
+                }
+            }
+            
+            // Build the logo selector HTML
+            let html = '';
+            championsInfo.forEach(info => {
+                const isCurrentSeason = info.year === 2025;
+                const currentClass = isCurrentSeason ? 'current-season' : '';
+                html += `
+                    <div class="championship-logo-item ${currentClass}" data-year="${info.year}" onclick="selectChampionYear(${info.year})">
+                        <div class="logo-wrapper">
+                            <img src="${info.logo}" alt="${info.teamName}" onerror="this.src='${placeholderLogo}'">
+                        </div>
+                        <div class="year-indicator">${info.year}</div>
+                        <div class="logo-tooltip">
+                            <div class="tooltip-year">${info.year}${isCurrentSeason ? ' 👑' : ''}</div>
+                            <div class="tooltip-team">${info.teamName}</div>
+                            <div class="tooltip-manager">${info.manager}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            selectorContainer.innerHTML = html;
+            
+            // Add touch support for mobile tooltips
+            document.querySelectorAll('.championship-logo-item').forEach(item => {
+                item.addEventListener('touchstart', function(e) {
+                    // Remove active tooltip from all other items
+                    document.querySelectorAll('.championship-logo-item').forEach(other => {
+                        if (other !== this) {
+                            other.classList.remove('tooltip-active');
+                        }
+                    });
+                    // Toggle tooltip on this item
+                    this.classList.toggle('tooltip-active');
+                }, { passive: true });
+            });
+            
+            // Close tooltips when tapping elsewhere
+            document.addEventListener('touchstart', function(e) {
+                if (!e.target.closest('.championship-logo-item')) {
+                    document.querySelectorAll('.championship-logo-item').forEach(item => {
+                        item.classList.remove('tooltip-active');
+                    });
+                }
+            }, { passive: true });
+            
+            championLogoSelectorInitialized = true;
+            
+            // Select the most recent (first) season by default
+            selectChampionYear(2025, false);
+        }
+
+        // Handle year selection from logo click
+        function selectChampionYear(year, triggerLoad = true) {
+            const seasonSelect = document.getElementById('champions-season');
+            
+            // Update hidden select
+            seasonSelect.value = year;
+            
+            // Update active state on logos
+            document.querySelectorAll('.championship-logo-item').forEach(item => {
+                const itemYear = parseInt(item.dataset.year);
+                if (itemYear === year) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+                // Remove tooltip-active when selecting
+                item.classList.remove('tooltip-active');
+            });
+            
+            // Load champion data if requested
+            if (triggerLoad) {
+                loadChampionData();
+            }
+        }
 
         async function loadChampionData() {
             const loadingEl = document.getElementById('champions-loading');
@@ -11906,18 +12239,16 @@
                 errorEl.style.display = 'none';
                 contentEl.style.display = 'none';
 
-                // Populate season dropdown if not already done
-                if (seasonSelect.options.length === 0) {
-                    const seasons = [2025, 2024, 2023, 2022, 2021, 2020, 2019];
-                    seasons.forEach(year => {
-                        const option = document.createElement('option');
-                        option.value = year;
-                        option.textContent = year === 2025 ? '2025 (Current)' : year;
-                        seasonSelect.appendChild(option);
-                    });
+                // Initialize the logo selector if not done yet
+                if (!championLogoSelectorInitialized) {
+                    await initChampionshipLogoSelector();
                 }
 
                 const selectedYear = parseInt(seasonSelect.value) || 2025;
+                
+                // Update active logo state
+                selectChampionYear(selectedYear, false);
+                
                 const isCurrentSeason = selectedYear === 2025;
                 const dataPath = isCurrentSeason ? 'data/current_season' : `data/historical/${selectedYear}`;
 
