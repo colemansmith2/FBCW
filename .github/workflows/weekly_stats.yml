@@ -1,0 +1,79 @@
+# .github/workflows/weekly_stats.yml
+# 
+# FULLY AUTOMATIC weekly fantasy baseball stats collection
+# Tokens are automatically refreshed and saved back to GitHub Secrets
+# 
+# SETUP REQUIRED (one-time):
+# 
+# 1. Create a Personal Access Token (PAT):
+#    - Go to: GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+#    - Click "Generate new token (classic)"
+#    - Give it a name like "FBCW Stats Collector"
+#    - Select expiration (recommend: No expiration, or 1 year)
+#    - Select scope: "repo" (Full control of private repositories)
+#    - Click "Generate token" and COPY the token immediately
+#
+# 2. Add these repository secrets (Settings → Secrets and variables → Actions):
+#    - GITHUB_PAT: The Personal Access Token you just created
+#    - YAHOO_CONSUMER_KEY: Your Yahoo app consumer key
+#    - YAHOO_CONSUMER_SECRET: Your Yahoo app consumer secret
+#    - YAHOO_ACCESS_TOKEN: Your OAuth access token (from oauth2.json)
+#    - YAHOO_REFRESH_TOKEN: Your OAuth refresh token (from oauth2.json)
+#    - YAHOO_TOKEN_TIME: The token timestamp (from oauth2.json)
+#
+# 3. To get initial Yahoo tokens, run locally:
+#    python collect_weekly_stats.py
+#    Then copy values from the generated oauth2.json file
+#
+# After setup, the workflow will run automatically every Monday and keep
+# the tokens refreshed without any manual intervention!
+
+name: Collect Weekly Stats
+
+on:
+  schedule:
+    # Run every Monday at 5:30 AM UTC
+    # Adjust for your timezone - this is ~12:30 AM EST / 9:30 PM PST (Sunday)
+    - cron: '30 5 * * 1'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  collect-stats:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yahoo_oauth yahoo_fantasy_api pynacl
+
+      - name: Collect weekly stats
+        env:
+          # Yahoo OAuth credentials
+          YAHOO_CONSUMER_KEY: ${{ secrets.YAHOO_CONSUMER_KEY }}
+          YAHOO_CONSUMER_SECRET: ${{ secrets.YAHOO_CONSUMER_SECRET }}
+          YAHOO_ACCESS_TOKEN: ${{ secrets.YAHOO_ACCESS_TOKEN }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
+          YAHOO_TOKEN_TIME: ${{ secrets.YAHOO_TOKEN_TIME }}
+          # GitHub PAT for auto-updating secrets when tokens refresh
+          GITHUB_PAT: ${{ secrets.PAT }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python collect_weekly_stats.py
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff --staged --quiet || git commit -m "Update weekly stats - Week $(date +%U) [automated]"
+          git push
