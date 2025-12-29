@@ -15813,11 +15813,42 @@
             }
         }
 
-        function getLineupProjection(playerName) {
+        function getLineupProjection(playerName, position) {
             if (!playerName) return null;
-            const nameLower = playerName.toLowerCase().trim();
+            let nameLower = playerName.toLowerCase().trim();
             
-            // Search batters first
+            // Handle "Shohei Ohtani (Pitcher)" - strip the parenthetical and search pitchers
+            const isOhtaniPitcher = nameLower.includes('shohei ohtani') && nameLower.includes('pitcher');
+            if (isOhtaniPitcher) {
+                nameLower = 'shohei ohtani';
+                // Search pitchers first for Ohtani pitcher
+                const pitcher = lineupProjectionsData.pitchers.find(p => 
+                    p.name && p.name.toLowerCase().trim() === nameLower
+                );
+                if (pitcher) return pitcher;
+            }
+            
+            // Strip any parenthetical from player names
+            nameLower = nameLower.replace(/\s*\([^)]*\)\s*/g, '').trim();
+            
+            // If position indicates pitcher, search pitchers first
+            const isPitcherPosition = position && (position.toUpperCase().includes('SP') || position.toUpperCase().includes('RP') || position.toUpperCase() === 'P');
+            
+            if (isPitcherPosition) {
+                // Search pitchers first
+                let player = lineupProjectionsData.pitchers.find(p => 
+                    p.name && p.name.toLowerCase().trim() === nameLower
+                );
+                if (player) return player;
+                
+                // Fall back to batters
+                player = lineupProjectionsData.batters.find(p => 
+                    p.name && p.name.toLowerCase().trim() === nameLower
+                );
+                return player || null;
+            }
+            
+            // Search batters first for non-pitchers
             let player = lineupProjectionsData.batters.find(p => 
                 p.name && p.name.toLowerCase().trim() === nameLower
             );
@@ -15898,7 +15929,7 @@
                         const playerPos = keeper.position || '';
                         if (!canPlayPosition(playerPos, slot.pos)) continue;
                         
-                        const projection = getLineupProjection(keeper.player_name);
+                        const projection = getLineupProjection(keeper.player_name, playerPos);
                         const points = projection?.projected_points || 0;
                         
                         if (points > bestPoints) {
@@ -15909,7 +15940,7 @@
                     
                     if (bestKeeper) {
                         assigned.add(bestKeeper.player_name);
-                        const projection = getLineupProjection(bestKeeper.player_name);
+                        const projection = getLineupProjection(bestKeeper.player_name, bestKeeper.position);
                         const entry = {
                             ...bestKeeper,
                             slotPos: slot.pos,
@@ -15940,7 +15971,7 @@
             // Fill bench with remaining keepers
             for (const keeper of regularKeepers) {
                 if (assigned.has(keeper.player_name)) continue;
-                const projection = getLineupProjection(keeper.player_name);
+                const projection = getLineupProjection(keeper.player_name, keeper.position);
                 lineup.bench.push({
                     ...keeper,
                     slotPos: 'BN',
@@ -15950,7 +15981,7 @@
             
             // Organize prospects by type
             for (const prospect of prospects) {
-                const projection = getLineupProjection(prospect.player_name);
+                const projection = getLineupProjection(prospect.player_name, prospect.position);
                 const entry = {
                     ...prospect,
                     slotPos: prospect.position || 'BN',
@@ -15997,6 +16028,9 @@
             // Get position badge - use SP for P slots
             const posDisplay = player.slotPos === 'P' ? 'SP' : player.slotPos;
             
+            // Clean up player name - strip any parenthetical like "(Pitcher)"
+            const displayName = player.player_name.replace(/\s*\([^)]*\)\s*/g, '').trim();
+            
             // Build stats based on player type
             let statsHtml = '';
             if (isBatter) {
@@ -16026,7 +16060,7 @@
                     <div class="lineup-pos-badge">${getPositionBadge(posDisplay, player.player_name)}</div>
                     <img src="${headshot}" class="lineup-player-headshot" alt="" onerror="this.src='${placeholderImg}'">
                     <div class="lineup-player-info">
-                        <div class="lineup-player-name">${player.player_name}${player.isProspect ? ' <span style="font-size:0.65rem;color:#888;">(P)</span>' : ''}</div>
+                        <div class="lineup-player-name">${displayName}${player.isProspect ? ' <span style="font-size:0.65rem;color:#888;">(P)</span>' : ''}</div>
                         <div class="lineup-player-mlb">
                             ${mlbLogo ? `<img src="${mlbLogo}" class="lineup-mlb-logo" alt="" onerror="this.style.display='none'">` : ''}
                             <span>${mlbTeam}</span>
@@ -16090,7 +16124,7 @@
                     </div>
                     <div class="lineup-card-content">
                         <div class="lineup-column">
-                            <div class="lineup-section-title">⚾ Batters</div>
+                            <div class="lineup-section-title">Batters</div>
                             ${battersHtml}
                             ${benchBattersHtml ? `<div class="lineup-section-title">📋 Bench</div>${benchBattersHtml}` : ''}
                             <div class="lineup-prospects-section ${showLineupProspects ? 'visible' : ''}" id="lineup-prospects-batters-${teamData.teamKey}">
@@ -16098,7 +16132,7 @@
                             </div>
                         </div>
                         <div class="lineup-column">
-                            <div class="lineup-section-title">🎯 Pitchers</div>
+                            <div class="lineup-section-title">Pitchers</div>
                             ${pitchersHtml}
                             ${benchPitchersHtml ? `<div class="lineup-section-title">📋 Bench</div>${benchPitchersHtml}` : ''}
                             <div class="lineup-prospects-section ${showLineupProspects ? 'visible' : ''}" id="lineup-prospects-pitchers-${teamData.teamKey}">
