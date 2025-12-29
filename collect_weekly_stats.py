@@ -4,11 +4,28 @@ Generates weekly_stats.json for the in-season dashboard
 
 This script should run every Monday morning to collect the previous week's data.
 It pulls data from Yahoo Fantasy API and formats it for the website.
+
+FULLY AUTOMATIC - Tokens are automatically refreshed and saved back to GitHub Secrets.
+
+SETUP FOR GITHUB ACTIONS:
+1. Create a Personal Access Token (PAT) with 'repo' scope:
+   - Go to GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+   - Generate new token with 'repo' scope
+   - Save this as GITHUB_PAT secret
+
+2. Create these GitHub Secrets in your repository:
+   - GITHUB_PAT: Your personal access token (for updating secrets)
+   - YAHOO_CONSUMER_KEY: Your Yahoo app consumer key
+   - YAHOO_CONSUMER_SECRET: Your Yahoo app consumer secret
+   - YAHOO_ACCESS_TOKEN: Your OAuth access token
+   - YAHOO_REFRESH_TOKEN: Your OAuth refresh token
+   - YAHOO_TOKEN_TIME: The token timestamp
 """
 
 import json
 import os
 import math
+import base64
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 from yahoo_oauth import OAuth2
@@ -27,7 +44,7 @@ BATTING_SCORING = {
     '1B': 2.6, '2B': 5.2, '3B': 7.8, 'HR': 10.4,
     'RBI': 1.9, 'R': 1.9, 'BB': 2.6, 'HBP': 2.6,
     'SB': 4.2, 'CS': -2.6, 'SO': -1, 'IBB': 0,
-    'CYC': 10, 'SLAM': 10  # Cycle and Grand Slam bonuses
+    'CYC': 10, 'SLAM': 10
 }
 
 PITCHING_SCORING = {
@@ -49,6 +66,110 @@ PITCHING_STAT_IDS = {
     27: 'ER', 25: 'H', 39: 'BB', 42: 'K',
     63: 'QS', 34: 'CG', 35: 'SHO', 54: 'NH', 77: 'PICK'
 }
+
+# =============================================================================
+# GITHUB SECRETS MANAGEMENT
+# =============================================================================
+
+def get_github_public_key(repo_owner: str, repo_name: str, github_token: str) -> tuple:
+    """Get the public key for encrypting secrets."""
+    import urllib.request
+    import urllib.error
+    
+    url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/secrets/public-key"
+    req = urllib.request.Request(url)
+    req.add_header("Authorization", f"Bearer {github_token}")
+    req.add_header("Accept", "application/vnd.github+json")
+    req.add_header("X-GitHub-Api-Version", "2022-11-28")
+    
+    try:
+        with urllib.request.urlopen(req) as response:
+            data = json.loads(response.read().decode())
+            return data['key'], data['key_id']
+    except urllib.error.HTTPError as e:
+        print(f"Error getting public key: {e.code} - {e.read().decode()}")
+        raise
+
+def encrypt_secret(public_key: str, secret_value: str) -> str:
+    """Encrypt a secret using the repository's public key."""
+    from nacl import encoding, public
+    
+    public_key_bytes = public.PublicKey(public_key.encode("utf-8"), encoding.Base64Encoder())
+    sealed_box = public.SealedBox(public_key_bytes)
+    encrypted = sealed_box.encrypt(secret_value.encode("utf-8"))
+    return base64.b64encode(encrypted).decode("utf-8")
+
+def update_github_secret(repo_owner: str, repo_name: str, github_token: str, 
+                         secret_name: str, secret_value: str) -> bool:
+    """Update a GitHub repository secret."""
+    import urllib.request
+    import urllib.error
+    
+    try:
+        # Get public key
+        public_key, key_id = get_github_public_key(repo_owner, repo_name, github_token)
+        
+        # Encrypt the secret
+        encrypted_value = encrypt_secret(public_key, secret_value)
+        
+        # Update the secret
+        url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/actions/secrets/{secret_name}"
+        data = json.dumps({
+            "encrypted_value": encrypted_value,
+            "key_id": key_id
+        }).encode('utf-8')
+        
+        req = urllib.request.Request(url, data=data, method='PUT')
+        req.add_header("Authorization", f"Bearer {github_token}")
+        req.add_header("Accept", "application/vnd.github+json")
+        req.add_header("Content-Type", "application/json")
+        req.add_header("X-GitHub-Api-Version", "2022-11-28")
+        
+        with urllib.request.urlopen(req) as response:
+            print(f"  ✓ Updated secret: {secret_name}")
+            return True
+            
+    except urllib.error.HTTPError as e:
+        print(f"  ✗ Failed to update {secret_name}: {e.code} - {e.read().decode()}")
+        return False
+    except ImportError:
+        print("  ✗ PyNaCl not installed - cannot encrypt secrets")
+        print("    Install with: pip install pynacl")
+        return False
+    except Exception as e:
+        print(f"  ✗ Error updating {secret_name}: {e}")
+        return False
+
+def save_tokens_to_github_secrets(oauth_data: dict) -> bool:
+    """Save refreshed OAuth tokens back to GitHub Secrets."""
+    github_token = os.environ.get('GITHUB_PAT')
+    github_repo = os.environ.get('GITHUB_REPOSITORY', '')
+    
+    if not github_token:
+        print("GITHUB_PAT not set - cannot auto-update secrets")
+        return False
+    
+    if not github_repo or '/' not in github_repo:
+        print(f"GITHUB_REPOSITORY not valid: {github_repo}")
+        return False
+    
+    repo_owner, repo_name = github_repo.split('/', 1)
+    
+    print("\nUpdating GitHub Secrets with refreshed tokens...")
+    
+    success = True
+    secrets_to_update = {
+        'YAHOO_ACCESS_TOKEN': oauth_data.get('access_token', ''),
+        'YAHOO_REFRESH_TOKEN': oauth_data.get('refresh_token', ''),
+        'YAHOO_TOKEN_TIME': str(oauth_data.get('token_time', ''))
+    }
+    
+    for secret_name, secret_value in secrets_to_update.items():
+        if secret_value:
+            if not update_github_secret(repo_owner, repo_name, github_token, secret_name, secret_value):
+                success = False
+    
+    return success
 
 # =============================================================================
 # HELPER FUNCTIONS
@@ -75,14 +196,80 @@ def safe_int(value, default=0):
         return default
 
 def setup_oauth():
-    """Initialize OAuth for Yahoo Fantasy API."""
+    """
+    Initialize OAuth for Yahoo Fantasy API.
+    Automatically handles token refresh and saves new tokens to GitHub Secrets.
+    """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     oauth_path = os.path.join(script_dir, 'oauth2.json')
     
-    if not os.path.exists(oauth_path):
-        raise FileNotFoundError(f"oauth2.json not found at: {oauth_path}")
+    # Check if we have environment variables (GitHub Actions mode)
+    consumer_key = os.environ.get('YAHOO_CONSUMER_KEY')
+    consumer_secret = os.environ.get('YAHOO_CONSUMER_SECRET')
+    access_token = os.environ.get('YAHOO_ACCESS_TOKEN')
+    refresh_token = os.environ.get('YAHOO_REFRESH_TOKEN')
+    token_time = os.environ.get('YAHOO_TOKEN_TIME')
     
-    return OAuth2(None, None, from_file=oauth_path)
+    if all([consumer_key, consumer_secret, access_token, refresh_token]):
+        print("Using credentials from environment variables")
+        
+        # Create oauth2.json from environment variables
+        original_oauth_data = {
+            "consumer_key": consumer_key,
+            "consumer_secret": consumer_secret,
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_time": float(token_time) if token_time else datetime.now().timestamp(),
+            "token_type": "bearer"
+        }
+        
+        # Write temporary oauth file
+        with open(oauth_path, 'w') as f:
+            json.dump(original_oauth_data, f)
+        
+        try:
+            oauth = OAuth2(None, None, from_file=oauth_path)
+            
+            # Read back the file to check for token refresh
+            with open(oauth_path, 'r') as f:
+                updated_oauth_data = json.load(f)
+            
+            # Check if tokens changed (were refreshed)
+            if updated_oauth_data.get('access_token') != access_token:
+                print("\n" + "=" * 60)
+                print("OAuth tokens were refreshed!")
+                print("=" * 60)
+                
+                # Try to automatically update GitHub Secrets
+                if save_tokens_to_github_secrets(updated_oauth_data):
+                    print("✓ Tokens automatically saved to GitHub Secrets")
+                else:
+                    # Manual fallback
+                    print("\nManual update required. Update these GitHub Secrets:")
+                    print(f"  YAHOO_ACCESS_TOKEN: {updated_oauth_data.get('access_token')}")
+                    print(f"  YAHOO_REFRESH_TOKEN: {updated_oauth_data.get('refresh_token')}")
+                    print(f"  YAHOO_TOKEN_TIME: {updated_oauth_data.get('token_time')}")
+            
+            return oauth
+            
+        finally:
+            # Clean up the temporary file for security
+            if os.path.exists(oauth_path):
+                os.remove(oauth_path)
+    
+    # Fall back to local file (for local development)
+    elif os.path.exists(oauth_path):
+        print("Using credentials from local oauth2.json file")
+        print("WARNING: Make sure oauth2.json is in your .gitignore!")
+        return OAuth2(None, None, from_file=oauth_path)
+    
+    else:
+        raise FileNotFoundError(
+            "No OAuth credentials found!\n"
+            "For GitHub Actions: Set YAHOO_CONSUMER_KEY, YAHOO_CONSUMER_SECRET, "
+            "YAHOO_ACCESS_TOKEN, and YAHOO_REFRESH_TOKEN as repository secrets.\n"
+            "For local development: Create an oauth2.json file."
+        )
 
 def get_current_week(lg) -> int:
     """Get the current fantasy week number."""
@@ -94,14 +281,8 @@ def get_current_week(lg) -> int:
         return 1
 
 def get_completed_week(lg) -> int:
-    """
-    Get the most recently completed week.
-    If today is Monday, returns last week's number.
-    """
+    """Get the most recently completed week."""
     current_week = get_current_week(lg)
-    
-    # If it's Monday and we're running the update, 
-    # we want the week that just ended (current_week - 1)
     today = datetime.now()
     if today.weekday() == 0:  # Monday
         return max(1, current_week - 1)
@@ -112,10 +293,7 @@ def get_completed_week(lg) -> int:
 # =============================================================================
 
 def get_team_stats(lg, week: int) -> Dict:
-    """
-    Get team stats for a specific week.
-    Returns hitting and pitching stats broken down by team.
-    """
+    """Get team stats for a specific week."""
     hitting_stats = []
     pitching_stats = []
     
@@ -123,7 +301,6 @@ def get_team_stats(lg, week: int) -> Dict:
     
     for team_key, team_info in teams.items():
         try:
-            # Get team's weekly stats
             team_stats = lg.team_stats(team_key, week=week)
             
             hitting = {
@@ -139,26 +316,22 @@ def get_team_stats(lg, week: int) -> Dict:
                 'Points': 0
             }
             
-            # Parse stats from Yahoo response
             for stat in team_stats.get('stats', []):
                 stat_id = stat.get('stat_id')
                 value = safe_float(stat.get('value', 0))
                 
-                # Batting stats
                 if stat_id in BATTING_STAT_IDS:
                     stat_name = BATTING_STAT_IDS[stat_id]
                     hitting[stat_name] = value
                     if stat_name in BATTING_SCORING:
                         hitting['Points'] += value * BATTING_SCORING[stat_name]
                 
-                # Pitching stats
                 if stat_id in PITCHING_STAT_IDS:
                     stat_name = PITCHING_STAT_IDS[stat_id]
                     pitching[stat_name] = value
                     if stat_name in PITCHING_SCORING:
                         pitching['Points'] += value * PITCHING_SCORING[stat_name]
             
-            # Calculate derived stats
             if 'IP' in pitching and pitching['IP'] > 0:
                 ip = pitching['IP']
                 pitching['ERA'] = round((pitching.get('ER', 0) * 9) / ip, 2)
@@ -190,7 +363,7 @@ def get_matchups(lg, week: int) -> List[Dict]:
         matchup_data = lg.matchups(week=week)
         raw_matchups = matchup_data['fantasy_content']['league'][1]['scoreboard']['0']['matchups']
         
-        for i in range(6):  # Max 6 matchups in a 12-team league
+        for i in range(6):
             matchup_key = str(i)
             if matchup_key not in raw_matchups:
                 break
@@ -214,22 +387,15 @@ def get_matchups(lg, week: int) -> List[Dict]:
 
 def get_top_performers(lg, week: int) -> Dict:
     """Get top individual player performances for the week."""
-    top_hitters = []
-    top_pitchers = []
-    
-    # This would require additional API calls to get individual player stats
-    # For now, return empty lists - can be enhanced later
-    
     return {
-        'topHitters': top_hitters,
-        'topPitchers': top_pitchers
+        'topHitters': [],
+        'topPitchers': []
     }
 
 def get_category_leaders(hitting_stats: List, pitching_stats: List) -> Dict:
     """Calculate category leaders from team stats."""
     leaders = {}
     
-    # Hitting categories
     hitting_cats = ['HR', 'RBI', 'SB', '1B', '2B', '3B']
     for cat in hitting_cats:
         sorted_teams = sorted(hitting_stats, key=lambda x: x.get(cat, 0), reverse=True)
@@ -239,7 +405,6 @@ def get_category_leaders(hitting_stats: List, pitching_stats: List) -> Dict:
                 'value': sorted_teams[0].get(cat, 0)
             }
     
-    # Pitching categories
     pitching_cats = ['K', 'W', 'SV', 'QS']
     for cat in pitching_cats:
         sorted_teams = sorted(pitching_stats, key=lambda x: x.get(cat, 0), reverse=True)
@@ -249,7 +414,6 @@ def get_category_leaders(hitting_stats: List, pitching_stats: List) -> Dict:
                 'value': sorted_teams[0].get(cat, 0)
             }
     
-    # ERA (lower is better) - only include teams with IP
     pitching_with_ip = [p for p in pitching_stats if p.get('IP', 0) > 0]
     if pitching_with_ip:
         sorted_era = sorted(pitching_with_ip, key=lambda x: x.get('ERA', 999))
@@ -265,7 +429,6 @@ def calculate_cumulative_stats(all_weeks: Dict) -> Dict:
     cumulative_hitting = {}
     cumulative_pitching = {}
     
-    # Sum up all weeks
     for week_num, week_data in all_weeks.items():
         for hitting in week_data.get('hitting', []):
             team_key = hitting['team_key']
@@ -299,7 +462,6 @@ def calculate_cumulative_stats(all_weeks: Dict) -> Dict:
                 current = cumulative_pitching[team_key].get(key, 0)
                 cumulative_pitching[team_key][key] = current + value
     
-    # Recalculate derived stats for cumulative
     for team_key, stats in cumulative_pitching.items():
         ip = stats.get('IP', 0)
         if ip > 0:
@@ -308,7 +470,6 @@ def calculate_cumulative_stats(all_weeks: Dict) -> Dict:
         else:
             stats['ERA'] = 0
             stats['K/9'] = 0
-        
         stats['Points'] = round(stats['Points'], 1)
     
     for team_key, stats in cumulative_hitting.items():
@@ -341,11 +502,9 @@ def collect_weekly_stats():
     lg = League(oauth, league_ids[0])
     print(f"League: {lg.metadata().get('name', 'Unknown')}")
     
-    # Determine which week to collect
     completed_week = get_completed_week(lg)
     print(f"Collecting data for Week {completed_week}")
     
-    # Load existing data if available
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
     
     existing_data = {
@@ -362,14 +521,12 @@ def collect_weekly_stats():
         except Exception as e:
             print(f"Could not load existing data: {e}")
     
-    # Collect stats for completed week
     print(f"\nCollecting Week {completed_week} stats...")
     week_stats = get_team_stats(lg, completed_week)
     matchups = get_matchups(lg, completed_week)
     performers = get_top_performers(lg, completed_week)
     leaders = get_category_leaders(week_stats['hitting'], week_stats['pitching'])
     
-    # Store week data
     existing_data['weeks'][str(completed_week)] = {
         'hitting': week_stats['hitting'],
         'pitching': week_stats['pitching'],
@@ -379,18 +536,14 @@ def collect_weekly_stats():
         'categoryLeaders': leaders
     }
     
-    # Update current week pointer
     existing_data['currentWeek'] = completed_week
     
-    # Recalculate cumulative stats
     print("Calculating cumulative stats...")
     existing_data['cumulative'] = calculate_cumulative_stats(existing_data['weeks'])
     
-    # Add metadata
     existing_data['lastUpdated'] = datetime.now().isoformat()
     existing_data['season'] = SEASON
     
-    # Save
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
     
@@ -417,12 +570,19 @@ Usage:
     python collect_weekly_stats.py --week N # Collect specific week N
     python collect_weekly_stats.py --all    # Collect all weeks up to current
     python collect_weekly_stats.py --help   # Show this help
+
+Environment Variables (for GitHub Actions):
+    YAHOO_CONSUMER_KEY      - Your Yahoo app consumer key
+    YAHOO_CONSUMER_SECRET   - Your Yahoo app consumer secret  
+    YAHOO_ACCESS_TOKEN      - Your OAuth access token
+    YAHOO_REFRESH_TOKEN     - Your OAuth refresh token
+    YAHOO_TOKEN_TIME        - Token timestamp
+    GITHUB_PAT              - GitHub Personal Access Token (for auto-updating secrets)
+    GITHUB_REPOSITORY       - Auto-set by GitHub Actions (owner/repo)
         """)
     elif len(sys.argv) > 2 and sys.argv[1] == "--week":
-        # Collect specific week
         week = int(sys.argv[2])
         print(f"Collecting specific week: {week}")
-        # Would need to modify collect_weekly_stats to accept week parameter
         collect_weekly_stats()
     elif len(sys.argv) > 1 and sys.argv[1] == "--all":
         print("Collecting all weeks...")
