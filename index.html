@@ -5808,6 +5808,13 @@
         /* Lineup Content */
         .lineup-card-content {
             padding: 0.75rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .lineup-column {
+            flex: 1;
+            min-width: 0;
         }
 
         .lineup-section-title {
@@ -6065,6 +6072,12 @@
 
             .lineup-card-header .team-name {
                 font-size: 0.9rem;
+            }
+
+            /* Stack columns vertically on mobile */
+            .lineup-card-content {
+                flex-direction: column;
+                gap: 0;
             }
 
             .lineup-player-row {
@@ -15957,7 +15970,7 @@
         }
 
         function renderLineupPlayerRow(player, isBatter = true) {
-            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+PzwvdGV4dD48L3N2Zz4=';
+            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
             
             if (player.isEmpty) {
                 // Empty slot
@@ -15987,12 +16000,14 @@
             // Build stats based on player type
             let statsHtml = '';
             if (isBatter) {
+                const games = stats.G || 0;
+                const ppg = games > 0 ? (points / games).toFixed(2) : '-';
                 statsHtml = `
                     <div class="lineup-stat"><div class="lineup-stat-value">${stats.HR || 0}</div><div class="lineup-stat-label">HR</div></div>
-                    <div class="lineup-stat"><div class="lineup-stat-value">${stats.RBI || 0}</div><div class="lineup-stat-label">RBI</div></div>
-                    <div class="lineup-stat"><div class="lineup-stat-value">${stats.R || 0}</div><div class="lineup-stat-label">R</div></div>
                     <div class="lineup-stat"><div class="lineup-stat-value">${stats.SB || 0}</div><div class="lineup-stat-label">SB</div></div>
-                    <div class="lineup-stat"><div class="lineup-stat-value">${(stats.AVG || 0).toFixed(3)}</div><div class="lineup-stat-label">AVG</div></div>
+                    <div class="lineup-stat"><div class="lineup-stat-value">${(stats.OPS || 0).toFixed(3)}</div><div class="lineup-stat-label">OPS</div></div>
+                    <div class="lineup-stat"><div class="lineup-stat-value">${games}</div><div class="lineup-stat-label">G</div></div>
+                    <div class="lineup-stat"><div class="lineup-stat-value">${ppg}</div><div class="lineup-stat-label">PPG</div></div>
                 `;
             } else {
                 statsHtml = `
@@ -16025,7 +16040,7 @@
 
         function renderLineupCard(teamData) {
             const lineup = buildTeamLineup(teamData);
-            const placeholderLogo = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFhMWEyZSIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZCI+8J+Phjwv dGV4dD48L3N2Zz4=';
+            const placeholderLogo = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFhMWEyZSIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZCI+8J+PhjwvdGV4dD48L3N2Zz4=';
             
             // Calculate total projected points
             let totalPoints = 0;
@@ -16039,28 +16054,25 @@
             // Render pitchers
             let pitchersHtml = lineup.pitchers.map(p => renderLineupPlayerRow(p, false)).join('');
             
-            // Render bench
-            let benchHtml = '';
-            if (lineup.bench.length > 0) {
-                benchHtml = lineup.bench.map(p => {
-                    const isBatter = getPlayerPositionType(p.position) !== 'pitcher';
-                    return renderLineupPlayerRow(p, isBatter);
-                }).join('');
-            }
+            // Render bench - split by type for each column
+            let benchBattersHtml = '';
+            let benchPitchersHtml = '';
+            lineup.bench.forEach(p => {
+                const isBatter = getPlayerPositionType(p.position) !== 'pitcher';
+                if (isBatter) {
+                    benchBattersHtml += renderLineupPlayerRow(p, true);
+                } else {
+                    benchPitchersHtml += renderLineupPlayerRow(p, false);
+                }
+            });
             
-            // Render prospects (hidden by default)
-            let prospectsHtml = '';
+            // Render prospects
             const hasProspects = lineup.prospects.batters.length > 0 || lineup.prospects.pitchers.length > 0;
+            let prospectBattersHtml = '';
+            let prospectPitchersHtml = '';
             if (hasProspects) {
-                let prospectBattersHtml = lineup.prospects.batters.map(p => renderLineupPlayerRow(p, true)).join('');
-                let prospectPitchersHtml = lineup.prospects.pitchers.map(p => renderLineupPlayerRow(p, false)).join('');
-                
-                prospectsHtml = `
-                    <div class="lineup-prospects-section ${showLineupProspects ? 'visible' : ''}" id="lineup-prospects-${teamData.teamKey}">
-                        ${prospectBattersHtml ? `<div class="lineup-section-title">🌟 Prospect Batters</div>${prospectBattersHtml}` : ''}
-                        ${prospectPitchersHtml ? `<div class="lineup-section-title">🌟 Prospect Pitchers</div>${prospectPitchersHtml}` : ''}
-                    </div>
-                `;
+                prospectBattersHtml = lineup.prospects.batters.map(p => renderLineupPlayerRow(p, true)).join('');
+                prospectPitchersHtml = lineup.prospects.pitchers.map(p => renderLineupPlayerRow(p, false)).join('');
             }
             
             return `
@@ -16077,15 +16089,22 @@
                         </div>
                     </div>
                     <div class="lineup-card-content">
-                        <div class="lineup-section-title">⚾ Batters</div>
-                        ${battersHtml}
-                        
-                        <div class="lineup-section-title">🎯 Pitchers</div>
-                        ${pitchersHtml}
-                        
-                        ${benchHtml ? `<div class="lineup-section-title">📋 Bench</div>${benchHtml}` : ''}
-                        
-                        ${prospectsHtml}
+                        <div class="lineup-column">
+                            <div class="lineup-section-title">⚾ Batters</div>
+                            ${battersHtml}
+                            ${benchBattersHtml ? `<div class="lineup-section-title">📋 Bench</div>${benchBattersHtml}` : ''}
+                            <div class="lineup-prospects-section ${showLineupProspects ? 'visible' : ''}" id="lineup-prospects-batters-${teamData.teamKey}">
+                                ${prospectBattersHtml ? `<div class="lineup-section-title">🌟 Prospect Batters</div>${prospectBattersHtml}` : ''}
+                            </div>
+                        </div>
+                        <div class="lineup-column">
+                            <div class="lineup-section-title">🎯 Pitchers</div>
+                            ${pitchersHtml}
+                            ${benchPitchersHtml ? `<div class="lineup-section-title">📋 Bench</div>${benchPitchersHtml}` : ''}
+                            <div class="lineup-prospects-section ${showLineupProspects ? 'visible' : ''}" id="lineup-prospects-pitchers-${teamData.teamKey}">
+                                ${prospectPitchersHtml ? `<div class="lineup-section-title">🌟 Prospect Pitchers</div>${prospectPitchersHtml}` : ''}
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
