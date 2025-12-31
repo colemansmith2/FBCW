@@ -4276,6 +4276,19 @@
             font-size: 0.7rem;
         }
 
+        .player-table th.bpa-header {
+            cursor: help;
+        }
+
+        .player-table th.bpa-header:hover {
+            background: linear-gradient(135deg, #2a5298, #3a6bc7);
+        }
+
+        .player-table .bpa-value {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
         .player-table td {
             padding: 0.6rem 0.5rem;
             border-bottom: 1px solid #eee;
@@ -13853,6 +13866,16 @@
             // Sort data
             data.sort((a, b) => {
                 const col = projectionSort.column;
+                
+                // Special handling for BPA sorting
+                if (col === 'bpa' && !showKeptPlayers) {
+                    // BPA is based on projected points ranking among non-keepers
+                    // Lower BPA = better, so we sort by projected_points descending for 'asc' BPA
+                    const aPoints = a.projected_points || 0;
+                    const bPoints = b.projected_points || 0;
+                    // For BPA, 'asc' means best available first (highest points), 'desc' means worst first
+                    return projectionSort.direction === 'asc' ? (bPoints - aPoints) : (aPoints - bPoints);
+                }
 
                 // === HELPER: Check both main object AND stats object ===
                 const getVal = (obj) => {
@@ -13892,6 +13915,22 @@
             // Check if we have mixed data or just batters/pitchers
             const hasBatters = filteredProjections.some(p => p.type === 'batter');
             const hasPitchers = filteredProjections.some(p => p.type === 'pitcher');
+            
+            // Calculate BPA rankings when keepers are hidden
+            // BPA = ranking by projected points with keepers removed
+            let bpaRankings = {};
+            if (!showKeptPlayers) {
+                // Get all players (not just filtered) excluding keepers, sorted by projected points
+                const allNonKeepers = [...allProjectionBatters, ...allProjectionPitchers]
+                    .filter(p => getPlayerKeeperInfo(p.name) === null)
+                    .sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
+                
+                // Assign BPA rank to each player
+                allNonKeepers.forEach((player, index) => {
+                    const nameLower = (player.name || '').toLowerCase().trim();
+                    bpaRankings[nameLower] = index + 1;
+                });
+            }
 
             // Build headers based on data type
             let headers = `
@@ -13901,6 +13940,7 @@
                     <th class="sortable" onclick="sortProjectionTable('position')">Pos</th>
                     <th>Rank</th>
                     <th class="sortable stat-col" onclick="sortProjectionTable('projected_points')">Proj Pts</th>
+                    ${!showKeptPlayers ? '<th class="sortable stat-col bpa-header" onclick="sortProjectionTable(\'bpa\')" title="Best Player Available - Draft ranking with keepers removed from the player pool">BPA</th>' : ''}
                     <th class="sortable stat-col" onclick="sortProjectionTable('games')">G</th>
                     <th class="sortable stat-col" onclick="sortProjectionTable('ppg')">PPG</th>
             `;
@@ -14002,6 +14042,10 @@
                 // Check if player is kept by someone
                 const keeperInfo = getPlayerKeeperInfo(player.name);
                 const isKept = keeperInfo !== null;
+                
+                // Get BPA rank for this player (only when keepers hidden)
+                const playerNameLower = (player.name || '').toLowerCase().trim();
+                const bpaRank = bpaRankings[playerNameLower] || '-';
 
                 // Escape player name for onclick
                 const escapedName = player.name.replace(/'/g, "\\'");
@@ -14029,6 +14073,7 @@
                     <td>${getPositionBadge(positionDisplay, player.name)}</td>
                     <td class="player-position">${positionRank}</td>
                     <td class="stat-col player-points">${projPoints.toFixed(1)}</td>
+                    ${!showKeptPlayers ? `<td class="stat-col bpa-value">${bpaRank}</td>` : ''}
                     <td class="stat-col">${games || '-'}</td>
                     <td class="stat-col">${ppg}</td>
                     ${statsHtml}
