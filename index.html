@@ -7259,8 +7259,6 @@
                     <div class="projection-selector">
                         <label for="projection-type">Projection System:</label>
                         <select id="projection-type" onchange="loadProjections()">
-                            <option value="thebatx">The BAT X</option>
-                            <option value="thebat">The BAT</option>
                             <option value="steamer">Steamer</option>
                             <option value="zips">ZiPS</option>
                             <option value="depthcharts">Depth Charts</option>
@@ -7377,8 +7375,6 @@
                         <div class="lineup-projection-selector">
                             <label for="lineup-projection-type">Projections:</label>
                             <select id="lineup-projection-type" onchange="updateLineupProjections()">
-                                <option value="thebatx">The BAT X</option>
-                                <option value="thebat">The BAT</option>
                                 <option value="steamer">Steamer</option>
                                 <option value="zips">ZiPS</option>
                                 <option value="depthcharts">Depth Charts</option>
@@ -7434,10 +7430,10 @@
                                     <tr>
                                         <th>Team</th>
                                         <th>Top Value Players</th>
-                                        <th class="sortable-header" data-sort="keeperValue" onclick="sortValueRankings('keeperValue')">Keeper<br>Value <span class="sort-icon"></span></th>
+                                        <th class="sortable-header" data-sort="keeperValue" onclick="sortValueRankings('keeperValue')">Keeper<br>Value <span class="sort-icon">▼</span></th>
                                         <th>Top Picks</th>
                                         <th class="sortable-header" data-sort="draftValue" onclick="sortValueRankings('draftValue')">Draft<br>Value <span class="sort-icon"></span></th>
-                                        <th class="sortable-header active" data-sort="total" onclick="sortValueRankings('total')">Total <span class="sort-icon">▼</span></th>
+                                        <th class="sortable-header" data-sort="total" onclick="sortValueRankings('total')">Total <span class="sort-icon"></span></th>
                                     </tr>
                                 </thead>
                                 <tbody id="value-rankings-body">
@@ -13505,7 +13501,7 @@
         async function loadAverageProjections() {
             if (averageProjectionsLoaded) return;
             
-            const projectionSystems = ['thebatx', 'thebat', 'steamer', 'zips', 'depthcharts'];
+            const projectionSystems = ['steamer', 'zips', 'depthcharts'];
             const playerProjections = {}; // { playerName: { points: [], headshot, position } }
             
             for (const system of projectionSystems) {
@@ -14824,7 +14820,7 @@
                             console.log(`Loaded ${Object.keys(keeperProjectionsMap).length} projections from global data`);
                         } else {
                             // Load from projections file directly
-                            const projResponse = await fetch('data/projections/projections_thebatx.json');
+                            const projResponse = await fetch('data/projections/projections_steamer.json');
                             if (projResponse.ok) {
                                 const projData = await projResponse.json();
                                 const batters = projData.batters || [];
@@ -15831,7 +15827,7 @@
             }
 
             // Load the selected projection type
-            const projType = document.getElementById('lineup-projection-type')?.value || 'thebatx';
+            const projType = document.getElementById('lineup-projection-type')?.value || 'steamer';
             await loadLineupProjections(projType);
 
             // Build the team data array sorted by manager name
@@ -16266,7 +16262,7 @@
         }
 
         async function updateLineupProjections() {
-            const projType = document.getElementById('lineup-projection-type')?.value || 'thebatx';
+            const projType = document.getElementById('lineup-projection-type')?.value || 'steamer';
             await loadLineupProjections(projType);
             renderLineupTicker();
         }
@@ -16927,8 +16923,6 @@
             // Step 7: Render all components
             try {
                 renderValueRankings(teamValues);
-                // Apply initial sort by Total
-                sortValueRankings('total');
             } catch (e) {
                 console.error('Error rendering value rankings:', e);
             }
