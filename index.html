@@ -217,10 +217,10 @@
         /* Side Navigation */
         .side-nav {
             position: fixed;
-            top: 70px; /* Below header */
+            top: 50px; /* Below header */
             left: 0;
-            width: 70px;
-            height: calc(100vh - 70px);
+            width: 80px;
+            height: calc(100vh - 50px);
             background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
             display: flex;
             flex-direction: column;
@@ -283,7 +283,7 @@
         .side-nav-item::after {
             content: attr(data-tooltip);
             position: absolute;
-            left: 65px;
+            left: 70px;
             top: 50%;
             transform: translateY(-50%);
             background: #1e3c72;
@@ -303,7 +303,7 @@
         .side-nav-item::before {
             content: '';
             position: absolute;
-            left: 55px;
+            left: 60px;
             top: 50%;
             transform: translateY(-50%);
             border: 6px solid transparent;
@@ -321,7 +321,7 @@
 
         /* Adjust body and container for side nav */
         body {
-            padding-left: 70px;
+            padding-left: 80px;
         }
 
         @media (max-width: 768px) {
@@ -338,7 +338,7 @@
 
         @media (min-width: 769px) {
             body {
-                padding-top: 70px;
+                padding-top: 50px;
             }
         }
 
