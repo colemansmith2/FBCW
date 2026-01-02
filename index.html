@@ -234,7 +234,7 @@
             position: relative;
             width: 50px;
             height: 50px;
-            margin: 0.6rem 0;
+            margin: 0.5rem 0;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             display: flex;
@@ -246,7 +246,7 @@
         }
         
         .side-nav-item:first-child {
-            margin-top: 0.6rem;
+            margin-top: 0.5rem;
         }
 
         .side-nav-item:hover {
@@ -9402,6 +9402,8 @@
             // Populate scoring dropdown the same way
             const scoringSelect = document.getElementById('scoring-season');
             scoringSelect.innerHTML = standingsSelect.innerHTML;
+            // Ensure 2025 is selected in scoring dropdown
+            scoringSelect.value = '2025';
 
             return availableSeasons;
         }
