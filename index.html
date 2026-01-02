@@ -232,9 +232,9 @@
 
         .side-nav-item {
             position: relative;
-            width: 50px;
-            height: 50px;
-            margin: 0.5rem 0;
+            width: 58px;
+            height: 58px;
+            margin: 0.4rem 0;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
             display: flex;
@@ -251,7 +251,7 @@
 
         .side-nav-item:hover {
             background: rgba(255, 255, 255, 0.25);
-            transform: scale(1.1);
+            transform: scale(1.08);
         }
 
         .side-nav-item.active {
@@ -261,16 +261,16 @@
         }
 
         .side-nav-item img {
-            width: 32px;
-            height: 32px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             object-fit: cover;
             background: rgba(255, 255, 255, 0.2);
         }
 
         .side-nav-item .nav-icon {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             fill: white;
             opacity: 0.9;
         }
@@ -283,7 +283,7 @@
         .side-nav-item::after {
             content: attr(data-tooltip);
             position: absolute;
-            left: 70px;
+            left: 68px;
             top: 50%;
             transform: translateY(-50%);
             background: #1e3c72;
@@ -303,7 +303,7 @@
         .side-nav-item::before {
             content: '';
             position: absolute;
-            left: 60px;
+            left: 58px;
             top: 50%;
             transform: translateY(-50%);
             border: 6px solid transparent;
@@ -320,8 +320,9 @@
         }
 
         /* Adjust body and container for side nav */
+        /* No body padding - nav overlays the margin area */
         body {
-            padding-left: 80px;
+            padding-left: 0;
         }
 
         @media (max-width: 768px) {
@@ -346,6 +347,16 @@
             max-width: 1200px;
             margin: 1rem auto;
             padding: 0 1rem;
+            /* Add left margin to account for side nav, keeping content centered on screen */
+            margin-left: max(calc((100% - 1200px) / 2), 90px);
+        }
+        
+        @media (min-width: 1400px) {
+            /* On wide screens, the container is naturally centered with space on both sides */
+            .container {
+                margin-left: auto;
+                margin-right: auto;
+            }
         }
 
         .section {
@@ -367,6 +378,7 @@
             .container {
                 padding: 0 0.5rem;
                 margin: 0.5rem auto;
+                margin-left: auto;
             }
         }
 
