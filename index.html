@@ -17064,7 +17064,9 @@
             // Step 7: Render all components
             try {
                 renderValueRankings(teamValues);
-                // Apply initial sort by Total
+                // Apply initial sort by Total descending
+                // Reset sort state first to ensure descending order
+                valueRankingsSortColumn = '';
                 sortValueRankings('total');
             } catch (e) {
                 console.error('Error rendering value rankings:', e);
