@@ -6794,6 +6794,7 @@
         <button onclick="showSection('scoring')" class="nav-btn">Player Scoring</button>
         <button onclick="showSection('managers')" class="nav-btn">Manager Profiles</button>
         <button onclick="showSection('preseason')" class="nav-btn">Preseason Tools</button>
+        <button onclick="showSection('valuesuite')" class="nav-btn">Value Suite</button>
     </nav>
 
     <!-- Side Navigation -->
@@ -6815,6 +6816,9 @@
         </div>
         <div class="side-nav-item" data-tooltip="Preseason Tools" onclick="showSection('preseason')">
             <img src="data/page_logos/preseason_tools_logo.png" alt="Preseason Tools" loading="lazy" decoding="async">
+        </div>
+        <div class="side-nav-item" data-tooltip="Value Suite" onclick="showSection('valuesuite')">
+            <img src="data/page_logos/value_suite_logo.png" alt="Value Suite" loading="lazy" decoding="async">
         </div>
     </aside>
 
@@ -7530,7 +7534,32 @@
                 </div>
             </div>
 
-            <!-- Keeper Value Analysis Section -->
+            <!-- Trade Management Section -->
+            <div style="margin-top: 3rem; border-top: 2px solid #e0e0e0; padding-top: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3 style="color: #1e3c72; margin: 0;">🔄 Trade Management</h3>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn-export-trades" onclick="exportTradesForSite()"
+                            title="Export JSON for GitHub">📤 Export for Site</button>
+                        <button class="btn-new-trade" onclick="openTradeBuilder()">+ New Trade</button>
+                    </div>
+                </div>
+
+                <!-- Existing Trades List - Scrollable -->
+                <div id="trades-list-container" class="trades-list-scrollable">
+                    <div id="trades-list" class="trades-list">
+                        <!-- Trade cards will be populated here -->
+                        <p class="no-trades" id="no-trades-msg">No trades recorded yet. Click "New Trade" to add one.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Value Suite Section -->
+        <div id="valuesuite" class="section">
+            <h2>Value Suite</h2>
+            
             <div class="keeper-value-section" id="keeper-value-section">
                 <div class="keeper-value-header">
                     <h3>📊 Keeper Value Analysis</h3>
@@ -7598,38 +7627,6 @@
                         <div class="value-scatter-chart">
                             <canvas id="value-scatter-chart"></canvas>
                         </div>
-                    </div>
-
-                    <!-- Scatter Plot - Keeper Value -->
-                    <div class="value-scatter-wrapper">
-                        <h4>💎 All Keepers: Total Value vs. Keeper Cost</h4>
-                        <div style="font-size: 0.8rem; color: #666; margin-bottom: 0.75rem;">
-                            Value = Projected Points + Surplus. Green = above expected, Red = below expected. Prospects shown at round 24.
-                        </div>
-                        <div class="value-scatter-chart">
-                            <canvas id="value-vs-cost-scatter-chart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Trade Management Section -->
-            <div style="margin-top: 3rem; border-top: 2px solid #e0e0e0; padding-top: 2rem;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="color: #1e3c72; margin: 0;">🔄 Trade Management</h3>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <button class="btn-export-trades" onclick="exportTradesForSite()"
-                            title="Export JSON for GitHub">📤 Export for Site</button>
-                        <button class="btn-new-trade" onclick="openTradeBuilder()">+ New Trade</button>
-                    </div>
-                </div>
-
-                <!-- Existing Trades List - Scrollable -->
-                <div id="trades-list-container" class="trades-list-scrollable">
-                    <div id="trades-list" class="trades-list">
-                        <!-- Trade cards will be populated here -->
-                        <p class="no-trades" id="no-trades-msg">No trades recorded yet. Click "New Trade" to add one.
-                        </p>
                     </div>
                 </div>
             </div>
@@ -12686,7 +12683,8 @@
                 'champions': 2,
                 'scoring': 3,
                 'managers': 4,
-                'preseason': 5
+                'preseason': 5,
+                'valuesuite': 6
             };
             const index = sectionToIndex[sectionId];
             if (index !== undefined) {
@@ -12730,6 +12728,24 @@
                 } else {
                     // If projections already loaded, refresh the table to show keeper info
                     filterProjections();
+                }
+            }
+            else if (sectionId === 'valuesuite') {
+                // Initialize keeper management if not already done (needed for value analysis)
+                if (!keeperConfig) {
+                    await initializeKeeperManagement();
+                }
+                // Initialize trade management (needed for draft pick values)
+                await initializeTradeManagement();
+                
+                // Load projections if not already loaded (needed for value calculations)
+                if (allProjectionBatters.length === 0 && allProjectionPitchers.length === 0) {
+                    await loadProjections();
+                }
+                
+                // Trigger the keeper value analysis
+                if (keeperConfig) {
+                    displayLeagueKeepers(); // This triggers the value analysis rendering
                 }
             }
         }
