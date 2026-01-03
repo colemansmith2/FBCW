@@ -17646,9 +17646,8 @@
                             backgroundColor: bgColors,
                             borderColor: sortedPositions.map(pos => positionColors[pos].dark),
                             borderWidth: 1,
-                            barPercentage: 0.85,
-                            categoryPercentage: 0.8,
-                            order: 2
+                            barPercentage: 0.8,
+                            categoryPercentage: 0.85
                         },
                         {
                             label: 'Average Projection',
@@ -17656,9 +17655,8 @@
                             backgroundColor: barColors,
                             borderColor: barColors.map(c => c),
                             borderWidth: 1,
-                            barPercentage: 0.5,
-                            categoryPercentage: 0.8,
-                            order: 1
+                            barPercentage: 0.45,
+                            categoryPercentage: 0.85
                         }
                     ]
                 },
@@ -17697,6 +17695,7 @@
                     scales: {
                         y: {
                             beginAtZero: false,
+                            stacked: false,
                             // Set min to be slightly below the lowest std dev range
                             min: Math.floor(Math.min(...stdDevRanges.map(r => r[0])) / 50) * 50 - 50,
                             title: {
@@ -17707,6 +17706,7 @@
                             ticks: { font: { size: 10 } }
                         },
                         x: {
+                            stacked: true,
                             title: {
                                 display: true,
                                 text: 'Position',
