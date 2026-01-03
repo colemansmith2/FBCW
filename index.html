@@ -832,8 +832,8 @@
         }
 
         .keeper-modal-content {
-            max-width: 1450px;
-            width: 95vw;
+            max-width: 1550px;
+            width: 96vw;
             max-height: 90vh;
             display: flex;
             flex-direction: column;
@@ -1354,6 +1354,24 @@
         .keeper-dollar-cost {
             color: #28a745;
             font-weight: 700;
+        }
+        
+        .keeper-rdexp {
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        .keeper-value {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .keeper-value.value-positive {
+            color: #28a745;
+        }
+        
+        .keeper-value.value-negative {
+            color: #dc3545;
         }
 
         .keeper-modal-actions {
@@ -7884,6 +7902,8 @@
                                         <th class="sortable" data-sort="pts2026">2026</th>
                                         <th class="sortable" data-sort="drafted" style="width: 55px;">Drafted</th>
                                         <th class="sortable" data-sort="rdcost" style="width: 55px;">Rd Cost</th>
+                                        <th class="sortable" data-sort="rdexp" style="width: 55px;">Rd Exp</th>
+                                        <th class="sortable" data-sort="value" style="width: 55px;">Value</th>
                                         <th class="sortable" data-sort="cost" style="width: 50px;">Cost</th>
                                     </tr>
                                 </thead>
@@ -15249,6 +15269,12 @@
                     row.dataset.position = player.primary_position || '';
                     row.dataset.drafted = draftRound;
                     row.dataset.isProspect = isProspect ? '1' : '0';
+                    
+                    // Calculate expected points for round and keeper value
+                    const rdExpPts = isProspect ? 0 : (expectedPointsByRound[roundCost]?.avg || predictExpectedPoints(roundCost) || 0);
+                    const keeperValue = isProspect ? (projPts || 0) : ((projPts || 0) - rdExpPts);
+                    row.dataset.rdexp = rdExpPts;
+                    row.dataset.value = keeperValue;
 
                     const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
                     const headshot = player.headshot_url || placeholderImg;
@@ -15256,6 +15282,11 @@
                     // Display cost info - prospects are free
                     const rdCostDisplay = isProspect ? '<span class="keeper-round-cost prospect-free">Free</span>' : `<span class="keeper-round-cost">Rd ${roundCost}</span>`;
                     const dollarCostDisplay = isProspect ? '<span class="keeper-dollar-cost prospect-free">$0</span>' : `<span class="keeper-dollar-cost">$${dollarCost}</span>`;
+                    
+                    // Display expected points and value
+                    const rdExpDisplay = isProspect ? '-' : rdExpPts.toFixed(0);
+                    const valueDisplay = keeperValue.toFixed(0);
+                    const valueClass = keeperValue > 0 ? 'value-positive' : (keeperValue < 0 ? 'value-negative' : '');
 
                     row.innerHTML = `
                         <td style="text-align: center;">
@@ -15281,6 +15312,12 @@
                             ${rdCostDisplay}
                         </td>
                         <td class="keeper-cost-col">
+                            <span class="keeper-rdexp">${rdExpDisplay}</span>
+                        </td>
+                        <td class="keeper-cost-col">
+                            <span class="keeper-value ${valueClass}">${keeperValue > 0 ? '+' : ''}${valueDisplay}</span>
+                        </td>
+                        <td class="keeper-cost-col">
                             ${dollarCostDisplay}
                         </td>
                     `;
@@ -15299,7 +15336,7 @@
             } catch (e) {
                 console.error('Error loading roster:', e);
                 loadingEl.style.display = 'none';
-                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #888;">Could not load roster</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #888;">Could not load roster</td></tr>';
             }
         }
 
@@ -15361,6 +15398,12 @@
                 } else if (column === 'rdcost') {
                     aVal = parseFloat(a.dataset.roundCost) || 99;
                     bVal = parseFloat(b.dataset.roundCost) || 99;
+                } else if (column === 'rdexp') {
+                    aVal = parseFloat(a.dataset.rdexp) || 0;
+                    bVal = parseFloat(b.dataset.rdexp) || 0;
+                } else if (column === 'value') {
+                    aVal = parseFloat(a.dataset.value) || 0;
+                    bVal = parseFloat(b.dataset.value) || 0;
                 } else if (column === 'cost') {
                     aVal = parseFloat(a.dataset.dollarCost) || 0;
                     bVal = parseFloat(b.dataset.dollarCost) || 0;
