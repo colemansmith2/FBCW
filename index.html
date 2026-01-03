@@ -832,13 +832,19 @@
         }
 
         .keeper-modal-content {
-            max-width: none !important;
-            width: calc(100vw - 40px) !important;
+            max-width: 1400px !important;
+            width: 95vw !important;
             max-height: 90vh;
             display: flex;
             flex-direction: column;
             overflow: hidden;
             position: relative;
+        }
+        
+        /* When showing auth screen, constrain the modal width */
+        .keeper-modal-content.auth-view {
+            max-width: 550px !important;
+            width: 90vw !important;
         }
 
         /* Styled close button with gold circle */
@@ -1165,8 +1171,6 @@
         .keeper-modal-auth {
             padding: 2rem;
             text-align: center;
-            max-width: 500px;
-            margin: 0 auto;
         }
 
         .keeper-modal-auth h2 {
@@ -15092,6 +15096,9 @@
             // Hide auth section, show selection section
             document.getElementById('keeper-modal-auth').style.display = 'none';
             document.getElementById('keeper-modal-selection').style.display = 'flex';
+            
+            // Remove auth-view class to expand modal for selection view
+            document.querySelector('.keeper-modal-content').classList.remove('auth-view');
 
             // Update header with team name and logo
             document.getElementById('keeper-current-team').textContent = `${teamInfo.team_name}`;
@@ -15126,6 +15133,9 @@
             document.getElementById('keeper-password-field').style.display = 'none';
             document.getElementById('keeper-password').value = '';
             document.getElementById('keeper-auth-error').style.display = 'none';
+            
+            // Add auth-view class back for smaller modal
+            document.querySelector('.keeper-modal-content').classList.add('auth-view');
         }
 
         function openKeeperModal() {
@@ -15141,6 +15151,9 @@
             document.getElementById('keeper-password-field').style.display = 'none';
             document.getElementById('keeper-password').value = '';
             document.getElementById('keeper-auth-error').style.display = 'none';
+            
+            // Add auth-view class for smaller modal
+            document.querySelector('.keeper-modal-content').classList.add('auth-view');
 
             // Show modal and prevent background scroll
             document.getElementById('keeper-modal').classList.add('active');
