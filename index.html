@@ -9469,6 +9469,7 @@
             const chartContainer = document.getElementById('season-chart-container');
             const inseasonContainer = document.getElementById('inseason-tools-container');
             const draftGradesTicker = document.getElementById('draft-performance-ticker');
+            const matchupsTicker = document.getElementById('matchups-ticker');
 
             if (!season) {
                 return; // No season selected yet
@@ -9480,6 +9481,13 @@
             chartContainer.style.display = 'none';
             inseasonContainer.style.display = 'none';
             if (draftGradesTicker) draftGradesTicker.style.display = 'none';
+            if (matchupsTicker) matchupsTicker.style.display = 'none';
+            
+            // Clear matchups ticker interval if switching away from 2026
+            if (matchupsTickerInterval) {
+                clearInterval(matchupsTickerInterval);
+                matchupsTickerInterval = null;
+            }
 
             // Special handling for 2026 (in-season/upcoming)
             if (seasonNum === 2026) {
@@ -9573,6 +9581,18 @@
 
                 // Load and render the season chart
                 await loadSeasonChart(seasonNum, isCurrentSeason, standings, teamLogos, teamData);
+                
+                // Explicitly hide matchups ticker (only for 2026)
+                const matchupsTickerEl = document.getElementById('matchups-ticker');
+                if (matchupsTickerEl) {
+                    matchupsTickerEl.style.display = 'none';
+                }
+                
+                // Clear matchups ticker interval
+                if (matchupsTickerInterval) {
+                    clearInterval(matchupsTickerInterval);
+                    matchupsTickerInterval = null;
+                }
                 
                 // Load draft performance ticker (for completed seasons)
                 await loadDraftPerformanceTicker(seasonNum, isCurrentSeason, teamLogos, teamData);
