@@ -17437,9 +17437,10 @@
         }
         
         function calculatePositionValueData() {
-            // Use averageProjectionsMap which contains averaged projections from all systems
-            if (Object.keys(averageProjectionsMap).length === 0) {
-                console.log('No projection data available for position value chart');
+            // Use the loaded projection batters and pitchers which have position info
+            // If those aren't loaded, we can't calculate
+            if (allProjectionBatters.length === 0 && allProjectionPitchers.length === 0) {
+                console.log('No projection data available for position value chart - loading...');
                 return null;
             }
             
@@ -17448,28 +17449,33 @@
                 'C': [], '1B': [], '2B': [], '3B': [], 'SS': [], 'OF': [], 'SP': [], 'RP': []
             };
             
-            // Process all players from averageProjectionsMap
-            Object.entries(averageProjectionsMap).forEach(([name, data]) => {
-                if (!data.points || data.points <= 0) return;
+            // Process batters
+            allProjectionBatters.forEach(player => {
+                if (!player.projected_points || player.projected_points <= 0) return;
                 
-                const position = data.position || '';
-                const isBatter = data.type === 'batter';
-                const isPitcher = data.type === 'pitcher';
-                
-                // Parse positions
+                const position = player.position || '';
                 const positions = position.split(/[,\/]/).map(p => p.trim().toUpperCase());
                 
                 // Add to appropriate position buckets
-                if (positions.includes('C')) positionPlayers['C'].push({ name, points: data.points });
-                if (positions.includes('1B')) positionPlayers['1B'].push({ name, points: data.points });
-                if (positions.includes('2B')) positionPlayers['2B'].push({ name, points: data.points });
-                if (positions.includes('3B')) positionPlayers['3B'].push({ name, points: data.points });
-                if (positions.includes('SS')) positionPlayers['SS'].push({ name, points: data.points });
+                if (positions.includes('C')) positionPlayers['C'].push({ name: player.name, points: player.projected_points });
+                if (positions.includes('1B')) positionPlayers['1B'].push({ name: player.name, points: player.projected_points });
+                if (positions.includes('2B')) positionPlayers['2B'].push({ name: player.name, points: player.projected_points });
+                if (positions.includes('3B')) positionPlayers['3B'].push({ name: player.name, points: player.projected_points });
+                if (positions.includes('SS')) positionPlayers['SS'].push({ name: player.name, points: player.projected_points });
                 if (positions.includes('OF') || positions.includes('LF') || positions.includes('CF') || positions.includes('RF')) {
-                    positionPlayers['OF'].push({ name, points: data.points });
+                    positionPlayers['OF'].push({ name: player.name, points: player.projected_points });
                 }
-                if (positions.includes('SP')) positionPlayers['SP'].push({ name, points: data.points });
-                if (positions.includes('RP')) positionPlayers['RP'].push({ name, points: data.points });
+            });
+            
+            // Process pitchers
+            allProjectionPitchers.forEach(player => {
+                if (!player.projected_points || player.projected_points <= 0) return;
+                
+                const position = player.position || '';
+                const positions = position.split(/[,\/]/).map(p => p.trim().toUpperCase());
+                
+                if (positions.includes('SP')) positionPlayers['SP'].push({ name: player.name, points: player.projected_points });
+                if (positions.includes('RP')) positionPlayers['RP'].push({ name: player.name, points: player.projected_points });
             });
             
             // Calculate stats for each position
@@ -17482,7 +17488,7 @@
                 const topPlayers = players.slice(0, playableSpots[pos]);
                 
                 if (topPlayers.length === 0) {
-                    positionStats[pos] = { avg: 0, stdDev: 0, players: [] };
+                    positionStats[pos] = { avg: 0, stdDev: 0, players: [], count: 0 };
                     return;
                 }
                 
@@ -17502,6 +17508,8 @@
                     count: topPlayers.length
                 };
             });
+            
+            console.log('Position value data calculated:', Object.keys(positionStats).map(p => `${p}: ${positionStats[p].count} players, avg=${positionStats[p].avg}`));
             
             return positionStats;
         }
