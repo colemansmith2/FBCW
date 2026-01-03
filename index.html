@@ -832,8 +832,8 @@
         }
 
         .keeper-modal-content {
-            max-width: 1950px;
-            width: 99vw;
+            max-width: 2100px;
+            width: 100vw;
             max-height: 90vh;
             display: flex;
             flex-direction: column;
@@ -15272,8 +15272,10 @@
                     row.dataset.isProspect = isProspect ? '1' : '0';
                     
                     // Calculate expected points for round and keeper value
+                    // Value formula matches Value Suite: value = projectedPts + (projectedPts - expectedPts)
                     const rdExpPts = isProspect ? 0 : (expectedPointsByRound[roundCost]?.avg || predictExpectedPoints(roundCost) || 0);
-                    const keeperValue = isProspect ? (projPts || 0) : ((projPts || 0) - rdExpPts);
+                    const surplusValue = isProspect ? (projPts || 0) : ((projPts || 0) - rdExpPts);
+                    const keeperValue = isProspect ? (projPts || 0) : ((projPts || 0) + surplusValue);
                     row.dataset.rdexp = rdExpPts;
                     row.dataset.value = keeperValue;
 
@@ -15285,9 +15287,10 @@
                     const dollarCostDisplay = isProspect ? '<span class="keeper-dollar-cost prospect-free">$0</span>' : `<span class="keeper-dollar-cost">$${dollarCost}</span>`;
                     
                     // Display expected points and value
+                    // Color based on surplusValue (above/below expected), display keeperValue
                     const rdExpDisplay = isProspect ? '-' : rdExpPts.toFixed(0);
                     const valueDisplay = keeperValue.toFixed(0);
-                    const valueClass = keeperValue > 0 ? 'value-positive' : (keeperValue < 0 ? 'value-negative' : '');
+                    const valueClass = surplusValue > 0 ? 'value-positive' : (surplusValue < 0 ? 'value-negative' : '');
 
                     row.innerHTML = `
                         <td style="text-align: center;">
@@ -15316,7 +15319,7 @@
                             <span class="keeper-rdexp">${rdExpDisplay}</span>
                         </td>
                         <td class="keeper-cost-col">
-                            <span class="keeper-value ${valueClass}">${keeperValue > 0 ? '+' : ''}${valueDisplay}</span>
+                            <span class="keeper-value ${valueClass}">${valueDisplay}</span>
                         </td>
                         <td class="keeper-cost-col">
                             ${dollarCostDisplay}
