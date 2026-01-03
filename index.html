@@ -13674,7 +13674,7 @@
             if (averageProjectionsLoaded) return;
             
             const projectionSystems = ['thebatx', 'thebat', 'steamer', 'zips', 'depthcharts'];
-            const playerProjections = {}; // { playerName: { points: [], headshot, position } }
+            const playerProjections = {}; // { playerName: { points: [], headshot, position, type } }
             
             for (const system of projectionSystems) {
                 try {
@@ -13682,10 +13682,19 @@
                     if (!response.ok) continue;
                     
                     const data = await response.json();
-                    const allPlayers = [...(data.batters || []), ...(data.pitchers || [])];
                     
-                    allPlayers.forEach(player => {
-                        if (!player.name || !player.projected_points) return;
+                    // Skip if file is empty or has no players
+                    const batters = data.batters || [];
+                    const pitchers = data.pitchers || [];
+                    
+                    if (batters.length === 0 && pitchers.length === 0) {
+                        console.log(`Skipping ${system} - no projection data`);
+                        continue;
+                    }
+                    
+                    // Process batters
+                    batters.forEach(player => {
+                        if (!player.name || !player.projected_points || player.projected_points <= 0) return;
                         
                         const nameLower = player.name.toLowerCase().trim();
                         
@@ -13693,17 +13702,53 @@
                             playerProjections[nameLower] = {
                                 points: [],
                                 headshot: player.headshot_url || '',
-                                position: player.primary_position || ''
+                                position: player.position || '',
+                                type: 'batter'
                             };
                         }
                         
                         playerProjections[nameLower].points.push(player.projected_points);
                         
-                        // Update headshot if we don't have one yet
-                        if (!playerProjections[nameLower].headshot && player.headshot_url) {
+                        // Update headshot if we have a better one (not generic)
+                        if (player.headshot_url && !player.headshot_url.includes('/people/1/')) {
                             playerProjections[nameLower].headshot = player.headshot_url;
                         }
+                        
+                        // Update position if we have one
+                        if (player.position && !playerProjections[nameLower].position) {
+                            playerProjections[nameLower].position = player.position;
+                        }
                     });
+                    
+                    // Process pitchers
+                    pitchers.forEach(player => {
+                        if (!player.name || !player.projected_points || player.projected_points <= 0) return;
+                        
+                        const nameLower = player.name.toLowerCase().trim();
+                        
+                        if (!playerProjections[nameLower]) {
+                            playerProjections[nameLower] = {
+                                points: [],
+                                headshot: player.headshot_url || '',
+                                position: player.position || '',
+                                type: 'pitcher'
+                            };
+                        }
+                        
+                        playerProjections[nameLower].points.push(player.projected_points);
+                        
+                        // Update headshot if we have a better one (not generic)
+                        if (player.headshot_url && !player.headshot_url.includes('/people/1/')) {
+                            playerProjections[nameLower].headshot = player.headshot_url;
+                        }
+                        
+                        // Update position if we have one
+                        if (player.position && !playerProjections[nameLower].position) {
+                            playerProjections[nameLower].position = player.position;
+                        }
+                    });
+                    
+                    console.log(`Loaded ${system}: ${batters.length} batters, ${pitchers.length} pitchers`);
                 } catch (e) {
                     console.log(`Could not load ${system} projections for averaging:`, e);
                 }
@@ -13717,7 +13762,8 @@
                         avgPoints: Math.round(avg * 10) / 10, // Round to 1 decimal
                         systems: data.points.length,
                         headshot: data.headshot,
-                        position: data.position
+                        position: data.position,
+                        type: data.type
                     };
                     
                     // Also store without (Batter)/(Pitcher) suffix for Ohtani matching
@@ -17437,10 +17483,13 @@
         }
         
         function calculatePositionValueData() {
-            // Use the loaded projection batters and pitchers which have position info
-            // If those aren't loaded, we can't calculate
-            if (allProjectionBatters.length === 0 && allProjectionPitchers.length === 0) {
-                console.log('No projection data available for position value chart - loading...');
+            // First try to use averageProjectionsMap (averaged across all systems)
+            // Fall back to currently loaded projections if averages not available
+            
+            let useAverages = Object.keys(averageProjectionsMap).length > 0;
+            
+            if (!useAverages && allProjectionBatters.length === 0 && allProjectionPitchers.length === 0) {
+                console.log('No projection data available for position value chart');
                 return null;
             }
             
@@ -17449,34 +17498,64 @@
                 'C': [], '1B': [], '2B': [], '3B': [], 'SS': [], 'OF': [], 'SP': [], 'RP': []
             };
             
-            // Process batters
-            allProjectionBatters.forEach(player => {
-                if (!player.projected_points || player.projected_points <= 0) return;
+            if (useAverages) {
+                // Use averaged projections from all systems
+                Object.entries(averageProjectionsMap).forEach(([name, data]) => {
+                    if (!data.avgPoints || data.avgPoints <= 0) return;
+                    
+                    const position = data.position || '';
+                    const positions = position.split(/[,\/]/).map(p => p.trim().toUpperCase());
+                    const playerData = { name, points: data.avgPoints };
+                    
+                    // Add to appropriate position buckets based on type
+                    if (data.type === 'batter') {
+                        if (positions.includes('C')) positionPlayers['C'].push(playerData);
+                        if (positions.includes('1B')) positionPlayers['1B'].push(playerData);
+                        if (positions.includes('2B')) positionPlayers['2B'].push(playerData);
+                        if (positions.includes('3B')) positionPlayers['3B'].push(playerData);
+                        if (positions.includes('SS')) positionPlayers['SS'].push(playerData);
+                        if (positions.includes('OF') || positions.includes('LF') || positions.includes('CF') || positions.includes('RF')) {
+                            positionPlayers['OF'].push(playerData);
+                        }
+                    } else if (data.type === 'pitcher') {
+                        if (positions.includes('SP')) positionPlayers['SP'].push(playerData);
+                        if (positions.includes('RP')) positionPlayers['RP'].push(playerData);
+                    }
+                });
                 
-                const position = player.position || '';
-                const positions = position.split(/[,\/]/).map(p => p.trim().toUpperCase());
+                console.log('Using averaged projections for position value chart');
+            } else {
+                // Fall back to currently loaded projection data
+                allProjectionBatters.forEach(player => {
+                    if (!player.projected_points || player.projected_points <= 0) return;
+                    
+                    const position = player.position || '';
+                    const positions = position.split(/[,\/]/).map(p => p.trim().toUpperCase());
+                    const playerData = { name: player.name, points: player.projected_points };
+                    
+                    if (positions.includes('C')) positionPlayers['C'].push(playerData);
+                    if (positions.includes('1B')) positionPlayers['1B'].push(playerData);
+                    if (positions.includes('2B')) positionPlayers['2B'].push(playerData);
+                    if (positions.includes('3B')) positionPlayers['3B'].push(playerData);
+                    if (positions.includes('SS')) positionPlayers['SS'].push(playerData);
+                    if (positions.includes('OF') || positions.includes('LF') || positions.includes('CF') || positions.includes('RF')) {
+                        positionPlayers['OF'].push(playerData);
+                    }
+                });
                 
-                // Add to appropriate position buckets
-                if (positions.includes('C')) positionPlayers['C'].push({ name: player.name, points: player.projected_points });
-                if (positions.includes('1B')) positionPlayers['1B'].push({ name: player.name, points: player.projected_points });
-                if (positions.includes('2B')) positionPlayers['2B'].push({ name: player.name, points: player.projected_points });
-                if (positions.includes('3B')) positionPlayers['3B'].push({ name: player.name, points: player.projected_points });
-                if (positions.includes('SS')) positionPlayers['SS'].push({ name: player.name, points: player.projected_points });
-                if (positions.includes('OF') || positions.includes('LF') || positions.includes('CF') || positions.includes('RF')) {
-                    positionPlayers['OF'].push({ name: player.name, points: player.projected_points });
-                }
-            });
-            
-            // Process pitchers
-            allProjectionPitchers.forEach(player => {
-                if (!player.projected_points || player.projected_points <= 0) return;
+                allProjectionPitchers.forEach(player => {
+                    if (!player.projected_points || player.projected_points <= 0) return;
+                    
+                    const position = player.position || '';
+                    const positions = position.split(/[,\/]/).map(p => p.trim().toUpperCase());
+                    const playerData = { name: player.name, points: player.projected_points };
+                    
+                    if (positions.includes('SP')) positionPlayers['SP'].push(playerData);
+                    if (positions.includes('RP')) positionPlayers['RP'].push(playerData);
+                });
                 
-                const position = player.position || '';
-                const positions = position.split(/[,\/]/).map(p => p.trim().toUpperCase());
-                
-                if (positions.includes('SP')) positionPlayers['SP'].push({ name: player.name, points: player.projected_points });
-                if (positions.includes('RP')) positionPlayers['RP'].push({ name: player.name, points: player.projected_points });
-            });
+                console.log('Using current projection system for position value chart');
+            }
             
             // Calculate stats for each position
             const positionStats = {};
@@ -17549,18 +17628,25 @@
             const barColors = sortedPositions.map(pos => positionColors[pos].dark);
             const bgColors = sortedPositions.map(pos => positionColors[pos].light);
             
+            // Create floating bar data for std dev range [avg - stdDev, avg + stdDev]
+            const stdDevRanges = sortedPositions.map(pos => {
+                const avg = data[pos].avg;
+                const std = data[pos].stdDev;
+                return [avg - std, avg + std];
+            });
+            
             positionValueChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: labels,
                     datasets: [
                         {
-                            label: '±1 Std Dev',
-                            data: averages.map((avg, i) => avg + stdDevs[i]),
+                            label: '±1 Std Dev Range',
+                            data: stdDevRanges,
                             backgroundColor: bgColors,
-                            borderColor: 'transparent',
-                            borderWidth: 0,
-                            barPercentage: 0.9,
+                            borderColor: sortedPositions.map(pos => positionColors[pos].dark),
+                            borderWidth: 1,
+                            barPercentage: 0.85,
                             categoryPercentage: 0.8,
                             order: 2
                         },
@@ -17568,9 +17654,9 @@
                             label: 'Average Projection',
                             data: averages,
                             backgroundColor: barColors,
-                            borderColor: barColors,
+                            borderColor: barColors.map(c => c),
                             borderWidth: 1,
-                            barPercentage: 0.6,
+                            barPercentage: 0.5,
                             categoryPercentage: 0.8,
                             order: 1
                         }
@@ -17600,13 +17686,10 @@
                                     const pos = context.label;
                                     const posData = data[pos];
                                     if (context.dataset.label === 'Average Projection') {
-                                        return [
-                                            `Average: ${posData.avg} pts`,
-                                            `Std Dev: ±${posData.stdDev} pts`,
-                                            `Range: ${Math.round(posData.avg - posData.stdDev)} - ${Math.round(posData.avg + posData.stdDev)} pts`
-                                        ];
+                                        return `Average: ${posData.avg} pts`;
+                                    } else {
+                                        return `±1σ Range: ${Math.round(posData.avg - posData.stdDev)} - ${Math.round(posData.avg + posData.stdDev)} pts`;
                                     }
-                                    return null;
                                 }
                             }
                         }
@@ -17614,7 +17697,8 @@
                     scales: {
                         y: {
                             beginAtZero: false,
-                            min: 0,
+                            // Set min to be slightly below the lowest std dev range
+                            min: Math.floor(Math.min(...stdDevRanges.map(r => r[0])) / 50) * 50 - 50,
                             title: {
                                 display: true,
                                 text: 'Projected Points',
