@@ -20645,18 +20645,37 @@
         }
         
         async function authenticateSportsbook() {
-            if (!selectedSportsbookTeam || !keeperConfig) return;
+            if (!selectedSportsbookTeam) {
+                console.log('No team selected');
+                return;
+            }
+            
+            if (!keeperConfig) {
+                console.log('keeperConfig not loaded');
+                document.getElementById('sportsbook-login-error').textContent = 'Configuration not loaded. Please try again.';
+                document.getElementById('sportsbook-login-error').style.display = 'block';
+                return;
+            }
             
             const password = document.getElementById('sportsbook-password').value;
+            
+            console.log('Selected team key:', selectedSportsbookTeam);
+            console.log('Available teams in keeperConfig:', Object.keys(keeperConfig.teams || {}));
+            
             const teamConfig = keeperConfig.teams?.[selectedSportsbookTeam];
             
             if (!teamConfig) {
+                console.log('Team config not found for:', selectedSportsbookTeam);
+                document.getElementById('sportsbook-login-error').textContent = 'Team not found in configuration.';
                 document.getElementById('sportsbook-login-error').style.display = 'block';
                 return;
             }
             
             // Hash the entered password and compare (same as keeper system)
             const enteredHash = await hashPassword(password);
+            
+            console.log('Entered hash:', enteredHash);
+            console.log('Expected hash:', teamConfig.password_hash);
             
             if (enteredHash !== teamConfig.password_hash) {
                 document.getElementById('sportsbook-login-error').textContent = 'Incorrect password. Hint: [YourName][YearJoined]';
