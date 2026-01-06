@@ -20572,9 +20572,9 @@
         
         // Initialize sportsbook when section is shown
         async function initializeSportsbook() {
-            // Load team data
+            // Load team data from current season (2025)
             try {
-                const response = await fetch('data/2026/teams.json');
+                const response = await fetch('data/current_season/teams.json');
                 if (response.ok) {
                     sportsbookTeamData = await response.json();
                 }
