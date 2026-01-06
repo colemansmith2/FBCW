@@ -20801,12 +20801,16 @@
                                 const manager = team.manager || team.Manager;
                                 const points = team.points_for || team.total_points || team['Points For'] || 0;
                                 const wins = team.wins || team.Wins || 0;
+                                const losses = team.losses || team.Losses || 0;
+                                const totalGames = wins + losses;
+                                const winPct = totalGames > 0 ? wins / totalGames : 0.5;
                                 
                                 if (!managerStats[manager]) {
-                                    managerStats[manager] = { totalPoints: 0, totalWins: 0, seasons: 0 };
+                                    managerStats[manager] = { totalPoints: 0, totalWins: 0, totalGames: 0, seasons: 0 };
                                 }
                                 managerStats[manager].totalPoints += points;
                                 managerStats[manager].totalWins += wins;
+                                managerStats[manager].totalGames += totalGames;
                                 managerStats[manager].seasons++;
                             });
                         }
@@ -20815,26 +20819,26 @@
                     }
                 }
                 
-                // Calculate average points and wins per manager
+                // Calculate average points and win percentage per manager
                 const avgPoints = {};
-                const avgWins = {};
+                const winPcts = {};
                 let leagueAvgPoints = 0;
-                let leagueAvgWins = 0;
+                let leagueAvgWinPct = 0;
                 let managerCount = 0;
                 
                 Object.entries(managerStats).forEach(([manager, stats]) => {
                     if (stats.seasons > 0) {
                         avgPoints[manager] = stats.totalPoints / stats.seasons;
-                        avgWins[manager] = stats.totalWins / stats.seasons;
+                        winPcts[manager] = stats.totalGames > 0 ? stats.totalWins / stats.totalGames : 0.5;
                         leagueAvgPoints += avgPoints[manager];
-                        leagueAvgWins += avgWins[manager];
+                        leagueAvgWinPct += winPcts[manager];
                         managerCount++;
                     }
                 });
                 
                 if (managerCount > 0) {
                     leagueAvgPoints /= managerCount;
-                    leagueAvgWins /= managerCount;
+                    leagueAvgWinPct /= managerCount;
                 }
                 
                 // Calculate factors with sample size weighting
@@ -20842,23 +20846,23 @@
                 Object.entries(managerStats).forEach(([manager, stats]) => {
                     if (stats.seasons > 0) {
                         const pointsRatio = leagueAvgPoints > 0 ? avgPoints[manager] / leagueAvgPoints : 1;
-                        const winsRatio = leagueAvgWins > 0 ? avgWins[manager] / leagueAvgWins : 1;
+                        const winPctRatio = leagueAvgWinPct > 0 ? winPcts[manager] / leagueAvgWinPct : 1;
                         
                         // Sample size weight: more seasons = more confidence in the factor
                         // 1 season = 20% weight, 3 seasons = 50% weight, 5+ seasons = 80% weight
                         const sampleWeight = Math.min(0.8, 0.1 + (stats.seasons * 0.14));
                         
                         // Regress toward 1.0 based on sample size
-                        // With low sample, factor stays close to 1.0
                         const regressedPointsRatio = 1 + (pointsRatio - 1) * sampleWeight;
-                        const regressedWinsRatio = 1 + (winsRatio - 1) * sampleWeight;
+                        const regressedWinPctRatio = 1 + (winPctRatio - 1) * sampleWeight;
                         
-                        // Compress to very subtle range (0.97 to 1.03)
-                        // This ensures manager factor is just a slight adjustment, not dominant
+                        // Compress to very tight range (0.975 to 1.025)
+                        // This ensures manager factor is just a tiny adjustment
                         factors[manager] = {
-                            pointsFactor: 0.97 + (Math.min(Math.max(regressedPointsRatio, 0.85), 1.15) - 0.85) * 0.2,
-                            winsFactor: 0.97 + (Math.min(Math.max(regressedWinsRatio, 0.85), 1.15) - 0.85) * 0.2,
-                            seasons: stats.seasons
+                            pointsFactor: 0.975 + (Math.min(Math.max(regressedPointsRatio, 0.9), 1.1) - 0.9) * 0.25,
+                            winsFactor: 0.975 + (Math.min(Math.max(regressedWinPctRatio, 0.9), 1.1) - 0.9) * 0.25,
+                            seasons: stats.seasons,
+                            winPct: winPcts[manager]
                         };
                     }
                 });
@@ -21031,16 +21035,15 @@
             }
             
             // Convert to probability
-            // For +800 odds, probability = 100/900 = ~11%
-            // For +1600 odds, probability = 100/1700 = ~6%
-            // So we want range roughly 6% to 11%
-            const minProb = 0.055;  // ~+1700
-            const maxProb = 0.11;   // ~+800
+            // For +600 odds, probability = 100/700 = ~14.3%
+            // For +2200 odds, probability = 100/2300 = ~4.3%
+            const minProb = 0.043;  // ~+2200
+            const maxProb = 0.143;  // ~+600
             let probability = minProb + (normalized * (maxProb - minProb));
             
             // Convert to American odds (all will be underdogs with these probabilities)
             const odds = Math.round(((1 - probability) / probability) * 100);
-            return '+' + Math.min(Math.max(odds, 700), 1800); // Cap between +700 and +1800
+            return '+' + Math.min(Math.max(odds, 600), 2200); // Cap between +600 and +2200
         }
         
         function renderSeasonBetGrid(containerId, teams, betType) {
