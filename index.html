@@ -20646,26 +20646,19 @@
         
         async function authenticateSportsbook() {
             if (!selectedSportsbookTeam) {
-                console.log('No team selected');
                 return;
             }
             
             if (!keeperConfig) {
-                console.log('keeperConfig not loaded');
                 document.getElementById('sportsbook-login-error').textContent = 'Configuration not loaded. Please try again.';
                 document.getElementById('sportsbook-login-error').style.display = 'block';
                 return;
             }
             
             const password = document.getElementById('sportsbook-password').value;
-            
-            console.log('Selected team key:', selectedSportsbookTeam);
-            console.log('Available teams in keeperConfig:', Object.keys(keeperConfig.teams || {}));
-            
             const teamConfig = keeperConfig.teams?.[selectedSportsbookTeam];
             
             if (!teamConfig) {
-                console.log('Team config not found for:', selectedSportsbookTeam);
                 document.getElementById('sportsbook-login-error').textContent = 'Team not found in configuration.';
                 document.getElementById('sportsbook-login-error').style.display = 'block';
                 return;
@@ -20673,9 +20666,6 @@
             
             // Hash the entered password and compare (same as keeper system)
             const enteredHash = await hashPassword(password);
-            
-            console.log('Entered hash:', enteredHash);
-            console.log('Expected hash:', teamConfig.password_hash);
             
             if (enteredHash !== teamConfig.password_hash) {
                 document.getElementById('sportsbook-login-error').textContent = 'Incorrect password. Hint: [YourName][YearJoined]';
@@ -20767,63 +20757,268 @@
         }
         
         async function loadSeasonBets() {
-            // Calculate odds based on team values from Value Suite
-            const teamValues = await calculateTeamValuesForOdds();
+            // Calculate odds based on team values and manager factors
+            const teamData = await calculateTeamValuesForOdds();
             
-            // Sort by value for champion/wins/points odds
-            const sortedByValue = [...teamValues].sort((a, b) => b.value - a.value);
-            const sortedByValueAsc = [...teamValues].sort((a, b) => a.value - b.value);
+            // Load manager historical data for factors
+            const managerFactors = await loadManagerHistoricalFactors();
             
-            // Generate odds
-            renderSeasonBetGrid('season-bet-champion', sortedByValue, 'champion');
-            renderSeasonBetGrid('season-bet-wins', sortedByValue, 'wins');
-            renderSeasonBetGrid('season-bet-points', sortedByValue, 'points');
-            renderSeasonBetGrid('season-bet-last', sortedByValueAsc, 'last');
+            // Apply manager factors to team data
+            teamData.forEach(team => {
+                const factor = managerFactors[team.manager] || managerFactors[team.teamKey] || { pointsFactor: 1, winsFactor: 1 };
+                team.pointsFactor = factor.pointsFactor;
+                team.winsFactor = factor.winsFactor;
+            });
+            
+            // Generate odds for each bet type with appropriate sorting and factors
+            renderSeasonBetGrid('season-bet-champion', teamData, 'champion');
+            renderSeasonBetGrid('season-bet-wins', teamData, 'wins');
+            renderSeasonBetGrid('season-bet-points', teamData, 'points');
+            renderSeasonBetGrid('season-bet-last', teamData, 'last');
+        }
+        
+        async function loadManagerHistoricalFactors() {
+            const factors = {};
+            
+            try {
+                // Load historical standings to calculate manager averages
+                const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+                const managerStats = {};
+                
+                for (const season of seasons) {
+                    try {
+                        let response;
+                        if (season === 2025) {
+                            response = await fetch('data/current_season/standings.json');
+                        } else {
+                            response = await fetch(`data/historical/${season}/final_standings.json`);
+                        }
+                        
+                        if (response.ok) {
+                            const standings = await response.json();
+                            standings.forEach(team => {
+                                const manager = team.manager || team.Manager;
+                                const points = team.points_for || team.total_points || team['Points For'] || 0;
+                                const wins = team.wins || team.Wins || 0;
+                                
+                                if (!managerStats[manager]) {
+                                    managerStats[manager] = { totalPoints: 0, totalWins: 0, seasons: 0 };
+                                }
+                                managerStats[manager].totalPoints += points;
+                                managerStats[manager].totalWins += wins;
+                                managerStats[manager].seasons++;
+                            });
+                        }
+                    } catch (e) {
+                        // Skip seasons that fail to load
+                    }
+                }
+                
+                // Calculate average points and wins per manager
+                const avgPoints = {};
+                const avgWins = {};
+                let leagueAvgPoints = 0;
+                let leagueAvgWins = 0;
+                let managerCount = 0;
+                
+                Object.entries(managerStats).forEach(([manager, stats]) => {
+                    if (stats.seasons > 0) {
+                        avgPoints[manager] = stats.totalPoints / stats.seasons;
+                        avgWins[manager] = stats.totalWins / stats.seasons;
+                        leagueAvgPoints += avgPoints[manager];
+                        leagueAvgWins += avgWins[manager];
+                        managerCount++;
+                    }
+                });
+                
+                if (managerCount > 0) {
+                    leagueAvgPoints /= managerCount;
+                    leagueAvgWins /= managerCount;
+                }
+                
+                // Calculate factors (how much above/below average each manager performs)
+                Object.entries(managerStats).forEach(([manager, stats]) => {
+                    if (stats.seasons > 0) {
+                        // Factor of 1.0 = average, >1.0 = above average, <1.0 = below average
+                        // Scale the factor to have moderate impact (0.8 to 1.2 range)
+                        const pointsRatio = leagueAvgPoints > 0 ? avgPoints[manager] / leagueAvgPoints : 1;
+                        const winsRatio = leagueAvgWins > 0 ? avgWins[manager] / leagueAvgWins : 1;
+                        
+                        // Compress the ratio to have less extreme impact (closer to 1)
+                        factors[manager] = {
+                            pointsFactor: 0.7 + (pointsRatio * 0.3), // Range roughly 0.8 to 1.2
+                            winsFactor: 0.7 + (winsRatio * 0.3)
+                        };
+                    }
+                });
+                
+            } catch (e) {
+                console.log('Could not load manager historical factors:', e);
+            }
+            
+            return factors;
         }
         
         async function calculateTeamValuesForOdds() {
-            // Try to use existing team values from value suite
             const teamValues = [];
             
-            for (const team of sportsbookTeamData) {
-                // Default value if we can't calculate
-                let value = 5000;
-                
-                // Try to get from value rankings if available
-                const valueRow = document.querySelector(`#value-rankings-table tr[data-team-key="${team.team_key}"]`);
-                if (valueRow) {
-                    const totalCell = valueRow.querySelector('td:last-child');
-                    if (totalCell) {
-                        value = parseFloat(totalCell.textContent.replace(/,/g, '')) || 5000;
+            // Try to load team value rankings from the value suite calculation
+            // First check if we have the teamValueRankings data available
+            let valueRankingsData = null;
+            
+            try {
+                // Try to get values from the rendered value rankings table
+                const valueTable = document.getElementById('value-rankings-table');
+                if (valueTable) {
+                    const rows = valueTable.querySelectorAll('tbody tr');
+                    if (rows.length > 0) {
+                        valueRankingsData = {};
+                        rows.forEach(row => {
+                            const cells = row.querySelectorAll('td');
+                            if (cells.length >= 6) {
+                                // Get team name from first cell
+                                const teamName = cells[0].textContent.trim();
+                                // Get total value from last cell
+                                const totalValue = parseFloat(cells[5].textContent.replace(/,/g, '')) || 0;
+                                valueRankingsData[teamName] = totalValue;
+                            }
+                        });
                     }
                 }
+            } catch (e) {
+                console.log('Could not read value rankings table:', e);
+            }
+            
+            // If we couldn't get values from the table, calculate them
+            if (!valueRankingsData || Object.keys(valueRankingsData).length === 0) {
+                valueRankingsData = await calculateTeamValuesDirectly();
+            }
+            
+            for (const team of sportsbookTeamData) {
+                const teamName = team.team_name;
+                const value = valueRankingsData[teamName] || 5000;
                 
                 teamValues.push({
                     teamKey: team.team_key,
                     teamName: team.team_name,
                     teamLogo: team.team_logo,
                     manager: normalizeManagerName(team.manager, 2026, team.team_name, team.team_key),
-                    value: value
+                    rawManager: team.manager,
+                    value: value,
+                    pointsFactor: 1,
+                    winsFactor: 1
                 });
             }
             
             return teamValues;
         }
         
-        function calculateOdds(teamValue, allValues, betType) {
-            // Calculate implied probability based on relative value
-            const totalValue = allValues.reduce((sum, t) => sum + t.value, 0);
-            const probability = teamValue / totalValue;
+        async function calculateTeamValuesDirectly() {
+            const teamValues = {};
+            
+            try {
+                // Load keepers data
+                const keepersResponse = await fetch('data/keepers.json');
+                const allKeepers = keepersResponse.ok ? await keepersResponse.json() : {};
+                
+                // Load average projections
+                let projections = {};
+                try {
+                    const projResponse = await fetch('data/projections/averaged_projections.json');
+                    if (projResponse.ok) {
+                        const projData = await projResponse.json();
+                        (projData.batters || []).forEach(p => {
+                            projections[p.name?.toLowerCase()] = p.projected_points || 0;
+                        });
+                        (projData.pitchers || []).forEach(p => {
+                            projections[p.name?.toLowerCase()] = p.projected_points || 0;
+                        });
+                    }
+                } catch (e) {
+                    console.log('Could not load projections');
+                }
+                
+                // Calculate value for each team based on their keepers
+                for (const team of sportsbookTeamData) {
+                    const teamKeepers = allKeepers[team.team_key] || [];
+                    let totalValue = 0;
+                    
+                    teamKeepers.forEach(keeper => {
+                        const playerName = (keeper.player_name || keeper.name || '').toLowerCase();
+                        const projectedPts = projections[playerName] || 0;
+                        const roundCost = keeper.round_cost || keeper.cost || 22;
+                        const expectedPts = expectedPointsByRound[roundCost]?.avg || 200;
+                        
+                        // Value = projected + (projected - expected)
+                        const surplusValue = projectedPts - expectedPts;
+                        const keeperValue = projectedPts + surplusValue;
+                        totalValue += keeperValue;
+                    });
+                    
+                    // Add base value for draft picks (estimate)
+                    totalValue += 2500; // Base draft value estimate
+                    
+                    teamValues[team.team_name] = Math.max(totalValue, 1000);
+                }
+            } catch (e) {
+                console.log('Error calculating team values:', e);
+            }
+            
+            return teamValues;
+        }
+        
+        function calculateOdds(teamValue, allTeams, betType, team) {
+            // Get the appropriate factor based on bet type
+            let adjustedValue = teamValue;
+            
+            if (betType === 'points' && team.pointsFactor) {
+                adjustedValue *= team.pointsFactor;
+            } else if ((betType === 'wins' || betType === 'champion') && team.winsFactor) {
+                adjustedValue *= team.winsFactor;
+            } else if (betType === 'last') {
+                // For last place, invert the factors (bad historical = better odds to be last)
+                if (team.pointsFactor) {
+                    adjustedValue /= team.pointsFactor;
+                }
+            }
+            
+            // Calculate total adjusted value
+            const totalValue = allTeams.reduce((sum, t) => {
+                let val = t.value;
+                if (betType === 'points' && t.pointsFactor) val *= t.pointsFactor;
+                else if ((betType === 'wins' || betType === 'champion') && t.winsFactor) val *= t.winsFactor;
+                else if (betType === 'last' && t.pointsFactor) val /= t.pointsFactor;
+                return sum + val;
+            }, 0);
+            
+            // Calculate implied probability
+            const probability = adjustedValue / totalValue;
+            
+            // For "last place", we want LOW value = HIGH probability
+            let finalProb = probability;
+            if (betType === 'last') {
+                // Invert: lowest value team gets highest probability
+                const invertedValue = totalValue - adjustedValue;
+                const invertedTotal = allTeams.reduce((sum, t) => {
+                    let val = t.value;
+                    if (t.pointsFactor) val /= t.pointsFactor;
+                    return sum + (totalValue / allTeams.length - val + totalValue / allTeams.length);
+                }, 0);
+                finalProb = (totalValue / allTeams.length - adjustedValue + totalValue / allTeams.length) / invertedTotal;
+            }
+            
+            // Ensure probability is reasonable
+            finalProb = Math.max(0.02, Math.min(0.6, finalProb));
             
             // Convert to American odds
-            if (probability >= 0.5) {
+            if (finalProb >= 0.5) {
                 // Favorite: negative odds
-                const odds = -Math.round((probability / (1 - probability)) * 100);
-                return odds;
+                const odds = -Math.round((finalProb / (1 - finalProb)) * 100);
+                return Math.max(odds, -500); // Cap at -500
             } else {
                 // Underdog: positive odds
-                const odds = Math.round(((1 - probability) / probability) * 100);
-                return '+' + odds;
+                const odds = Math.round(((1 - finalProb) / finalProb) * 100);
+                return '+' + Math.min(odds, 2000); // Cap at +2000
             }
         }
         
@@ -20831,10 +21026,26 @@
             const container = document.getElementById(containerId);
             if (!container) return;
             
-            const allValues = teams.map(t => t.value);
+            // Sort teams based on bet type
+            let sortedTeams;
+            if (betType === 'last') {
+                // For last place, sort by value ascending (worst teams first = best odds)
+                sortedTeams = [...teams].sort((a, b) => {
+                    const aVal = a.value / (a.pointsFactor || 1);
+                    const bVal = b.value / (b.pointsFactor || 1);
+                    return aVal - bVal;
+                });
+            } else {
+                // For champion/wins/points, sort by adjusted value descending
+                sortedTeams = [...teams].sort((a, b) => {
+                    const aVal = a.value * (betType === 'points' ? (a.pointsFactor || 1) : (a.winsFactor || 1));
+                    const bVal = b.value * (betType === 'points' ? (b.pointsFactor || 1) : (b.winsFactor || 1));
+                    return bVal - aVal;
+                });
+            }
             
-            container.innerHTML = teams.map(team => {
-                const odds = calculateOdds(team.value, teams, betType);
+            container.innerHTML = sortedTeams.map(team => {
+                const odds = calculateOdds(team.value, teams, betType, team);
                 const isUnderdog = typeof odds === 'string' && odds.startsWith('+');
                 
                 return `
