@@ -20765,7 +20765,7 @@
             
             // Apply manager factors to team data
             teamData.forEach(team => {
-                const factor = managerFactors[team.manager] || managerFactors[team.teamKey] || { pointsFactor: 1, winsFactor: 1 };
+                const factor = managerFactors[team.rawManager] || managerFactors[team.manager] || { pointsFactor: 1, winsFactor: 1 };
                 team.pointsFactor = factor.pointsFactor;
                 team.winsFactor = factor.winsFactor;
             });
@@ -20837,17 +20837,16 @@
                 }
                 
                 // Calculate factors (how much above/below average each manager performs)
+                // Compressed to 0.92 to 1.08 range for subtle impact
                 Object.entries(managerStats).forEach(([manager, stats]) => {
                     if (stats.seasons > 0) {
-                        // Factor of 1.0 = average, >1.0 = above average, <1.0 = below average
-                        // Scale the factor to have moderate impact (0.8 to 1.2 range)
                         const pointsRatio = leagueAvgPoints > 0 ? avgPoints[manager] / leagueAvgPoints : 1;
                         const winsRatio = leagueAvgWins > 0 ? avgWins[manager] / leagueAvgWins : 1;
                         
-                        // Compress the ratio to have less extreme impact (closer to 1)
+                        // Compress to subtle range (0.92 to 1.08)
                         factors[manager] = {
-                            pointsFactor: 0.7 + (pointsRatio * 0.3), // Range roughly 0.8 to 1.2
-                            winsFactor: 0.7 + (winsRatio * 0.3)
+                            pointsFactor: 0.92 + (Math.min(Math.max(pointsRatio, 0.7), 1.3) - 0.7) * 0.27,
+                            winsFactor: 0.92 + (Math.min(Math.max(winsRatio, 0.7), 1.3) - 0.7) * 0.27
                         };
                     }
                 });
@@ -20967,58 +20966,63 @@
             return teamValues;
         }
         
-        function calculateOdds(teamValue, allTeams, betType, team) {
-            // Get the appropriate factor based on bet type
-            let adjustedValue = teamValue;
+        function calculateAdjustedValue(team, betType) {
+            const value = team.value;
+            const pf = team.pointsFactor || 1;
+            const wf = team.winsFactor || 1;
             
-            if (betType === 'points' && team.pointsFactor) {
-                adjustedValue *= team.pointsFactor;
-            } else if ((betType === 'wins' || betType === 'champion') && team.winsFactor) {
-                adjustedValue *= team.winsFactor;
-            } else if (betType === 'last') {
-                // For last place, invert the factors (bad historical = better odds to be last)
-                if (team.pointsFactor) {
-                    adjustedValue /= team.pointsFactor;
-                }
+            switch (betType) {
+                case 'champion':
+                    // Champion: Value matters, but manager factor has MORE weight
+                    // Good managers who win championships get boost
+                    return value * Math.pow(wf, 1.5) * Math.pow(pf, 0.5);
+                    
+                case 'wins':
+                    // Most Wins: Primarily value-based, slight manager factor
+                    // Strong rosters tend to win more
+                    return value * Math.pow(wf, 0.3);
+                    
+                case 'points':
+                    // Most Points: High value + good managers = best odds
+                    // Low value + bad managers = worst odds
+                    return value * pf;
+                    
+                case 'last':
+                    // Last Place: Low value + bad managers = best odds (favorites)
+                    // High value + good managers = worst odds (longshots)
+                    // Invert both value and factors
+                    return 1 / (value * pf);
+                    
+                default:
+                    return value;
             }
+        }
+        
+        function calculateOdds(team, allTeams, betType) {
+            // Calculate adjusted values for all teams
+            const adjustedValues = allTeams.map(t => ({
+                team: t,
+                adjusted: calculateAdjustedValue(t, betType)
+            }));
             
-            // Calculate total adjusted value
-            const totalValue = allTeams.reduce((sum, t) => {
-                let val = t.value;
-                if (betType === 'points' && t.pointsFactor) val *= t.pointsFactor;
-                else if ((betType === 'wins' || betType === 'champion') && t.winsFactor) val *= t.winsFactor;
-                else if (betType === 'last' && t.pointsFactor) val /= t.pointsFactor;
-                return sum + val;
-            }, 0);
+            const totalAdjusted = adjustedValues.reduce((sum, t) => sum + t.adjusted, 0);
+            const teamAdjusted = calculateAdjustedValue(team, betType);
             
             // Calculate implied probability
-            const probability = adjustedValue / totalValue;
-            
-            // For "last place", we want LOW value = HIGH probability
-            let finalProb = probability;
-            if (betType === 'last') {
-                // Invert: lowest value team gets highest probability
-                const invertedValue = totalValue - adjustedValue;
-                const invertedTotal = allTeams.reduce((sum, t) => {
-                    let val = t.value;
-                    if (t.pointsFactor) val /= t.pointsFactor;
-                    return sum + (totalValue / allTeams.length - val + totalValue / allTeams.length);
-                }, 0);
-                finalProb = (totalValue / allTeams.length - adjustedValue + totalValue / allTeams.length) / invertedTotal;
-            }
+            let probability = teamAdjusted / totalAdjusted;
             
             // Ensure probability is reasonable
-            finalProb = Math.max(0.02, Math.min(0.6, finalProb));
+            probability = Math.max(0.02, Math.min(0.55, probability));
             
             // Convert to American odds
-            if (finalProb >= 0.5) {
+            if (probability >= 0.5) {
                 // Favorite: negative odds
-                const odds = -Math.round((finalProb / (1 - finalProb)) * 100);
-                return Math.max(odds, -500); // Cap at -500
+                const odds = -Math.round((probability / (1 - probability)) * 100);
+                return Math.max(odds, -400); // Cap at -400
             } else {
                 // Underdog: positive odds
-                const odds = Math.round(((1 - finalProb) / finalProb) * 100);
-                return '+' + Math.min(odds, 2000); // Cap at +2000
+                const odds = Math.round(((1 - probability) / probability) * 100);
+                return '+' + Math.min(odds, 1500); // Cap at +1500
             }
         }
         
@@ -21026,26 +21030,15 @@
             const container = document.getElementById(containerId);
             if (!container) return;
             
-            // Sort teams based on bet type
-            let sortedTeams;
-            if (betType === 'last') {
-                // For last place, sort by value ascending (worst teams first = best odds)
-                sortedTeams = [...teams].sort((a, b) => {
-                    const aVal = a.value / (a.pointsFactor || 1);
-                    const bVal = b.value / (b.pointsFactor || 1);
-                    return aVal - bVal;
-                });
-            } else {
-                // For champion/wins/points, sort by adjusted value descending
-                sortedTeams = [...teams].sort((a, b) => {
-                    const aVal = a.value * (betType === 'points' ? (a.pointsFactor || 1) : (a.winsFactor || 1));
-                    const bVal = b.value * (betType === 'points' ? (b.pointsFactor || 1) : (b.winsFactor || 1));
-                    return bVal - aVal;
-                });
-            }
+            // Sort teams by adjusted value (best odds first)
+            const sortedTeams = [...teams].sort((a, b) => {
+                const aVal = calculateAdjustedValue(a, betType);
+                const bVal = calculateAdjustedValue(b, betType);
+                return bVal - aVal; // Higher adjusted value = better odds = listed first
+            });
             
             container.innerHTML = sortedTeams.map(team => {
-                const odds = calculateOdds(team.value, teams, betType, team);
+                const odds = calculateOdds(team, teams, betType);
                 const isUnderdog = typeof odds === 'string' && odds.startsWith('+');
                 
                 return `
