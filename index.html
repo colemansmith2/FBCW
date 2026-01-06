@@ -6768,6 +6768,678 @@
             margin-top: 2rem;
             color: #666;
         }
+
+        /* ===== SPORTSBOOK STYLES ===== */
+        .sportsbook-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .sportsbook-user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .sportsbook-user-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #d4af37;
+        }
+
+        .sportsbook-balance {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sportsbook-balance-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+        }
+
+        .sportsbook-balance-amount {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #d4af37;
+        }
+
+        .sportsbook-logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .sportsbook-logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .sportsbook-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sportsbook-tab-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #1e3c72;
+            background: white;
+            color: #1e3c72;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sportsbook-tab-btn:hover {
+            background: #f0f4ff;
+        }
+
+        .sportsbook-tab-btn.active {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            border-color: #1e3c72;
+        }
+
+        .sportsbook-subtabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sportsbook-subtab-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            background: #f8f9fa;
+            color: #333;
+            font-weight: 500;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .sportsbook-subtab-btn:hover {
+            background: #e9ecef;
+        }
+
+        .sportsbook-subtab-btn.active {
+            background: #d4af37;
+            color: white;
+            border-color: #d4af37;
+        }
+
+        .sportsbook-content {
+            display: none;
+        }
+
+        .sportsbook-content.active {
+            display: block;
+        }
+
+        /* Season Bets */
+        .season-bet-section {
+            margin-bottom: 2rem;
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .season-bet-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .season-bet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .season-bet-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .season-bet-card:hover {
+            border-color: #1e3c72;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .season-bet-card.selected {
+            border-color: #d4af37;
+            background: #fffbeb;
+        }
+
+        .season-bet-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin: 0 auto 0.75rem;
+            border: 2px solid #ddd;
+            object-fit: cover;
+        }
+
+        .season-bet-team {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .season-bet-manager {
+            font-size: 0.75rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .season-bet-odds {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #28a745;
+            padding: 0.3rem 0.6rem;
+            background: rgba(40, 167, 69, 0.1);
+            border-radius: 5px;
+        }
+
+        .season-bet-odds.underdog {
+            color: #dc3545;
+            background: rgba(220, 53, 69, 0.1);
+        }
+
+        /* Weekly Matchup Bets */
+        .weekly-bet-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .weekly-bet-week-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .weekly-bet-week-selector label {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        .weekly-bet-week-selector select {
+            padding: 0.5rem 1rem;
+            border: 2px solid #1e3c72;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .matchup-bet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .matchup-bet-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 2px solid transparent;
+        }
+
+        .matchup-bet-card:hover {
+            border-color: #1e3c72;
+        }
+
+        .matchup-bet-vs {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .matchup-bet-team {
+            flex: 1;
+            text-align: center;
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .matchup-bet-team:hover {
+            background: #f0f4ff;
+            border-color: #1e3c72;
+        }
+
+        .matchup-bet-team.selected {
+            background: #fffbeb;
+            border-color: #d4af37;
+        }
+
+        .matchup-bet-team-logo {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin: 0 auto 0.5rem;
+            border: 2px solid #ddd;
+        }
+
+        .matchup-bet-team-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+
+        .matchup-bet-projected {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+        }
+
+        .matchup-bet-team-odds {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #28a745;
+        }
+
+        .matchup-bet-team-odds.underdog {
+            color: #dc3545;
+        }
+
+        .matchup-bet-vs-label {
+            font-weight: 700;
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        /* Bet Slip */
+        .bet-slip {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            z-index: 100;
+            overflow: hidden;
+            display: none;
+        }
+
+        .bet-slip.active {
+            display: block;
+        }
+
+        .bet-slip-header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 1rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bet-slip-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.25rem;
+            cursor: pointer;
+        }
+
+        .bet-slip-content {
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .bet-slip-item {
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+        }
+
+        .bet-slip-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .bet-slip-item-team {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .bet-slip-item-odds {
+            font-weight: 700;
+            color: #28a745;
+        }
+
+        .bet-slip-item-type {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .bet-slip-item-wager {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .bet-slip-item-wager input {
+            width: 80px;
+            padding: 0.4rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .bet-slip-item-payout {
+            font-size: 0.85rem;
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .bet-slip-item-remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .bet-slip-footer {
+            padding: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .bet-slip-total {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .bet-slip-submit {
+            width: 100%;
+            padding: 0.75rem;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .bet-slip-submit:hover {
+            background: linear-gradient(135deg, #218838, #1aab8b);
+        }
+
+        .bet-slip-submit:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Bet History */
+        .bet-history-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .bet-history-table th {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        .bet-history-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        .bet-history-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .bet-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .bet-status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .bet-status.won {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .bet-status.lost {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Sportsbook Login Modal */
+        .sportsbook-login-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .sportsbook-login-modal.active {
+            display: flex;
+        }
+
+        .sportsbook-login-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .sportsbook-login-title {
+            text-align: center;
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .sportsbook-login-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .sportsbook-team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .sportsbook-team-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sportsbook-team-option:hover {
+            background: #f0f4ff;
+            border-color: #1e3c72;
+        }
+
+        .sportsbook-team-option.selected {
+            background: #fffbeb;
+            border-color: #d4af37;
+        }
+
+        .sportsbook-team-option img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+            margin-bottom: 0.5rem;
+        }
+
+        .sportsbook-team-option .team-name {
+            font-size: 0.7rem;
+            color: #333;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .sportsbook-password-section {
+            display: none;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #eee;
+        }
+
+        .sportsbook-password-section.active {
+            display: block;
+        }
+
+        .sportsbook-password-section h4 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .sportsbook-password-input {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .sportsbook-password-input input {
+            padding: 0.75rem 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            width: 200px;
+        }
+
+        .sportsbook-password-input button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .sportsbook-back-btn {
+            display: block;
+            margin: 1rem auto 0;
+            padding: 0.5rem 1rem;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .sportsbook-login-error {
+            color: #dc3545;
+            text-align: center;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .sportsbook-not-logged-in {
+            text-align: center;
+            padding: 3rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .sportsbook-not-logged-in h3 {
+            color: #1e3c72;
+            margin-bottom: 1rem;
+        }
+
+        .sportsbook-not-logged-in p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+
+        .sportsbook-login-btn {
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, #d4af37, #f5d742);
+            color: #1e3c72;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .sportsbook-login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
     </style>
 </head>
 
@@ -6819,6 +7491,7 @@
         <button onclick="showSection('managers')" class="nav-btn">Manager Profiles</button>
         <button onclick="showSection('preseason')" class="nav-btn">Preseason Tools</button>
         <button onclick="showSection('valuesuite')" class="nav-btn">Value Suite</button>
+        <button onclick="showSection('sportsbook')" class="nav-btn">Sportsbook</button>
     </nav>
 
     <!-- Side Navigation -->
@@ -6843,6 +7516,9 @@
         </div>
         <div class="side-nav-item" data-tooltip="Value Suite" onclick="showSection('valuesuite')">
             <img src="data/page_logos/value_suite_logo.png" alt="Value Suite" loading="lazy" decoding="async">
+        </div>
+        <div class="side-nav-item" data-tooltip="King Dylan's Sportsbook" onclick="showSection('sportsbook')">
+            <img src="data/page_logos/sportsbook_logo.png" alt="Sportsbook" loading="lazy" decoding="async">
         </div>
     </aside>
 
@@ -7671,6 +8347,172 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Sportsbook Section -->
+        <div id="sportsbook" class="section">
+            <h2>👑 King Dylan's Sportsbook</h2>
+            
+            <!-- Not Logged In State -->
+            <div id="sportsbook-not-logged-in" class="sportsbook-not-logged-in">
+                <h3>🎰 Welcome to King Dylan's Sportsbook</h3>
+                <p>Place bets on season outcomes and weekly matchups using your units!</p>
+                <button class="sportsbook-login-btn" onclick="openSportsbookLogin()">
+                    🔐 Select Your Team to Continue
+                </button>
+            </div>
+            
+            <!-- Logged In State -->
+            <div id="sportsbook-logged-in" style="display: none;">
+                <div class="sportsbook-header">
+                    <div class="sportsbook-tabs">
+                        <button class="sportsbook-tab-btn active" onclick="switchSportsbookTab('sportsbook')">🎰 Sportsbook</button>
+                        <button class="sportsbook-tab-btn" onclick="switchSportsbookTab('history')">📜 Bet History</button>
+                    </div>
+                    <div class="sportsbook-user-info">
+                        <img id="sportsbook-user-logo" class="sportsbook-user-logo" src="" alt="">
+                        <div class="sportsbook-balance">
+                            <span class="sportsbook-balance-label">Balance:</span>
+                            <span class="sportsbook-balance-amount" id="sportsbook-balance">0</span>
+                            <span class="sportsbook-balance-label">units</span>
+                        </div>
+                        <button class="sportsbook-logout-btn" onclick="logoutSportsbook()">Switch Team</button>
+                    </div>
+                </div>
+                
+                <!-- Sportsbook Tab -->
+                <div id="sportsbook-tab-sportsbook" class="sportsbook-content active">
+                    <div class="sportsbook-subtabs">
+                        <button class="sportsbook-subtab-btn active" onclick="switchSportsbookSubtab('season')">🏆 Season</button>
+                        <button class="sportsbook-subtab-btn" onclick="switchSportsbookSubtab('weekly')">📅 Weekly</button>
+                    </div>
+                    
+                    <!-- Season Bets -->
+                    <div id="sportsbook-season-bets" class="sportsbook-content active">
+                        <div class="season-bet-section">
+                            <div class="season-bet-title">🏆 FBCW Champion</div>
+                            <div class="season-bet-grid" id="season-bet-champion">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        
+                        <div class="season-bet-section">
+                            <div class="season-bet-title">📈 Most Wins</div>
+                            <div class="season-bet-grid" id="season-bet-wins">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        
+                        <div class="season-bet-section">
+                            <div class="season-bet-title">💯 Most Points</div>
+                            <div class="season-bet-grid" id="season-bet-points">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        
+                        <div class="season-bet-section">
+                            <div class="season-bet-title">💩 Last Place</div>
+                            <div class="season-bet-grid" id="season-bet-last">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Weekly Bets -->
+                    <div id="sportsbook-weekly-bets" class="sportsbook-content">
+                        <div class="weekly-bet-header">
+                            <div class="weekly-bet-week-selector">
+                                <label>Week:</label>
+                                <select id="sportsbook-week-select" onchange="loadWeeklyMatchupBets()">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="matchup-bet-grid" id="weekly-matchup-bets">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Bet History Tab -->
+                <div id="sportsbook-tab-history" class="sportsbook-content">
+                    <h3 style="color: #1e3c72; margin-bottom: 1rem;">📜 Your Bet History</h3>
+                    <table class="bet-history-table" id="bet-history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Bet Type</th>
+                                <th>Selection</th>
+                                <th>Against</th>
+                                <th>Odds</th>
+                                <th>Wager</th>
+                                <th>Payout</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bet-history-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                    <div id="bet-history-empty" style="display: none; text-align: center; padding: 2rem; color: #666;">
+                        No bets placed yet. Head to the Sportsbook to place your first wager!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sportsbook Login Modal -->
+    <div id="sportsbook-login-modal" class="sportsbook-login-modal">
+        <div class="sportsbook-login-content">
+            <h2 class="sportsbook-login-title">👑 King Dylan's Sportsbook</h2>
+            <p class="sportsbook-login-subtitle">Select your team logo to continue</p>
+            
+            <div class="sportsbook-team-grid" id="sportsbook-team-grid">
+                <!-- Team logos populated by JS -->
+            </div>
+            
+            <div class="sportsbook-password-section" id="sportsbook-password-section">
+                <h4>Enter password for <span id="sportsbook-selected-team-name"></span></h4>
+                <div class="sportsbook-password-input">
+                    <input type="password" id="sportsbook-password" placeholder="Password" 
+                           onkeypress="if(event.key === 'Enter') authenticateSportsbook()">
+                    <button onclick="authenticateSportsbook()">Enter</button>
+                </div>
+                <div class="sportsbook-login-error" id="sportsbook-login-error">
+                    Incorrect password. Please try again.
+                </div>
+                <button class="sportsbook-back-btn" onclick="sportsbookBackToTeamSelect()">← Back to team selection</button>
+            </div>
+            
+            <button class="sportsbook-back-btn" onclick="closeSportsbookLogin()" style="margin-top: 1.5rem;">
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- Bet Slip -->
+    <div id="bet-slip" class="bet-slip">
+        <div class="bet-slip-header">
+            <span>🎫 Bet Slip</span>
+            <button class="bet-slip-close" onclick="closeBetSlip()">×</button>
+        </div>
+        <div class="bet-slip-content" id="bet-slip-content">
+            <!-- Bet items populated by JS -->
+        </div>
+        <div class="bet-slip-footer">
+            <div class="bet-slip-total">
+                <span>Total Wager:</span>
+                <span id="bet-slip-total-wager">0 units</span>
+            </div>
+            <div class="bet-slip-total">
+                <span>Potential Payout:</span>
+                <span id="bet-slip-potential-payout" style="color: #28a745;">0 units</span>
+            </div>
+            <button class="bet-slip-submit" id="bet-slip-submit" onclick="submitBets()" disabled>
+                Place Bets
+            </button>
         </div>
     </div>
 
@@ -12747,7 +13589,8 @@
                 'scoring': 3,
                 'managers': 4,
                 'preseason': 5,
-                'valuesuite': 6
+                'valuesuite': 6,
+                'sportsbook': 7
             };
             const index = sectionToIndex[sectionId];
             if (index !== undefined) {
@@ -12810,6 +13653,14 @@
                 if (keeperConfig) {
                     displayLeagueKeepers(); // This triggers the value analysis rendering
                 }
+            }
+            else if (sectionId === 'sportsbook') {
+                // Initialize keeper management (needed for authentication)
+                if (!keeperConfig) {
+                    await initializeKeeperManagement();
+                }
+                // Initialize sportsbook
+                await initializeSportsbook();
             }
         }
 
@@ -19708,6 +20559,582 @@
                 closeProjectionModal();
             }
         });
+
+        // ===== SPORTSBOOK FUNCTIONS =====
+        let sportsbookUser = null;
+        let sportsbookTeamData = [];
+        let sportsbookBetSlip = [];
+        let sportsbookBetsRef = null;
+        let sportsbookBalancesRef = null;
+        
+        const PRESEASON_BUDGET = 50;
+        const WEEKLY_BUDGET_ADD = 10;
+        
+        // Initialize sportsbook when section is shown
+        async function initializeSportsbook() {
+            // Load team data
+            try {
+                const response = await fetch('data/2026/teams.json');
+                if (response.ok) {
+                    sportsbookTeamData = await response.json();
+                }
+            } catch (e) {
+                console.log('Could not load teams for sportsbook:', e);
+            }
+            
+            // Setup Firebase refs
+            if (firebaseDb) {
+                sportsbookBetsRef = firebaseDb.ref('sportsbook_bets');
+                sportsbookBalancesRef = firebaseDb.ref('sportsbook_balances');
+            }
+        }
+        
+        function openSportsbookLogin() {
+            const modal = document.getElementById('sportsbook-login-modal');
+            const grid = document.getElementById('sportsbook-team-grid');
+            
+            // Populate team grid
+            grid.innerHTML = sportsbookTeamData.map(team => `
+                <div class="sportsbook-team-option" 
+                     onclick="selectSportsbookTeam('${team.team_key}')"
+                     data-team-key="${team.team_key}"
+                     data-tooltip="${team.team_name} - ${normalizeManagerName(team.manager, 2026, team.team_name, team.team_key)}">
+                    <img src="${team.team_logo || 'league_logo.png'}" alt="${team.team_name}">
+                    <span class="team-name">${normalizeManagerName(team.manager, 2026, team.team_name, team.team_key)}</span>
+                </div>
+            `).join('');
+            
+            // Reset state
+            document.getElementById('sportsbook-password-section').classList.remove('active');
+            document.getElementById('sportsbook-login-error').style.display = 'none';
+            
+            modal.classList.add('active');
+        }
+        
+        function closeSportsbookLogin() {
+            document.getElementById('sportsbook-login-modal').classList.remove('active');
+        }
+        
+        let selectedSportsbookTeam = null;
+        
+        function selectSportsbookTeam(teamKey) {
+            selectedSportsbookTeam = teamKey;
+            
+            // Update selection visuals
+            document.querySelectorAll('.sportsbook-team-option').forEach(opt => {
+                opt.classList.toggle('selected', opt.dataset.teamKey === teamKey);
+            });
+            
+            // Find team info
+            const team = sportsbookTeamData.find(t => t.team_key === teamKey);
+            if (team) {
+                document.getElementById('sportsbook-selected-team-name').textContent = team.team_name;
+                document.getElementById('sportsbook-password-section').classList.add('active');
+                document.getElementById('sportsbook-password').value = '';
+                document.getElementById('sportsbook-password').focus();
+            }
+        }
+        
+        function sportsbookBackToTeamSelect() {
+            selectedSportsbookTeam = null;
+            document.querySelectorAll('.sportsbook-team-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            document.getElementById('sportsbook-password-section').classList.remove('active');
+            document.getElementById('sportsbook-login-error').style.display = 'none';
+        }
+        
+        async function authenticateSportsbook() {
+            if (!selectedSportsbookTeam || !keeperConfig) return;
+            
+            const password = document.getElementById('sportsbook-password').value;
+            const teamConfig = keeperConfig.teams?.[selectedSportsbookTeam];
+            
+            if (!teamConfig || teamConfig.password !== password) {
+                document.getElementById('sportsbook-login-error').style.display = 'block';
+                return;
+            }
+            
+            // Authentication successful
+            const team = sportsbookTeamData.find(t => t.team_key === selectedSportsbookTeam);
+            sportsbookUser = {
+                teamKey: selectedSportsbookTeam,
+                teamName: team?.team_name || 'Unknown',
+                teamLogo: team?.team_logo || 'league_logo.png',
+                manager: normalizeManagerName(team?.manager, 2026, team?.team_name, team?.team_key)
+            };
+            
+            closeSportsbookLogin();
+            await loadSportsbookData();
+            showSportsbookLoggedIn();
+        }
+        
+        async function loadSportsbookData() {
+            if (!sportsbookUser || !firebaseDb) return;
+            
+            // Load user's balance
+            try {
+                const balanceSnapshot = await sportsbookBalancesRef.child(sportsbookUser.teamKey).once('value');
+                let balance = balanceSnapshot.val();
+                
+                if (balance === null) {
+                    // Initialize new user with preseason budget
+                    balance = { total: PRESEASON_BUDGET, lastWeeklyAdd: 0 };
+                    await sportsbookBalancesRef.child(sportsbookUser.teamKey).set(balance);
+                }
+                
+                document.getElementById('sportsbook-balance').textContent = balance.total || PRESEASON_BUDGET;
+            } catch (e) {
+                console.log('Could not load sportsbook balance:', e);
+                document.getElementById('sportsbook-balance').textContent = PRESEASON_BUDGET;
+            }
+            
+            // Load season bets
+            await loadSeasonBets();
+            
+            // Load bet history
+            await loadBetHistory();
+        }
+        
+        function showSportsbookLoggedIn() {
+            document.getElementById('sportsbook-not-logged-in').style.display = 'none';
+            document.getElementById('sportsbook-logged-in').style.display = 'block';
+            
+            document.getElementById('sportsbook-user-logo').src = sportsbookUser.teamLogo;
+        }
+        
+        function logoutSportsbook() {
+            sportsbookUser = null;
+            sportsbookBetSlip = [];
+            updateBetSlip();
+            
+            document.getElementById('sportsbook-not-logged-in').style.display = 'block';
+            document.getElementById('sportsbook-logged-in').style.display = 'none';
+        }
+        
+        function switchSportsbookTab(tab) {
+            // Update buttons
+            document.querySelectorAll('.sportsbook-tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(tab));
+            });
+            
+            // Show/hide content
+            document.getElementById('sportsbook-tab-sportsbook').classList.toggle('active', tab === 'sportsbook');
+            document.getElementById('sportsbook-tab-history').classList.toggle('active', tab === 'history');
+        }
+        
+        function switchSportsbookSubtab(subtab) {
+            // Update buttons
+            document.querySelectorAll('.sportsbook-subtab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.textContent.toLowerCase().includes(subtab));
+            });
+            
+            // Show/hide content
+            document.getElementById('sportsbook-season-bets').classList.toggle('active', subtab === 'season');
+            document.getElementById('sportsbook-weekly-bets').classList.toggle('active', subtab === 'weekly');
+            
+            if (subtab === 'weekly') {
+                loadWeeklyMatchupBets();
+            }
+        }
+        
+        async function loadSeasonBets() {
+            // Calculate odds based on team values from Value Suite
+            const teamValues = await calculateTeamValuesForOdds();
+            
+            // Sort by value for champion/wins/points odds
+            const sortedByValue = [...teamValues].sort((a, b) => b.value - a.value);
+            const sortedByValueAsc = [...teamValues].sort((a, b) => a.value - b.value);
+            
+            // Generate odds
+            renderSeasonBetGrid('season-bet-champion', sortedByValue, 'champion');
+            renderSeasonBetGrid('season-bet-wins', sortedByValue, 'wins');
+            renderSeasonBetGrid('season-bet-points', sortedByValue, 'points');
+            renderSeasonBetGrid('season-bet-last', sortedByValueAsc, 'last');
+        }
+        
+        async function calculateTeamValuesForOdds() {
+            // Try to use existing team values from value suite
+            const teamValues = [];
+            
+            for (const team of sportsbookTeamData) {
+                // Default value if we can't calculate
+                let value = 5000;
+                
+                // Try to get from value rankings if available
+                const valueRow = document.querySelector(`#value-rankings-table tr[data-team-key="${team.team_key}"]`);
+                if (valueRow) {
+                    const totalCell = valueRow.querySelector('td:last-child');
+                    if (totalCell) {
+                        value = parseFloat(totalCell.textContent.replace(/,/g, '')) || 5000;
+                    }
+                }
+                
+                teamValues.push({
+                    teamKey: team.team_key,
+                    teamName: team.team_name,
+                    teamLogo: team.team_logo,
+                    manager: normalizeManagerName(team.manager, 2026, team.team_name, team.team_key),
+                    value: value
+                });
+            }
+            
+            return teamValues;
+        }
+        
+        function calculateOdds(teamValue, allValues, betType) {
+            // Calculate implied probability based on relative value
+            const totalValue = allValues.reduce((sum, t) => sum + t.value, 0);
+            const probability = teamValue / totalValue;
+            
+            // Convert to American odds
+            if (probability >= 0.5) {
+                // Favorite: negative odds
+                const odds = -Math.round((probability / (1 - probability)) * 100);
+                return odds;
+            } else {
+                // Underdog: positive odds
+                const odds = Math.round(((1 - probability) / probability) * 100);
+                return '+' + odds;
+            }
+        }
+        
+        function renderSeasonBetGrid(containerId, teams, betType) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const allValues = teams.map(t => t.value);
+            
+            container.innerHTML = teams.map(team => {
+                const odds = calculateOdds(team.value, teams, betType);
+                const isUnderdog = typeof odds === 'string' && odds.startsWith('+');
+                
+                return `
+                    <div class="season-bet-card" 
+                         onclick="addToBetSlip('${betType}', '${team.teamKey}', '${team.teamName}', '${odds}', 'season')"
+                         data-team-key="${team.teamKey}">
+                        <img class="season-bet-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
+                        <div class="season-bet-team">${team.teamName}</div>
+                        <div class="season-bet-manager">${team.manager}</div>
+                        <div class="season-bet-odds ${isUnderdog ? 'underdog' : ''}">${odds}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        async function loadWeeklyMatchupBets() {
+            const weekSelect = document.getElementById('sportsbook-week-select');
+            const container = document.getElementById('weekly-matchup-bets');
+            
+            // Try to load weekly stats to get matchups
+            try {
+                const response = await fetch('data/2026/weekly_stats.json');
+                if (!response.ok) {
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">No weekly matchups available yet.</p>';
+                    return;
+                }
+                
+                const weeklyStats = await response.json();
+                const currentWeek = weeklyStats.currentWeek || 1;
+                
+                // Populate week selector
+                if (weekSelect.options.length === 0) {
+                    const weeks = Object.keys(weeklyStats.weeks || {}).map(Number).sort((a, b) => a - b);
+                    weeks.forEach(week => {
+                        const option = document.createElement('option');
+                        option.value = week;
+                        option.textContent = `Week ${week}`;
+                        if (week === currentWeek) option.selected = true;
+                        weekSelect.appendChild(option);
+                    });
+                }
+                
+                const selectedWeek = parseInt(weekSelect.value) || currentWeek;
+                const weekData = weeklyStats.weeks?.[selectedWeek] || weeklyStats.weeks?.[String(selectedWeek)];
+                
+                if (!weekData?.matchups) {
+                    container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">No matchups found for this week.</p>';
+                    return;
+                }
+                
+                // Build team info lookup
+                const teamInfoLookup = {};
+                sportsbookTeamData.forEach(team => {
+                    teamInfoLookup[team.team_key] = {
+                        name: team.team_name,
+                        manager: normalizeManagerName(team.manager, 2026, team.team_name, team.team_key),
+                        logo: team.team_logo || 'league_logo.png'
+                    };
+                });
+                
+                // Render matchups
+                container.innerHTML = weekData.matchups.map(matchup => {
+                    const team1 = teamInfoLookup[matchup.team1_key] || { name: 'Unknown', logo: 'league_logo.png' };
+                    const team2 = teamInfoLookup[matchup.team2_key] || { name: 'Unknown', logo: 'league_logo.png' };
+                    
+                    const proj1 = matchup.team1_projected || 0;
+                    const proj2 = matchup.team2_projected || 0;
+                    
+                    // Calculate odds based on projected points
+                    const odds1 = calculateMatchupOdds(proj1, proj2);
+                    const odds2 = calculateMatchupOdds(proj2, proj1);
+                    
+                    return `
+                        <div class="matchup-bet-card">
+                            <div class="matchup-bet-vs">
+                                <div class="matchup-bet-team" 
+                                     onclick="addToBetSlip('weekly_${selectedWeek}', '${matchup.team1_key}', '${team1.name}', '${odds1}', 'weekly', '${team2.name}')"
+                                     data-team-key="${matchup.team1_key}">
+                                    <img class="matchup-bet-team-logo" src="${team1.logo}" alt="${team1.name}">
+                                    <div class="matchup-bet-team-name">${team1.name}</div>
+                                    <div class="matchup-bet-projected">Proj: ${proj1.toFixed(1)}</div>
+                                    <div class="matchup-bet-team-odds ${odds1.toString().startsWith('+') ? 'underdog' : ''}">${odds1}</div>
+                                </div>
+                                <div class="matchup-bet-vs-label">VS</div>
+                                <div class="matchup-bet-team"
+                                     onclick="addToBetSlip('weekly_${selectedWeek}', '${matchup.team2_key}', '${team2.name}', '${odds2}', 'weekly', '${team1.name}')"
+                                     data-team-key="${matchup.team2_key}">
+                                    <img class="matchup-bet-team-logo" src="${team2.logo}" alt="${team2.name}">
+                                    <div class="matchup-bet-team-name">${team2.name}</div>
+                                    <div class="matchup-bet-projected">Proj: ${proj2.toFixed(1)}</div>
+                                    <div class="matchup-bet-team-odds ${odds2.toString().startsWith('+') ? 'underdog' : ''}">${odds2}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (e) {
+                console.log('Could not load weekly matchups:', e);
+                container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Could not load weekly matchups.</p>';
+            }
+        }
+        
+        function calculateMatchupOdds(teamProj, oppProj) {
+            if (teamProj === 0 && oppProj === 0) return '-110';
+            
+            const total = teamProj + oppProj;
+            const probability = teamProj / total;
+            
+            if (probability >= 0.5) {
+                // Favorite
+                const odds = -Math.round((probability / (1 - probability)) * 100);
+                return Math.max(odds, -500); // Cap at -500
+            } else {
+                // Underdog
+                const odds = Math.round(((1 - probability) / probability) * 100);
+                return '+' + Math.min(odds, 500); // Cap at +500
+            }
+        }
+        
+        function addToBetSlip(betType, teamKey, teamName, odds, category, opponent = null) {
+            // Check if already in slip
+            const existingIndex = sportsbookBetSlip.findIndex(b => b.betType === betType && b.teamKey === teamKey);
+            if (existingIndex >= 0) {
+                // Remove if already selected
+                sportsbookBetSlip.splice(existingIndex, 1);
+            } else {
+                // Add new bet
+                sportsbookBetSlip.push({
+                    betType,
+                    teamKey,
+                    teamName,
+                    odds,
+                    category,
+                    opponent,
+                    wager: 0
+                });
+            }
+            
+            updateBetSlip();
+        }
+        
+        function updateBetSlip() {
+            const slip = document.getElementById('bet-slip');
+            const content = document.getElementById('bet-slip-content');
+            
+            if (sportsbookBetSlip.length === 0) {
+                slip.classList.remove('active');
+                return;
+            }
+            
+            slip.classList.add('active');
+            
+            content.innerHTML = sportsbookBetSlip.map((bet, idx) => {
+                const betTypeLabel = getBetTypeLabel(bet.betType);
+                const payout = calculatePayout(bet.wager, bet.odds);
+                
+                return `
+                    <div class="bet-slip-item">
+                        <div class="bet-slip-item-header">
+                            <span class="bet-slip-item-team">${bet.teamName}</span>
+                            <span class="bet-slip-item-odds">${bet.odds}</span>
+                        </div>
+                        <div class="bet-slip-item-type">${betTypeLabel}${bet.opponent ? ' vs ' + bet.opponent : ''}</div>
+                        <div class="bet-slip-item-wager">
+                            <label>Wager:</label>
+                            <input type="number" min="0" value="${bet.wager}" 
+                                   onchange="updateBetWager(${idx}, this.value)">
+                            <span class="bet-slip-item-payout">Win: ${payout}</span>
+                            <button class="bet-slip-item-remove" onclick="removeBetFromSlip(${idx})">✕</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            updateBetSlipTotals();
+        }
+        
+        function getBetTypeLabel(betType) {
+            if (betType === 'champion') return '🏆 FBCW Champion';
+            if (betType === 'wins') return '📈 Most Wins';
+            if (betType === 'points') return '💯 Most Points';
+            if (betType === 'last') return '💩 Last Place';
+            if (betType.startsWith('weekly_')) return '📅 Week ' + betType.split('_')[1];
+            return betType;
+        }
+        
+        function calculatePayout(wager, odds) {
+            if (!wager || wager <= 0) return 0;
+            
+            const oddsNum = typeof odds === 'string' ? parseInt(odds.replace('+', '')) : odds;
+            
+            if (odds.toString().startsWith('+') || oddsNum > 0) {
+                // Underdog: wager * (odds/100)
+                return (wager + (wager * Math.abs(oddsNum) / 100)).toFixed(1);
+            } else {
+                // Favorite: wager / (odds/100)
+                return (wager + (wager * 100 / Math.abs(oddsNum))).toFixed(1);
+            }
+        }
+        
+        function updateBetWager(idx, value) {
+            sportsbookBetSlip[idx].wager = parseFloat(value) || 0;
+            updateBetSlipTotals();
+        }
+        
+        function removeBetFromSlip(idx) {
+            sportsbookBetSlip.splice(idx, 1);
+            updateBetSlip();
+        }
+        
+        function closeBetSlip() {
+            document.getElementById('bet-slip').classList.remove('active');
+        }
+        
+        function updateBetSlipTotals() {
+            const totalWager = sportsbookBetSlip.reduce((sum, bet) => sum + (bet.wager || 0), 0);
+            const totalPayout = sportsbookBetSlip.reduce((sum, bet) => {
+                return sum + parseFloat(calculatePayout(bet.wager, bet.odds) || 0);
+            }, 0);
+            
+            document.getElementById('bet-slip-total-wager').textContent = totalWager + ' units';
+            document.getElementById('bet-slip-potential-payout').textContent = totalPayout.toFixed(1) + ' units';
+            
+            const balance = parseFloat(document.getElementById('sportsbook-balance').textContent) || 0;
+            const submitBtn = document.getElementById('bet-slip-submit');
+            submitBtn.disabled = totalWager <= 0 || totalWager > balance;
+        }
+        
+        async function submitBets() {
+            if (!sportsbookUser || !firebaseDb) return;
+            
+            const totalWager = sportsbookBetSlip.reduce((sum, bet) => sum + (bet.wager || 0), 0);
+            const balance = parseFloat(document.getElementById('sportsbook-balance').textContent) || 0;
+            
+            if (totalWager > balance) {
+                alert('Insufficient balance!');
+                return;
+            }
+            
+            try {
+                // Record each bet
+                const timestamp = new Date().toISOString();
+                for (const bet of sportsbookBetSlip) {
+                    if (bet.wager > 0) {
+                        await sportsbookBetsRef.push({
+                            teamKey: sportsbookUser.teamKey,
+                            betType: bet.betType,
+                            selection: bet.teamKey,
+                            selectionName: bet.teamName,
+                            opponent: bet.opponent || null,
+                            odds: bet.odds,
+                            wager: bet.wager,
+                            potentialPayout: calculatePayout(bet.wager, bet.odds),
+                            status: 'pending',
+                            timestamp: timestamp
+                        });
+                    }
+                }
+                
+                // Update balance
+                const newBalance = balance - totalWager;
+                await sportsbookBalancesRef.child(sportsbookUser.teamKey).update({ total: newBalance });
+                document.getElementById('sportsbook-balance').textContent = newBalance;
+                
+                // Clear bet slip
+                sportsbookBetSlip = [];
+                updateBetSlip();
+                
+                // Reload bet history
+                await loadBetHistory();
+                
+                alert('Bets placed successfully!');
+                
+            } catch (e) {
+                console.error('Error placing bets:', e);
+                alert('Error placing bets. Please try again.');
+            }
+        }
+        
+        async function loadBetHistory() {
+            if (!sportsbookUser || !firebaseDb) return;
+            
+            const tbody = document.getElementById('bet-history-body');
+            const emptyEl = document.getElementById('bet-history-empty');
+            
+            try {
+                const snapshot = await sportsbookBetsRef.orderByChild('teamKey').equalTo(sportsbookUser.teamKey).once('value');
+                const bets = snapshot.val();
+                
+                if (!bets) {
+                    tbody.innerHTML = '';
+                    emptyEl.style.display = 'block';
+                    return;
+                }
+                
+                emptyEl.style.display = 'none';
+                
+                // Convert to array and sort by date desc
+                const betArray = Object.entries(bets).map(([key, bet]) => ({ key, ...bet }));
+                betArray.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                tbody.innerHTML = betArray.map(bet => {
+                    const date = new Date(bet.timestamp);
+                    const dateStr = date.toLocaleDateString();
+                    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    
+                    return `
+                        <tr>
+                            <td>${dateStr}</td>
+                            <td>${timeStr}</td>
+                            <td>${getBetTypeLabel(bet.betType)}</td>
+                            <td>${bet.selectionName}</td>
+                            <td>${bet.opponent || '-'}</td>
+                            <td>${bet.odds}</td>
+                            <td>${bet.wager} units</td>
+                            <td>${bet.potentialPayout} units</td>
+                            <td><span class="bet-status ${bet.status}">${bet.status.charAt(0).toUpperCase() + bet.status.slice(1)}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+                
+            } catch (e) {
+                console.log('Could not load bet history:', e);
+                tbody.innerHTML = '';
+                emptyEl.style.display = 'block';
+            }
+        }
 
         // ===== INITIALIZE ON PAGE LOAD =====
         window.addEventListener('DOMContentLoaded', async () => {
