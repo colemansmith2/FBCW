@@ -21022,36 +21022,25 @@
             
             const teamAdjusted = calculateAdjustedValue(team, betType);
             
-            // Normalize to 0-1 range and apply power curve to spread odds
-            // Power < 1 spreads out the middle, power > 1 concentrates favorites
+            // Normalize to 0-1 range
             let normalized;
             if (range > 0) {
                 normalized = (teamAdjusted - minVal) / range;
-                // Apply power curve to spread out odds more (0.7 = more spread)
-                normalized = Math.pow(normalized, 0.7);
             } else {
                 normalized = 0.5;
             }
             
-            // Convert to probability (map 0-1 to probability range)
-            // Min prob ~3%, max prob ~40% for 12-team league
-            const minProb = 0.03;
-            const maxProb = 0.40;
+            // Convert to probability
+            // For +800 odds, probability = 100/900 = ~11%
+            // For +1600 odds, probability = 100/1700 = ~6%
+            // So we want range roughly 6% to 11%
+            const minProb = 0.055;  // ~+1700
+            const maxProb = 0.11;   // ~+800
             let probability = minProb + (normalized * (maxProb - minProb));
             
-            // Ensure probability is reasonable
-            probability = Math.max(0.025, Math.min(0.45, probability));
-            
-            // Convert to American odds
-            if (probability >= 0.5) {
-                // Favorite: negative odds
-                const odds = -Math.round((probability / (1 - probability)) * 100);
-                return Math.max(odds, -350); // Cap at -350
-            } else {
-                // Underdog: positive odds
-                const odds = Math.round(((1 - probability) / probability) * 100);
-                return '+' + Math.min(odds, 3000); // Cap at +3000
-            }
+            // Convert to American odds (all will be underdogs with these probabilities)
+            const odds = Math.round(((1 - probability) / probability) * 100);
+            return '+' + Math.min(Math.max(odds, 700), 1800); // Cap between +700 and +1800
         }
         
         function renderSeasonBetGrid(containerId, teams, betType) {
