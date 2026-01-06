@@ -20691,14 +20691,15 @@
             if (!sportsbookUser || !firebaseDb) return;
             
             // Load user's balance
+            const sanitizedKey = sanitizeFirebaseKey(sportsbookUser.teamKey);
             try {
-                const balanceSnapshot = await sportsbookBalancesRef.child(sportsbookUser.teamKey).once('value');
+                const balanceSnapshot = await sportsbookBalancesRef.child(sanitizedKey).once('value');
                 let balance = balanceSnapshot.val();
                 
                 if (balance === null) {
                     // Initialize new user with preseason budget
-                    balance = { total: PRESEASON_BUDGET, lastWeeklyAdd: 0 };
-                    await sportsbookBalancesRef.child(sportsbookUser.teamKey).set(balance);
+                    balance = { total: PRESEASON_BUDGET, lastWeeklyAdd: 0, teamKey: sportsbookUser.teamKey };
+                    await sportsbookBalancesRef.child(sanitizedKey).set(balance);
                 }
                 
                 document.getElementById('sportsbook-balance').textContent = balance.total || PRESEASON_BUDGET;
@@ -21268,8 +21269,30 @@
             submitBtn.disabled = totalWager <= 0 || totalWager > balance;
         }
         
+        // Helper function to sanitize team keys for Firebase paths
+        function sanitizeFirebaseKey(key) {
+            // Replace characters not allowed in Firebase paths: . # $ [ ]
+            return key.replace(/[.#$\[\]]/g, '_');
+        }
+        
         async function submitBets() {
-            if (!sportsbookUser || !firebaseDb) return;
+            if (!sportsbookUser) {
+                alert('Please log in first.');
+                return;
+            }
+            
+            if (!firebaseDb) {
+                alert('Database connection not available. Please refresh the page.');
+                return;
+            }
+            
+            // Ensure refs are set up
+            if (!sportsbookBetsRef) {
+                sportsbookBetsRef = firebaseDb.ref('sportsbook_bets');
+            }
+            if (!sportsbookBalancesRef) {
+                sportsbookBalancesRef = firebaseDb.ref('sportsbook_balances');
+            }
             
             const totalWager = sportsbookBetSlip.reduce((sum, bet) => sum + (bet.wager || 0), 0);
             const balance = parseFloat(document.getElementById('sportsbook-balance').textContent) || 0;
@@ -21279,6 +21302,13 @@
                 return;
             }
             
+            if (totalWager <= 0) {
+                alert('Please enter a wager amount.');
+                return;
+            }
+            
+            const sanitizedUserKey = sanitizeFirebaseKey(sportsbookUser.teamKey);
+            
             try {
                 // Record each bet
                 const timestamp = new Date().toISOString();
@@ -21286,22 +21316,26 @@
                     if (bet.wager > 0) {
                         await sportsbookBetsRef.push({
                             teamKey: sportsbookUser.teamKey,
+                            teamKeySanitized: sanitizedUserKey,
                             betType: bet.betType,
                             selection: bet.teamKey,
                             selectionName: bet.teamName,
                             opponent: bet.opponent || null,
-                            odds: bet.odds,
+                            odds: String(bet.odds),
                             wager: bet.wager,
-                            potentialPayout: calculatePayout(bet.wager, bet.odds),
+                            potentialPayout: parseFloat(calculatePayout(bet.wager, bet.odds)),
                             status: 'pending',
                             timestamp: timestamp
                         });
                     }
                 }
                 
-                // Update balance
+                // Update balance using sanitized key
                 const newBalance = balance - totalWager;
-                await sportsbookBalancesRef.child(sportsbookUser.teamKey).update({ total: newBalance });
+                await sportsbookBalancesRef.child(sanitizedUserKey).update({ 
+                    total: newBalance,
+                    teamKey: sportsbookUser.teamKey  // Store original key for reference
+                });
                 document.getElementById('sportsbook-balance').textContent = newBalance;
                 
                 // Clear bet slip
@@ -21315,18 +21349,26 @@
                 
             } catch (e) {
                 console.error('Error placing bets:', e);
-                alert('Error placing bets. Please try again.');
+                console.error('Error details:', e.message, e.code);
+                alert('Error placing bets: ' + (e.message || 'Please try again.'));
             }
         }
         
         async function loadBetHistory() {
             if (!sportsbookUser || !firebaseDb) return;
             
+            // Ensure ref is set up
+            if (!sportsbookBetsRef) {
+                sportsbookBetsRef = firebaseDb.ref('sportsbook_bets');
+            }
+            
             const tbody = document.getElementById('bet-history-body');
             const emptyEl = document.getElementById('bet-history-empty');
+            const sanitizedKey = sanitizeFirebaseKey(sportsbookUser.teamKey);
             
             try {
-                const snapshot = await sportsbookBetsRef.orderByChild('teamKey').equalTo(sportsbookUser.teamKey).once('value');
+                // Query by sanitized key for better Firebase compatibility
+                const snapshot = await sportsbookBetsRef.orderByChild('teamKeySanitized').equalTo(sanitizedKey).once('value');
                 const bets = snapshot.val();
                 
                 if (!bets) {
