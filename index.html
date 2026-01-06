@@ -14,6 +14,42 @@
     <link rel="apple-touch-icon" sizes="180x180" href="league_logo.png">
 
     <style>
+        /* 1. Define the Custom Fonts */
+        @font-face {
+            font-family: 'Arcade Gamer';
+            src: url('data/fonts/PressStart2P.ttf') format('truetype');
+        }
+        
+        @font-face {
+            font-family: 'Basis33';
+            src: url('data/fonts/basis33.ttf') format('truetype');
+        }
+        
+        /* 2. Apply Basis33 to everything by default */
+        body {
+            font-family: 'Basis33', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 1.1rem; /* Pixel fonts are often smaller, so we bump the size slightly */
+        }
+        
+        /* 3. Apply Arcade Gamer to headings */
+        h1, h2, h3, h4, h5, h6,
+        .panel-title,           /* For "Final Standings", "Draft Results" */
+        .modal-header h2,       /* For Modal Titles */
+        .keeper-modal-header h2,
+        .season-bet-title,      /* For Sportsbook headers */
+        .card-header,           /* For Baseball Card headers */
+        .draft-grade-letter     /* For Draft Grades */
+        {
+            font-family: 'Arcade Gamer', sans-serif;
+            letter-spacing: 1px; /* Pixel title fonts often look better with slight spacing */
+            text-transform: uppercase; /* Arcade fonts usually look best in all caps */
+        }
+        
+        /* Optional: Fix for inputs/selects which sometimes don't inherit body font */
+        input, select, button, textarea {
+            font-family: 'Basis33', sans-serif;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -21,11 +57,12 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Basis33', sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: #333;
             min-height: 100vh;
             padding-top: 120px;
+            font-size: 18px;
             /* header (70px) + nav (~50px) */
         }
 
