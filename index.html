@@ -20650,7 +20650,16 @@
             const password = document.getElementById('sportsbook-password').value;
             const teamConfig = keeperConfig.teams?.[selectedSportsbookTeam];
             
-            if (!teamConfig || teamConfig.password !== password) {
+            if (!teamConfig) {
+                document.getElementById('sportsbook-login-error').style.display = 'block';
+                return;
+            }
+            
+            // Hash the entered password and compare (same as keeper system)
+            const enteredHash = await hashPassword(password);
+            
+            if (enteredHash !== teamConfig.password_hash) {
+                document.getElementById('sportsbook-login-error').textContent = 'Incorrect password. Hint: [YourName][YearJoined]';
                 document.getElementById('sportsbook-login-error').style.display = 'block';
                 return;
             }
