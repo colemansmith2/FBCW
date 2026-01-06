@@ -20803,7 +20803,6 @@
                                 const wins = team.wins || team.Wins || 0;
                                 const losses = team.losses || team.Losses || 0;
                                 const totalGames = wins + losses;
-                                const winPct = totalGames > 0 ? wins / totalGames : 0.5;
                                 
                                 if (!managerStats[manager]) {
                                     managerStats[manager] = { totalPoints: 0, totalWins: 0, totalGames: 0, seasons: 0 };
@@ -20819,25 +20818,25 @@
                     }
                 }
                 
-                // Calculate average points and win percentage per manager
-                const avgPoints = {};
+                // Calculate points per season and win percentage per manager
+                const pointsPerSeason = {};
                 const winPcts = {};
-                let leagueAvgPoints = 0;
+                let leagueAvgPointsPerSeason = 0;
                 let leagueAvgWinPct = 0;
                 let managerCount = 0;
                 
                 Object.entries(managerStats).forEach(([manager, stats]) => {
                     if (stats.seasons > 0) {
-                        avgPoints[manager] = stats.totalPoints / stats.seasons;
+                        pointsPerSeason[manager] = stats.totalPoints / stats.seasons;
                         winPcts[manager] = stats.totalGames > 0 ? stats.totalWins / stats.totalGames : 0.5;
-                        leagueAvgPoints += avgPoints[manager];
+                        leagueAvgPointsPerSeason += pointsPerSeason[manager];
                         leagueAvgWinPct += winPcts[manager];
                         managerCount++;
                     }
                 });
                 
                 if (managerCount > 0) {
-                    leagueAvgPoints /= managerCount;
+                    leagueAvgPointsPerSeason /= managerCount;
                     leagueAvgWinPct /= managerCount;
                 }
                 
@@ -20845,7 +20844,7 @@
                 // Managers with fewer seasons regress more toward 1.0 (average)
                 Object.entries(managerStats).forEach(([manager, stats]) => {
                     if (stats.seasons > 0) {
-                        const pointsRatio = leagueAvgPoints > 0 ? avgPoints[manager] / leagueAvgPoints : 1;
+                        const pointsRatio = leagueAvgPointsPerSeason > 0 ? pointsPerSeason[manager] / leagueAvgPointsPerSeason : 1;
                         const winPctRatio = leagueAvgWinPct > 0 ? winPcts[manager] / leagueAvgWinPct : 1;
                         
                         // Sample size weight: more seasons = more confidence in the factor
@@ -20862,7 +20861,8 @@
                             pointsFactor: 0.975 + (Math.min(Math.max(regressedPointsRatio, 0.9), 1.1) - 0.9) * 0.25,
                             winsFactor: 0.975 + (Math.min(Math.max(regressedWinPctRatio, 0.9), 1.1) - 0.9) * 0.25,
                             seasons: stats.seasons,
-                            winPct: winPcts[manager]
+                            winPct: winPcts[manager],
+                            pointsPerSeason: pointsPerSeason[manager]
                         };
                     }
                 });
@@ -21018,32 +21018,41 @@
                 adjusted: calculateAdjustedValue(t, betType)
             }));
             
-            // Find min and max to spread odds
+            // Sort by adjusted value to get rank
+            const sorted = [...adjustedValues].sort((a, b) => b.adjusted - a.adjusted);
+            const teamRank = sorted.findIndex(t => t.team.teamKey === team.teamKey);
+            const numTeams = allTeams.length;
+            
+            // Use rank-based positioning for even spread
+            // Rank 0 (best) = highest probability, Rank n-1 (worst) = lowest probability
+            // This ensures even distribution across all teams
+            const rankPosition = teamRank / (numTeams - 1); // 0 to 1, where 0 is best
+            
+            // Also factor in the actual value differences (but less weight)
             const values = adjustedValues.map(v => v.adjusted);
             const minVal = Math.min(...values);
             const maxVal = Math.max(...values);
             const range = maxVal - minVal;
-            
             const teamAdjusted = calculateAdjustedValue(team, betType);
             
-            // Normalize to 0-1 range
-            let normalized;
+            let valuePosition = 0.5;
             if (range > 0) {
-                normalized = (teamAdjusted - minVal) / range;
-            } else {
-                normalized = 0.5;
+                valuePosition = 1 - ((teamAdjusted - minVal) / range); // 0 is best, 1 is worst
             }
             
-            // Convert to probability
-            // For +600 odds, probability = 100/700 = ~14.3%
-            // For +2200 odds, probability = 100/2300 = ~4.3%
-            const minProb = 0.043;  // ~+2200
-            const maxProb = 0.143;  // ~+600
-            let probability = minProb + (normalized * (maxProb - minProb));
+            // Blend rank-based (70%) and value-based (30%) for smoother distribution
+            const blendedPosition = (rankPosition * 0.7) + (valuePosition * 0.3);
             
-            // Convert to American odds (all will be underdogs with these probabilities)
+            // Convert position to probability
+            // Position 0 (best) = ~14.3% (+600)
+            // Position 1 (worst) = ~4.3% (+2200)
+            const maxProb = 0.143;  // ~+600
+            const minProb = 0.043;  // ~+2200
+            let probability = maxProb - (blendedPosition * (maxProb - minProb));
+            
+            // Convert to American odds
             const odds = Math.round(((1 - probability) / probability) * 100);
-            return '+' + Math.min(Math.max(odds, 600), 2200); // Cap between +600 and +2200
+            return '+' + Math.min(Math.max(odds, 600), 2200);
         }
         
         function renderSeasonBetGrid(containerId, teams, betType) {
