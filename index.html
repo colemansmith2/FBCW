@@ -14,42 +14,6 @@
     <link rel="apple-touch-icon" sizes="180x180" href="league_logo.png">
 
     <style>
-        /* 1. Define the Custom Fonts */
-        @font-face {
-            font-family: 'Arcade Gamer';
-            src: url('data/fonts/PressStart2P.ttf') format('truetype');
-        }
-        
-        @font-face {
-            font-family: 'Basis33';
-            src: url('data/fonts/basis33.ttf') format('truetype');
-        }
-        
-        /* 2. Apply Basis33 to everything by default */
-        body {
-            font-family: 'Basis33', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 1.1rem; /* Pixel fonts are often smaller, so we bump the size slightly */
-        }
-        
-        /* 3. Apply Arcade Gamer to headings */
-        h1, h2, h3, h4, h5, h6,
-        .panel-title,           /* For "Final Standings", "Draft Results" */
-        .modal-header h2,       /* For Modal Titles */
-        .keeper-modal-header h2,
-        .season-bet-title,      /* For Sportsbook headers */
-        .card-header,           /* For Baseball Card headers */
-        .draft-grade-letter     /* For Draft Grades */
-        {
-            font-family: 'Arcade Gamer', sans-serif;
-            letter-spacing: 1px; /* Pixel title fonts often look better with slight spacing */
-            text-transform: uppercase; /* Arcade fonts usually look best in all caps */
-        }
-        
-        /* Optional: Fix for inputs/selects which sometimes don't inherit body font */
-        input, select, button, textarea {
-            font-family: 'Basis33', sans-serif;
-        }
-        
         * {
             margin: 0;
             padding: 0;
@@ -57,12 +21,11 @@
         }
 
         body {
-            font-family: 'Basis33', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: #333;
             min-height: 100vh;
             padding-top: 120px;
-            font-size: 18px;
             /* header (70px) + nav (~50px) */
         }
 
@@ -14314,10 +14277,12 @@
                         value: Math.round(mostPoints.points_for)
                     });
 
-                    // Garbage Award (worst record - fewest wins)
-                    const fewestWins = standings.reduce((min, team) =>
-                        team.wins < min.wins ? team : min
-                    );
+                    // Garbage Award (worst record - fewest wins, tiebreaker: least points)
+                    const fewestWins = standings.reduce((min, team) => {
+                        if (team.wins < min.wins) return team;
+                        if (team.wins === min.wins && team.points_for < min.points_for) return team;
+                        return min;
+                    });
                     garbageAwards.push({
                         year,
                         manager: fewestWins.manager,
@@ -20878,13 +20843,12 @@
                 }
                 
                 // Calculate factors with sample size weighting
-                // Managers with fewer seasons regress more toward 1.0 (average)
                 Object.entries(managerStats).forEach(([manager, stats]) => {
                     if (stats.seasons > 0) {
                         const pointsRatio = leagueAvgPointsPerSeason > 0 ? pointsPerSeason[manager] / leagueAvgPointsPerSeason : 1;
                         const winPctRatio = leagueAvgWinPct > 0 ? winPcts[manager] / leagueAvgWinPct : 1;
                         
-                        // Sample size weight: more seasons = more confidence in the factor
+                        // Sample size weight: more seasons = more confidence
                         // 1 season = 20% weight, 3 seasons = 50% weight, 5+ seasons = 80% weight
                         const sampleWeight = Math.min(0.8, 0.1 + (stats.seasons * 0.14));
                         
@@ -20892,11 +20856,10 @@
                         const regressedPointsRatio = 1 + (pointsRatio - 1) * sampleWeight;
                         const regressedWinPctRatio = 1 + (winPctRatio - 1) * sampleWeight;
                         
-                        // Compress to very tight range (0.975 to 1.025)
-                        // This ensures manager factor is just a tiny adjustment
+                        // Compress to tight range (0.98 to 1.02)
                         factors[manager] = {
-                            pointsFactor: 0.975 + (Math.min(Math.max(regressedPointsRatio, 0.9), 1.1) - 0.9) * 0.25,
-                            winsFactor: 0.975 + (Math.min(Math.max(regressedWinPctRatio, 0.9), 1.1) - 0.9) * 0.25,
+                            pointsFactor: 0.98 + (Math.min(Math.max(regressedPointsRatio, 0.9), 1.1) - 0.9) * 0.2,
+                            winsFactor: 0.98 + (Math.min(Math.max(regressedWinPctRatio, 0.9), 1.1) - 0.9) * 0.2,
                             seasons: stats.seasons,
                             winPct: winPcts[manager],
                             pointsPerSeason: pointsPerSeason[manager]
@@ -21055,41 +21018,23 @@
                 adjusted: calculateAdjustedValue(t, betType)
             }));
             
-            // Sort by adjusted value to get rank
-            const sorted = [...adjustedValues].sort((a, b) => b.adjusted - a.adjusted);
-            const teamRank = sorted.findIndex(t => t.team.teamKey === team.teamKey);
-            const numTeams = allTeams.length;
-            
-            // Use rank-based positioning for even spread
-            // Rank 0 (best) = highest probability, Rank n-1 (worst) = lowest probability
-            // This ensures even distribution across all teams
-            const rankPosition = teamRank / (numTeams - 1); // 0 to 1, where 0 is best
-            
-            // Also factor in the actual value differences (but less weight)
-            const values = adjustedValues.map(v => v.adjusted);
-            const minVal = Math.min(...values);
-            const maxVal = Math.max(...values);
-            const range = maxVal - minVal;
+            // Calculate total adjusted value
+            const totalAdjusted = adjustedValues.reduce((sum, t) => sum + t.adjusted, 0);
             const teamAdjusted = calculateAdjustedValue(team, betType);
             
-            let valuePosition = 0.5;
-            if (range > 0) {
-                valuePosition = 1 - ((teamAdjusted - minVal) / range); // 0 is best, 1 is worst
-            }
-            
-            // Blend rank-based (70%) and value-based (30%) for smoother distribution
-            const blendedPosition = (rankPosition * 0.7) + (valuePosition * 0.3);
-            
-            // Convert position to probability
-            // Position 0 (best) = ~14.3% (+600)
-            // Position 1 (worst) = ~4.3% (+2200)
-            const maxProb = 0.143;  // ~+600
-            const minProb = 0.043;  // ~+2200
-            let probability = maxProb - (blendedPosition * (maxProb - minProb));
+            // Calculate implied probability based on share of total value
+            const probability = teamAdjusted / totalAdjusted;
             
             // Convert to American odds
-            const odds = Math.round(((1 - probability) / probability) * 100);
-            return '+' + Math.min(Math.max(odds, 600), 2200);
+            if (probability >= 0.5) {
+                // Favorite: negative odds
+                const odds = -Math.round((probability / (1 - probability)) * 100);
+                return odds;
+            } else {
+                // Underdog: positive odds
+                const odds = Math.round(((1 - probability) / probability) * 100);
+                return '+' + odds;
+            }
         }
         
         function renderSeasonBetGrid(containerId, teams, betType) {
