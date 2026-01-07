@@ -20805,9 +20805,10 @@
             
             // Apply manager factors to team data
             teamData.forEach(team => {
-                const factor = managerFactors[team.rawManager] || managerFactors[team.manager] || { pointsFactor: 1, winsFactor: 1 };
+                const factor = managerFactors[team.rawManager] || managerFactors[team.manager] || { pointsFactor: 1, winsFactor: 1, championFactor: 1 };
                 team.pointsFactor = factor.pointsFactor;
                 team.winsFactor = factor.winsFactor;
+                team.championFactor = factor.championFactor || 1;
             });
             
             // Generate odds for each bet type with appropriate sorting and factors
@@ -20893,10 +20894,20 @@
                         const regressedPointsRatio = 1 + (pointsRatio - 1) * sampleWeight;
                         const regressedWinPctRatio = 1 + (winPctRatio - 1) * sampleWeight;
                         
-                        // Compress to tight range (0.98 to 1.02)
+                        // Combined ratio for champion (average of win% and points)
+                        const combinedRatio = (regressedWinPctRatio + regressedPointsRatio) / 2;
+                        
+                        // Compress to tight range (0.98 to 1.02) for wins and points
+                        const winsFactor = 0.98 + (Math.min(Math.max(regressedWinPctRatio, 0.9), 1.1) - 0.9) * 0.2;
+                        const pointsFactor = 0.98 + (Math.min(Math.max(regressedPointsRatio, 0.9), 1.1) - 0.9) * 0.2;
+                        
+                        // Wider range for champion (0.975 to 1.025) using combined factor
+                        const championFactor = 0.975 + (Math.min(Math.max(combinedRatio, 0.9), 1.1) - 0.9) * 0.25;
+                        
                         factors[manager] = {
-                            pointsFactor: 0.98 + (Math.min(Math.max(regressedPointsRatio, 0.9), 1.1) - 0.9) * 0.2,
-                            winsFactor: 0.98 + (Math.min(Math.max(regressedWinPctRatio, 0.9), 1.1) - 0.9) * 0.2,
+                            pointsFactor: pointsFactor,
+                            winsFactor: winsFactor,
+                            championFactor: championFactor,
                             seasons: stats.seasons,
                             winPct: winPcts[manager],
                             pointsPerSeason: pointsPerSeason[manager]
@@ -21108,20 +21119,22 @@
             const value = team.value;
             const pf = team.pointsFactor || 1;
             const wf = team.winsFactor || 1;
+            const cf = team.championFactor || 1;
             
-            // Manager factors are 0.98-1.02 range (±2% max)
-            // Apply them directly as tiny multipliers - team value dominates
+            // Manager factors are tiny adjustments - team value dominates
             switch (betType) {
                 case 'champion':
-                    // Champion: Team value with tiny manager adjustment
-                    return value * wf;
+                    // Champion: Team value with combined manager factor (win% + points avg)
+                    // Uses wider range (0.975-1.025)
+                    return value * cf;
                     
                 case 'wins':
-                    // Most Wins: Team value with tiny win% adjustment
+                    // Most Wins: Team value with win percentage factor only
+                    // Uses tighter range (0.98-1.02)
                     return value * wf;
                     
                 case 'points':
-                    // Most Points: Team value with tiny points adjustment
+                    // Most Points: Team value with points per season factor
                     return value * pf;
                     
                 case 'last':
