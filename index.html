@@ -20987,24 +20987,24 @@
             const pf = team.pointsFactor || 1;
             const wf = team.winsFactor || 1;
             
-            // Manager factors are now very subtle (0.97-1.03 range)
-            // They provide slight adjustments but team value dominates
+            // Manager factors are 0.98-1.02 range (±2% max)
+            // Apply them directly as tiny multipliers - team value dominates
             switch (betType) {
                 case 'champion':
-                    // Champion: Primarily value, with slight manager boost
-                    return value * Math.pow(wf, 0.5) * Math.pow(pf, 0.25);
+                    // Champion: Team value with tiny manager adjustment
+                    return value * wf;
                     
                 case 'wins':
-                    // Most Wins: Almost entirely value-based, tiny manager factor
-                    return value * Math.pow(wf, 0.15);
+                    // Most Wins: Team value with tiny win% adjustment
+                    return value * wf;
                     
                 case 'points':
-                    // Most Points: Value with slight points factor
-                    return value * Math.pow(pf, 0.3);
+                    // Most Points: Team value with tiny points adjustment
+                    return value * pf;
                     
                 case 'last':
-                    // Last Place: Inverted - low value + bad managers = best odds
-                    return 1 / (value * Math.pow(pf, 0.3));
+                    // Last Place: Inverted - low value = best odds
+                    return 1 / (value * pf);
                     
                 default:
                     return value;
@@ -21017,6 +21017,13 @@
                 team: t,
                 adjusted: calculateAdjustedValue(t, betType)
             }));
+            
+            // Debug: log values to see what's happening
+            console.log('Team values for', betType + ':', adjustedValues.map(t => ({
+                name: t.team.teamName,
+                value: t.team.value,
+                adjusted: t.adjusted
+            })).sort((a, b) => b.adjusted - a.adjusted));
             
             // Calculate total adjusted value
             const totalAdjusted = adjustedValues.reduce((sum, t) => sum + t.adjusted, 0);
