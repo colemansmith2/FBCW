@@ -20878,24 +20878,22 @@
             const teamValues = [];
             
             // Try to load team value rankings from the value suite calculation
-            // First check if we have the teamValueRankings data available
-            let valueRankingsData = null;
+            let valueRankingsData = {};
             
+            // First try to get values from the rendered value rankings table
             try {
-                // Try to get values from the rendered value rankings table
                 const valueTable = document.getElementById('value-rankings-table');
                 if (valueTable) {
                     const rows = valueTable.querySelectorAll('tbody tr');
                     if (rows.length > 0) {
-                        valueRankingsData = {};
                         rows.forEach(row => {
                             const cells = row.querySelectorAll('td');
                             if (cells.length >= 6) {
-                                // Get team name from first cell
                                 const teamName = cells[0].textContent.trim();
-                                // Get total value from last cell
                                 const totalValue = parseFloat(cells[5].textContent.replace(/,/g, '')) || 0;
-                                valueRankingsData[teamName] = totalValue;
+                                if (totalValue > 0) {
+                                    valueRankingsData[teamName] = totalValue;
+                                }
                             }
                         });
                     }
@@ -20904,10 +20902,13 @@
                 console.log('Could not read value rankings table:', e);
             }
             
-            // If we couldn't get values from the table, calculate them
-            if (!valueRankingsData || Object.keys(valueRankingsData).length === 0) {
+            // If we couldn't get values from the table, calculate them directly
+            if (Object.keys(valueRankingsData).length === 0) {
+                console.log('Value table not available, calculating directly...');
                 valueRankingsData = await calculateTeamValuesDirectly();
             }
+            
+            console.log('Team values loaded:', valueRankingsData);
             
             for (const team of sportsbookTeamData) {
                 const teamName = team.team_name;
@@ -20932,48 +20933,76 @@
             const teamValues = {};
             
             try {
-                // Load keepers data
-                const keepersResponse = await fetch('data/keepers.json');
-                const allKeepers = keepersResponse.ok ? await keepersResponse.json() : {};
+                // Load keepers from Firebase (same source as Value Suite)
+                let allKeepers = {};
                 
-                // Load average projections
+                if (firebaseDb) {
+                    try {
+                        const keepersRef = firebaseDb.ref('keepers_2026');
+                        const snapshot = await keepersRef.once('value');
+                        allKeepers = snapshot.val() || {};
+                        console.log('Loaded keepers from Firebase:', Object.keys(allKeepers).length, 'teams');
+                    } catch (e) {
+                        console.log('Could not load keepers from Firebase:', e);
+                    }
+                }
+                
+                // If Firebase didn't work, try local file
+                if (Object.keys(allKeepers).length === 0) {
+                    try {
+                        const keepersResponse = await fetch('data/keepers.json');
+                        if (keepersResponse.ok) {
+                            allKeepers = await keepersResponse.json();
+                            console.log('Loaded keepers from local file');
+                        }
+                    } catch (e) {
+                        console.log('Could not load keepers from local file:', e);
+                    }
+                }
+                
+                // Load projections
                 let projections = {};
                 try {
                     const projResponse = await fetch('data/projections/averaged_projections.json');
                     if (projResponse.ok) {
                         const projData = await projResponse.json();
                         (projData.batters || []).forEach(p => {
-                            projections[p.name?.toLowerCase()] = p.projected_points || 0;
+                            const name = (p.name || p.Name || '').toLowerCase().trim();
+                            projections[name] = p.projected_points || p.Projected_Points || 0;
                         });
                         (projData.pitchers || []).forEach(p => {
-                            projections[p.name?.toLowerCase()] = p.projected_points || 0;
+                            const name = (p.name || p.Name || '').toLowerCase().trim();
+                            projections[name] = p.projected_points || p.Projected_Points || 0;
                         });
+                        console.log('Loaded projections:', Object.keys(projections).length, 'players');
                     }
                 } catch (e) {
-                    console.log('Could not load projections');
+                    console.log('Could not load projections:', e);
                 }
                 
                 // Calculate value for each team based on their keepers
                 for (const team of sportsbookTeamData) {
                     const teamKeepers = allKeepers[team.team_key] || [];
-                    let totalValue = 0;
+                    let keeperValue = 0;
+                    let draftValue = 2500; // Base draft value estimate
                     
-                    teamKeepers.forEach(keeper => {
-                        const playerName = (keeper.player_name || keeper.name || '').toLowerCase();
-                        const projectedPts = projections[playerName] || 0;
-                        const roundCost = keeper.round_cost || keeper.cost || 22;
-                        const expectedPts = expectedPointsByRound[roundCost]?.avg || 200;
-                        
-                        // Value = projected + (projected - expected)
-                        const surplusValue = projectedPts - expectedPts;
-                        const keeperValue = projectedPts + surplusValue;
-                        totalValue += keeperValue;
-                    });
+                    if (Array.isArray(teamKeepers)) {
+                        teamKeepers.forEach(keeper => {
+                            const playerName = (keeper.player_name || keeper.name || keeper.Name || '').toLowerCase().trim();
+                            const projectedPts = projections[playerName] || 0;
+                            const roundCost = keeper.round_cost || keeper.cost || keeper.round || 22;
+                            const expectedPts = expectedPointsByRound[roundCost]?.avg || predictExpectedPoints(roundCost) || 200;
+                            
+                            // Value = projected + surplus (same as Value Suite)
+                            const surplusValue = projectedPts - expectedPts;
+                            const playerValue = projectedPts + surplusValue;
+                            keeperValue += playerValue;
+                        });
+                    }
                     
-                    // Add base value for draft picks (estimate)
-                    totalValue += 2500; // Base draft value estimate
-                    
+                    const totalValue = keeperValue + draftValue;
                     teamValues[team.team_name] = Math.max(totalValue, 1000);
+                    console.log(`${team.team_name}: keeperValue=${keeperValue.toFixed(0)}, total=${totalValue.toFixed(0)}`);
                 }
             } catch (e) {
                 console.log('Error calculating team values:', e);
