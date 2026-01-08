@@ -7010,6 +7010,151 @@
             background: rgba(220, 53, 69, 0.1);
         }
 
+        /* Team Totals Grid */
+        .team-totals-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .team-total-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 200px 1fr 1fr;
+            gap: 1rem;
+            align-items: center;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .team-total-card:hover {
+            border-color: #e0e0e0;
+        }
+
+        .team-total-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .team-total-logo {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+            object-fit: cover;
+        }
+
+        .team-total-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .team-total-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+
+        .team-total-manager {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .team-total-bet {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .total-bet-arrows {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .total-bet-arrow {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            min-width: 90px;
+            justify-content: space-between;
+        }
+
+        .total-bet-arrow.over {
+            background: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+        }
+
+        .total-bet-arrow.over:hover {
+            background: rgba(40, 167, 69, 0.2);
+        }
+
+        .total-bet-arrow.under {
+            background: rgba(220, 53, 69, 0.1);
+            color: #dc3545;
+        }
+
+        .total-bet-arrow.under:hover {
+            background: rgba(220, 53, 69, 0.2);
+        }
+
+        .total-bet-arrow.selected {
+            border: 2px solid currentColor;
+            font-weight: 600;
+        }
+
+        .total-bet-line {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e3c72;
+            min-width: 70px;
+            text-align: center;
+        }
+
+        .total-bet-label {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+            text-align: center;
+        }
+
+        .total-bet-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .team-total-card {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            
+            .team-total-info {
+                justify-content: center;
+            }
+            
+            .team-total-bet {
+                flex-wrap: wrap;
+            }
+        }
+
         /* Weekly Matchup Bets */
         .weekly-bet-header {
             display: flex;
@@ -8426,6 +8571,13 @@
                     
                     <!-- Season Bets -->
                     <div id="sportsbook-season-bets" class="sportsbook-content active">
+                        <div class="season-bet-section">
+                            <div class="season-bet-title">📊 Team Totals</div>
+                            <div class="team-totals-grid" id="team-totals-grid">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                        
                         <div class="season-bet-section">
                             <div class="season-bet-title">🏆 FBCW Champion</div>
                             <div class="season-bet-grid" id="season-bet-champion">
@@ -20805,19 +20957,193 @@
             // Load manager historical data for factors
             const managerFactors = await loadManagerHistoricalFactors();
             
+            // Load historical league averages for team totals projections
+            const historicalAverages = await loadHistoricalLeagueAverages();
+            
             // Apply manager factors to team data
             teamData.forEach(team => {
                 const factor = managerFactors[team.rawManager] || managerFactors[team.manager] || { pointsFactor: 1, winsFactor: 1, championFactor: 1 };
                 team.pointsFactor = factor.pointsFactor;
                 team.winsFactor = factor.winsFactor;
                 team.championFactor = factor.championFactor || 1;
+                // Store raw ratios for projections
+                team.rawWinPctRatio = factor.rawWinPctRatio || 1;
+                team.rawPointsRatio = factor.rawPointsRatio || 1;
             });
+            
+            // Render team totals (over/under bets)
+            renderTeamTotals(teamData, historicalAverages);
             
             // Generate odds for each bet type with appropriate sorting and factors
             renderSeasonBetGrid('season-bet-champion', teamData, 'champion');
             renderSeasonBetGrid('season-bet-wins', teamData, 'wins');
             renderSeasonBetGrid('season-bet-points', teamData, 'points');
             renderSeasonBetGrid('season-bet-last', teamData, 'last');
+        }
+        
+        async function loadHistoricalLeagueAverages() {
+            const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+            let totalWins = 0;
+            let totalPoints = 0;
+            let teamSeasons = 0;
+            
+            for (const season of seasons) {
+                try {
+                    let response;
+                    if (season === 2025) {
+                        response = await fetch('data/current_season/standings.json');
+                    } else {
+                        response = await fetch(`data/historical/${season}/final_standings.json`);
+                    }
+                    
+                    if (response.ok) {
+                        const standings = await response.json();
+                        standings.forEach(team => {
+                            const wins = team.wins || team.Wins || 0;
+                            const points = team.points_for || team.total_points || team['Points For'] || 0;
+                            totalWins += wins;
+                            totalPoints += points;
+                            teamSeasons++;
+                        });
+                    }
+                } catch (e) {
+                    // Skip seasons that fail
+                }
+            }
+            
+            return {
+                avgWins: teamSeasons > 0 ? totalWins / teamSeasons : 10,
+                avgPoints: teamSeasons > 0 ? totalPoints / teamSeasons : 8000
+            };
+        }
+        
+        function renderTeamTotals(teamData, historicalAverages) {
+            const container = document.getElementById('team-totals-grid');
+            if (!container) return;
+            
+            // Calculate team value stats for scaling
+            const values = teamData.map(t => t.value);
+            const avgValue = values.reduce((a, b) => a + b, 0) / values.length;
+            const maxValue = Math.max(...values);
+            const minValue = Math.min(...values);
+            const valueRange = maxValue - minValue;
+            
+            // Sort teams by value (highest first)
+            const sortedTeams = [...teamData].sort((a, b) => b.value - a.value);
+            
+            container.innerHTML = sortedTeams.map(team => {
+                // Calculate projected wins based on team value and manager win% factor
+                // Normalize value to a 0-1 scale
+                const valueRatio = valueRange > 0 ? (team.value - minValue) / valueRange : 0.5;
+                
+                // Base wins projection: scale from ~6 to ~14 based on value
+                const baseWins = 6 + (valueRatio * 8);
+                // Apply manager win% factor (0.97-1.03 range)
+                const projectedWins = baseWins * team.winsFactor;
+                // Round to nearest 0.5
+                const winLine = Math.round(projectedWins * 2) / 2 + 0.5;
+                // Ensure it ends in .5
+                const finalWinLine = Number.isInteger(winLine) ? winLine + 0.5 : winLine;
+                
+                // Calculate projected points based on team value and manager points factor
+                // Scale points from ~6500 to ~9500 based on value
+                const basePoints = 6500 + (valueRatio * 3000);
+                // Apply manager points factor
+                const projectedPoints = basePoints * team.pointsFactor;
+                // Round to nearest 50, then add 0.5
+                const pointsLine = Math.round(projectedPoints / 50) * 50 + 0.5;
+                
+                // Calculate over/under odds (slight juice to the under typically)
+                // Odds closer to the middle = closer to -110/-110
+                // Further from middle = more divergent odds
+                const winOdds = calculateOverUnderOdds(projectedWins, finalWinLine);
+                const pointsOdds = calculateOverUnderOdds(projectedPoints, pointsLine);
+                
+                return `
+                    <div class="team-total-card">
+                        <div class="team-total-info">
+                            <img class="team-total-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
+                            <div class="team-total-details">
+                                <div class="team-total-name">${team.teamName}</div>
+                                <div class="team-total-manager">${team.manager}</div>
+                            </div>
+                        </div>
+                        <div class="total-bet-container">
+                            <div class="total-bet-label">Season Wins</div>
+                            <div class="team-total-bet">
+                                <div class="total-bet-arrows">
+                                    <div class="total-bet-arrow over" 
+                                         onclick="addToBetSlip('wins_over_${team.teamKey}', '${team.teamKey}', '${team.teamName} O${finalWinLine} W', '${winOdds.over}', 'season')">
+                                        <span>▲ Over</span>
+                                        <span>${winOdds.over}</span>
+                                    </div>
+                                    <div class="total-bet-arrow under"
+                                         onclick="addToBetSlip('wins_under_${team.teamKey}', '${team.teamKey}', '${team.teamName} U${finalWinLine} W', '${winOdds.under}', 'season')">
+                                        <span>▼ Under</span>
+                                        <span>${winOdds.under}</span>
+                                    </div>
+                                </div>
+                                <div class="total-bet-line">${finalWinLine} W</div>
+                            </div>
+                        </div>
+                        <div class="total-bet-container">
+                            <div class="total-bet-label">Season Points</div>
+                            <div class="team-total-bet">
+                                <div class="total-bet-arrows">
+                                    <div class="total-bet-arrow over"
+                                         onclick="addToBetSlip('points_over_${team.teamKey}', '${team.teamKey}', '${team.teamName} O${pointsLine} pts', '${pointsOdds.over}', 'season')">
+                                        <span>▲ Over</span>
+                                        <span>${pointsOdds.over}</span>
+                                    </div>
+                                    <div class="total-bet-arrow under"
+                                         onclick="addToBetSlip('points_under_${team.teamKey}', '${team.teamKey}', '${team.teamName} U${pointsLine} pts', '${pointsOdds.under}', 'season')">
+                                        <span>▼ Under</span>
+                                        <span>${pointsOdds.under}</span>
+                                    </div>
+                                </div>
+                                <div class="total-bet-line">${pointsLine.toLocaleString()} pts</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function calculateOverUnderOdds(projected, line) {
+            // Calculate how far the line is from the projection
+            const diff = line - projected;
+            const percentDiff = Math.abs(diff / projected);
+            
+            // If line is very close to projection, odds are near even (-110/-110)
+            // If line is above projection, over is harder (higher + odds), under is easier (lower - odds)
+            // If line is below projection, under is harder, over is easier
+            
+            // Base odds around -110 (standard juice)
+            let overOdds, underOdds;
+            
+            if (Math.abs(percentDiff) < 0.02) {
+                // Very close - standard juice
+                overOdds = -110;
+                underOdds = -110;
+            } else if (diff > 0) {
+                // Line is above projection - over is harder
+                const adjustment = Math.min(percentDiff * 500, 150);
+                overOdds = Math.round(100 + adjustment);
+                underOdds = Math.round(-110 - adjustment * 0.5);
+            } else {
+                // Line is below projection - under is harder
+                const adjustment = Math.min(percentDiff * 500, 150);
+                underOdds = Math.round(100 + adjustment);
+                overOdds = Math.round(-110 - adjustment * 0.5);
+            }
+            
+            // Format odds
+            const formatOdds = (odds) => odds > 0 ? `+${odds}` : `${odds}`;
+            
+            return {
+                over: formatOdds(overOdds),
+                under: formatOdds(underOdds)
+            };
         }
         
         async function loadManagerHistoricalFactors() {
@@ -20910,6 +21236,8 @@
                             pointsFactor: pointsFactor,
                             winsFactor: winsFactor,
                             championFactor: championFactor,
+                            rawWinPctRatio: regressedWinPctRatio,
+                            rawPointsRatio: regressedPointsRatio,
                             seasons: stats.seasons,
                             winPct: winPcts[manager],
                             pointsPerSeason: pointsPerSeason[manager]
@@ -21367,6 +21695,10 @@
             if (betType === 'wins') return '📈 Most Wins';
             if (betType === 'points') return '💯 Most Points';
             if (betType === 'last') return '💩 Last Place';
+            if (betType.startsWith('wins_over_')) return '📊 Wins Over';
+            if (betType.startsWith('wins_under_')) return '📊 Wins Under';
+            if (betType.startsWith('points_over_')) return '📊 Points Over';
+            if (betType.startsWith('points_under_')) return '📊 Points Under';
             if (betType.startsWith('weekly_')) return '📅 Week ' + betType.split('_')[1];
             return betType;
         }
