@@ -4252,19 +4252,24 @@
         .award-section h3 {
             color: #1e3c72;
             margin-bottom: 1rem;
-            font-size: 1.3rem;
+            font-size: 1.1rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
         .award-icon {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
+        }
+
+        .award-icon img {
+            width: 32px;
+            height: 32px;
         }
 
         .award-header-image {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             object-fit: contain;
             vertical-align: middle;
         }
@@ -7871,7 +7876,7 @@
             <div id="awards-content" style="display: none;">
                 <div class="awards-grid">
                     <div class="award-section">
-                        <h3><span class="award-icon">👑</span> Regular Season Champion (Most Wins)</h3>
+                        <h3><span class="award-icon"><img src="data/awards/reg_season_champion.png" alt="Regular Season Champion" class="award-header-image"></span> Regular Season Champion (Most Wins)</h3>
                         <div class="award-table-wrapper">
                             <table class="award-table">
                                 <thead>
@@ -7889,7 +7894,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon">🏅</span> Scoring Champion (Most Points)</h3>
+                        <h3><span class="award-icon"><img src="data/awards/scoring_champion.png" alt="Scoring Champion" class="award-header-image"></span> Scoring Champion (Most Points)</h3>
                         <div class="award-table-wrapper">
                             <table class="award-table">
                                 <thead>
@@ -7907,7 +7912,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon">🗑️</span> Garbage Award (Worst Record)</h3>
+                        <h3><span class="award-icon"><img src="data/awards/garbage.png" alt="Garbage Award" class="award-header-image"></span> Garbage Award (Worst Record)</h3>
                         <div class="award-table-wrapper">
                             <table class="award-table">
                                 <thead>
@@ -7925,7 +7930,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon"><img src="clown_award.png" alt="Clown Award"
+                        <h3><span class="award-icon"><img src="data/awards/clown.png" alt="Clown Award"
                                     class="award-header-image"></span> Clown Award (Least Points)</h3>
                         <div class="award-table-wrapper">
                             <table class="award-table">
@@ -7944,7 +7949,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon"><img src="attached_assets/trout_award_1764648146923.png"
+                        <h3><span class="award-icon"><img src="data/awards/hitter.png"
                                     alt="Mike Trout Award" class="award-header-image"></span> Mike Trout Award (Highest
                             Scoring Hitter)</h3>
                         <div class="award-table-wrapper">
@@ -7964,7 +7969,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon"><img src="attached_assets/degom_award_1764648146918.png"
+                        <h3><span class="award-icon"><img src="data/awards/pitcher.png"
                                     alt="Jacob deGrom Award" class="award-header-image"></span> Jacob deGrom Award
                             (Highest Scoring Pitcher)</h3>
                         <div class="award-table-wrapper">
@@ -7984,7 +7989,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon">💎</span> Diamond in the Rough Award (Best Draft Value)</h3>
+                        <h3><span class="award-icon"><img src="data/awards/diamond.png" alt="Diamond in the Rough" class="award-header-image"></span> Diamond in the Rough Award (Best Draft Value)</h3>
                         <div class="award-table-wrapper">
                             <table class="award-table player-award-table">
                                 <thead>
@@ -8003,7 +8008,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon">❌</span> Bust of the Year Award (Worst Draft Value)</h3>
+                        <h3><span class="award-icon"><img src="data/awards/bust.png" alt="Bust of the Year" class="award-header-image"></span> Bust of the Year Award (Worst Draft Value)</h3>
                         <div class="award-table-wrapper">
                             <table class="award-table player-award-table">
                                 <thead>
@@ -12744,14 +12749,14 @@
 
                     const awardsList = [];
                     if (awards.championships) awardsList.push({ type: 'image', src: 'champion_ring.png', count: awards.championships, alt: 'Championship' });
-                    if (awards.regularSeason) awardsList.push({ type: 'emoji', emoji: '👑', count: awards.regularSeason });
-                    if (awards.scoringChamp) awardsList.push({ type: 'emoji', emoji: '🏅', count: awards.scoringChamp });
-                    if (awards.troutAward) awardsList.push({ type: 'image', src: 'attached_assets/trout_award_1764648146923.png', count: awards.troutAward, alt: 'Mike Trout Award' });
-                    if (awards.degromAward) awardsList.push({ type: 'image', src: 'attached_assets/degom_award_1764648146918.png', count: awards.degromAward, alt: 'Jacob deGrom Award' });
-                    if (awards.diamondAward) awardsList.push({ type: 'emoji', emoji: '💎', count: awards.diamondAward });
-                    if (awards.garbage) awardsList.push({ type: 'emoji', emoji: '🗑️', count: awards.garbage });
-                    if (awards.clown) awardsList.push({ type: 'image', src: 'clown_award.png', count: awards.clown, alt: 'Clown Award' });
-                    if (awards.bustAward) awardsList.push({ type: 'emoji', emoji: '❌', count: awards.bustAward });
+                    if (awards.regularSeason) awardsList.push({ type: 'image', src: 'data/awards/reg_season_champion.png', count: awards.regularSeason, alt: 'Regular Season Champion' });
+                    if (awards.scoringChamp) awardsList.push({ type: 'image', src: 'data/awards/scoring_champion.png', count: awards.scoringChamp, alt: 'Scoring Champion' });
+                    if (awards.troutAward) awardsList.push({ type: 'image', src: 'data/awards/hitter.png', count: awards.troutAward, alt: 'Mike Trout Award' });
+                    if (awards.degromAward) awardsList.push({ type: 'image', src: 'data/awards/pitcher.png', count: awards.degromAward, alt: 'Jacob deGrom Award' });
+                    if (awards.diamondAward) awardsList.push({ type: 'image', src: 'data/awards/diamond.png', count: awards.diamondAward, alt: 'Diamond in the Rough' });
+                    if (awards.garbage) awardsList.push({ type: 'image', src: 'data/awards/garbage.png', count: awards.garbage, alt: 'Garbage Award' });
+                    if (awards.clown) awardsList.push({ type: 'image', src: 'data/awards/clown.png', count: awards.clown, alt: 'Clown Award' });
+                    if (awards.bustAward) awardsList.push({ type: 'image', src: 'data/awards/bust.png', count: awards.bustAward, alt: 'Bust of the Year' });
 
                     if (awardsList.length > 0) {
                         awardsHTML = '<div class="awards-row">';
@@ -13524,14 +13529,14 @@
 
             const awardsList = [];
             if (awards.championships) awardsList.push({ type: 'image', src: 'champion_ring.png', count: awards.championships, alt: 'Championship' });
-            if (awards.regularSeason) awardsList.push({ type: 'emoji', emoji: '👑', count: awards.regularSeason });
-            if (awards.scoringChamp) awardsList.push({ type: 'emoji', emoji: '🏅', count: awards.scoringChamp });
-            if (awards.troutAward) awardsList.push({ type: 'image', src: 'attached_assets/trout_award_1764648146923.png', count: awards.troutAward, alt: 'Mike Trout Award' });
-            if (awards.degromAward) awardsList.push({ type: 'image', src: 'attached_assets/degom_award_1764648146918.png', count: awards.degromAward, alt: 'Jacob deGrom Award' });
-            if (awards.diamondAward) awardsList.push({ type: 'emoji', emoji: '💎', count: awards.diamondAward });
-            if (awards.garbage) awardsList.push({ type: 'emoji', emoji: '🗑️', count: awards.garbage });
-            if (awards.clown) awardsList.push({ type: 'image', src: 'clown_award.png', count: awards.clown, alt: 'Clown Award' });
-            if (awards.bustAward) awardsList.push({ type: 'emoji', emoji: '❌', count: awards.bustAward });
+            if (awards.regularSeason) awardsList.push({ type: 'image', src: 'data/awards/reg_season_champion.png', count: awards.regularSeason, alt: 'Regular Season Champion' });
+            if (awards.scoringChamp) awardsList.push({ type: 'image', src: 'data/awards/scoring_champion.png', count: awards.scoringChamp, alt: 'Scoring Champion' });
+            if (awards.troutAward) awardsList.push({ type: 'image', src: 'data/awards/hitter.png', count: awards.troutAward, alt: 'Mike Trout Award' });
+            if (awards.degromAward) awardsList.push({ type: 'image', src: 'data/awards/pitcher.png', count: awards.degromAward, alt: 'Jacob deGrom Award' });
+            if (awards.diamondAward) awardsList.push({ type: 'image', src: 'data/awards/diamond.png', count: awards.diamondAward, alt: 'Diamond in the Rough' });
+            if (awards.garbage) awardsList.push({ type: 'image', src: 'data/awards/garbage.png', count: awards.garbage, alt: 'Garbage Award' });
+            if (awards.clown) awardsList.push({ type: 'image', src: 'data/awards/clown.png', count: awards.clown, alt: 'Clown Award' });
+            if (awards.bustAward) awardsList.push({ type: 'image', src: 'data/awards/bust.png', count: awards.bustAward, alt: 'Bust of the Year' });
 
             if (awardsList.length > 0) {
                 modalAwardsHTML = '<div class="awards-row">';
