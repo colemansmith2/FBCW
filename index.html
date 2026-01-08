@@ -7039,7 +7039,7 @@
 
         .team-total-row {
             display: grid;
-            grid-template-columns: 1fr auto auto;
+            grid-template-columns: 1fr 70px auto;
             gap: 0.75rem;
             align-items: center;
             padding: 0.6rem 0.5rem;
@@ -7055,6 +7055,8 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            min-width: 0;
+            flex: 1;
         }
 
         .team-total-logo {
@@ -7069,16 +7071,16 @@
             display: flex;
             flex-direction: column;
             min-width: 0;
+            flex: 1;
         }
 
         .team-total-name {
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #333;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 110px;
         }
 
         .team-total-manager {
@@ -7090,7 +7092,7 @@
             font-size: 1rem;
             font-weight: 700;
             color: #1e3c72;
-            min-width: 65px;
+            min-width: 70px;
             text-align: center;
         }
 
@@ -7100,13 +7102,13 @@
         }
 
         .total-bet-arrow {
-            padding: 0.35rem 0.5rem;
+            padding: 0.4rem 0.6rem;
             border-radius: 5px;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 600;
-            min-width: 65px;
+            min-width: 72px;
             text-align: center;
         }
 
@@ -21027,11 +21029,8 @@
             const minValue = Math.min(...values);
             const valueRange = maxValue - minValue;
             
-            // Sort teams by value (highest first)
-            const sortedTeams = [...teamData].sort((a, b) => b.value - a.value);
-            
             // Calculate projections for all teams first
-            const teamsWithProjections = sortedTeams.map(team => {
+            const teamsWithProjections = teamData.map(team => {
                 // Normalize value to a 0-1 scale
                 const valueRatio = valueRange > 0 ? (team.value - minValue) / valueRange : 0.5;
                 
@@ -21058,12 +21057,18 @@
                 return { ...team, winLine, pointsLine, winOdds, pointsOdds, projectedWins, projectedPoints };
             });
             
+            // Sort by wins for wins column (descending by win line)
+            const teamsByWins = [...teamsWithProjections].sort((a, b) => b.winLine - a.winLine || b.value - a.value);
+            
+            // Sort by points for points column (descending by points line)
+            const teamsByPoints = [...teamsWithProjections].sort((a, b) => b.pointsLine - a.pointsLine || b.value - a.value);
+            
             // Create two-column layout
             container.innerHTML = `
                 <div class="team-totals-columns">
                     <div class="team-totals-column">
                         <div class="totals-column-header">🏆 Season Wins</div>
-                        ${teamsWithProjections.map(team => `
+                        ${teamsByWins.map(team => `
                             <div class="team-total-row">
                                 <div class="team-total-info">
                                     <img class="team-total-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
@@ -21088,7 +21093,7 @@
                     </div>
                     <div class="team-totals-column">
                         <div class="totals-column-header">💯 Season Points</div>
-                        ${teamsWithProjections.map(team => `
+                        ${teamsByPoints.map(team => `
                             <div class="team-total-row">
                                 <div class="team-total-info">
                                     <img class="team-total-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
