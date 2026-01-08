@@ -13696,6 +13696,8 @@
                 if (!keeperConfig) {
                     await initializeKeeperManagement();
                 }
+                // Initialize trade management (needed for draft pick ownership)
+                await initializeTradeManagement();
                 // Initialize sportsbook
                 await initializeSportsbook();
             }
@@ -21031,50 +21033,14 @@
                     console.log('Could not load projections:', e);
                 }
                 
-                // Load trades to calculate draft pick ownership
-                let trades = [];
-                try {
-                    const tradesResponse = await fetch('data/keepers/trades_2026.json');
-                    if (tradesResponse.ok) {
-                        trades = await tradesResponse.json();
-                    }
-                } catch (e) {
-                    console.log('Could not load trades:', e);
-                }
-                
-                // Build draft pick ownership map (similar to Value Suite)
-                const pickOwnership = {};
-                for (const team of sportsbookTeamData) {
-                    pickOwnership[team.team_key] = {};
-                    for (let round = 1; round <= 22; round++) {
-                        pickOwnership[team.team_key][round] = team.team_key; // Default: own pick
-                    }
-                }
-                
-                // Apply trades to update pick ownership
-                trades.forEach(trade => {
-                    if (trade.status === 'completed') {
-                        (trade.team_a_receives || []).forEach(asset => {
-                            if (asset.type === 'pick' && asset.round) {
-                                pickOwnership[trade.team_a][asset.round] = trade.team_a;
-                            }
-                        });
-                        (trade.team_b_receives || []).forEach(asset => {
-                            if (asset.type === 'pick' && asset.round) {
-                                pickOwnership[trade.team_b][asset.round] = trade.team_b;
-                            }
-                        });
-                    }
-                });
-                
                 // Calculate value for each team
                 for (const team of sportsbookTeamData) {
                     const teamKeepers = allKeepers[team.team_key] || [];
                     let keeperValue = 0;
                     let draftValue = 0;
                     
-                    // Get rounds used by keepers
-                    const usedRounds = new Set();
+                    // Track rounds used by keepers (count per round, not just Set)
+                    const usedRounds = {};
                     if (Array.isArray(teamKeepers)) {
                         teamKeepers.forEach(keeper => {
                             const playerName = (keeper.player_name || keeper.name || keeper.Name || '').toLowerCase().trim();
@@ -21082,7 +21048,8 @@
                             const roundCost = keeper.round_cost || keeper.cost || keeper.round || 22;
                             const expectedPts = expectedPointsByRound[roundCost]?.avg || predictExpectedPoints(roundCost) || 200;
                             
-                            usedRounds.add(roundCost);
+                            // Track used rounds
+                            usedRounds[roundCost] = (usedRounds[roundCost] || 0) + 1;
                             
                             // Value = projected + surplus (same as Value Suite)
                             const surplusValue = projectedPts - expectedPts;
@@ -21091,18 +21058,43 @@
                         });
                     }
                     
-                    // Calculate draft pick value for unused picks this team owns
-                    for (let round = 1; round <= 22; round++) {
-                        // Check if this team owns this pick and it's not used by a keeper
-                        const ownsPick = Object.entries(pickOwnership).some(([ownerKey, picks]) => 
-                            ownerKey === team.team_key && picks[round] === team.team_key
-                        ) || pickOwnership[team.team_key]?.[round] === team.team_key;
-                        
-                        if (ownsPick && !usedRounds.has(round)) {
-                            const expectedPts = expectedPointsByRound[round]?.avg || predictExpectedPoints(round) || 200;
-                            draftValue += expectedPts;
+                    // Get team's draft picks using the global function if available
+                    let teamPicks = [];
+                    if (typeof getTeamPicks === 'function') {
+                        teamPicks = getTeamPicks(team.team_key) || [];
+                    }
+                    
+                    // If getTeamPicks didn't return anything, default to owning all 22 picks
+                    if (teamPicks.length === 0) {
+                        for (let round = 1; round <= 22; round++) {
+                            teamPicks.push({ round: round, originalOwner: team.team_key });
                         }
                     }
+                    
+                    // Count picks per round
+                    const pickCounts = {};
+                    teamPicks.forEach(pick => {
+                        pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
+                    });
+                    
+                    // Find unused picks (available picks minus keeper-used picks)
+                    const unusedPicks = [];
+                    Object.keys(pickCounts).forEach(round => {
+                        const roundNum = parseInt(round);
+                        const available = pickCounts[roundNum] || 0;
+                        const used = usedRounds[roundNum] || 0;
+                        const unused = available - used;
+                        for (let i = 0; i < unused; i++) {
+                            const expectedPts = expectedPointsByRound[roundNum]?.avg || predictExpectedPoints(roundNum) || 200;
+                            unusedPicks.push({
+                                round: roundNum,
+                                expectedPts: expectedPts
+                            });
+                        }
+                    });
+                    
+                    // Calculate total draft pick value
+                    draftValue = unusedPicks.reduce((sum, p) => sum + p.expectedPts, 0);
                     
                     const totalValue = keeperValue + draftValue;
                     teamValues[team.team_name] = Math.max(totalValue, 1000);
