@@ -7010,38 +7010,56 @@
             background: rgba(220, 53, 69, 0.1);
         }
 
-        /* Team Totals Grid */
+        /* Team Totals Grid - 2 Column Layout */
         .team-totals-grid {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
+            width: 100%;
         }
 
-        .team-total-card {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 1rem;
+        .team-totals-columns {
             display: grid;
-            grid-template-columns: 200px 1fr 1fr;
-            gap: 1rem;
-            align-items: center;
-            border: 2px solid transparent;
-            transition: all 0.2s;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
         }
 
-        .team-total-card:hover {
-            border-color: #e0e0e0;
+        .team-totals-column {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1rem;
+        }
+
+        .totals-column-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e3c72;
+            padding-bottom: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 2px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .team-total-row {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 0.75rem;
+            align-items: center;
+            padding: 0.6rem 0.5rem;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .team-total-row:hover {
+            background: rgba(30, 60, 114, 0.05);
         }
 
         .team-total-info {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.5rem;
         }
 
         .team-total-logo {
-            width: 45px;
-            height: 45px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             border: 2px solid #ddd;
             object-fit: cover;
@@ -7050,48 +7068,46 @@
         .team-total-details {
             display: flex;
             flex-direction: column;
+            min-width: 0;
         }
 
         .team-total-name {
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #333;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 120px;
+            max-width: 110px;
         }
 
         .team-total-manager {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #666;
         }
 
-        .team-total-bet {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+        .team-total-line {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e3c72;
+            min-width: 65px;
+            text-align: center;
         }
 
-        .total-bet-arrows {
+        .team-total-odds {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
+            gap: 0.4rem;
         }
 
         .total-bet-arrow {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.4rem 0.6rem;
-            border-radius: 6px;
+            padding: 0.35rem 0.5rem;
+            border-radius: 5px;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 0.8rem;
-            min-width: 90px;
-            justify-content: space-between;
+            font-size: 0.75rem;
+            font-weight: 600;
+            min-width: 65px;
+            text-align: center;
         }
 
         .total-bet-arrow.over {
@@ -7100,7 +7116,7 @@
         }
 
         .total-bet-arrow.over:hover {
-            background: rgba(40, 167, 69, 0.2);
+            background: rgba(40, 167, 69, 0.25);
         }
 
         .total-bet-arrow.under {
@@ -7109,49 +7125,32 @@
         }
 
         .total-bet-arrow.under:hover {
-            background: rgba(220, 53, 69, 0.2);
+            background: rgba(220, 53, 69, 0.25);
         }
 
         .total-bet-arrow.selected {
             border: 2px solid currentColor;
-            font-weight: 600;
         }
 
-        .total-bet-line {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: #1e3c72;
-            min-width: 70px;
-            text-align: center;
-        }
-
-        .total-bet-label {
-            font-size: 0.7rem;
-            color: #666;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.25rem;
-            text-align: center;
-        }
-
-        .total-bet-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        @media (max-width: 768px) {
-            .team-total-card {
+        @media (max-width: 900px) {
+            .team-totals-columns {
                 grid-template-columns: 1fr;
-                gap: 0.75rem;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .team-total-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+                text-align: center;
             }
             
             .team-total-info {
                 justify-content: center;
             }
             
-            .team-total-bet {
-                flex-wrap: wrap;
+            .team-total-odds {
+                justify-content: center;
             }
         }
 
@@ -21031,8 +21030,8 @@
             // Sort teams by value (highest first)
             const sortedTeams = [...teamData].sort((a, b) => b.value - a.value);
             
-            container.innerHTML = sortedTeams.map(team => {
-                // Calculate projected wins based on team value and manager win% factor
+            // Calculate projections for all teams first
+            const teamsWithProjections = sortedTeams.map(team => {
                 // Normalize value to a 0-1 scale
                 const valueRatio = valueRange > 0 ? (team.value - minValue) / valueRange : 0.5;
                 
@@ -21040,73 +21039,80 @@
                 const baseWins = 6 + (valueRatio * 8);
                 // Apply manager win% factor (0.97-1.03 range)
                 const projectedWins = baseWins * team.winsFactor;
-                // Round to nearest 0.5
-                const winLine = Math.round(projectedWins * 2) / 2 + 0.5;
-                // Ensure it ends in .5
-                const finalWinLine = Number.isInteger(winLine) ? winLine + 0.5 : winLine;
+                // Round to nearest 0.5, ensure ends in .5
+                let winLine = Math.round(projectedWins * 2) / 2;
+                if (Number.isInteger(winLine)) winLine += 0.5;
                 
                 // Calculate projected points based on team value and manager points factor
-                // Scale points from ~6500 to ~9500 based on value
-                const basePoints = 6500 + (valueRatio * 3000);
+                // Realistic range: ~5800 to ~7600 based on historical data
+                const basePoints = 5800 + (valueRatio * 1800);
                 // Apply manager points factor
                 const projectedPoints = basePoints * team.pointsFactor;
                 // Round to nearest 50, then add 0.5
                 const pointsLine = Math.round(projectedPoints / 50) * 50 + 0.5;
                 
-                // Calculate over/under odds (slight juice to the under typically)
-                // Odds closer to the middle = closer to -110/-110
-                // Further from middle = more divergent odds
-                const winOdds = calculateOverUnderOdds(projectedWins, finalWinLine);
+                // Calculate over/under odds
+                const winOdds = calculateOverUnderOdds(projectedWins, winLine);
                 const pointsOdds = calculateOverUnderOdds(projectedPoints, pointsLine);
                 
-                return `
-                    <div class="team-total-card">
-                        <div class="team-total-info">
-                            <img class="team-total-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
-                            <div class="team-total-details">
-                                <div class="team-total-name">${team.teamName}</div>
-                                <div class="team-total-manager">${team.manager}</div>
-                            </div>
-                        </div>
-                        <div class="total-bet-container">
-                            <div class="total-bet-label">Season Wins</div>
-                            <div class="team-total-bet">
-                                <div class="total-bet-arrows">
+                return { ...team, winLine, pointsLine, winOdds, pointsOdds, projectedWins, projectedPoints };
+            });
+            
+            // Create two-column layout
+            container.innerHTML = `
+                <div class="team-totals-columns">
+                    <div class="team-totals-column">
+                        <div class="totals-column-header">🏆 Season Wins</div>
+                        ${teamsWithProjections.map(team => `
+                            <div class="team-total-row">
+                                <div class="team-total-info">
+                                    <img class="team-total-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
+                                    <div class="team-total-details">
+                                        <div class="team-total-name">${team.teamName}</div>
+                                        <div class="team-total-manager">${team.manager}</div>
+                                    </div>
+                                </div>
+                                <div class="team-total-line">${team.winLine} W</div>
+                                <div class="team-total-odds">
                                     <div class="total-bet-arrow over" 
-                                         onclick="addToBetSlip('wins_over_${team.teamKey}', '${team.teamKey}', '${team.teamName} O${finalWinLine} W', '${winOdds.over}', 'season')">
-                                        <span>▲ Over</span>
-                                        <span>${winOdds.over}</span>
+                                         onclick="addToBetSlip('wins_over_${team.teamKey}', '${team.teamKey}', '${team.teamName} O${team.winLine} W', '${team.winOdds.over}', 'season')">
+                                        <span>O ${team.winOdds.over}</span>
                                     </div>
                                     <div class="total-bet-arrow under"
-                                         onclick="addToBetSlip('wins_under_${team.teamKey}', '${team.teamKey}', '${team.teamName} U${finalWinLine} W', '${winOdds.under}', 'season')">
-                                        <span>▼ Under</span>
-                                        <span>${winOdds.under}</span>
+                                         onclick="addToBetSlip('wins_under_${team.teamKey}', '${team.teamKey}', '${team.teamName} U${team.winLine} W', '${team.winOdds.under}', 'season')">
+                                        <span>U ${team.winOdds.under}</span>
                                     </div>
                                 </div>
-                                <div class="total-bet-line">${finalWinLine} W</div>
                             </div>
-                        </div>
-                        <div class="total-bet-container">
-                            <div class="total-bet-label">Season Points</div>
-                            <div class="team-total-bet">
-                                <div class="total-bet-arrows">
-                                    <div class="total-bet-arrow over"
-                                         onclick="addToBetSlip('points_over_${team.teamKey}', '${team.teamKey}', '${team.teamName} O${pointsLine} pts', '${pointsOdds.over}', 'season')">
-                                        <span>▲ Over</span>
-                                        <span>${pointsOdds.over}</span>
-                                    </div>
-                                    <div class="total-bet-arrow under"
-                                         onclick="addToBetSlip('points_under_${team.teamKey}', '${team.teamKey}', '${team.teamName} U${pointsLine} pts', '${pointsOdds.under}', 'season')">
-                                        <span>▼ Under</span>
-                                        <span>${pointsOdds.under}</span>
-                                    </div>
-                                </div>
-                                <div class="total-bet-line">${pointsLine.toLocaleString()} pts</div>
-                            </div>
-                        </div>
+                        `).join('')}
                     </div>
-                `;
-            }).join('');
+                    <div class="team-totals-column">
+                        <div class="totals-column-header">💯 Season Points</div>
+                        ${teamsWithProjections.map(team => `
+                            <div class="team-total-row">
+                                <div class="team-total-info">
+                                    <img class="team-total-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
+                                    <div class="team-total-details">
+                                        <div class="team-total-name">${team.teamName}</div>
+                                        <div class="team-total-manager">${team.manager}</div>
+                                    </div>
+                                </div>
+                                <div class="team-total-line">${team.pointsLine.toLocaleString()}</div>
+                                <div class="team-total-odds">
+                                    <div class="total-bet-arrow over"
+                                         onclick="addToBetSlip('points_over_${team.teamKey}', '${team.teamKey}', '${team.teamName} O${team.pointsLine} pts', '${team.pointsOdds.over}', 'season')">
+                                        <span>O ${team.pointsOdds.over}</span>
+                                    </div>
+                                    <div class="total-bet-arrow under"
+                                         onclick="addToBetSlip('points_under_${team.teamKey}', '${team.teamKey}', '${team.teamName} U${team.pointsLine} pts', '${team.pointsOdds.under}', 'season')">
+                                        <span>U ${team.pointsOdds.under}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
         }
         
         function calculateOverUnderOdds(projected, line) {
