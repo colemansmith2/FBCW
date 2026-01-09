@@ -12249,19 +12249,29 @@
                 if (champion) {
                     if (!managerAwards[champion.manager]) managerAwards[champion.manager] = {};
                     managerAwards[champion.manager].championships = (managerAwards[champion.manager].championships || 0) + 1;
+                    if (!managerAwards[champion.manager].championshipYears) managerAwards[champion.manager].championshipYears = [];
+                    managerAwards[champion.manager].championshipYears.push(year);
                 }
 
                 if (!managerAwards[mostWins.manager]) managerAwards[mostWins.manager] = {};
                 managerAwards[mostWins.manager].regularSeason = (managerAwards[mostWins.manager].regularSeason || 0) + 1;
+                if (!managerAwards[mostWins.manager].regularSeasonYears) managerAwards[mostWins.manager].regularSeasonYears = [];
+                managerAwards[mostWins.manager].regularSeasonYears.push(year);
 
                 if (!managerAwards[mostPoints.manager]) managerAwards[mostPoints.manager] = {};
                 managerAwards[mostPoints.manager].scoringChamp = (managerAwards[mostPoints.manager].scoringChamp || 0) + 1;
+                if (!managerAwards[mostPoints.manager].scoringChampYears) managerAwards[mostPoints.manager].scoringChampYears = [];
+                managerAwards[mostPoints.manager].scoringChampYears.push(year);
 
                 if (!managerAwards[fewestWins.manager]) managerAwards[fewestWins.manager] = {};
                 managerAwards[fewestWins.manager].garbage = (managerAwards[fewestWins.manager].garbage || 0) + 1;
+                if (!managerAwards[fewestWins.manager].garbageYears) managerAwards[fewestWins.manager].garbageYears = [];
+                managerAwards[fewestWins.manager].garbageYears.push(year);
 
                 if (!managerAwards[leastPoints.manager]) managerAwards[leastPoints.manager] = {};
                 managerAwards[leastPoints.manager].clown = (managerAwards[leastPoints.manager].clown || 0) + 1;
+                if (!managerAwards[leastPoints.manager].clownYears) managerAwards[leastPoints.manager].clownYears = [];
+                managerAwards[leastPoints.manager].clownYears.push(year);
 
                 // Mike Trout Award (highest scoring hitter)
                 const batters = playerStats.filter(p => p.position_type === 'B');
@@ -12277,6 +12287,8 @@
                     const normalizedManager = normalizeManagerName(topHitter.manager, parseInt(year), topHitter.team_name, teamKey);
                     if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
                     managerAwards[normalizedManager].troutAward = (managerAwards[normalizedManager].troutAward || 0) + 1;
+                    if (!managerAwards[normalizedManager].troutAwardYears) managerAwards[normalizedManager].troutAwardYears = [];
+                    managerAwards[normalizedManager].troutAwardYears.push(year);
                 }
 
                 // Jacob deGrom Award (highest scoring pitcher)
@@ -12293,6 +12305,8 @@
                     const normalizedManager = normalizeManagerName(topPitcher.manager, parseInt(year), topPitcher.team_name, teamKey);
                     if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
                     managerAwards[normalizedManager].degromAward = (managerAwards[normalizedManager].degromAward || 0) + 1;
+                    if (!managerAwards[normalizedManager].degromAwardYears) managerAwards[normalizedManager].degromAwardYears = [];
+                    managerAwards[normalizedManager].degromAwardYears.push(year);
                 }
 
                 // Diamond in the Rough & Bust of the Year Awards
@@ -12378,6 +12392,8 @@
                             const normalizedManager = normalizeManagerName(bestValue.manager, parseInt(year), null, bestValue.team_key);
                             if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
                             managerAwards[normalizedManager].diamondAward = (managerAwards[normalizedManager].diamondAward || 0) + 1;
+                            if (!managerAwards[normalizedManager].diamondAwardYears) managerAwards[normalizedManager].diamondAwardYears = [];
+                            managerAwards[normalizedManager].diamondAwardYears.push(year);
                         }
 
                         // Find worst value (Bust) - only from first 5 rounds
@@ -12390,6 +12406,8 @@
                                 const normalizedManager = normalizeManagerName(worstValue.manager, parseInt(year), null, worstValue.team_key);
                                 if (!managerAwards[normalizedManager]) managerAwards[normalizedManager] = {};
                                 managerAwards[normalizedManager].bustAward = (managerAwards[normalizedManager].bustAward || 0) + 1;
+                                if (!managerAwards[normalizedManager].bustAwardYears) managerAwards[normalizedManager].bustAwardYears = [];
+                                managerAwards[normalizedManager].bustAwardYears.push(year);
                             }
                         }
                     }
@@ -13372,6 +13390,7 @@
 
             // Load team logos for each season using cached data
             const seasonLogos = {};
+            let currentManagerLogo = '';
             for (const season of manager.season_history) {
                 const teams = await getTeamData(season.year);
                 if (teams) {
@@ -13381,6 +13400,27 @@
                     }
                 }
             }
+            // Get most recent logo as current manager logo
+            const mostRecentSeason = Math.max(...Object.keys(seasonLogos).map(Number));
+            currentManagerLogo = seasonLogos[mostRecentSeason] || '';
+            
+            // Build a map of all manager logos for h2h display
+            const allManagerLogos = {};
+            for (const mgr of allManagersData) {
+                const recentSeason = Math.max(...mgr.season_history.map(s => s.year));
+                const teams = await getTeamData(recentSeason);
+                if (teams) {
+                    const mgrSeason = mgr.season_history.find(s => s.year === recentSeason);
+                    if (mgrSeason) {
+                        const mgrTeam = teams.find(t => t.team_name === mgrSeason.team_name);
+                        if (mgrTeam) {
+                            allManagerLogos[mgr.manager_name] = mgrTeam.team_logo;
+                        }
+                    }
+                }
+            }
+            // Store globally for sort function
+            window.currentManagerLogos = allManagerLogos;
 
             // Build season timeline with draft grades
             const seasonHistory = manager.season_history.sort((a, b) => b.year - a.year);
@@ -13392,7 +13432,7 @@
 
                 if (season.rank === 1) {
                     rankClass = 'champion';
-                    rankText = '🏆 Champion';
+                    rankText = '<img src="champion_ring.png" alt="Champion" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 4px;">Champion';
                 } else if (season.rank === 2) {
                     rankClass = 'runner-up';
                     rankText = '🥈 Runner-up';
@@ -13450,33 +13490,60 @@
                                 </tr>
                             </thead>
                             <tbody id="h2h-body">
-                                ${h2hRecords.map(record => `
+                                ${h2hRecords.map(record => {
+                                    const oppLogo = allManagerLogos[record.opponent] || '';
+                                    const logoHtml = oppLogo ? `<img src="${oppLogo}" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px; vertical-align: middle; object-fit: cover;">` : '';
+                                    return `
                                     <tr>
-                                        <td>${record.opponent}</td>
+                                        <td>${logoHtml}${record.opponent}</td>
                                         <td>${record.wins}-${record.losses}</td>
                                         <td>${(record.win_pct * 100).toFixed(1)}%</td>
                                         <td>${record.avg_points_for.toFixed(1)}</td>
                                         <td>${record.avg_points_against.toFixed(1)}</td>
                                     </tr>
-                                `).join('')}
+                                `}).join('')}
                             </tbody>
                         </table>
                     </div>
                 `;
             }
 
-            // Build draft grade section
+            // Build draft grade section - compare to other managers
             let draftGradeSectionHTML = '';
-            if (managerGrades.avgGrade) {
-                const avgGradeColor = getGradeColor(managerGrades.avgGrade);
-                const avgBgColor = getGradeBackgroundColor(managerGrades.avgGrade);
+            if (managerGrades.avgScore !== undefined) {
+                // Get all managers' average draft scores and rank them
+                const allManagerScores = Object.entries(managerDraftGrades)
+                    .filter(([name, data]) => data.avgScore !== undefined && data.grades.length > 0)
+                    .map(([name, data]) => ({ name, avgScore: data.avgScore }))
+                    .sort((a, b) => b.avgScore - a.avgScore);
+                
+                // Find this manager's rank
+                const managerRank = allManagerScores.findIndex(m => m.name === manager.manager_name) + 1;
+                const totalManagers = allManagerScores.length;
+                
+                // Assign grade based on rank (comparative grading)
+                let comparativeGrade;
+                const percentile = managerRank / totalManagers;
+                if (percentile <= 0.1) comparativeGrade = 'A+';
+                else if (percentile <= 0.2) comparativeGrade = 'A';
+                else if (percentile <= 0.3) comparativeGrade = 'A-';
+                else if (percentile <= 0.4) comparativeGrade = 'B+';
+                else if (percentile <= 0.5) comparativeGrade = 'B';
+                else if (percentile <= 0.6) comparativeGrade = 'B-';
+                else if (percentile <= 0.7) comparativeGrade = 'C+';
+                else if (percentile <= 0.8) comparativeGrade = 'C';
+                else if (percentile <= 0.9) comparativeGrade = 'C-';
+                else comparativeGrade = 'D';
+                
+                const avgGradeColor = getGradeColor(comparativeGrade);
+                const avgBgColor = getGradeBackgroundColor(comparativeGrade);
                 const avgScoreSign = managerGrades.avgScore >= 0 ? '+' : '';
                 draftGradeSectionHTML = `
                     <div class="draft-grade-section">
                         <div class="draft-grade-overall" style="background: ${avgBgColor}; border-color: ${avgGradeColor};">
-                            <div class="draft-grade-letter" style="color: ${avgGradeColor};">${managerGrades.avgGrade}</div>
+                            <div class="draft-grade-letter" style="color: ${avgGradeColor};">${comparativeGrade}</div>
                             <div class="draft-grade-label">Draft Grade</div>
-                            <div class="draft-grade-score" style="color: ${avgGradeColor};">${avgScoreSign}${managerGrades.avgScore.toFixed(1)}% vs expected</div>
+                            <div class="draft-grade-score" style="color: ${avgGradeColor};">Rank #${managerRank} of ${totalManagers}</div>
                         </div>
                     </div>
                 `;
@@ -13528,20 +13595,22 @@
             let modalAwardsHTML = '';
 
             const awardsList = [];
-            if (awards.championships) awardsList.push({ type: 'image', src: 'champion_ring.png', count: awards.championships, alt: 'Championship' });
-            if (awards.regularSeason) awardsList.push({ type: 'image', src: 'data/awards/reg_season_champion.png', count: awards.regularSeason, alt: 'Regular Season Champion' });
-            if (awards.scoringChamp) awardsList.push({ type: 'image', src: 'data/awards/scoring_champion.png', count: awards.scoringChamp, alt: 'Scoring Champion' });
-            if (awards.troutAward) awardsList.push({ type: 'image', src: 'data/awards/hitter.png', count: awards.troutAward, alt: 'Mike Trout Award' });
-            if (awards.degromAward) awardsList.push({ type: 'image', src: 'data/awards/pitcher.png', count: awards.degromAward, alt: 'Jacob deGrom Award' });
-            if (awards.diamondAward) awardsList.push({ type: 'image', src: 'data/awards/diamond.png', count: awards.diamondAward, alt: 'Diamond in the Rough' });
-            if (awards.garbage) awardsList.push({ type: 'image', src: 'data/awards/garbage.png', count: awards.garbage, alt: 'Garbage Award' });
-            if (awards.clown) awardsList.push({ type: 'image', src: 'data/awards/clown.png', count: awards.clown, alt: 'Clown Award' });
-            if (awards.bustAward) awardsList.push({ type: 'image', src: 'data/awards/bust.png', count: awards.bustAward, alt: 'Bust of the Year' });
+            if (awards.championships) awardsList.push({ type: 'image', src: 'champion_ring.png', count: awards.championships, alt: 'Championship', years: awards.championshipYears || [] });
+            if (awards.regularSeason) awardsList.push({ type: 'image', src: 'data/awards/reg_season_champion.png', count: awards.regularSeason, alt: 'Regular Season Champion', years: awards.regularSeasonYears || [] });
+            if (awards.scoringChamp) awardsList.push({ type: 'image', src: 'data/awards/scoring_champion.png', count: awards.scoringChamp, alt: 'Scoring Champion', years: awards.scoringChampYears || [] });
+            if (awards.troutAward) awardsList.push({ type: 'image', src: 'data/awards/hitter.png', count: awards.troutAward, alt: 'Mike Trout Award', years: awards.troutAwardYears || [] });
+            if (awards.degromAward) awardsList.push({ type: 'image', src: 'data/awards/pitcher.png', count: awards.degromAward, alt: 'Jacob deGrom Award', years: awards.degromAwardYears || [] });
+            if (awards.diamondAward) awardsList.push({ type: 'image', src: 'data/awards/diamond.png', count: awards.diamondAward, alt: 'Diamond in the Rough', years: awards.diamondAwardYears || [] });
+            if (awards.garbage) awardsList.push({ type: 'image', src: 'data/awards/garbage.png', count: awards.garbage, alt: 'Garbage Award', years: awards.garbageYears || [] });
+            if (awards.clown) awardsList.push({ type: 'image', src: 'data/awards/clown.png', count: awards.clown, alt: 'Clown Award', years: awards.clownYears || [] });
+            if (awards.bustAward) awardsList.push({ type: 'image', src: 'data/awards/bust.png', count: awards.bustAward, alt: 'Bust of the Year', years: awards.bustAwardYears || [] });
 
             if (awardsList.length > 0) {
                 modalAwardsHTML = '<div class="awards-row">';
                 awardsList.forEach(award => {
-                    modalAwardsHTML += '<div class="award-badge">';
+                    const yearsText = award.years.length > 0 ? award.years.sort().join(', ') : '';
+                    const tooltipText = `${award.alt}${yearsText ? ': ' + yearsText : ''}`;
+                    modalAwardsHTML += `<div class="award-badge" title="${tooltipText}">`;
                     if (award.type === 'image') {
                         modalAwardsHTML += `<img src="${award.src}" alt="${award.alt}" class="award-image">`;
                     } else {
@@ -13558,6 +13627,7 @@
             modalHeaderSection.innerHTML = `
                 <div class="modal-header">
                     <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                        ${currentManagerLogo ? `<img src="${currentManagerLogo}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 3px solid #1e3c72;">` : ''}
                         <h2 style="margin: 0;">${manager.manager_name}</h2>
                         ${modalAwardsHTML}
                     </div>
@@ -13631,15 +13701,19 @@
             });
 
             // Update table
-            tbody.innerHTML = sortedData.map(record => `
+            const logos = window.currentManagerLogos || {};
+            tbody.innerHTML = sortedData.map(record => {
+                const oppLogo = logos[record.opponent] || '';
+                const logoHtml = oppLogo ? `<img src="${oppLogo}" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px; vertical-align: middle; object-fit: cover;">` : '';
+                return `
                 <tr>
-                    <td>${record.opponent}</td>
+                    <td>${logoHtml}${record.opponent}</td>
                     <td>${record.wins}-${record.losses}</td>
                     <td>${(record.win_pct * 100).toFixed(1)}%</td>
                     <td>${record.avg_points_for.toFixed(1)}</td>
                     <td>${record.avg_points_against.toFixed(1)}</td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         // ===== CALCULATE HEAD-TO-HEAD RECORDS =====
