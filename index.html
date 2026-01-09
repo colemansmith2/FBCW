@@ -3137,6 +3137,35 @@
             font-size: 1.6rem;
             line-height: 1;
             display: inline-block;
+            cursor: pointer;
+        }
+
+        .award-badge[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 5px;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .award-badge[data-tooltip]:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 5px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
         }
 
         .award-image {
@@ -13511,15 +13540,34 @@
             // Build draft grade section - compare to other managers
             let draftGradeSectionHTML = '';
             if (managerGrades.avgScore !== undefined) {
-                // Get all managers' average draft scores and rank them
+                // Get all managers' draft data and calculate weighted scores
+                // Weight by number of seasons to prevent 1-season managers from ranking high/low unfairly
                 const allManagerScores = Object.entries(managerDraftGrades)
                     .filter(([name, data]) => data.avgScore !== undefined && data.grades.length > 0)
-                    .map(([name, data]) => ({ name, avgScore: data.avgScore }))
-                    .sort((a, b) => b.avgScore - a.avgScore);
+                    .map(([name, data]) => {
+                        // Calculate weighted score that regresses toward 0 based on sample size
+                        // More seasons = more confidence in the score
+                        const seasons = data.grades.length;
+                        const maxSeasons = 7; // League has been around since 2019
+                        const confidenceWeight = Math.min(seasons / maxSeasons, 1); // 0 to 1
+                        
+                        // Regress avgScore toward 0 (league average) based on confidence
+                        // 1 season = 14% of their score, 7 seasons = 100% of their score
+                        const regressedScore = data.avgScore * confidenceWeight;
+                        
+                        return { 
+                            name, 
+                            avgScore: data.avgScore,
+                            regressedScore: regressedScore,
+                            seasons: seasons
+                        };
+                    })
+                    .sort((a, b) => b.regressedScore - a.regressedScore);
                 
                 // Find this manager's rank
                 const managerRank = allManagerScores.findIndex(m => m.name === manager.manager_name) + 1;
                 const totalManagers = allManagerScores.length;
+                const thisManagerData = allManagerScores.find(m => m.name === manager.manager_name);
                 
                 // Assign grade based on rank (comparative grading)
                 let comparativeGrade;
@@ -13543,7 +13591,7 @@
                         <div class="draft-grade-overall" style="background: ${avgBgColor}; border-color: ${avgGradeColor};">
                             <div class="draft-grade-letter" style="color: ${avgGradeColor};">${comparativeGrade}</div>
                             <div class="draft-grade-label">Draft Grade</div>
-                            <div class="draft-grade-score" style="color: ${avgGradeColor};">Rank #${managerRank} of ${totalManagers}</div>
+                            <div class="draft-grade-score" style="color: ${avgGradeColor};">${avgScoreSign}${managerGrades.avgScore.toFixed(1)}% avg</div>
                         </div>
                     </div>
                 `;
@@ -13610,7 +13658,7 @@
                 awardsList.forEach(award => {
                     const yearsText = award.years.length > 0 ? award.years.sort().join(', ') : '';
                     const tooltipText = `${award.alt}${yearsText ? ': ' + yearsText : ''}`;
-                    modalAwardsHTML += `<div class="award-badge" title="${tooltipText}">`;
+                    modalAwardsHTML += `<div class="award-badge" data-tooltip="${tooltipText}">`;
                     if (award.type === 'image') {
                         modalAwardsHTML += `<img src="${award.src}" alt="${award.alt}" class="award-image">`;
                     } else {
