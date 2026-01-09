@@ -12616,6 +12616,7 @@
                             year: year,
                             score: yearData.score,
                             grade: yearData.grade,
+                            draftPoints: gradeToPoints(yearData.grade),
                             expected: yearData.expected,
                             actual: yearData.actual,
                             picks: yearData.picks,
@@ -12627,6 +12628,19 @@
                 if (grades.length > 0) {
                     // Calculate average score
                     const avgScore = grades.reduce((sum, g) => sum + g.score, 0) / grades.length;
+                    
+                    // Calculate average draft points
+                    const avgDraftPoints = grades.reduce((sum, g) => sum + g.draftPoints, 0) / grades.length;
+                    
+                    // Apply small sample penalty: subtract points for fewer seasons
+                    // 1 season = -1.5 points, 2 seasons = -1.0, 3 seasons = -0.5, 4+ = no penalty
+                    const seasons = grades.length;
+                    let samplePenalty = 0;
+                    if (seasons === 1) samplePenalty = 1.5;
+                    else if (seasons === 2) samplePenalty = 1.0;
+                    else if (seasons === 3) samplePenalty = 0.5;
+                    
+                    const adjustedDraftPoints = avgDraftPoints - samplePenalty;
                     
                     // For avg grade, collect all scores from all years this manager participated in
                     // and calculate percentile against those year's scores
@@ -12648,7 +12662,10 @@
                         grades: grades.sort((a, b) => b.year - a.year),
                         avgScore: avgScore,
                         avgGrade: avgGrade,
-                        avgPercentile: avgPercentile
+                        avgPercentile: avgPercentile,
+                        avgDraftPoints: avgDraftPoints,
+                        adjustedDraftPoints: adjustedDraftPoints,
+                        seasons: seasons
                     };
                 }
             }
@@ -12681,6 +12698,33 @@
             if (percentile >= 20) return 'D+';
             if (percentile >= 10) return 'D';
             if (percentile >= 5) return 'D-';
+            return 'F';
+        }
+        
+        function gradeToPoints(grade) {
+            const gradePoints = {
+                'A+': 12, 'A': 11, 'A-': 10,
+                'B+': 9, 'B': 8, 'B-': 7,
+                'C+': 6, 'C': 5, 'C-': 4,
+                'D+': 3, 'D': 2, 'D-': 1,
+                'F': 0
+            };
+            return gradePoints[grade] !== undefined ? gradePoints[grade] : 5;
+        }
+        
+        function pointsToGrade(points) {
+            if (points >= 11.5) return 'A+';
+            if (points >= 10.5) return 'A';
+            if (points >= 9.5) return 'A-';
+            if (points >= 8.5) return 'B+';
+            if (points >= 7.5) return 'B';
+            if (points >= 6.5) return 'B-';
+            if (points >= 5.5) return 'C+';
+            if (points >= 4.5) return 'C';
+            if (points >= 3.5) return 'C-';
+            if (points >= 2.5) return 'D+';
+            if (points >= 1.5) return 'D';
+            if (points >= 0.5) return 'D-';
             return 'F';
         }
         
@@ -13537,61 +13581,35 @@
                 `;
             }
 
-            // Build draft grade section - compare to other managers
+            // Build draft grade section - compare to other managers using draft points
             let draftGradeSectionHTML = '';
-            if (managerGrades.avgScore !== undefined) {
-                // Get all managers' draft data and calculate weighted scores
-                // Weight by number of seasons to prevent 1-season managers from ranking high/low unfairly
+            if (managerGrades.adjustedDraftPoints !== undefined) {
+                // Get all managers' adjusted draft points and rank them
                 const allManagerScores = Object.entries(managerDraftGrades)
-                    .filter(([name, data]) => data.avgScore !== undefined && data.grades.length > 0)
-                    .map(([name, data]) => {
-                        // Calculate weighted score that regresses toward 0 based on sample size
-                        // More seasons = more confidence in the score
-                        const seasons = data.grades.length;
-                        const maxSeasons = 7; // League has been around since 2019
-                        const confidenceWeight = Math.min(seasons / maxSeasons, 1); // 0 to 1
-                        
-                        // Regress avgScore toward 0 (league average) based on confidence
-                        // 1 season = 14% of their score, 7 seasons = 100% of their score
-                        const regressedScore = data.avgScore * confidenceWeight;
-                        
-                        return { 
-                            name, 
-                            avgScore: data.avgScore,
-                            regressedScore: regressedScore,
-                            seasons: seasons
-                        };
-                    })
-                    .sort((a, b) => b.regressedScore - a.regressedScore);
+                    .filter(([name, data]) => data.adjustedDraftPoints !== undefined && data.grades.length > 0)
+                    .map(([name, data]) => ({ 
+                        name, 
+                        adjustedPoints: data.adjustedDraftPoints,
+                        avgPoints: data.avgDraftPoints,
+                        seasons: data.seasons
+                    }))
+                    .sort((a, b) => b.adjustedPoints - a.adjustedPoints);
                 
                 // Find this manager's rank
                 const managerRank = allManagerScores.findIndex(m => m.name === manager.manager_name) + 1;
                 const totalManagers = allManagerScores.length;
-                const thisManagerData = allManagerScores.find(m => m.name === manager.manager_name);
                 
-                // Assign grade based on rank (comparative grading)
-                let comparativeGrade;
-                const percentile = managerRank / totalManagers;
-                if (percentile <= 0.1) comparativeGrade = 'A+';
-                else if (percentile <= 0.2) comparativeGrade = 'A';
-                else if (percentile <= 0.3) comparativeGrade = 'A-';
-                else if (percentile <= 0.4) comparativeGrade = 'B+';
-                else if (percentile <= 0.5) comparativeGrade = 'B';
-                else if (percentile <= 0.6) comparativeGrade = 'B-';
-                else if (percentile <= 0.7) comparativeGrade = 'C+';
-                else if (percentile <= 0.8) comparativeGrade = 'C';
-                else if (percentile <= 0.9) comparativeGrade = 'C-';
-                else comparativeGrade = 'D';
+                // Convert adjusted points back to a grade
+                const overallGrade = pointsToGrade(managerGrades.adjustedDraftPoints);
                 
-                const avgGradeColor = getGradeColor(comparativeGrade);
-                const avgBgColor = getGradeBackgroundColor(comparativeGrade);
-                const avgScoreSign = managerGrades.avgScore >= 0 ? '+' : '';
+                const avgGradeColor = getGradeColor(overallGrade);
+                const avgBgColor = getGradeBackgroundColor(overallGrade);
                 draftGradeSectionHTML = `
                     <div class="draft-grade-section">
                         <div class="draft-grade-overall" style="background: ${avgBgColor}; border-color: ${avgGradeColor};">
-                            <div class="draft-grade-letter" style="color: ${avgGradeColor};">${comparativeGrade}</div>
+                            <div class="draft-grade-letter" style="color: ${avgGradeColor};">${overallGrade}</div>
                             <div class="draft-grade-label">Draft Grade</div>
-                            <div class="draft-grade-score" style="color: ${avgGradeColor};">${avgScoreSign}${managerGrades.avgScore.toFixed(1)}% avg</div>
+                            <div class="draft-grade-score" style="color: ${avgGradeColor};">Rank #${managerRank} of ${totalManagers}</div>
                         </div>
                     </div>
                 `;
