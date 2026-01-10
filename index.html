@@ -7642,6 +7642,9 @@
             transition: all 0.2s;
             border: 1px solid rgba(30, 60, 114, 0.3);
             vertical-align: middle;
+            text-transform: lowercase;
+            font-style: italic;
+            font-family: Georgia, serif;
         }
 
         .bet-info-btn:hover {
@@ -7828,6 +7831,9 @@
             transition: all 0.2s;
             border: 1px solid rgba(30, 60, 114, 0.3);
             flex-shrink: 0;
+            text-transform: lowercase;
+            font-style: italic;
+            font-family: Georgia, serif;
         }
 
         .team-total-info-btn:hover {
@@ -21478,38 +21484,51 @@
                 teamBreakdown: {} // { teamKey: { teamName, logo, units, bets } }
             };
             
-            if (!sportsbookBetsRef) return stats;
+            // Initialize Firebase ref if needed
+            if (!sportsbookBetsRef && firebaseDb) {
+                sportsbookBetsRef = firebaseDb.ref('sportsbook_bets');
+            }
+            
+            if (!sportsbookBetsRef) {
+                console.log('No sportsbookBetsRef available');
+                return stats;
+            }
             
             try {
                 const snapshot = await sportsbookBetsRef.once('value');
                 const allBets = snapshot.val();
                 
+                console.log('Loaded bets for stats:', allBets);
+                
                 if (!allBets) return stats;
                 
-                // Aggregate all bets of this type across all users
-                Object.values(allBets).forEach(userBets => {
-                    if (!userBets) return;
-                    Object.values(userBets).forEach(bet => {
-                        if (bet.betType === betType && bet.category === 'season') {
-                            stats.totalUnits += bet.wager || 0;
-                            stats.totalBets++;
-                            
-                            const teamKey = bet.teamKey;
-                            if (!stats.teamBreakdown[teamKey]) {
-                                const teamInfo = sportsbookTeamData.find(t => t.team_key === teamKey);
-                                stats.teamBreakdown[teamKey] = {
-                                    teamName: teamInfo?.team_name || bet.selection || teamKey,
-                                    logo: teamInfo?.team_logo || 'league_logo.png',
-                                    manager: teamInfo ? normalizeManagerName(teamInfo.manager, 2026, teamInfo.team_name, teamInfo.team_key) : '',
-                                    units: 0,
-                                    bets: 0
-                                };
-                            }
-                            stats.teamBreakdown[teamKey].units += bet.wager || 0;
-                            stats.teamBreakdown[teamKey].bets++;
+                // Bets are stored as a flat list with push keys
+                Object.values(allBets).forEach(bet => {
+                    if (!bet) return;
+                    
+                    // Check if this bet matches the type (champion, wins, points, last)
+                    if (bet.betType === betType) {
+                        stats.totalUnits += bet.wager || 0;
+                        stats.totalBets++;
+                        
+                        // selection contains the team key that was bet on
+                        const selectedTeamKey = bet.selection;
+                        if (!stats.teamBreakdown[selectedTeamKey]) {
+                            const teamInfo = sportsbookTeamData.find(t => t.team_key === selectedTeamKey);
+                            stats.teamBreakdown[selectedTeamKey] = {
+                                teamName: teamInfo?.team_name || bet.selectionName || selectedTeamKey,
+                                logo: teamInfo?.team_logo || 'league_logo.png',
+                                manager: teamInfo ? normalizeManagerName(teamInfo.manager, 2026, teamInfo.team_name, teamInfo.team_key) : '',
+                                units: 0,
+                                bets: 0
+                            };
                         }
-                    });
+                        stats.teamBreakdown[selectedTeamKey].units += bet.wager || 0;
+                        stats.teamBreakdown[selectedTeamKey].bets++;
+                    }
                 });
+                
+                console.log('Calculated stats:', stats);
             } catch (e) {
                 console.log('Error loading bet stats:', e);
             }
@@ -21668,7 +21687,15 @@
                 underBets: 0
             };
             
-            if (!sportsbookBetsRef) return stats;
+            // Initialize Firebase ref if needed
+            if (!sportsbookBetsRef && firebaseDb) {
+                sportsbookBetsRef = firebaseDb.ref('sportsbook_bets');
+            }
+            
+            if (!sportsbookBetsRef) {
+                console.log('No sportsbookBetsRef available');
+                return stats;
+            }
             
             try {
                 const snapshot = await sportsbookBetsRef.once('value');
@@ -21679,20 +21706,24 @@
                 const overType = `${betTypePrefix}_over_${teamKey}`;
                 const underType = `${betTypePrefix}_under_${teamKey}`;
                 
-                Object.values(allBets).forEach(userBets => {
-                    if (!userBets) return;
-                    Object.values(userBets).forEach(bet => {
-                        if (bet.betType === overType) {
-                            stats.overUnits += bet.wager || 0;
-                            stats.overBets++;
-                            stats.totalUnits += bet.wager || 0;
-                        } else if (bet.betType === underType) {
-                            stats.underUnits += bet.wager || 0;
-                            stats.underBets++;
-                            stats.totalUnits += bet.wager || 0;
-                        }
-                    });
+                console.log('Looking for bet types:', overType, underType);
+                
+                // Bets are stored as a flat list
+                Object.values(allBets).forEach(bet => {
+                    if (!bet) return;
+                    
+                    if (bet.betType === overType) {
+                        stats.overUnits += bet.wager || 0;
+                        stats.overBets++;
+                        stats.totalUnits += bet.wager || 0;
+                    } else if (bet.betType === underType) {
+                        stats.underUnits += bet.wager || 0;
+                        stats.underBets++;
+                        stats.totalUnits += bet.wager || 0;
+                    }
                 });
+                
+                console.log('Team total stats:', stats);
             } catch (e) {
                 console.log('Error loading team total stats:', e);
             }
