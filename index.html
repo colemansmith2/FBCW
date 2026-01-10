@@ -8774,6 +8774,7 @@
                             <option value="steamer">Steamer</option>
                             <option value="zips">ZiPS</option>
                             <option value="depthcharts">Depth Charts</option>
+                            <option value="oopsy">OOPSY</option>
                         </select>
                     </div>
 
@@ -8895,6 +8896,7 @@
                                 <option value="steamer">Steamer</option>
                                 <option value="zips">ZiPS</option>
                                 <option value="depthcharts">Depth Charts</option>
+                                <option value="oopsy">OOPSY</option>
                             </select>
                         </div>
                         <button class="btn-show-lineup-prospects" id="btn-show-lineup-prospects" onclick="toggleLineupProspects()">
@@ -15460,7 +15462,7 @@
         async function loadAverageProjections() {
             if (averageProjectionsLoaded) return;
             
-            const projectionSystems = ['thebatx', 'thebat', 'steamer', 'zips', 'depthcharts'];
+            const projectionSystems = ['thebatx', 'thebat', 'steamer', 'zips', 'depthcharts', 'oopsy'];
             const playerProjections = {}; // { playerName: { points: [], headshot, position, type } }
             
             for (const system of projectionSystems) {
