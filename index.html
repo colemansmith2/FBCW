@@ -7568,6 +7568,13 @@
         }
 
         /* Bet History */
+        .bet-history-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 0 -0.5rem;
+            padding: 0 0.5rem;
+        }
+
         .bet-history-table {
             width: 100%;
             border-collapse: collapse;
@@ -7575,6 +7582,7 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-width: 700px;
         }
 
         .bet-history-table th {
@@ -7615,6 +7623,245 @@
         .bet-status.lost {
             background: #f8d7da;
             color: #721c24;
+        }
+
+        /* Betting Info Button */
+        .bet-info-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(30, 60, 114, 0.1);
+            color: #1e3c72;
+            font-size: 0.7rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: all 0.2s;
+            border: 1px solid rgba(30, 60, 114, 0.3);
+            vertical-align: middle;
+        }
+
+        .bet-info-btn:hover {
+            background: #1e3c72;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .season-bet-title {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Betting Stats Modal */
+        .bet-stats-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .bet-stats-modal.active {
+            display: flex;
+        }
+
+        .bet-stats-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .bet-stats-header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bet-stats-header h3 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        .bet-stats-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            opacity: 0.8;
+        }
+
+        .bet-stats-close:hover {
+            opacity: 1;
+        }
+
+        .bet-stats-body {
+            padding: 1.5rem;
+        }
+
+        .bet-stats-summary {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .bet-stats-box {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .bet-stats-box-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e3c72;
+        }
+
+        .bet-stats-box-label {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .bet-stats-chart-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+        }
+
+        .bet-stats-chart-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid #1e3c72;
+            background: white;
+            color: #1e3c72;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .bet-stats-chart-btn.active {
+            background: #1e3c72;
+            color: white;
+        }
+
+        .bet-stats-chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .bet-stats-pie {
+            width: 100%;
+            height: auto;
+        }
+
+        .bet-stats-legend {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+
+        .bet-stats-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .bet-stats-legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .bet-stats-legend-logo {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Team Total Info - inline stats */
+        .team-total-info-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(30, 60, 114, 0.1);
+            color: #1e3c72;
+            font-size: 0.6rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-left: 0.35rem;
+            transition: all 0.2s;
+            border: 1px solid rgba(30, 60, 114, 0.3);
+            flex-shrink: 0;
+        }
+
+        .team-total-info-btn:hover {
+            background: #1e3c72;
+            color: white;
+        }
+
+        /* Over/Under stats in modal */
+        .ou-stats-bar {
+            display: flex;
+            height: 30px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .ou-stats-over {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .ou-stats-under {
+            background: linear-gradient(135deg, #dc3545, #e83e8c);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
         }
 
         /* Sportsbook Login Modal */
@@ -8775,28 +9022,28 @@
                         </div>
                         
                         <div class="season-bet-section">
-                            <div class="season-bet-title">FBCW Champion</div>
+                            <div class="season-bet-title">FBCW Champion <span class="bet-info-btn" onclick="showBetStats('champion')" title="View betting stats">i</span></div>
                             <div class="season-bet-grid" id="season-bet-champion">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
                         
                         <div class="season-bet-section">
-                            <div class="season-bet-title">Most Wins</div>
+                            <div class="season-bet-title">Most Wins <span class="bet-info-btn" onclick="showBetStats('wins')" title="View betting stats">i</span></div>
                             <div class="season-bet-grid" id="season-bet-wins">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
                         
                         <div class="season-bet-section">
-                            <div class="season-bet-title">Most Points</div>
+                            <div class="season-bet-title">Most Points <span class="bet-info-btn" onclick="showBetStats('points')" title="View betting stats">i</span></div>
                             <div class="season-bet-grid" id="season-bet-points">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
                         
                         <div class="season-bet-section">
-                            <div class="season-bet-title">Last Place</div>
+                            <div class="season-bet-title">Last Place <span class="bet-info-btn" onclick="showBetStats('last')" title="View betting stats">i</span></div>
                             <div class="season-bet-grid" id="season-bet-last">
                                 <!-- Populated by JS -->
                             </div>
@@ -8822,24 +9069,26 @@
                 <!-- Bet History Tab -->
                 <div id="sportsbook-tab-history" class="sportsbook-content">
                     <h3 style="color: #1e3c72; margin-bottom: 1rem;">📜 Your Bet History</h3>
-                    <table class="bet-history-table" id="bet-history-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Bet Type</th>
-                                <th>Selection</th>
-                                <th>Against</th>
-                                <th>Odds</th>
-                                <th>Wager</th>
-                                <th>Payout</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="bet-history-body">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
+                    <div class="bet-history-wrapper">
+                        <table class="bet-history-table" id="bet-history-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Bet Type</th>
+                                    <th>Selection</th>
+                                    <th>Against</th>
+                                    <th>Odds</th>
+                                    <th>Wager</th>
+                                    <th>Payout</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bet-history-body">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
                     <div id="bet-history-empty" style="display: none; text-align: center; padding: 2rem; color: #666;">
                         No bets placed yet. Head to the Sportsbook to place your first wager!
                     </div>
@@ -8874,6 +9123,19 @@
             <button class="sportsbook-back-btn" onclick="closeSportsbookLogin()" style="margin-top: 1.5rem;">
                 Cancel
             </button>
+        </div>
+    </div>
+
+    <!-- Betting Stats Modal -->
+    <div id="bet-stats-modal" class="bet-stats-modal" onclick="if(event.target === this) closeBetStatsModal()">
+        <div class="bet-stats-content">
+            <div class="bet-stats-header">
+                <h3 id="bet-stats-title">Betting Stats</h3>
+                <button class="bet-stats-close" onclick="closeBetStatsModal()">&times;</button>
+            </div>
+            <div class="bet-stats-body" id="bet-stats-body">
+                <!-- Content populated by JS -->
+            </div>
         </div>
     </div>
 
@@ -21180,6 +21442,308 @@
             document.getElementById('sportsbook-login-modal').classList.remove('active');
         }
         
+        // ===== BETTING STATS MODAL =====
+        let betStatsChartMode = 'logos'; // 'logos' or 'colors'
+        let currentBetStatsType = null;
+        let currentBetStatsData = null;
+        
+        function showBetStats(betType) {
+            currentBetStatsType = betType;
+            const modal = document.getElementById('bet-stats-modal');
+            const title = document.getElementById('bet-stats-title');
+            const body = document.getElementById('bet-stats-body');
+            
+            const betTypeLabels = {
+                'champion': 'FBCW Champion',
+                'wins': 'Most Wins',
+                'points': 'Most Points',
+                'last': 'Last Place'
+            };
+            
+            title.textContent = `${betTypeLabels[betType] || betType} - Betting Stats`;
+            
+            // Load bets from Firebase and calculate stats
+            loadBetStatsForType(betType).then(stats => {
+                currentBetStatsData = stats;
+                renderBetStats(stats, betType);
+            });
+            
+            modal.classList.add('active');
+        }
+        
+        async function loadBetStatsForType(betType) {
+            const stats = {
+                totalUnits: 0,
+                totalBets: 0,
+                teamBreakdown: {} // { teamKey: { teamName, logo, units, bets } }
+            };
+            
+            if (!sportsbookBetsRef) return stats;
+            
+            try {
+                const snapshot = await sportsbookBetsRef.once('value');
+                const allBets = snapshot.val();
+                
+                if (!allBets) return stats;
+                
+                // Aggregate all bets of this type across all users
+                Object.values(allBets).forEach(userBets => {
+                    if (!userBets) return;
+                    Object.values(userBets).forEach(bet => {
+                        if (bet.betType === betType && bet.category === 'season') {
+                            stats.totalUnits += bet.wager || 0;
+                            stats.totalBets++;
+                            
+                            const teamKey = bet.teamKey;
+                            if (!stats.teamBreakdown[teamKey]) {
+                                const teamInfo = sportsbookTeamData.find(t => t.team_key === teamKey);
+                                stats.teamBreakdown[teamKey] = {
+                                    teamName: teamInfo?.team_name || bet.selection || teamKey,
+                                    logo: teamInfo?.team_logo || 'league_logo.png',
+                                    manager: teamInfo ? normalizeManagerName(teamInfo.manager, 2026, teamInfo.team_name, teamInfo.team_key) : '',
+                                    units: 0,
+                                    bets: 0
+                                };
+                            }
+                            stats.teamBreakdown[teamKey].units += bet.wager || 0;
+                            stats.teamBreakdown[teamKey].bets++;
+                        }
+                    });
+                });
+            } catch (e) {
+                console.log('Error loading bet stats:', e);
+            }
+            
+            return stats;
+        }
+        
+        function renderBetStats(stats, betType) {
+            const body = document.getElementById('bet-stats-body');
+            
+            if (stats.totalBets === 0) {
+                body.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <p>No bets placed on this market yet.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Sort teams by units bet
+            const sortedTeams = Object.entries(stats.teamBreakdown)
+                .map(([key, data]) => ({ teamKey: key, ...data }))
+                .sort((a, b) => b.units - a.units);
+            
+            // Generate colors for pie chart
+            const pieColors = [
+                '#1e3c72', '#2a5298', '#d4af37', '#28a745', '#dc3545', 
+                '#17a2b8', '#6f42c1', '#fd7e14', '#20c997', '#e83e8c',
+                '#6c757d', '#007bff'
+            ];
+            
+            body.innerHTML = `
+                <div class="bet-stats-summary">
+                    <div class="bet-stats-box">
+                        <div class="bet-stats-box-value">${stats.totalUnits}</div>
+                        <div class="bet-stats-box-label">Total Units Wagered</div>
+                    </div>
+                    <div class="bet-stats-box">
+                        <div class="bet-stats-box-value">${stats.totalBets}</div>
+                        <div class="bet-stats-box-label">Total Bets Placed</div>
+                    </div>
+                </div>
+                
+                <div class="bet-stats-chart-toggle">
+                    <button class="bet-stats-chart-btn ${betStatsChartMode === 'logos' ? 'active' : ''}" onclick="setBetStatsChartMode('logos')">Logos</button>
+                    <button class="bet-stats-chart-btn ${betStatsChartMode === 'colors' ? 'active' : ''}" onclick="setBetStatsChartMode('colors')">Colors</button>
+                </div>
+                
+                <div class="bet-stats-chart-container">
+                    <svg class="bet-stats-pie" viewBox="0 0 200 200" id="bet-stats-pie-svg">
+                        ${generatePieChart(sortedTeams, stats.totalUnits, pieColors)}
+                    </svg>
+                </div>
+                
+                <div class="bet-stats-legend">
+                    ${sortedTeams.map((team, i) => `
+                        <div class="bet-stats-legend-item">
+                            ${betStatsChartMode === 'logos' 
+                                ? `<img class="bet-stats-legend-logo" src="${team.logo}" alt="${team.teamName}">`
+                                : `<div class="bet-stats-legend-color" style="background: ${pieColors[i % pieColors.length]};"></div>`
+                            }
+                            <span>${team.teamName}: ${((team.units / stats.totalUnits) * 100).toFixed(1)}%</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        
+        function generatePieChart(teams, totalUnits, colors) {
+            if (teams.length === 0 || totalUnits === 0) {
+                return '<circle cx="100" cy="100" r="80" fill="#eee"/><text x="100" y="105" text-anchor="middle" fill="#999" font-size="14">No data</text>';
+            }
+            
+            let currentAngle = -90; // Start from top
+            const cx = 100, cy = 100, r = 80;
+            let paths = '';
+            
+            teams.forEach((team, i) => {
+                const percentage = team.units / totalUnits;
+                const angle = percentage * 360;
+                const largeArc = angle > 180 ? 1 : 0;
+                
+                const startAngleRad = (currentAngle * Math.PI) / 180;
+                const endAngleRad = ((currentAngle + angle) * Math.PI) / 180;
+                
+                const x1 = cx + r * Math.cos(startAngleRad);
+                const y1 = cy + r * Math.sin(startAngleRad);
+                const x2 = cx + r * Math.cos(endAngleRad);
+                const y2 = cy + r * Math.sin(endAngleRad);
+                
+                if (betStatsChartMode === 'logos') {
+                    // Create clip path for logo slice
+                    const pathId = `slice-${i}`;
+                    const patternId = `pattern-${i}`;
+                    
+                    paths += `
+                        <defs>
+                            <clipPath id="clip-${pathId}">
+                                <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z"/>
+                            </clipPath>
+                            <pattern id="${patternId}" patternUnits="objectBoundingBox" width="1" height="1">
+                                <image href="${team.logo}" x="0" y="0" width="200" height="200" preserveAspectRatio="xMidYMid slice"/>
+                            </pattern>
+                        </defs>
+                        <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z" 
+                              fill="url(#${patternId})" 
+                              stroke="white" stroke-width="2"
+                              clip-path="url(#clip-${pathId})"/>
+                    `;
+                } else {
+                    paths += `
+                        <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z" 
+                              fill="${colors[i % colors.length]}" 
+                              stroke="white" stroke-width="2"/>
+                    `;
+                }
+                
+                currentAngle += angle;
+            });
+            
+            return paths;
+        }
+        
+        function setBetStatsChartMode(mode) {
+            betStatsChartMode = mode;
+            if (currentBetStatsData) {
+                renderBetStats(currentBetStatsData, currentBetStatsType);
+            }
+        }
+        
+        function closeBetStatsModal() {
+            document.getElementById('bet-stats-modal').classList.remove('active');
+        }
+        
+        // Team totals info popup
+        function showTeamTotalStats(teamKey, teamName, betTypePrefix) {
+            const modal = document.getElementById('bet-stats-modal');
+            const title = document.getElementById('bet-stats-title');
+            const body = document.getElementById('bet-stats-body');
+            
+            title.textContent = `${teamName} - O/U Stats`;
+            
+            loadTeamTotalStatsData(teamKey, betTypePrefix).then(stats => {
+                renderTeamTotalStats(stats, teamName);
+            });
+            
+            modal.classList.add('active');
+        }
+        
+        async function loadTeamTotalStatsData(teamKey, betTypePrefix) {
+            const stats = {
+                totalUnits: 0,
+                overUnits: 0,
+                underUnits: 0,
+                overBets: 0,
+                underBets: 0
+            };
+            
+            if (!sportsbookBetsRef) return stats;
+            
+            try {
+                const snapshot = await sportsbookBetsRef.once('value');
+                const allBets = snapshot.val();
+                
+                if (!allBets) return stats;
+                
+                const overType = `${betTypePrefix}_over_${teamKey}`;
+                const underType = `${betTypePrefix}_under_${teamKey}`;
+                
+                Object.values(allBets).forEach(userBets => {
+                    if (!userBets) return;
+                    Object.values(userBets).forEach(bet => {
+                        if (bet.betType === overType) {
+                            stats.overUnits += bet.wager || 0;
+                            stats.overBets++;
+                            stats.totalUnits += bet.wager || 0;
+                        } else if (bet.betType === underType) {
+                            stats.underUnits += bet.wager || 0;
+                            stats.underBets++;
+                            stats.totalUnits += bet.wager || 0;
+                        }
+                    });
+                });
+            } catch (e) {
+                console.log('Error loading team total stats:', e);
+            }
+            
+            return stats;
+        }
+        
+        function renderTeamTotalStats(stats, teamName) {
+            const body = document.getElementById('bet-stats-body');
+            
+            if (stats.totalUnits === 0) {
+                body.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <p>No bets placed on ${teamName}'s totals yet.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const overPct = ((stats.overUnits / stats.totalUnits) * 100).toFixed(1);
+            const underPct = ((stats.underUnits / stats.totalUnits) * 100).toFixed(1);
+            
+            body.innerHTML = `
+                <div class="bet-stats-summary">
+                    <div class="bet-stats-box">
+                        <div class="bet-stats-box-value">${stats.totalUnits}</div>
+                        <div class="bet-stats-box-label">Total Units</div>
+                    </div>
+                    <div class="bet-stats-box">
+                        <div class="bet-stats-box-value">${stats.overBets + stats.underBets}</div>
+                        <div class="bet-stats-box-label">Total Bets</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-weight: 600;">
+                        <span style="color: #28a745;">Over: ${overPct}%</span>
+                        <span style="color: #dc3545;">Under: ${underPct}%</span>
+                    </div>
+                    <div class="ou-stats-bar">
+                        <div class="ou-stats-over" style="width: ${overPct}%;">${stats.overUnits}u</div>
+                        <div class="ou-stats-under" style="width: ${underPct}%;">${stats.underUnits}u</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+                        <span>${stats.overBets} bet${stats.overBets !== 1 ? 's' : ''}</span>
+                        <span>${stats.underBets} bet${stats.underBets !== 1 ? 's' : ''}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
         let selectedSportsbookTeam = null;
         
         function selectSportsbookTeam(teamKey) {
@@ -21444,7 +22008,7 @@
                                 <div class="team-total-info">
                                     <img class="team-total-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
                                     <div class="team-total-details">
-                                        <div class="team-total-name">${team.teamName}</div>
+                                        <div class="team-total-name">${team.teamName}<span class="team-total-info-btn" onclick="event.stopPropagation(); showTeamTotalStats('${team.teamKey}', '${team.teamName}', 'wins')" title="View betting stats">i</span></div>
                                         <div class="team-total-manager">${team.manager}</div>
                                     </div>
                                 </div>
@@ -21469,7 +22033,7 @@
                                 <div class="team-total-info">
                                     <img class="team-total-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
                                     <div class="team-total-details">
-                                        <div class="team-total-name">${team.teamName}</div>
+                                        <div class="team-total-name">${team.teamName}<span class="team-total-info-btn" onclick="event.stopPropagation(); showTeamTotalStats('${team.teamKey}', '${team.teamName}', 'points')" title="View betting stats">i</span></div>
                                         <div class="team-total-manager">${team.manager}</div>
                                     </div>
                                 </div>
