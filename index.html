@@ -7982,6 +7982,7 @@
             border: 2px solid #ddd;
             border-radius: 8px;
             width: 200px;
+            font-size: 16px; /* Prevents iOS zoom on focus */
         }
 
         .sportsbook-password-input button {
@@ -7992,6 +7993,7 @@
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
+            font-size: 16px;
         }
 
         .sportsbook-back-btn {
@@ -21791,7 +21793,27 @@
                 document.getElementById('sportsbook-selected-team-name').textContent = team.team_name;
                 document.getElementById('sportsbook-password-section').classList.add('active');
                 document.getElementById('sportsbook-password').value = '';
-                document.getElementById('sportsbook-password').focus();
+                
+                // Scroll modal content to bottom to show all buttons
+                const modalContent = document.querySelector('.sportsbook-login-content');
+                if (modalContent) {
+                    setTimeout(() => {
+                        modalContent.scrollTo({
+                            top: modalContent.scrollHeight,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+                
+                // Delay focus slightly and use preventScroll to avoid additional scrolling
+                // Also prevents iOS zoom by not immediately focusing
+                setTimeout(() => {
+                    const passwordInput = document.getElementById('sportsbook-password');
+                    // Only focus on desktop to avoid mobile keyboard issues
+                    if (window.innerWidth > 768) {
+                        passwordInput.focus({ preventScroll: true });
+                    }
+                }, 300);
             }
         }
         
