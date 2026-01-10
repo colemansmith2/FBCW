@@ -83,6 +83,12 @@
             display: none;
         }
 
+        /* Mobile menu - hidden on desktop */
+        .mobile-menu,
+        .mobile-menu-overlay {
+            display: none;
+        }
+
         .header-container {
             position: relative;
             display: block;
@@ -169,46 +175,118 @@
             }
 
             /* Zone positions based on new banner layout */
-            /* Logo area covers the left box */
+            /* Logo area covers the left FBCW box */
             .zone-logo {
                 left: 0;
-                width: 35.5%;
+                width: 28%;
             }
 
-            /* Icon 1: Calendar */
-            .zone-seasons {
-                left: 35%;
-                width: 10.75%;
+            /* Menu button on the right */
+            .zone-menu {
+                right: 0;
+                left: auto;
+                width: 15%;
+                cursor: pointer;
             }
 
-            /* Icon 2: Ribbon */
-            .zone-awards {
-                left: 45.5%;
-                width: 10.75%;
+            /* Mobile Slide-in Menu */
+            .mobile-menu-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 299;
+                opacity: 0;
+                transition: opacity 0.3s ease;
             }
 
-            /* Icon 3: Trophy (NEW) */
-            .zone-champions {
-                left: 56.0%;
-                width: 10.75%;
+            .mobile-menu-overlay.active {
+                display: block;
+                opacity: 1;
             }
 
-            /* Icon 4: Gauge */
-            .zone-scoring {
-                left: 66.5%;
-                width: 10.75%;
+            .mobile-menu {
+                display: block;
+                position: fixed;
+                top: 0;
+                right: -280px;
+                width: 280px;
+                height: 100vh;
+                background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+                z-index: 300;
+                transition: right 0.3s ease;
+                box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
+                overflow-y: auto;
             }
 
-            /* Icon 5: Head */
-            .zone-managers {
-                left: 77.0%;
-                width: 10.75%;
+            .mobile-menu.active {
+                right: 0;
             }
 
-            .zone-preseason {
-                left: 89%;
-                width: 10.75%;
-                /* Takes remaining space */
+            .mobile-menu-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 1rem 1.25rem;
+                background: rgba(0, 0, 0, 0.2);
+                border-bottom: 2px solid #d4af37;
+            }
+
+            .mobile-menu-header span {
+                font-size: 1.2rem;
+                font-weight: 700;
+                color: #d4af37;
+                letter-spacing: 1px;
+            }
+
+            .mobile-menu-close {
+                background: none;
+                border: none;
+                color: #fff;
+                font-size: 2rem;
+                cursor: pointer;
+                padding: 0;
+                line-height: 1;
+            }
+
+            .mobile-menu-items {
+                padding: 0.5rem 0;
+            }
+
+            .mobile-menu-item {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                padding: 1rem 1.25rem;
+                color: #fff;
+                cursor: pointer;
+                transition: background 0.2s;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .mobile-menu-item:hover,
+            .mobile-menu-item:active {
+                background: rgba(212, 175, 55, 0.2);
+            }
+
+            .mobile-menu-item.active {
+                background: rgba(212, 175, 55, 0.3);
+                border-left: 4px solid #d4af37;
+            }
+
+            .mobile-menu-item img {
+                width: 40px;
+                height: 40px;
+                object-fit: contain;
+                border-radius: 8px;
+            }
+
+            .mobile-menu-item span {
+                font-size: 1rem;
+                font-weight: 500;
             }
 
             /* Hide desktop nav on mobile */
@@ -219,6 +297,11 @@
             body {
                 padding-top: 55px;
                 padding-left: 0;
+            }
+
+            /* Prevent body scroll when menu is open */
+            body.menu-open {
+                overflow: hidden;
             }
 
             .header-league-link {
@@ -7678,26 +7761,52 @@
             <img src="mobile_header.png" alt="Fantasy Baseball Civil War" class="mobile-header-banner">
             <a href="https://baseball.fantasysports.yahoo.com/league/fantasybaseballcivilwar/2025" target="_blank"
                 class="mobile-zone zone-logo" title="Go to Yahoo Fantasy League"></a>
-
-            <a href="#" class="mobile-zone zone-seasons" onclick="showSection('standings'); return false;"
-                title="Seasons"></a>
-
-            <a href="#" class="mobile-zone zone-awards" onclick="showSection('awards'); return false;"
-                title="Awards"></a>
-
-            <a href="#" class="mobile-zone zone-champions" onclick="showSection('champions'); return false;"
-                title="Hall of Champions"></a>
-
-            <a href="#" class="mobile-zone zone-scoring" onclick="showSection('scoring'); return false;"
-                title="Player Scoring"></a>
-
-            <a href="#" class="mobile-zone zone-managers" onclick="showSection('managers'); return false;"
-                title="Manager Profiles"></a>
-
-            <a href="#" class="mobile-zone zone-preseason" onclick="showSection('preseason'); return false;"
-                title="Preseason Tools"></a>
+            <div class="mobile-zone zone-menu" onclick="toggleMobileMenu()" title="Menu"></div>
         </div>
     </header>
+
+    <!-- Mobile Slide-in Menu -->
+    <div class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+    <aside class="mobile-menu">
+        <div class="mobile-menu-header">
+            <span>Menu</span>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()">&times;</button>
+        </div>
+        <div class="mobile-menu-items">
+            <div class="mobile-menu-item" onclick="showSection('standings'); closeMobileMenu();">
+                <img src="data/page_logos/seasons_logo.png" alt="Seasons">
+                <span>Seasons</span>
+            </div>
+            <div class="mobile-menu-item" onclick="showSection('awards'); closeMobileMenu();">
+                <img src="data/page_logos/awards_logo.png" alt="Awards">
+                <span>Awards</span>
+            </div>
+            <div class="mobile-menu-item" onclick="showSection('champions'); closeMobileMenu();">
+                <img src="data/page_logos/hall_of_champions_logo.png" alt="Hall of Champions">
+                <span>Hall of Champions</span>
+            </div>
+            <div class="mobile-menu-item" onclick="showSection('scoring'); closeMobileMenu();">
+                <img src="data/page_logos/player_scoring_logo.png" alt="Player Scoring">
+                <span>Player Scoring</span>
+            </div>
+            <div class="mobile-menu-item" onclick="showSection('managers'); closeMobileMenu();">
+                <img src="data/page_logos/manager_profiles_logo.png" alt="Manager Profiles">
+                <span>Manager Profiles</span>
+            </div>
+            <div class="mobile-menu-item" onclick="showSection('preseason'); closeMobileMenu();">
+                <img src="data/page_logos/preseason_tools_logo.png" alt="Preseason Tools">
+                <span>Preseason Tools</span>
+            </div>
+            <div class="mobile-menu-item" onclick="showSection('valuesuite'); closeMobileMenu();">
+                <img src="data/page_logos/value_suite_logo.png" alt="Value Suite">
+                <span>Value Suite</span>
+            </div>
+            <div class="mobile-menu-item" onclick="showSection('sportsbook'); closeMobileMenu();">
+                <img src="data/page_logos/sportsbook_logo.png" alt="Sportsbook">
+                <span>Sportsbook</span>
+            </div>
+        </div>
+    </aside>
 
     <!-- Old top nav - hidden -->
     <nav class="top-nav">
@@ -13885,6 +13994,68 @@
             }
         }
 
+        // ===== MOBILE MENU =====
+        function toggleMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const overlay = document.querySelector('.mobile-menu-overlay');
+            const isOpen = menu.classList.contains('active');
+            
+            if (isOpen) {
+                closeMobileMenu();
+            } else {
+                openMobileMenu();
+            }
+        }
+        
+        function openMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const overlay = document.querySelector('.mobile-menu-overlay');
+            
+            menu.classList.add('active');
+            overlay.classList.add('active');
+            document.body.classList.add('menu-open');
+            
+            // Update active state for current page
+            updateMobileMenuActiveState();
+        }
+        
+        function closeMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const overlay = document.querySelector('.mobile-menu-overlay');
+            
+            menu.classList.remove('active');
+            overlay.classList.remove('active');
+            document.body.classList.remove('menu-open');
+        }
+        
+        function updateMobileMenuActiveState() {
+            // Find the currently active section
+            const activeSection = document.querySelector('.section.active');
+            if (!activeSection) return;
+            
+            const sectionId = activeSection.id;
+            
+            // Map section IDs to menu item text
+            const sectionToText = {
+                'standings': 'Seasons',
+                'awards': 'Awards',
+                'champions': 'Hall of Champions',
+                'scoring': 'Player Scoring',
+                'managers': 'Manager Profiles',
+                'preseason': 'Preseason Tools',
+                'valuesuite': 'Value Suite',
+                'sportsbook': 'Sportsbook'
+            };
+            
+            const activeText = sectionToText[sectionId];
+            
+            // Update mobile menu items
+            document.querySelectorAll('.mobile-menu-item').forEach(item => {
+                const itemText = item.querySelector('span').textContent;
+                item.classList.toggle('active', itemText === activeText);
+            });
+        }
+
         // ===== NAVIGATION =====
         async function showSection(sectionId) {
             // Hide all sections
@@ -13933,6 +14104,9 @@
                 document.querySelectorAll('.mobile-nav-btn')[index]?.classList.add('active');
                 document.querySelectorAll('.side-nav-item')[index]?.classList.add('active');
             }
+            
+            // Update mobile menu active state
+            updateMobileMenuActiveState();
 
             // Load section-specific data
             if (sectionId === 'awards') {
