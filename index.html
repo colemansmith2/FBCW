@@ -7510,14 +7510,67 @@
             align-items: center;
             gap: 0.5rem;
             margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .bet-slip-item-wager label {
+            font-size: 0.85rem;
+        }
+
+        .bet-slip-wager-stepper {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bet-slip-wager-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f0f0f0;
+            color: #333;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        .bet-slip-wager-btn:hover {
+            background: #e0e0e0;
+        }
+
+        .bet-slip-wager-btn:active {
+            background: #d0d0d0;
+        }
+
+        .bet-slip-wager-btn.minus {
+            border-right: 1px solid #ddd;
+        }
+
+        .bet-slip-wager-btn.plus {
+            border-left: 1px solid #ddd;
         }
 
         .bet-slip-item-wager input {
-            width: 80px;
+            width: 50px;
             padding: 0.4rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            border: none;
             text-align: center;
+            font-size: 16px; /* Prevents iOS zoom */
+            -moz-appearance: textfield; /* Hide spinners in Firefox */
+        }
+
+        .bet-slip-item-wager input::-webkit-outer-spin-button,
+        .bet-slip-item-wager input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
 
         .bet-slip-item-payout {
@@ -7531,7 +7584,9 @@
             border: none;
             color: #dc3545;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 1rem;
+            padding: 0.25rem;
+            margin-left: auto;
         }
 
         .bet-slip-footer {
@@ -22679,8 +22734,13 @@
                         <div class="bet-slip-item-type">${betTypeLabel}${bet.opponent ? ' vs ' + bet.opponent : ''}</div>
                         <div class="bet-slip-item-wager">
                             <label>Wager:</label>
-                            <input type="number" min="0" value="${bet.wager}" 
-                                   oninput="updateBetWager(${idx}, this.value, '${bet.odds}')">
+                            <div class="bet-slip-wager-stepper">
+                                <button type="button" class="bet-slip-wager-btn minus" onclick="adjustBetWager(${idx}, -1, '${bet.odds}')">−</button>
+                                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" value="${bet.wager}" 
+                                       oninput="updateBetWager(${idx}, this.value, '${bet.odds}')"
+                                       id="wager-input-${idx}">
+                                <button type="button" class="bet-slip-wager-btn plus" onclick="adjustBetWager(${idx}, 1, '${bet.odds}')">+</button>
+                            </div>
                             <span class="bet-slip-item-payout" id="payout-${idx}">Win: ${payout}</span>
                             <button class="bet-slip-item-remove" onclick="removeBetFromSlip(${idx})">✕</button>
                         </div>
@@ -22730,6 +22790,20 @@
             }
             
             updateBetSlipTotals();
+        }
+        
+        function adjustBetWager(idx, delta, odds) {
+            const input = document.getElementById(`wager-input-${idx}`);
+            if (!input) return;
+            
+            let currentValue = parseInt(input.value) || 0;
+            let newValue = currentValue + delta;
+            
+            // Don't go below 0
+            if (newValue < 0) newValue = 0;
+            
+            input.value = newValue;
+            updateBetWager(idx, newValue, odds);
         }
         
         function removeBetFromSlip(idx) {
