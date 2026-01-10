@@ -7113,6 +7113,10 @@
             margin-bottom: 0.5rem;
         }
 
+        .season-bet-card-info {
+            /* Wrapper for team name and manager - allows flex layout on mobile */
+        }
+
         .season-bet-odds {
             font-size: 1.1rem;
             font-weight: 700;
@@ -7270,6 +7274,54 @@
             
             .team-total-odds {
                 justify-content: center;
+            }
+        }
+
+        /* Mobile Sportsbook - Compact cards for major bets */
+        @media (max-width: 768px) {
+            .season-bet-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 0.5rem;
+            }
+            
+            .season-bet-card {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                padding: 0.5rem;
+                text-align: left;
+                gap: 0.5rem;
+            }
+            
+            .season-bet-card .season-bet-logo {
+                width: 36px;
+                height: 36px;
+                margin: 0;
+                flex-shrink: 0;
+            }
+            
+            .season-bet-card-info {
+                flex: 1;
+                min-width: 0;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            .season-bet-card .season-bet-team {
+                font-size: 0.75rem;
+                margin-bottom: 0;
+                line-height: 1.2;
+            }
+            
+            .season-bet-card .season-bet-manager {
+                font-size: 0.65rem;
+                margin-bottom: 0;
+            }
+            
+            .season-bet-card .season-bet-odds {
+                font-size: 0.85rem;
+                padding: 0.2rem 0.4rem;
+                flex-shrink: 0;
             }
         }
 
@@ -8716,35 +8768,35 @@
                     <!-- Season Bets -->
                     <div id="sportsbook-season-bets" class="sportsbook-content active">
                         <div class="season-bet-section">
-                            <div class="season-bet-title">📊 Team Totals</div>
+                            <div class="season-bet-title">Team Totals</div>
                             <div class="team-totals-grid" id="team-totals-grid">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
                         
                         <div class="season-bet-section">
-                            <div class="season-bet-title">🏆 FBCW Champion</div>
+                            <div class="season-bet-title">FBCW Champion</div>
                             <div class="season-bet-grid" id="season-bet-champion">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
                         
                         <div class="season-bet-section">
-                            <div class="season-bet-title">📈 Most Wins</div>
+                            <div class="season-bet-title">Most Wins</div>
                             <div class="season-bet-grid" id="season-bet-wins">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
                         
                         <div class="season-bet-section">
-                            <div class="season-bet-title">💯 Most Points</div>
+                            <div class="season-bet-title">Most Points</div>
                             <div class="season-bet-grid" id="season-bet-points">
                                 <!-- Populated by JS -->
                             </div>
                         </div>
                         
                         <div class="season-bet-section">
-                            <div class="season-bet-title">💩 Last Place</div>
+                            <div class="season-bet-title">Last Place</div>
                             <div class="season-bet-grid" id="season-bet-last">
                                 <!-- Populated by JS -->
                             </div>
@@ -21386,7 +21438,7 @@
             container.innerHTML = `
                 <div class="team-totals-columns">
                     <div class="team-totals-column">
-                        <div class="totals-column-header">🏆 Season Wins</div>
+                        <div class="totals-column-header">Season Wins</div>
                         ${teamsByWins.map(team => `
                             <div class="team-total-row">
                                 <div class="team-total-info">
@@ -21411,7 +21463,7 @@
                         `).join('')}
                     </div>
                     <div class="team-totals-column">
-                        <div class="totals-column-header">💯 Season Points</div>
+                        <div class="totals-column-header">Season Points</div>
                         ${teamsByPoints.map(team => `
                             <div class="team-total-row">
                                 <div class="team-total-info">
@@ -21849,8 +21901,10 @@
                          onclick="addToBetSlip('${betType}', '${team.teamKey}', '${team.teamName}', '${odds}', 'season')"
                          data-team-key="${team.teamKey}">
                         <img class="season-bet-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
-                        <div class="season-bet-team">${team.teamName}</div>
-                        <div class="season-bet-manager">${team.manager}</div>
+                        <div class="season-bet-card-info">
+                            <div class="season-bet-team">${team.teamName}</div>
+                            <div class="season-bet-manager">${team.manager}</div>
+                        </div>
                         <div class="season-bet-odds ${isUnderdog ? 'underdog' : ''}">${odds}</div>
                     </div>
                 `;
