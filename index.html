@@ -21795,27 +21795,58 @@
                 
                 if (!allBets) return stats;
                 
-                const overType = `${betTypePrefix}_over_${teamKey}`;
-                const underType = `${betTypePrefix}_under_${teamKey}`;
+                // Create variations of the team key for matching
+                const teamKeyVariations = [
+                    teamKey,
+                    teamKey.replace(/[.#$\[\]]/g, '_'),
+                    teamKey.replace(/\./g, '_')
+                ];
                 
-                console.log('Looking for bet types:', overType, underType);
+                console.log('Looking for bets for team:', teamKey);
+                console.log('Key variations:', teamKeyVariations);
+                console.log('Bet type prefix:', betTypePrefix);
                 
                 // Bets are stored as a flat list
-                Object.values(allBets).forEach(bet => {
-                    if (!bet) return;
+                Object.entries(allBets).forEach(([betId, bet]) => {
+                    if (!bet || !bet.betType) return;
                     
-                    if (bet.betType === overType) {
-                        stats.overUnits += bet.wager || 0;
-                        stats.overBets++;
-                        stats.totalUnits += bet.wager || 0;
-                    } else if (bet.betType === underType) {
-                        stats.underUnits += bet.wager || 0;
-                        stats.underBets++;
-                        stats.totalUnits += bet.wager || 0;
+                    const bt = bet.betType;
+                    
+                    // Check for over bets
+                    if (bt.startsWith(`${betTypePrefix}_over_`)) {
+                        const betTeamKey = bt.substring(`${betTypePrefix}_over_`.length);
+                        // Check if this matches any variation of our team key
+                        const matchesTeam = teamKeyVariations.some(tk => 
+                            betTeamKey === tk || 
+                            betTeamKey.replace(/[.#$\[\]]/g, '_') === tk.replace(/[.#$\[\]]/g, '_')
+                        );
+                        
+                        if (matchesTeam) {
+                            stats.overUnits += bet.wager || 0;
+                            stats.overBets++;
+                            stats.totalUnits += bet.wager || 0;
+                            console.log('✓ Found OVER bet:', bt, 'wager:', bet.wager);
+                        }
+                    }
+                    // Check for under bets
+                    else if (bt.startsWith(`${betTypePrefix}_under_`)) {
+                        const betTeamKey = bt.substring(`${betTypePrefix}_under_`.length);
+                        // Check if this matches any variation of our team key
+                        const matchesTeam = teamKeyVariations.some(tk => 
+                            betTeamKey === tk || 
+                            betTeamKey.replace(/[.#$\[\]]/g, '_') === tk.replace(/[.#$\[\]]/g, '_')
+                        );
+                        
+                        if (matchesTeam) {
+                            stats.underUnits += bet.wager || 0;
+                            stats.underBets++;
+                            stats.totalUnits += bet.wager || 0;
+                            console.log('✓ Found UNDER bet:', bt, 'wager:', bet.wager);
+                        }
                     }
                 });
                 
-                console.log('Team total stats:', stats);
+                console.log('Final team total stats:', stats);
             } catch (e) {
                 console.log('Error loading team total stats:', e);
             }
