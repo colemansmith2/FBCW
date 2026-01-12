@@ -8102,6 +8102,280 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
         }
+
+        /* Bylaws Section Styles */
+        .bylaws-container {
+            display: flex;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .bylaws-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .bylaws-sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 1rem;
+            max-height: calc(100vh - 2rem);
+            overflow-y: auto;
+        }
+
+        .bylaws-toc {
+            background: white;
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .bylaws-toc h3 {
+            color: #1e3c72;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .bylaws-toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .bylaws-toc-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .bylaws-toc-list a {
+            color: #444;
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: block;
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .bylaws-toc-list a:hover {
+            background: #f0f4ff;
+            color: #1e3c72;
+        }
+
+        .bylaws-toc-list a.active {
+            background: #f0f4ff;
+            color: #1e3c72;
+            border-left-color: #d4af37;
+            font-weight: 600;
+        }
+
+        .bylaws-toc-list .toc-subsection {
+            padding-left: 1rem;
+            font-size: 0.8rem;
+        }
+
+        .bylaws-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .bylaws-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .bylaws-header h1 {
+            color: #1e3c72;
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .bylaws-officers {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .bylaws-officer {
+            text-align: center;
+        }
+
+        .bylaws-officer-title {
+            font-weight: 700;
+            color: #1e3c72;
+            font-size: 0.9rem;
+        }
+
+        .bylaws-officer-name {
+            color: #666;
+            font-size: 0.85rem;
+        }
+
+        .bylaws-categories {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .bylaws-categories h3 {
+            color: #1e3c72;
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .bylaws-categories ol {
+            margin: 0;
+            padding-left: 1.5rem;
+            columns: 2;
+            column-gap: 2rem;
+        }
+
+        .bylaws-categories li {
+            margin-bottom: 0.25rem;
+            font-size: 0.9rem;
+            break-inside: avoid;
+        }
+
+        .bylaws-section {
+            margin-bottom: 2.5rem;
+            scroll-margin-top: 1rem;
+        }
+
+        .bylaws-section-title {
+            color: #1e3c72;
+            font-size: 1.5rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #d4af37;
+        }
+
+        .bylaws-rule {
+            margin-bottom: 1.25rem;
+            padding-left: 0;
+        }
+
+        .bylaws-rule-number {
+            font-weight: 700;
+            color: #1e3c72;
+            margin-right: 0.5rem;
+        }
+
+        .bylaws-rule-content {
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .bylaws-subrule {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+            padding-left: 0.75rem;
+            border-left: 2px solid #eee;
+        }
+
+        .bylaws-subrule-number {
+            font-weight: 600;
+            color: #2a5298;
+            margin-right: 0.35rem;
+        }
+
+        .bylaws-subsubrule {
+            margin-left: 1rem;
+            margin-top: 0.35rem;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .bylaws-deprecated {
+            text-decoration: line-through;
+            color: #999;
+        }
+
+        .bylaws-note {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+            color: #856404;
+        }
+
+        .bylaws-highlight {
+            background: #fff9c4;
+            padding: 0 0.25rem;
+            border-radius: 3px;
+        }
+
+        .bylaws-scoring-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+
+        .bylaws-scoring-table th {
+            background: #1e3c72;
+            color: white;
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+
+        .bylaws-scoring-table td {
+            padding: 0.4rem 0.75rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .bylaws-scoring-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .bylaws-scoring-section {
+            font-weight: 600;
+            background: #f0f4ff;
+        }
+
+        @media (max-width: 1024px) {
+            .bylaws-sidebar {
+                display: none;
+            }
+
+            .bylaws-container {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .bylaws-content {
+                padding: 1.25rem;
+            }
+
+            .bylaws-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .bylaws-officers {
+                gap: 1rem;
+            }
+
+            .bylaws-categories ol {
+                columns: 1;
+            }
+
+            .bylaws-section-title {
+                font-size: 1.25rem;
+            }
+        }
     </style>
 </head>
 
@@ -8167,6 +8441,10 @@
                 <img src="data/page_logos/sportsbook_logo.png" alt="Sportsbook">
                 <span>Sportsbook</span>
             </div>
+            <div class="mobile-menu-item" onclick="showSection('bylaws'); closeMobileMenu();">
+                <img src="data/page_logos/bylaws_logo.png" alt="Bylaws">
+                <span>Bylaws</span>
+            </div>
         </div>
     </aside>
 
@@ -8180,6 +8458,7 @@
         <button onclick="showSection('preseason')" class="nav-btn">Preseason Tools</button>
         <button onclick="showSection('valuesuite')" class="nav-btn">Value Suite</button>
         <button onclick="showSection('sportsbook')" class="nav-btn">Sportsbook</button>
+        <button onclick="showSection('bylaws')" class="nav-btn">Bylaws</button>
     </nav>
 
     <!-- Side Navigation -->
@@ -8207,6 +8486,9 @@
         </div>
         <div class="side-nav-item" data-tooltip="King Dylan's Sportsbook" onclick="showSection('sportsbook')">
             <img src="data/page_logos/sportsbook_logo.png" alt="Sportsbook" loading="lazy" decoding="async">
+        </div>
+        <div class="side-nav-item" data-tooltip="League Bylaws" onclick="showSection('bylaws')">
+            <img src="data/page_logos/bylaws_logo.png" alt="Bylaws" loading="lazy" decoding="async">
         </div>
     </aside>
 
@@ -9156,6 +9438,392 @@
                     </div>
                     <div id="bet-history-empty" style="display: none; text-align: center; padding: 2rem; color: #666;">
                         No bets placed yet. Head to the Sportsbook to place your first wager!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bylaws Section -->
+        <div id="bylaws" class="section">
+            <h2>League Bylaws</h2>
+            
+            <div class="bylaws-container">
+                <div class="bylaws-main">
+                    <div class="bylaws-content">
+                        <div class="bylaws-header">
+                            <h1>Fantasy Baseball Civil War Bylaws</h1>
+                            <div class="bylaws-officers">
+                                <div class="bylaws-officer">
+                                    <div class="bylaws-officer-title">Commissioner</div>
+                                    <div class="bylaws-officer-name">Josh Bookbinder</div>
+                                </div>
+                                <div class="bylaws-officer">
+                                    <div class="bylaws-officer-title">Treasurer</div>
+                                    <div class="bylaws-officer-name">Coleman Smith</div>
+                                </div>
+                                <div class="bylaws-officer">
+                                    <div class="bylaws-officer-title">Chief Justice</div>
+                                    <div class="bylaws-officer-name">Dylan DeSena</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bylaws-categories">
+                            <h3>Categories</h3>
+                            <ol>
+                                <li><a href="#bylaws-league-construction">League Construction</a></li>
+                                <li><a href="#bylaws-drafting">Drafting, Roster Construction, In-Season, Trading</a></li>
+                                <li><a href="#bylaws-playoffs">Playoffs, Championships, Money Breakdown</a></li>
+                                <li><a href="#bylaws-keepers">Keeper Rules</a></li>
+                                <li><a href="#bylaws-na">NA Rules and NA Draft</a></li>
+                            </ol>
+                        </div>
+
+                        <!-- Section I: League Construction -->
+                        <div id="bylaws-league-construction" class="bylaws-section">
+                            <h2 class="bylaws-section-title">I. League Construction</h2>
+                            
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">1.</span>
+                                <span class="bylaws-rule-content"><strong>Size</strong> - There are 12 teams in this league.</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">2.</span>
+                                <span class="bylaws-rule-content"><strong>Type</strong> - This is a Head-to-Head Points type league. Each week, each team will play another team, and the team scoring more points receives one win for that week.</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">3.</span>
+                                <span class="bylaws-rule-content"><strong>Ties</strong> - Ties are incredibly rare but can happen. They will count as neither a win nor loss for either team.</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">4.</span>
+                                <span class="bylaws-rule-content"><strong>Scoring</strong> - Scoring categories are subject to change and can be changed in the offseason by league majority vote. Scoring is as follows:</span>
+                                
+                                <table class="bylaws-scoring-table">
+                                    <tr class="bylaws-scoring-section"><td colspan="3">Batting</td></tr>
+                                    <tr><td>Singles (1B)</td><td>1.1</td></tr>
+                                    <tr><td>Doubles (2B)</td><td>2.2</td></tr>
+                                    <tr><td>Triples (3B)</td><td>3.3</td></tr>
+                                    <tr><td>Home Runs (HR)</td><td>4.4</td></tr>
+                                    <tr><td>Runs Batted In (RBI)</td><td>1</td></tr>
+                                    <tr><td>Stolen Bases (SB)</td><td>2</td></tr>
+                                    <tr><td>Caught Stealing (CS)</td><td>-1</td></tr>
+                                    <tr><td>Walks (BB)</td><td>1</td></tr>
+                                    <tr><td>Hit By Pitch (HBP)</td><td>1</td></tr>
+                                    <tr><td>Strikeouts (K)</td><td>-0.5</td></tr>
+                                    <tr><td>Hitting for the Cycle (CYC)</td><td>5</td></tr>
+                                    <tr><td>Grand Slam Home Runs (SLAM)</td><td>2</td></tr>
+                                    <tr class="bylaws-scoring-section"><td colspan="3">Pitching</td></tr>
+                                    <tr><td>Innings Pitched (IP)</td><td>2.5</td></tr>
+                                    <tr><td>Wins (W)</td><td>2.5</td></tr>
+                                    <tr><td>Losses (L)</td><td>-3</td></tr>
+                                    <tr><td>Complete Games (CG)</td><td>5</td></tr>
+                                    <tr><td>Shutouts (SHO)</td><td>5</td></tr>
+                                    <tr><td>Saves (SV)</td><td>5</td></tr>
+                                    <tr><td>Hits Allowed (H)</td><td>-0.75</td></tr>
+                                    <tr><td>Earned Runs (ER)</td><td>-1.75</td></tr>
+                                    <tr><td>Walks Allowed (BB)</td><td>-0.75</td></tr>
+                                    <tr><td>Strikeouts (K)</td><td>1.5</td></tr>
+                                    <tr><td>Holds (HLD)</td><td>2</td></tr>
+                                    <tr><td>Pickoffs (PICK)</td><td>3</td></tr>
+                                    <tr><td>No Hitters (NH)</td><td>10</td></tr>
+                                    <tr><td>Quality Starts (QS)</td><td>3</td></tr>
+                                </table>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">5.</span>
+                                <span class="bylaws-rule-content"><strong>Divisions</strong> - Divisions are not consequential to playoff implications. They will realign every year with humorous names and alignments.</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">6.</span>
+                                <span class="bylaws-rule-content"><strong>Rule-Breaking</strong> - Broken rules can result in any type of punishment or fine that the league sees fit, unless some punishment or fine is specified for a penalty. The final decision goes to the commissioner, but the commissioner must always act with an overwhelming majority should it be present.</span>
+                            </div>
+                        </div>
+
+                        <!-- Section II: Drafting, Roster Construction, In-Season, Trading -->
+                        <div id="bylaws-drafting" class="bylaws-section">
+                            <h2 class="bylaws-section-title">II. Drafting, Roster Construction, In-Season, Trading</h2>
+                            
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">7.</span>
+                                <span class="bylaws-rule-content"><strong>Sunday</strong> - The Draft will take place whenever the league is available to draft together.</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">8.</span>
+                                <span class="bylaws-rule-content"><strong>Host</strong> - The draft will be "hosted" by someone every year. This does not mean every member must attend live at the "host"'s residence, but the designated "host" will offer.</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">9.</span>
+                                <span class="bylaws-rule-content"><strong>Camaraderie</strong> - Every member must make every effort to join the draft in some way beyond simply drafting: live, discord, voice chat, etc. Not a requirement, but strongly encouraged.</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">10.</span>
+                                <span class="bylaws-rule-content"><strong>Draft</strong> - The draft will be 22 rounds of picks and all players not designated as a keeper or NA keeper will be available to draft.</span>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">10.1</span>
+                                    <strong>Draft Order Podium</strong> - Last year's 1st place will pick their draft position, followed by 2nd place, then 3rd place.
+                                </div>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">10.2</span>
+                                    <strong>Draft Order Wheel</strong> - The prior year's 4th-12th place finishers will be given their draft positions through "The Wheel".
+                                </div>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">11.</span>
+                                <span class="bylaws-rule-content"><strong>Roster</strong> - Roster positions are subject to change and can be changed in the offseason by league majority vote. Roster positions are as follows:</span>
+                                <div class="bylaws-subrule">C ×1, 1B ×1, 2B ×1, 3B ×1, SS ×1, OF ×3, Util ×4*, SP ×3, RP ×1, P ×2, BN ×4*, IL ×5, NA ×12</div>
+                                <div class="bylaws-note">*The BeerClown Provision changed Util from ×3 to ×4 and BN from ×5 to ×4 in the 2025-26 offseason.</div>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">12.</span>
+                                <span class="bylaws-rule-content"><strong>Add/Drop</strong> - Each team has a maximum of 5 adds per week.</span>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">12.1</span>
+                                    <strong>Streaming</strong> - A maximum of 3 adds may be used on pitchers starting a game that week. The other 2 adds may be used on hitters or any player that will not be a starting pitcher that week.
+                                </div>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">13.</span>
+                                <span class="bylaws-rule-content"><strong>The Tyler Rule</strong> - A team must at all times have 11 healthy hitters on its roster.</span>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">13.1</span>
+                                    <strong>TTR Flex</strong> - The Tyler Rule should be enforced with understanding, as it is not always possible to roster 11 healthy hitters immediately. It is intended to fight abuse of the system. The commissioner reserves the right to judge whether there is foul play or bad faith play in a Tyler Rule violation.
+                                </div>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">14.</span>
+                                <span class="bylaws-rule-content"><strong>Streaming Violations</strong> - Streaming violations, either of regular streaming rules or TTR (2.7), may be penalized without league vote by the commissioner, and may include forfeiture of draft picks.</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">15.</span>
+                                <span class="bylaws-rule-content"><strong>Trading</strong> - Trading is allowed up until the trade deadline. Deadline day will change yearly, but it is usually in the middle of week 16.</span>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">15.1</span>
+                                    <strong>Drop Trades</strong> - Drop trades after the deadline are allowed. A drop trade occurs when two players agree on a trade and both drop the player/s at an agreed time.
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">15.1.1</span> Drop trades cannot include draft picks.
+                                    </div>
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">15.1.2</span> If a player not involved in the drop trade manages to pick up a player while they are a free agent, it is allowed and a risk of using the drop trade loophole.
+                                    </div>
+                                </div>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">15.2</span>
+                                    <strong>Draft Pick Trading</strong> - Draft picks are allowed to be traded as of the start of Season VI, with limitations.
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">15.2.1</span> At the time of the draft, all players must have at least 6 of their first 10 rounds of picks (pre-keeper declarations). Therefore, trading more than 4 picks in rounds 1-10 is illegal.
+                                    </div>
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">15.2.2</span> <strong>The Bob-Rich Joint Trade Exception:</strong> Any trade of completely equal draft pick value (example: a 6th round for a 6th round) that exists for no other reason than to annoy the Commissioner will be vetoed.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">16.</span>
+                                <span class="bylaws-rule-content"><strong>The Rocker Auction Rule</strong> - In the event that there is a contested add that does not clearly fall under a rule, a bid will be held using K¢. Commissioner will announce it in chat, and all members have 24 hours OR until a time specified by the Commissioner to submit a bid to an approved Google form. Highest bid will receive the player. Commissioner will act on honor system and not look at bids before the 24 hours or time allotted.</span>
+                            </div>
+                        </div>
+
+                        <!-- Section III: Playoffs, Championships, Money Breakdown -->
+                        <div id="bylaws-playoffs" class="bylaws-section">
+                            <h2 class="bylaws-section-title">III. Playoffs, Championships, Money Breakdown</h2>
+                            
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">17.</span>
+                                <span class="bylaws-rule-content"><strong>Playoff Format</strong> - 6 teams will make the playoffs.</span>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">17.1</span>
+                                    The top two records in the league will receive first-round byes.
+                                </div>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">18.</span>
+                                <span class="bylaws-rule-content"><strong>Championships</strong> - <em>(Rules to be determined)</em></span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">19.</span>
+                                <span class="bylaws-rule-content"><strong>League Dues</strong> - Dues for the league are $50, due by the start of the draft on draft day.</span>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">19.1</span>
+                                    <strong>Failure 1</strong> - Failure to submit payment for team entry results in a late penalty of $10 for every month that passes without the player paying; this penalty will go towards a) any larger league expenses, or b) the championship pot.
+                                </div>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">19.2</span>
+                                    <strong>Failure 2</strong> - Failure to submit payment by the playoffs of that year will result in a league vote to determine whether the player in question is kicked from the league.
+                                </div>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">20.</span>
+                                <span class="bylaws-rule-content"><strong>Payout Breakdown</strong> - The payout breakdowns are listed below:</span>
+                                <table class="bylaws-scoring-table">
+                                    <tr><td>League Winner (1st place)</td><td>$250</td></tr>
+                                    <tr><td>Runner-Up (2nd place)</td><td>$125</td></tr>
+                                    <tr><td>Podium (3rd place)</td><td>$80</td></tr>
+                                    <tr><td>4th Place</td><td>$50</td></tr>
+                                    <tr><td>5th Place</td><td>$30</td></tr>
+                                    <tr><td>6th Place</td><td>$25</td></tr>
+                                    <tr><td>Regular Season Best Record</td><td>$25</td></tr>
+                                    <tr><td>Regular Season High Scorer</td><td>$15</td></tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Section IV: Keeper Rules -->
+                        <div id="bylaws-keepers" class="bylaws-section">
+                            <h2 class="bylaws-section-title">IV. Keeper Rules</h2>
+                            
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">21.</span>
+                                <span class="bylaws-rule-content bylaws-deprecated"><strong>Standard Keepers</strong> - (Old rules - Amended in 2024-2025 offseason)</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">22.</span>
+                                <span class="bylaws-rule-content"><strong>Standard Keepers</strong> - Members may choose to keep as many players as they would like per new keeper rules, effective the 2025-2026 offseason.</span>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">22.1</span>
+                                    Players are assigned a ¢value between ¢1 and ¢20 based on the round they were selected in.
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">22.1.1</span> For example, a 20th round pick would cost ¢1, a 22nd round pick would cost ¢1, and a first round pick would cost ¢20, and all picks between 20th and 1st will be a normal counting scale.
+                                    </div>
+                                </div>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">22.2</span>
+                                    A member can choose to keep as many players as they'd like under the ¢cap of ¢50, tradeable to go up to ¢75 and down to ¢0.
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">22.2.1</span> Keeper ¢ is also used for the NA Draft Mk. II, or FYPD (see 5.6).
+                                    </div>
+                                </div>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">22.3</span>
+                                    <span class="bylaws-highlight">The players chosen will cost their value in ¢, as well as a draft pick; the draft pick would be 3 picks higher than whatever the previous year was if in rounds 1-10, 4 picks higher than whatever the previous year was if in rounds 11-23.</span>
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">22.3.1</span> <span class="bylaws-highlight">For example, a player chosen in the 15th round would be kept in the 11th round and cost ¢8, the 15th round ¢value.</span>
+                                    </div>
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">22.3.2</span> Players kept reaching first round pick keeper status may be kept indefinitely at the cost of ¢22 and a 1st round pick.
+                                    </div>
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">22.3.3</span> For example, a player kept in the 22nd round would cost a member ¢1 and a 22nd round pick the first year kept; ¢3 and an 18th round pick the second year kept; ¢7 and a 14th round pick the third year kept; ¢11 and a 10th round pick the fourth year kept; ¢14 and a 7th round pick the fifth year kept; ¢17 and a 4th round pick sixth year kept; ¢20 and a 1st round pick all years after.
+                                    </div>
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">22.3.4</span> In the case of a keeper miscalculation that cannot be reversed, a member may pay five times (5×) their keeper value for the following year in order to correct any mistakes from the year prior.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">23.</span>
+                                <span class="bylaws-rule-content"><strong>NA Keepers</strong> - See Rule 24 (NA Rules).</span>
+                            </div>
+
+                            <div class="bylaws-note">
+                                Keepers must be finalized to commissioner by one month before draft day. Keeper designations transfer in trades and mid-season drops, and do NOT reset.
+                            </div>
+                        </div>
+
+                        <!-- Section V: NA Rules and NA Draft -->
+                        <div id="bylaws-na" class="bylaws-section">
+                            <h2 class="bylaws-section-title">V. NA Rules and NA Draft</h2>
+                            
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">24.</span>
+                                <span class="bylaws-rule-content"><strong>NA Keepers</strong> - Players considered "NA players" may be kept without a draft pick penalty for free. Players are considered an "NA" player if:</span>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">24.1</span>
+                                    ...they have not made their MLB debut yet, they were drafted or signed over 6 months prior, and they in the minor leagues tagged "NA"
+                                </div>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">24.2</span>
+                                    ...they have made their MLB debut but are not yet rookie-eligible (do not meet requirements for service time to be considered a rookie)
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">24.2.1</span> These types of players are considered different because they are not used in an NA roster spot. They may not be picked in the NA draft, but the member can choose not to keep the player if the roster spot is deemed more valuable than the player.
+                                    </div>
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">24.2.2</span> There is a maximum of 4 of these players per season per team.
+                                    </div>
+                                </div>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">24.3</span>
+                                    An NA player drafted in the actual draft is not eligible for NA keeper status and must be kept according to normal keeper rules.
+                                    <div class="bylaws-subsubrule">
+                                        <span class="bylaws-subrule-number">24.3.1</span> If the player was drafted in the actual draft but did not make their debut during the year, that player can be an additional keeper (on top of the normal keeper rules) at the round that they were drafted.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">25.</span>
+                                <span class="bylaws-rule-content"><em>The NA Draft was abolished in its original, traditional format prior to the 2025 season.</em></span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">26.</span>
+                                <span class="bylaws-rule-content bylaws-deprecated"><strong>NA Draft</strong> - (Abolished - See Rule 29 for new format)</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">27.</span>
+                                <span class="bylaws-rule-content bylaws-deprecated"><strong>In-Season NA Pickups</strong> - (Abolished)</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">28.</span>
+                                <span class="bylaws-rule-content bylaws-deprecated"><strong>Double Max</strong> - (Abolished)</span>
+                            </div>
+
+                            <div class="bylaws-rule">
+                                <span class="bylaws-rule-number">29.</span>
+                                <span class="bylaws-rule-content"><strong>NA Draft Mk. II (FYPD)</strong> - Within two weeks after the MLB First Year Player draft, the league will hold an optional NA Draft (henceforth known as the FBCW First Year Player Draft, or FYPD) in order to fairly distribute new additions to the league.</span>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">29.1</span>
+                                    The auction draft will be held either in-person or virtually in real-time.
+                                </div>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">29.2</span>
+                                    The auction draft will use keeper ¢ in order to bid.
+                                </div>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">29.3</span>
+                                    All players in the MLB FYPD will be available to bid on.
+                                </div>
+                                <div class="bylaws-subrule">
+                                    <span class="bylaws-subrule-number">29.4</span>
+                                    If a member of the league cannot make the NA Draft, they may contact the commish with targets and max bids, and the commish may auto-bid for them up until that max bid number.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sticky Sidebar TOC -->
+                <div class="bylaws-sidebar">
+                    <div class="bylaws-toc">
+                        <h3>Table of Contents</h3>
+                        <ul class="bylaws-toc-list" id="bylaws-toc-list">
+                            <li><a href="#bylaws-league-construction" data-section="bylaws-league-construction">I. League Construction</a></li>
+                            <li><a href="#bylaws-drafting" data-section="bylaws-drafting">II. Drafting & Roster</a></li>
+                            <li><a href="#bylaws-playoffs" data-section="bylaws-playoffs">III. Playoffs & Money</a></li>
+                            <li><a href="#bylaws-keepers" data-section="bylaws-keepers">IV. Keeper Rules</a></li>
+                            <li><a href="#bylaws-na" data-section="bylaws-na">V. NA Rules</a></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -14423,7 +15091,8 @@
                 'managers': 'Manager Profiles',
                 'preseason': 'Preseason Tools',
                 'valuesuite': 'Value Suite',
-                'sportsbook': 'Sportsbook'
+                'sportsbook': 'Sportsbook',
+                'bylaws': 'Bylaws'
             };
             
             const activeText = sectionToText[sectionId];
@@ -14475,7 +15144,8 @@
                 'managers': 4,
                 'preseason': 5,
                 'valuesuite': 6,
-                'sportsbook': 7
+                'sportsbook': 7,
+                'bylaws': 8
             };
             const index = sectionToIndex[sectionId];
             if (index !== undefined) {
@@ -23074,7 +23744,69 @@
 
             // Load manager profiles
             loadManagerProfiles();
+            
+            // Initialize bylaws scroll spy for TOC highlighting
+            initBylawsScrollSpy();
         });
+        
+        // Bylaws scroll spy - highlight active section in TOC
+        function initBylawsScrollSpy() {
+            const bylawsSections = document.querySelectorAll('.bylaws-section');
+            const tocLinks = document.querySelectorAll('.bylaws-toc-list a');
+            
+            if (bylawsSections.length === 0 || tocLinks.length === 0) return;
+            
+            // Create intersection observer
+            const observerOptions = {
+                root: null,
+                rootMargin: '-20% 0px -60% 0px',
+                threshold: 0
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const sectionId = entry.target.id;
+                        
+                        // Remove active from all links
+                        tocLinks.forEach(link => link.classList.remove('active'));
+                        
+                        // Add active to matching link
+                        const activeLink = document.querySelector(`.bylaws-toc-list a[data-section="${sectionId}"]`);
+                        if (activeLink) {
+                            activeLink.classList.add('active');
+                        }
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe all sections
+            bylawsSections.forEach(section => observer.observe(section));
+            
+            // Smooth scroll for TOC links
+            tocLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+            
+            // Also handle category links at the top
+            document.querySelectorAll('.bylaws-categories a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    const targetSection = document.getElementById(targetId);
+                    if (targetSection) {
+                        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+        }
     </script>
 </body>
 
