@@ -19001,6 +19001,13 @@
                 
                 if (teamKeepers.length === 0) continue;
 
+                // Calculate actual round costs (accounting for bumping when rounds are used)
+                const actualRoundCosts = calculateTeamKeeperRoundCosts(team.team_key);
+                const actualRoundMap = {};
+                actualRoundCosts.forEach(rc => {
+                    actualRoundMap[rc.player_name.toLowerCase()] = rc.actualRoundCost;
+                });
+
                 let totalProjected = 0;
                 let totalExpected = 0;
                 const keeperDetails = [];
@@ -19010,7 +19017,10 @@
                     const projectedPts = getAverageProjection(keeper.player_name);
                     
                     const isProspect = keeper.isProspect || false;
-                    const roundCost = keeper.roundCost || 0;
+                    // Use actual round cost (after bumping) instead of base round cost
+                    const baseRoundCost = keeper.roundCost || 0;
+                    const actualRoundCost = actualRoundMap[keeper.player_name.toLowerCase()] ?? baseRoundCost;
+                    const roundCost = isProspect ? 0 : actualRoundCost;
                     const expectedPts = isProspect ? 0 : (expectedPointsByRound[roundCost]?.avg || 0);
                     
                     // Keeper value = Projected Points + Surplus Value
@@ -19027,6 +19037,7 @@
                         team_logo: team.team_logo,
                         position: keeper.position || '',
                         roundCost: roundCost,
+                        baseRoundCost: baseRoundCost,
                         isProspect: isProspect,
                         projectedPts: projectedPts,
                         expectedPts: expectedPts,
@@ -22487,16 +22498,33 @@
                     let keeperValue = 0;
                     let draftValue = 0;
                     
+                    // Calculate actual round costs for this team (accounting for bumping)
+                    let actualRoundCosts = [];
+                    if (typeof calculateTeamKeeperRoundCosts === 'function') {
+                        actualRoundCosts = calculateTeamKeeperRoundCosts(team.team_key) || [];
+                    }
+                    const actualRoundMap = {};
+                    actualRoundCosts.forEach(rc => {
+                        if (rc.player_name) {
+                            actualRoundMap[rc.player_name.toLowerCase()] = rc.actualRoundCost;
+                        }
+                    });
+                    
                     // Track rounds used by keepers (count per round, not just Set)
                     const usedRounds = {};
                     if (Array.isArray(teamKeepers)) {
                         teamKeepers.forEach(keeper => {
                             const playerName = (keeper.player_name || keeper.name || keeper.Name || '').toLowerCase().trim();
                             const projectedPts = projections[playerName] || 0;
-                            const roundCost = keeper.round_cost || keeper.cost || keeper.round || 22;
+                            
+                            // Use actual round cost (after bumping) if available, otherwise fall back to base cost
+                            const baseRoundCost = keeper.round_cost || keeper.cost || keeper.round || keeper.roundCost || 22;
+                            const actualRoundCost = actualRoundMap[playerName] ?? baseRoundCost;
+                            const roundCost = actualRoundCost;
+                            
                             const expectedPts = expectedPointsByRound[roundCost]?.avg || predictExpectedPoints(roundCost) || 200;
                             
-                            // Track used rounds
+                            // Track used rounds (using actual round cost)
                             usedRounds[roundCost] = (usedRounds[roundCost] || 0) + 1;
                             
                             // Value = projected + surplus (same as Value Suite)
