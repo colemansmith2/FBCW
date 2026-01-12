@@ -8105,24 +8105,46 @@
 
         /* Bylaws Section Styles */
         .bylaws-container {
-            display: flex;
-            gap: 2rem;
-            max-width: 1400px;
+            max-width: 1000px;
             margin: 0 auto;
+            padding-right: 300px;
+            position: relative;
         }
 
         .bylaws-main {
-            flex: 1;
-            min-width: 0;
+            width: 100%;
         }
 
         .bylaws-sidebar {
-            width: 280px;
-            flex-shrink: 0;
-            position: sticky;
-            top: 1rem;
-            max-height: calc(100vh - 2rem);
+            position: fixed;
+            right: calc((100vw - 1200px) / 2 + 20px);
+            top: 120px;
+            width: 260px;
+            max-height: calc(100vh - 140px);
             overflow-y: auto;
+            z-index: 100;
+            display: none; /* Hidden by default, shown when bylaws section is active */
+        }
+
+        /* Adjust for different screen widths */
+        @media (max-width: 1400px) {
+            .bylaws-sidebar {
+                right: 20px;
+            }
+            
+            .bylaws-container {
+                padding-right: 290px;
+                max-width: calc(100% - 20px);
+            }
+        }
+
+        /* Override section overflow to allow sticky to work */
+        #bylaws.section {
+            overflow: visible;
+        }
+
+        #bylaws.section.active {
+            overflow: visible;
         }
 
         .bylaws-toc {
@@ -8351,7 +8373,8 @@
             }
 
             .bylaws-container {
-                display: block;
+                padding-right: 0;
+                max-width: 100%;
             }
         }
 
@@ -15156,6 +15179,12 @@
             
             // Update mobile menu active state
             updateMobileMenuActiveState();
+            
+            // Show/hide bylaws sidebar based on active section
+            const bylawsSidebar = document.querySelector('.bylaws-sidebar');
+            if (bylawsSidebar) {
+                bylawsSidebar.style.display = sectionId === 'bylaws' ? 'block' : 'none';
+            }
 
             // Load section-specific data
             if (sectionId === 'awards') {
