@@ -4830,20 +4830,26 @@
             min-height: 320px;
             display: flex;
             flex-direction: column;
+            padding: 10px;
+        }
+
+        /* Top bar with MLB logo and fantasy team name */
+        .card-top-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
         }
 
         /* MLB Team Logo - top left */
         .card-mlb-logo-corner {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            width: 58px;
-            height: 58px;
+            width: 54px;
+            height: 54px;
             background: white;
             border-radius: 50%;
-            padding: 5px;
+            padding: 4px;
             box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
-            z-index: 10;
+            flex-shrink: 0;
         }
 
         .card-mlb-logo-corner img {
@@ -4857,21 +4863,99 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1rem;
             color: #1e3c72;
         }
 
-        /* Fantasy Team Badge - top right */
+        /* Fantasy team name in top bar */
+        .card-fantasy-team-name {
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 0.4rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            line-height: 1.2;
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Photo container with cut corners */
+        .card-photo-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: stretch;
+        }
+
+        /* Photo frame with 1987 Topps cut corners */
+        .card-photo-frame {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            /* Cut corners: top-right and bottom-left */
+            clip-path: polygon(
+                0 30px,
+                30px 0,
+                100% 0,
+                100% calc(100% - 30px),
+                calc(100% - 30px) 100%,
+                0 100%
+            );
+            background: #1a1a1a;
+        }
+
+        .card-photo-frame::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 3px solid rgba(255, 255, 255, 0.15);
+            clip-path: polygon(
+                0 30px,
+                30px 0,
+                100% 0,
+                100% calc(100% - 30px),
+                calc(100% - 30px) 100%,
+                0 100%
+            );
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Player Action Shot - less zoomed */
+        .card-action-shot {
+            width: 100%;
+            height: 100%;
+            min-height: 260px;
+            object-fit: contain;
+            object-position: center top;
+            background: linear-gradient(180deg, #4a7ab4 0%, #2d5a8f 100%);
+        }
+
+        .card-headshot-fallback {
+            width: 100%;
+            height: 100%;
+            min-height: 260px;
+            object-fit: contain;
+            object-position: center;
+            background: linear-gradient(180deg, #4a7ab4 0%, #2d5a8f 100%);
+            padding: 20px;
+        }
+
+        /* Fantasy Team Badge - bottom right of photo */
         .card-fantasy-badge {
             position: absolute;
-            top: 12px;
-            right: 12px;
-            width: 62px;
-            height: 62px;
+            bottom: 10px;
+            right: 10px;
+            width: 58px;
+            height: 58px;
             background: white;
             border-radius: 50%;
-            padding: 4px;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.4);
+            padding: 3px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
             z-index: 10;
             border: 3px solid #d4af37;
         }
@@ -4888,54 +4972,35 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #666;
             border: 3px solid #ccc;
         }
 
-        /* Fantasy team name below badge */
-        .card-fantasy-team-name {
-            position: absolute;
-            top: 78px;
-            right: 12px;
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 0.3rem 0.6rem;
+        /* League logo bar at bottom of photo area */
+        .card-league-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 6px 10px;
+            background: rgba(0, 0, 0, 0.7);
+            margin-top: 8px;
             border-radius: 4px;
+        }
+
+        .card-league-logo {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+        }
+
+        .card-league-text {
+            color: #d4af37;
             font-size: 0.65rem;
             font-weight: bold;
-            max-width: 100px;
-            text-align: center;
-            line-height: 1.2;
-        }
-
-        /* Player Action Shot */
-        .card-player-photo {
-            flex: 1;
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-            padding: 1rem;
-            padding-top: 60px;
-        }
-
-        .card-action-shot {
-            width: 100%;
-            height: 260px;
-            object-fit: cover;
-            object-position: top center;
-            border-radius: 4px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .card-headshot-fallback {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid white;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-            background: #e0e0e0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         /* Player Name Banner - 1987 Topps red/blue split */
@@ -11391,27 +11456,36 @@
                 <div class="card-front-wrapper">
                     <div class="card-front">
                         <div class="card-photo-area">
-                            <!-- MLB Team Logo - top left -->
-                            <div class="card-mlb-logo-corner ${hasMlbLogo ? '' : 'fa-badge'}">
-                                ${hasMlbLogo 
-                                    ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}" onerror="this.parentElement.classList.add('fa-badge'); this.outerHTML='FA';">` 
-                                    : 'FA'}
+                            <!-- Top bar with MLB logo and fantasy team name -->
+                            <div class="card-top-bar">
+                                <div class="card-mlb-logo-corner ${hasMlbLogo ? '' : 'fa-badge'}">
+                                    ${hasMlbLogo 
+                                        ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}" onerror="this.parentElement.classList.add('fa-badge'); this.outerHTML='FA';">` 
+                                        : 'FA'}
+                                </div>
+                                ${hasFantasyTeam ? `<div class="card-fantasy-team-name">${player.team_name}</div>` : '<div class="card-fantasy-team-name">Free Agent</div>'}
                             </div>
                             
-                            <!-- Fantasy Team Badge - top right -->
-                            <div class="card-fantasy-badge ${hasFantasyTeam ? '' : 'fa-badge'}">
-                                ${hasFantasyTeam 
-                                    ? `<img src="${player.team_logo}" alt="" onerror="this.parentElement.classList.add('fa-badge'); this.outerHTML='FA';">` 
-                                    : 'FA'}
+                            <!-- Photo with cut corners -->
+                            <div class="card-photo-container">
+                                <div class="card-photo-frame">
+                                    ${actionShotUrl 
+                                        ? `<img src="${actionShotUrl}" alt="${player.name}" class="card-action-shot" onerror="this.className='card-headshot-fallback'; this.src='${headshot}';">` 
+                                        : `<img src="${headshot}" alt="${player.name}" class="card-headshot-fallback" onerror="this.src='${placeholderHeadshot}';">`}
+                                </div>
+                                
+                                <!-- Fantasy Team Badge - bottom right -->
+                                <div class="card-fantasy-badge ${hasFantasyTeam ? '' : 'fa-badge'}">
+                                    ${hasFantasyTeam 
+                                        ? `<img src="${player.team_logo}" alt="" onerror="this.parentElement.classList.add('fa-badge'); this.outerHTML='FA';">` 
+                                        : 'FA'}
+                                </div>
                             </div>
                             
-                            ${hasFantasyTeam ? `<div class="card-fantasy-team-name">${player.team_name}</div>` : ''}
-                            
-                            <!-- Player Photo -->
-                            <div class="card-player-photo">
-                                ${actionShotUrl 
-                                    ? `<img src="${actionShotUrl}" alt="${player.name}" class="card-action-shot" onerror="this.className='card-headshot-fallback'; this.src='${headshot}';">` 
-                                    : `<img src="${headshot}" alt="${player.name}" class="card-headshot-fallback" onerror="this.src='${placeholderHeadshot}';">`}
+                            <!-- League logo bar -->
+                            <div class="card-league-bar">
+                                <img src="league_logo.png" alt="FBCW" class="card-league-logo" onerror="this.style.display='none'">
+                                <span class="card-league-text">Fantasy Baseball Civil War</span>
                             </div>
                         </div>
                         
