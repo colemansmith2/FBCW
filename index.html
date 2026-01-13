@@ -4763,141 +4763,68 @@
 
         /* Player Modal Styles */
         .player-modal-content {
-            max-width: 420px;
+            max-width: 440px;
             background: transparent;
             box-shadow: none;
             border-radius: 12px;
             overflow: visible;
         }
 
-        /* Baseball Card Design */
+        /* 1987 Topps Baseball Card Design */
         .baseball-card {
-            background: linear-gradient(135deg, #f5d742 0%, #e8c92e 50%, #d4b82a 100%);
-            border-radius: 12px;
-            border: 4px solid #1e3c72;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    #c4a574 0px,
+                    #d4b584 2px,
+                    #c4a574 4px,
+                    #b89564 6px,
+                    #c4a574 8px
+                );
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 
+                0 10px 40px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .card-inner {
+            background: #000;
+            border-radius: 4px;
             overflow: hidden;
+            border: 2px solid #1a1a1a;
+        }
+
+        .card-photo-area {
             position: relative;
-        }
-
-        .card-header {
-            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
-            padding: 0.75rem 1rem;
+            background: linear-gradient(180deg, #5a8ac4 0%, #3d6a9f 40%, #2d5a8f 100%);
+            min-height: 280px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 3px solid #f5d742;
+            flex-direction: column;
         }
 
-        .card-player-name {
-            color: white;
-            font-size: 1.4rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-            flex: 1;
-            text-align: center;
-        }
-
-        .card-mlb-logo {
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
+        .card-mlb-logo-corner {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 52px;
+            height: 52px;
             background: white;
             border-radius: 50%;
-            padding: 6px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            padding: 4px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+            z-index: 10;
         }
 
-        .card-mlb-fa {
-            width: 48px;
-            height: 48px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
-            color: #1e3c72;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        .card-mlb-team {
-            color: #f5d742;
-            font-size: 0.9rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .card-photo-section {
-            position: relative;
-            background: linear-gradient(180deg, #87CEEB 0%, #4a90c2 60%, #2d6a9f 100%);
-            padding: 1rem;
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            min-height: 200px;
-        }
-
-        .card-photo-frame {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            background: white;
-            padding: 5px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            border: 3px solid #f5d742;
-        }
-
-        .card-headshot {
+        .card-mlb-logo-corner img {
             width: 100%;
             height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #e0e0e0;
-        }
-
-        .card-position-badge {
-            position: absolute;
-            bottom: 5px;
-            right: 5px;
-            background: #1e3c72;
-            color: #f5d742;
-            font-weight: bold;
-            font-size: 0.85rem;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            border: 2px solid #f5d742;
-        }
-
-        .card-team-logo-corner {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
             object-fit: contain;
-            background: white;
-            padding: 4px;
-            border: 2px solid #f5d742;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
-        .card-team-fa-corner {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: white;
-            border: 2px solid #f5d742;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        .card-mlb-logo-corner.fa-badge {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -4906,150 +4833,223 @@
             color: #1e3c72;
         }
 
-        /* Keeper team logo wrapper for projection cards */
-        .card-keeper-logo-wrapper {
-            position: absolute;
-            bottom: 10px;
-            left: 10px;
-        }
-
-        .card-keeper-logo-wrapper .card-team-logo-corner {
-            position: relative;
-            bottom: auto;
-            left: auto;
-        }
-
-        .card-keeper-badge {
-            position: absolute;
-            bottom: -4px;
-            right: -4px;
-            width: 20px;
-            height: 20px;
-            background: white;
-            border: 2px solid #d4af37;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.65rem;
-            font-weight: bold;
-            color: #d4af37;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-        }
-
-        .card-acquisition-corner {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 0.3rem 0.5rem;
-            border-radius: 4px;
-            font-size: 0.65rem;
-            font-weight: 500;
-            color: #1e3c72;
-            border: 2px solid #1e3c72;
-            text-align: right;
-            max-width: 120px;
-            line-height: 1.2;
-        }
-
-        .card-acquisition-corner .acq-type {
-            font-weight: bold;
-            display: block;
-        }
-
-        .card-stats-corner {
+        .card-fantasy-badge {
             position: absolute;
             top: 10px;
             right: 10px;
+            width: 56px;
+            height: 56px;
+            background: white;
+            border-radius: 50%;
+            padding: 3px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+            border: 3px solid #d4af37;
+        }
+
+        .card-fantasy-badge img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .card-fantasy-badge.fa-badge {
             display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 4px;
-        }
-
-        .card-team-badge {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 0.3rem 0.6rem;
-            border-radius: 4px;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
             font-size: 0.75rem;
-            font-weight: bold;
-            color: #1e3c72;
-            border: 2px solid #1e3c72;
+            color: #666;
+            border: 3px solid #ccc;
         }
 
-        .card-fantasy-points {
-            background: #f5d742;
-            color: #1e3c72;
-            font-size: 1.1rem;
-            font-weight: bold;
+        .card-fantasy-team-name {
+            position: absolute;
+            top: 70px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
-            border: 2px solid #1e3c72;
-            text-align: center;
-        }
-
-        .card-fantasy-points .pts-label {
             font-size: 0.6rem;
-            font-weight: normal;
-            display: block;
-        }
-
-        .card-position-rank {
-            background: #1e3c72;
-            color: #f5d742;
-            font-size: 0.75rem;
             font-weight: bold;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            border: 2px solid #f5d742;
+            max-width: 90px;
+            text-align: right;
+            line-height: 1.2;
         }
 
-        .card-info-strip {
-            background: #1e3c72;
-            color: white;
+        .card-player-photo {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 1rem;
+            padding-top: 0;
+        }
+
+        .card-action-shot {
+            width: 100%;
+            max-width: 300px;
+            height: 220px;
+            object-fit: cover;
+            object-position: top center;
+            border-radius: 4px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-headshot-fallback {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            background: #e0e0e0;
+        }
+
+        .card-name-banner {
+            background: linear-gradient(90deg, #c41e3a 0%, #c41e3a 50%, #1e3c72 50%, #1e3c72 100%);
             padding: 0.5rem 1rem;
             display: flex;
-            justify-content: space-between;
-            font-size: 0.8rem;
-            border-top: 2px solid #f5d742;
-            border-bottom: 2px solid #f5d742;
-        }
-
-        .card-info-strip span {
-            display: flex;
             align-items: center;
-            gap: 0.25rem;
+            position: relative;
         }
 
-        .card-stats-section {
-            background: #fffef5;
-            padding: 0.75rem;
+        .card-name-banner::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 2px;
+            background: #d4af37;
         }
 
-        .card-stats-title {
-            background: #1e3c72;
-            color: #f5d742;
-            font-size: 0.75rem;
-            font-weight: bold;
+        .card-topps-logo {
+            font-family: Arial Black, sans-serif;
+            font-size: 0.6rem;
+            font-weight: 900;
+            color: white;
+            background: #c41e3a;
+            padding: 0.1rem 0.25rem;
+            border-radius: 2px;
+            margin-right: 0.4rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 0.3rem 0.5rem;
-            margin: -0.75rem -0.75rem 0.5rem -0.75rem;
+        }
+
+        .card-player-name-text {
+            flex: 1;
+            color: white;
+            font-size: 1rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
             text-align: center;
         }
 
-        .card-stats-header {
+        .card-position-pill {
+            background: #d4af37;
+            color: #1e3c72;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            margin-left: 0.4rem;
+        }
+
+        .card-points-display {
+            position: absolute;
+            bottom: 55px;
+            left: 10px;
+            background: #d4af37;
+            color: #1e3c72;
+            padding: 0.35rem 0.5rem;
+            border-radius: 6px;
+            border: 3px solid #1e3c72;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .card-points-value {
+            font-size: 1.3rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .card-points-label {
+            font-size: 0.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .card-rank-display {
+            position: absolute;
+            bottom: 55px;
+            left: 75px;
+            background: #1e3c72;
+            color: #d4af37;
+            padding: 0.25rem 0.4rem;
+            border-radius: 4px;
+            border: 2px solid #d4af37;
+            font-size: 0.7rem;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .card-acquisition-info {
+            position: absolute;
+            bottom: 55px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.25rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.55rem;
+            color: #1e3c72;
+            border: 2px solid #1e3c72;
+            text-align: right;
+            max-width: 100px;
+            z-index: 10;
+        }
+
+        .card-acquisition-info .acq-label {
+            font-weight: bold;
+            display: block;
+            font-size: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .card-stats-area {
+            background: linear-gradient(135deg, #f5e6c8 0%, #e8d9b8 100%);
+            position: relative;
+        }
+
+        .card-stats-area::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(139, 119, 80, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 119, 80, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .card-toggle-row {
+            background: #1e3c72;
+            padding: 0.35rem 0.6rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.5rem;
         }
 
-        .card-stats-header .card-stats-title {
-            margin: 0;
-            padding: 0;
-            background: none;
+        .card-toggle-title {
+            color: #d4af37;
+            font-size: 0.65rem;
+            font-weight: bold;
+            text-transform: uppercase;
         }
 
         .card-stat-toggle {
@@ -5058,135 +5058,136 @@
         }
 
         .card-toggle-btn {
-            padding: 0.25rem 0.5rem;
-            border: 1px solid #1e3c72;
-            background: white;
-            color: #1e3c72;
-            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            border: 2px solid #d4af37;
+            background: transparent;
+            color: #d4af37;
+            font-size: 0.6rem;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
         }
 
         .card-toggle-btn:first-child {
-            border-radius: 3px 0 0 3px;
+            border-radius: 4px 0 0 4px;
         }
 
         .card-toggle-btn:last-child {
-            border-radius: 0 3px 3px 0;
+            border-radius: 0 4px 4px 0;
             border-left: none;
         }
 
         .card-toggle-btn:hover {
-            background: #f0f4f8;
+            background: rgba(212, 175, 55, 0.2);
         }
 
         .card-toggle-btn.active {
-            background: #1e3c72;
-            color: white;
-        }
-
-        .card-stats-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.75rem;
-        }
-
-        .card-stats-table th {
-            background: #2a5298;
-            color: white;
-            padding: 0.35rem 0.25rem;
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            border: 1px solid #1e3c72;
-        }
-
-        .card-stats-table td {
-            background: white;
-            padding: 0.35rem 0.25rem;
-            text-align: center;
-            border: 1px solid #ddd;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .card-stats-table tr:nth-child(even) td {
-            background: #f8f8f0;
-        }
-
-        .card-history-section {
-            background: #fffef5;
-            padding: 0.5rem 0.75rem 0.75rem;
-            border-top: 2px dashed #ccc;
-        }
-
-        .card-history-title {
-            font-size: 0.7rem;
-            font-weight: bold;
+            background: #d4af37;
             color: #1e3c72;
-            text-transform: uppercase;
-            margin-bottom: 0.4rem;
+        }
+
+        .card-stats-header-row {
+            background: #1e3c72;
+            display: flex;
+            align-items: stretch;
+        }
+
+        .card-stats-label-col {
+            background: #d4af37;
+            color: #1e3c72;
+            font-weight: bold;
+            font-size: 0.6rem;
+            padding: 0.25rem 0.4rem;
+            min-width: 60px;
+            display: flex;
+            align-items: center;
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+            padding-right: 0.8rem;
+        }
+
+        .card-stats-header-cells {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            background: #1e3c72;
+        }
+
+        .card-stats-header-cell {
+            color: white;
+            font-size: 0.55rem;
+            font-weight: bold;
             text-align: center;
+            padding: 0.25rem 0.1rem;
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .card-history-table {
-            width: 100%;
-            border-collapse: collapse;
+        .card-stats-data-row {
+            display: flex;
+            align-items: stretch;
+            background: #f5e6c8;
+            border-bottom: 1px solid #d4c4a4;
+        }
+
+        .card-stats-data-row:nth-child(even) {
+            background: #ebe0c8;
+        }
+
+        .card-stats-season-col {
+            background: #d4af37;
+            color: #1e3c72;
+            font-weight: bold;
             font-size: 0.65rem;
+            padding: 0.3rem 0.4rem;
+            min-width: 60px;
+            display: flex;
+            align-items: center;
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+            padding-right: 0.8rem;
         }
 
-        .card-history-table th {
+        .card-stats-data-cells {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+
+        .card-stats-data-cell {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-align: center;
+            padding: 0.3rem 0.1rem;
+            color: #333;
+            border-left: 1px solid #d4c4a4;
+        }
+
+        .card-manager-bar {
             background: #1e3c72;
             color: white;
-            padding: 0.25rem;
-            text-align: center;
-            font-size: 0.6rem;
-        }
-
-        .card-history-table td {
-            padding: 0.25rem;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-        }
-
-        .card-history-table .team-logo-small {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            vertical-align: middle;
-            margin-right: 3px;
-        }
-
-        .card-footer {
-            background: linear-gradient(180deg, #1e3c72 0%, #152a52 100%);
-            color: #f5d742;
-            padding: 0.5rem 1rem;
-            font-size: 0.65rem;
-            text-align: center;
-            border-top: 3px solid #f5d742;
-        }
-
-        .card-footer .owner-info {
+            padding: 0.4rem 0.6rem;
             display: flex;
-            justify-content: center;
             align-items: center;
-            gap: 0.5rem;
+            justify-content: center;
+            gap: 0.4rem;
+            border-top: 2px solid #d4af37;
         }
 
-        .card-footer .owner-logo {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 1px solid #f5d742;
+        .card-manager-label {
+            font-size: 0.65rem;
+            font-weight: bold;
+            text-transform: uppercase;
         }
 
-        /* Scrollable stats area */
+        .card-manager-name {
+            color: #d4af37;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
         .card-scrollable {
-            max-height: 280px;
+            max-height: 180px;
             overflow-y: auto;
             scrollbar-width: thin;
-            scrollbar-color: #1e3c72 #f5d742;
+            scrollbar-color: #1e3c72 #e8d9b8;
         }
 
         .card-scrollable::-webkit-scrollbar {
@@ -5194,7 +5195,7 @@
         }
 
         .card-scrollable::-webkit-scrollbar-track {
-            background: #f5d742;
+            background: #e8d9b8;
         }
 
         .card-scrollable::-webkit-scrollbar-thumb {
@@ -5202,7 +5203,76 @@
             border-radius: 3px;
         }
 
-        /* Hide the default modal body scroll for player modal */
+        .card-history-section {
+            background: #f5e6c8;
+        }
+
+        .card-history-title {
+            background: #1e3c72;
+            color: #d4af37;
+            font-size: 0.6rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 0.3rem 0.6rem;
+            letter-spacing: 0.5px;
+        }
+
+        .card-history-row {
+            display: flex;
+            align-items: center;
+            padding: 0.25rem 0.4rem;
+            border-bottom: 1px solid #d4c4a4;
+            font-size: 0.6rem;
+        }
+
+        .card-history-row:nth-child(even) {
+            background: #ebe0c8;
+        }
+
+        .card-history-year {
+            font-weight: bold;
+            color: #1e3c72;
+            min-width: 32px;
+        }
+
+        .card-history-team-logo {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            margin-right: 0.3rem;
+            object-fit: contain;
+            background: white;
+            padding: 1px;
+        }
+
+        .card-history-team-name {
+            flex: 1;
+            color: #555;
+            font-size: 0.55rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-history-pts {
+            font-weight: bold;
+            color: #1e3c72;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .card-history-rank {
+            background: #1e3c72;
+            color: #d4af37;
+            font-size: 0.5rem;
+            font-weight: bold;
+            padding: 0.1rem 0.25rem;
+            border-radius: 3px;
+            margin-left: 0.3rem;
+            min-width: 28px;
+            text-align: center;
+        }
+
         #player-modal .modal-body-scroll {
             padding: 0;
             max-height: none;
@@ -5210,29 +5280,33 @@
         }
 
         #player-modal .modal-close {
-            color: white;
+            position: absolute;
+            top: -8px;
+            right: -8px;
             background: #1e3c72;
-            border: 2px solid #f5d742;
+            color: #d4af37;
+            border: 3px solid #d4af37;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
-            width: 28px;
-            height: 28px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            z-index: 100;
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10;
-            top: 8px;
-            right: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
         }
 
         #player-modal .modal-close:hover {
-            background: #f5d742;
+            background: #d4af37;
             color: #1e3c72;
         }
 
         #player-modal-header {
             display: none;
-            /* Hide default header, we'll build card structure in body */
         }
+
 
         /* Projection Modal Styles */
         .projection-modal-content {
@@ -11022,19 +11096,24 @@
             const placeholderHeadshot = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
             const placeholderLogo = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzFlM2M3MiIvPjx0ZXh0IHg9IjUwIiB5PSI1NSIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZiI+4pqB77iPPC90ZXh0Pjwvc3ZnPg==';
 
+            // Try to get action shot from MLB CDN using player's MLB ID
+            let mlbId = null;
+            if (player.headshot_url && player.headshot_url.includes('/people/')) {
+                const match = player.headshot_url.match(/\/people\/(\d+)\//);
+                if (match) mlbId = match[1];
+            }
+            
+            const actionShotUrl = mlbId 
+                ? `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.png/w_600,q_auto:best/v1/people/${mlbId}/action/hero/current`
+                : null;
             const headshot = (player.headshot_url && player.headshot_url.trim()) ? player.headshot_url : placeholderHeadshot;
+            
             const mlbLogoUrl = getMLBTeamLogo(player.mlb_team);
             const mlbTeamText = formatMLBTeamDisplay(player.mlb_team);
             const hasMlbLogo = mlbTeamText !== 'FA' && mlbLogoUrl;
-            const mlbLogoHtml = hasMlbLogo
-                ? `<img src="${mlbLogoUrl}" alt="" class="card-mlb-logo" onerror="this.outerHTML='<div class=\\'card-mlb-fa\\'>FA</div>'">`
-                : `<div class="card-mlb-fa">FA</div>`;
 
             // Check if player has a fantasy team
             const hasFantasyTeam = player.team_key && player.team_key.trim() && player.team_logo && player.team_name && player.team_name !== 'Free Agent' && player.team_name !== 'Drafted (Dropped)' && player.team_name !== 'Previously Rostered';
-            const fantasyTeamLogoHtml = hasFantasyTeam
-                ? `<img src="${player.team_logo}" alt="" class="card-team-logo-corner" onerror="this.outerHTML='<div class=\\'card-team-fa-corner\\'>FA</div>'">`
-                : `<div class="card-team-fa-corner">FA</div>`;
 
             const stats = getPlayerStats(player);
             const isBatter = player.position_type === 'B';
@@ -11141,11 +11220,11 @@
 
                 // Build acquisition HTML based on priority: Trade > Pickup > Draft
                 if (tradeInfo) {
-                    acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Acquired via Trade:</span>${tradeInfo.date}</div>`;
+                    acquisitionHtml = `<div class="card-acquisition-info"><span class="acq-label">Traded</span>${tradeInfo.date}</div>`;
                 } else if (pickupInfo) {
-                    acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Picked up:</span>${pickupInfo.date}</div>`;
+                    acquisitionHtml = `<div class="card-acquisition-info"><span class="acq-label">Picked Up</span>${pickupInfo.date}</div>`;
                 } else if (draftInfo) {
-                    acquisitionHtml = `<div class="card-acquisition-corner"><span class="acq-type">Drafted:</span>Rd ${draftInfo.round}, #${draftInfo.pick}</div>`;
+                    acquisitionHtml = `<div class="card-acquisition-info"><span class="acq-label">Drafted</span>Rd ${draftInfo.round}, #${draftInfo.pick}</div>`;
                 }
 
             } catch (e) {
@@ -11155,107 +11234,169 @@
             // Clear header (we're using body for the card)
             headerEl.innerHTML = '';
 
-            // Build baseball card HTML
+            // Build 1987 Topps style baseball card HTML
             let cardHTML = `
             <div class="baseball-card">
-                <div class="card-header">
-                    ${mlbLogoHtml}
-                    <div class="card-player-name">${player.name}</div>
-                </div>
-                
-                <div class="card-photo-section">
-                    ${fantasyTeamLogoHtml}
-                    ${acquisitionHtml}
-                    <div class="card-stats-corner">
-                        <div class="card-team-badge">${mlbTeamText}</div>
-                        <div class="card-fantasy-points">
-                            ${fantasyPts}
-                            <span class="pts-label">PTS</span>
+                <div class="card-inner">
+                    <div class="card-photo-area">
+                        <!-- MLB Team Logo - top left -->
+                        <div class="card-mlb-logo-corner ${hasMlbLogo ? '' : 'fa-badge'}">
+                            ${hasMlbLogo 
+                                ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}" onerror="this.parentElement.classList.add('fa-badge'); this.outerHTML='FA';">` 
+                                : 'FA'}
                         </div>
-                        <div class="card-position-rank">${posRankDisplay}</div>
+                        
+                        <!-- Fantasy Team Badge - top right -->
+                        <div class="card-fantasy-badge ${hasFantasyTeam ? '' : 'fa-badge'}">
+                            ${hasFantasyTeam 
+                                ? `<img src="${player.team_logo}" alt="" onerror="this.parentElement.classList.add('fa-badge'); this.outerHTML='FA';">` 
+                                : 'FA'}
+                        </div>
+                        
+                        ${hasFantasyTeam ? `<div class="card-fantasy-team-name">${player.team_name}</div>` : ''}
+                        
+                        <!-- Points Display -->
+                        <div class="card-points-display">
+                            <div class="card-points-value">${fantasyPts}</div>
+                            <div class="card-points-label">Fantasy Pts</div>
+                        </div>
+                        
+                        <!-- Position Rank -->
+                        <div class="card-rank-display">${posRankDisplay}</div>
+                        
+                        <!-- Acquisition Info -->
+                        ${acquisitionHtml}
+                        
+                        <!-- Player Photo -->
+                        <div class="card-player-photo">
+                            ${actionShotUrl 
+                                ? `<img src="${actionShotUrl}" alt="${player.name}" class="card-action-shot" onerror="this.className='card-headshot-fallback'; this.src='${headshot}';">` 
+                                : `<img src="${headshot}" alt="${player.name}" class="card-headshot-fallback" onerror="this.src='${placeholderHeadshot}';">`}
+                        </div>
                     </div>
-                    <div class="card-photo-frame">
-                        <img src="${headshot}" alt="${player.name}" class="card-headshot" onerror="this.src='${placeholderHeadshot}'">
-                        <div class="card-position-badge">${player.primary_position}</div>
+                    
+                    <!-- Player Name Banner - 1987 Topps style -->
+                    <div class="card-name-banner">
+                        <span class="card-topps-logo">FBCW</span>
+                        <span class="card-player-name-text">${player.name}</span>
+                        <span class="card-position-pill">${player.primary_position}</span>
                     </div>
-                </div>
-
-                <div class="card-info-strip">
-                    <span>📊 ${selectedYear} Stats</span>
-                    <span>${player.eligible_positions ? player.eligible_positions.join('/') : player.primary_position}</span>
-                    <span>⚾ ${isBatter ? 'Batter' : 'Pitcher'}</span>
-                </div>
-
-                <div class="card-scrollable">
-                    <div class="card-stats-section">
-                        <div class="card-stats-header">
-                            <div class="card-stats-title">${selectedYear} Season Statistics</div>
+                    
+                    <!-- Stats Area - Card Back Style -->
+                    <div class="card-stats-area">
+                        <div class="card-toggle-row">
+                            <span class="card-toggle-title">${selectedYear} Statistics</span>
                             <div class="card-stat-toggle">
                                 <button class="card-toggle-btn ${currentStatType === 'fantasy' ? 'active' : ''}" onclick="setModalStatType('fantasy')">Fantasy</button>
                                 <button class="card-toggle-btn ${currentStatType === 'full' ? 'active' : ''}" onclick="setModalStatType('full')">Full MLB</button>
                             </div>
                         </div>
+                        
                         <div id="modal-stats-content">`;
 
             if (isBatter) {
                 cardHTML += `
-                        <table class="card-stats-table">
-                            <tr>
-                                <th>G</th><th>AB</th><th>H</th><th>HR</th><th>RBI</th><th>R</th><th>SB</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.G || 0}</td>
-                                <td>${stats.AB || 0}</td>
-                                <td>${stats.H || 0}</td>
-                                <td>${stats.HR || 0}</td>
-                                <td>${stats.RBI || 0}</td>
-                                <td>${stats.R || 0}</td>
-                                <td>${stats.SB || 0}</td>
-                            </tr>
-                            <tr>
-                                <th>BB</th><th>2B</th><th>3B</th><th>AVG</th><th>OBP</th><th>SLG</th><th>OPS</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.BB || 0}</td>
-                                <td>${stats['2B'] || 0}</td>
-                                <td>${stats['3B'] || 0}</td>
-                                <td>${stats.AVG ? stats.AVG.toFixed(3) : '.000'}</td>
-                                <td>${stats.OBP ? stats.OBP.toFixed(3) : '.000'}</td>
-                                <td>${stats.SLG ? stats.SLG.toFixed(3) : '.000'}</td>
-                                <td>${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</td>
-                            </tr>
-                        </table>`;
+                        <div class="card-stats-header-row">
+                            <div class="card-stats-label-col">SEASON</div>
+                            <div class="card-stats-header-cells">
+                                <div class="card-stats-header-cell">G</div>
+                                <div class="card-stats-header-cell">AB</div>
+                                <div class="card-stats-header-cell">H</div>
+                                <div class="card-stats-header-cell">HR</div>
+                                <div class="card-stats-header-cell">RBI</div>
+                                <div class="card-stats-header-cell">SB</div>
+                                <div class="card-stats-header-cell">AVG</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-data-row">
+                            <div class="card-stats-season-col">${selectedYear}</div>
+                            <div class="card-stats-data-cells">
+                                <div class="card-stats-data-cell">${stats.G || 0}</div>
+                                <div class="card-stats-data-cell">${stats.AB || 0}</div>
+                                <div class="card-stats-data-cell">${stats.H || 0}</div>
+                                <div class="card-stats-data-cell">${stats.HR || 0}</div>
+                                <div class="card-stats-data-cell">${stats.RBI || 0}</div>
+                                <div class="card-stats-data-cell">${stats.SB || 0}</div>
+                                <div class="card-stats-data-cell">${stats.AVG ? stats.AVG.toFixed(3) : '.000'}</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-header-row">
+                            <div class="card-stats-label-col">MORE</div>
+                            <div class="card-stats-header-cells">
+                                <div class="card-stats-header-cell">R</div>
+                                <div class="card-stats-header-cell">BB</div>
+                                <div class="card-stats-header-cell">2B</div>
+                                <div class="card-stats-header-cell">3B</div>
+                                <div class="card-stats-header-cell">OBP</div>
+                                <div class="card-stats-header-cell">SLG</div>
+                                <div class="card-stats-header-cell">OPS</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-data-row">
+                            <div class="card-stats-season-col"></div>
+                            <div class="card-stats-data-cells">
+                                <div class="card-stats-data-cell">${stats.R || 0}</div>
+                                <div class="card-stats-data-cell">${stats.BB || 0}</div>
+                                <div class="card-stats-data-cell">${stats['2B'] || 0}</div>
+                                <div class="card-stats-data-cell">${stats['3B'] || 0}</div>
+                                <div class="card-stats-data-cell">${stats.OBP ? stats.OBP.toFixed(3) : '.000'}</div>
+                                <div class="card-stats-data-cell">${stats.SLG ? stats.SLG.toFixed(3) : '.000'}</div>
+                                <div class="card-stats-data-cell">${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</div>
+                            </div>
+                        </div>`;
             } else {
                 cardHTML += `
-                        <table class="card-stats-table">
-                            <tr>
-                                <th>W</th><th>L</th><th>SV</th><th>G</th><th>GS</th><th>IP</th><th>K</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.W || 0}</td>
-                                <td>${stats.L || 0}</td>
-                                <td>${stats.SV || 0}</td>
-                                <td>${stats.G || 0}</td>
-                                <td>${stats.GS || 0}</td>
-                                <td>${stats.IP || 0}</td>
-                                <td>${stats.SO || 0}</td>
-                            </tr>
-                            <tr>
-                                <th>BB</th><th>ERA</th><th>WHIP</th><th>K/9</th><th>K%</th><th>BB%</th><th>HLD</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.BB || 0}</td>
-                                <td>${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</td>
-                                <td>${stats.WHIP ? stats.WHIP.toFixed(2) : '0.00'}</td>
-                                <td>${stats['K/9'] ? stats['K/9'].toFixed(1) : '0.0'}</td>
-                                <td>${stats['K%'] ? stats['K%'].toFixed(0) : '0'}%</td>
-                                <td>${stats['BB%'] ? stats['BB%'].toFixed(0) : '0'}%</td>
-                                <td>${stats.HLD || 0}</td>
-                            </tr>
-                        </table>`;
+                        <div class="card-stats-header-row">
+                            <div class="card-stats-label-col">SEASON</div>
+                            <div class="card-stats-header-cells">
+                                <div class="card-stats-header-cell">W</div>
+                                <div class="card-stats-header-cell">L</div>
+                                <div class="card-stats-header-cell">SV</div>
+                                <div class="card-stats-header-cell">G</div>
+                                <div class="card-stats-header-cell">IP</div>
+                                <div class="card-stats-header-cell">K</div>
+                                <div class="card-stats-header-cell">ERA</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-data-row">
+                            <div class="card-stats-season-col">${selectedYear}</div>
+                            <div class="card-stats-data-cells">
+                                <div class="card-stats-data-cell">${stats.W || 0}</div>
+                                <div class="card-stats-data-cell">${stats.L || 0}</div>
+                                <div class="card-stats-data-cell">${stats.SV || 0}</div>
+                                <div class="card-stats-data-cell">${stats.G || 0}</div>
+                                <div class="card-stats-data-cell">${stats.IP || 0}</div>
+                                <div class="card-stats-data-cell">${stats.SO || 0}</div>
+                                <div class="card-stats-data-cell">${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-header-row">
+                            <div class="card-stats-label-col">MORE</div>
+                            <div class="card-stats-header-cells">
+                                <div class="card-stats-header-cell">GS</div>
+                                <div class="card-stats-header-cell">HLD</div>
+                                <div class="card-stats-header-cell">BB</div>
+                                <div class="card-stats-header-cell">WHIP</div>
+                                <div class="card-stats-header-cell">K/9</div>
+                                <div class="card-stats-header-cell">K%</div>
+                                <div class="card-stats-header-cell">BB%</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-data-row">
+                            <div class="card-stats-season-col"></div>
+                            <div class="card-stats-data-cells">
+                                <div class="card-stats-data-cell">${stats.GS || 0}</div>
+                                <div class="card-stats-data-cell">${stats.HLD || 0}</div>
+                                <div class="card-stats-data-cell">${stats.BB || 0}</div>
+                                <div class="card-stats-data-cell">${stats.WHIP ? stats.WHIP.toFixed(2) : '0.00'}</div>
+                                <div class="card-stats-data-cell">${stats['K/9'] ? stats['K/9'].toFixed(1) : '0.0'}</div>
+                                <div class="card-stats-data-cell">${stats['K%'] ? stats['K%'].toFixed(0) : '0'}%</div>
+                                <div class="card-stats-data-cell">${stats['BB%'] ? stats['BB%'].toFixed(0) : '0'}%</div>
+                            </div>
+                        </div>`;
             }
 
-            cardHTML += `</div></div>`;  // Close modal-stats-content and card-stats-section
+            cardHTML += `</div>`; // Close modal-stats-content
 
             // Career history section
             const normalizedName = playerName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -11297,53 +11438,37 @@
                 }
 
                 cardHTML += `
+                    <div class="card-scrollable">
                     <div class="card-history-section">
-                        <div class="card-history-title">📜 League History</div>
-                        <table class="card-history-table">
-                            <thead>
-                                <tr>
-                                    <th>Year</th>
-                                    <th>Team</th>
-                                    <th>Pts</th>
-                                    <th>Rk</th>
-                                    <th>Pos</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
+                        <div class="card-history-title">📜 League History</div>`;
 
                 playerHistory.seasons.sort((a, b) => b.year - a.year).forEach(season => {
                     const logo = historyLogos[`${season.year}_${season.team_name}`] || '';
                     const ranks = historyRanks[season.year] || { overall: '-', position: '-' };
                     cardHTML += `
-                                <tr>
-                                    <td><strong>${season.year}</strong></td>
-                                    <td>${logo ? `<img src="${logo}" class="team-logo-small" alt="">` : ''}${season.manager || ''}</td>
-                                    <td>${(season.fantasy_points || 0).toFixed(0)}</td>
-                                    <td>${ranks.overall}</td>
-                                    <td>${ranks.position}</td>
-                                </tr>`;
+                        <div class="card-history-row">
+                            <span class="card-history-year">${season.year}</span>
+                            ${logo ? `<img src="${logo}" class="card-history-team-logo" alt="">` : ''}
+                            <span class="card-history-team-name">${season.manager || ''}</span>
+                            <span class="card-history-pts">${(season.fantasy_points || 0).toFixed(0)} pts</span>
+                            <span class="card-history-rank">${ranks.position}</span>
+                        </div>`;
                 });
 
                 cardHTML += `
-                            </tbody>
-                        </table>
+                    </div>
                     </div>`;
             }
 
-            cardHTML += `</div>`; // Close card-scrollable
-
-            // Footer with owner info
+            // Manager bar
             cardHTML += `
-                <div class="card-footer">
-                    <div class="owner-info">
-                        <span>Owned by:</span>
-                        ${player.team_logo ? `<img src="${player.team_logo}" class="owner-logo" alt="">` : ''}
-                        <strong>${player.manager || 'Free Agent'}</strong>
-                        <span>•</span>
-                        <span>${player.team_name || ''}</span>
+                        <div class="card-manager-bar">
+                            <span class="card-manager-label">Fantasy Manager:</span>
+                            <span class="card-manager-name">${player.manager || 'Free Agent'}</span>
+                        </div>
                     </div>
                 </div>
-            </div>`; // Close baseball-card
+            </div>`; // Close card-stats-area, card-inner, baseball-card
 
             bodyEl.innerHTML = cardHTML;
             modal.classList.add('active');
