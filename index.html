@@ -4883,13 +4883,11 @@
         /* Photo container with cut corners */
         .card-photo-container {
             position: relative;
-            height: 320px;
         }
 
         /* Photo frame with 1987 Topps cut corners */
         .card-photo-frame {
             width: 100%;
-            height: 100%;
             position: relative;
             overflow: hidden;
             /* Cut corners: top-left and bottom-right */
@@ -4924,19 +4922,20 @@
             z-index: 5;
         }
 
-        /* Player Action Shot - show full image, crop from bottom if needed */
+        /* Player Action Shot - fit width, natural height */
         .card-action-shot {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: top center;
+            height: auto;
+            display: block;
         }
 
         .card-headshot-fallback {
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: top center;
+            height: auto;
+            display: block;
+            min-height: 200px;
+            object-fit: contain;
+            background: linear-gradient(180deg, #4a7ab4 0%, #2d5a8f 100%);
         }
 
         /* Fantasy Team Badge - bottom right of photo */
