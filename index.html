@@ -4763,8 +4763,8 @@
 
         /* Player Modal Styles */
         .player-modal-content {
-            max-width: 700px;
-            width: 95vw;
+            max-width: 480px;
+            width: 90vw;
             background: transparent;
             box-shadow: none;
             border-radius: 12px;
@@ -4801,6 +4801,11 @@
             position: relative;
         }
 
+        .card-photo-wrapper {
+            position: relative;
+            padding: 6px;
+        }
+
         .card-photo-container {
             position: relative;
             aspect-ratio: 16 / 9;
@@ -4808,11 +4813,11 @@
             overflow: hidden;
             /* Cut corners: top-left and bottom-right */
             clip-path: polygon(
-                0 28px,
-                28px 0,
+                0 18px,
+                18px 0,
                 100% 0,
-                100% calc(100% - 28px),
-                calc(100% - 28px) 100%,
+                100% calc(100% - 18px),
+                calc(100% - 18px) 100%,
                 0 100%
             );
             background: linear-gradient(180deg, #4a7ab4 0%, #2d5a8f 100%);
@@ -4832,17 +4837,17 @@
             object-position: center center;
         }
 
-        /* MLB Logo - top left corner */
+        /* MLB Logo - top left corner, on top of image */
         .card-mlb-logo {
             position: absolute;
             top: 0;
             left: 0;
-            width: 60px;
-            height: 60px;
+            width: 44px;
+            height: 44px;
             background: white;
             border-radius: 50%;
-            padding: 4px;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+            padding: 3px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             z-index: 10;
             display: flex;
             align-items: center;
@@ -4857,23 +4862,23 @@
 
         .card-mlb-logo.fa-badge {
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.85rem;
             color: #1e3c72;
         }
 
-        /* Fantasy Logo - bottom right corner */
+        /* Fantasy Logo - bottom right corner, on top of image */
         .card-fantasy-logo {
             position: absolute;
             bottom: 0;
             right: 0;
-            width: 56px;
-            height: 56px;
+            width: 40px;
+            height: 40px;
             background: white;
             border-radius: 50%;
-            padding: 3px;
-            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.5);
+            padding: 2px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             z-index: 10;
-            border: 3px solid #d4af37;
+            border: 2px solid #d4af37;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -4888,7 +4893,7 @@
 
         .card-fantasy-logo.fa-badge {
             font-weight: bold;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: #666;
             border-color: #ccc;
         }
@@ -11313,11 +11318,7 @@
                 <div class="card-inner">
                     <!-- CARD FRONT - Photo Section -->
                     <div class="card-front">
-                        <div class="card-photo-container">
-                            ${actionShotUrl 
-                                ? `<img src="${actionShotUrl}" alt="${player.name}" class="card-action-shot" onerror="this.className='card-headshot-fallback'; this.src='${headshot}';">` 
-                                : `<img src="${headshot}" alt="${player.name}" class="card-headshot-fallback" onerror="this.src='${placeholderHeadshot}';">`}
-                            
+                        <div class="card-photo-wrapper">
                             <!-- MLB Logo - top left corner -->
                             <div class="card-mlb-logo ${hasMlbLogo ? '' : 'fa-badge'}">
                                 ${hasMlbLogo 
@@ -11330,6 +11331,12 @@
                                 ${hasFantasyTeam 
                                     ? `<img src="${player.team_logo}" alt="" onerror="this.parentElement.classList.add('fa-badge'); this.outerHTML='FA';">` 
                                     : 'FA'}
+                            </div>
+                            
+                            <div class="card-photo-container">
+                                ${actionShotUrl 
+                                    ? `<img src="${actionShotUrl}" alt="${player.name}" class="card-action-shot" onerror="this.className='card-headshot-fallback'; this.src='${headshot}';">` 
+                                    : `<img src="${headshot}" alt="${player.name}" class="card-headshot-fallback" onerror="this.src='${placeholderHeadshot}';">`}
                             </div>
                         </div>
                         
