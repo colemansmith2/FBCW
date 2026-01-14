@@ -4763,15 +4763,15 @@
 
         /* Player Modal Styles */
         .player-modal-content {
-            max-width: 820px;
-            width: 95vw;
+            max-width: 480px;
+            width: 90vw;
             background: transparent;
             box-shadow: none;
             border-radius: 12px;
             overflow: visible;
         }
 
-        /* 1987 Topps Baseball Card - Side by Side Design */
+        /* 1987 Topps Baseball Card - Horizontal Layout */
         .baseball-card {
             background: 
                 repeating-linear-gradient(
@@ -4782,8 +4782,8 @@
                     #b89564 6px,
                     #c4a574 8px
                 );
-            border-radius: 12px;
-            padding: 14px;
+            border-radius: 10px;
+            padding: 12px;
             box-shadow: 
                 0 10px 40px rgba(0, 0, 0, 0.4),
                 inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -4791,42 +4791,34 @@
 
         .card-inner {
             background: #1a1a1a;
-            border-radius: 8px;
+            border-radius: 6px;
             overflow: visible;
             border: 2px solid #111;
-            display: flex;
         }
 
-        /* ===== CARD LEFT - Photo Section ===== */
+        /* ===== CARD FRONT - Photo Section ===== */
         .card-front {
             position: relative;
             overflow: visible;
-            flex: 0 0 340px;
-            max-width: 340px;
-            display: flex;
-            flex-direction: column;
         }
 
         .card-photo-wrapper {
             position: relative;
-            padding: 10px;
+            padding: 8px;
             background: linear-gradient(180deg, #5a8ac4 0%, #2d5a8f 100%);
-            border-radius: 6px 0 0 0;
-            flex: 1;
         }
 
         .card-photo-container {
             position: relative;
-            aspect-ratio: 4 / 3;
+            aspect-ratio: 16 / 9;
             width: 100%;
             overflow: hidden;
-            /* Cut corners: top-left and bottom-right */
             clip-path: polygon(
-                0 22px,
-                22px 0,
+                0 18px,
+                18px 0,
                 100% 0,
-                100% calc(100% - 22px),
-                calc(100% - 22px) 100%,
+                100% calc(100% - 18px),
+                calc(100% - 18px) 100%,
                 0 100%
             );
             background: linear-gradient(180deg, #4a7ab4 0%, #2d5a8f 100%);
@@ -4836,7 +4828,7 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: center 20%;
+            object-position: center 25%;
         }
 
         .card-headshot-fallback {
@@ -4849,14 +4841,14 @@
         /* MLB Logo - top left corner */
         .card-mlb-logo {
             position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 52px;
-            height: 52px;
+            top: 0;
+            left: 0;
+            width: 50px;
+            height: 50px;
             background: white;
             border-radius: 50%;
             padding: 3px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             z-index: 10;
             display: flex;
             align-items: center;
@@ -4871,21 +4863,21 @@
 
         .card-mlb-logo.fa-badge {
             font-weight: bold;
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: #1e3c72;
         }
 
         /* Fantasy Logo - bottom right corner */
         .card-fantasy-logo {
             position: absolute;
-            bottom: 2px;
-            right: 2px;
-            width: 56px;
-            height: 56px;
+            bottom: 0;
+            right: 0;
+            width: 54px;
+            height: 54px;
             background: white;
             border-radius: 50%;
             padding: 2px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             z-index: 10;
             border: 3px solid #d4af37;
             display: flex;
@@ -4902,19 +4894,18 @@
 
         .card-fantasy-logo.fa-badge {
             font-weight: bold;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             color: #666;
             border-color: #ccc;
         }
 
         /* Player Name Banner */
         .card-name-banner {
-            background: linear-gradient(90deg, #c41e3a 0%, #1e3c72 100%);
-            padding: 0.6rem 1rem;
+            background: #1e3c72;
+            padding: 0.5rem 1rem;
             display: flex;
             align-items: center;
             position: relative;
-            border-radius: 0 0 0 6px;
         }
 
         .card-name-banner::before {
@@ -4929,62 +4920,54 @@
 
         .card-year-badge {
             font-family: inherit;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 900;
             color: white;
             background: #c41e3a;
-            padding: 0.25rem 0.6rem;
-            border-radius: 4px;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
             margin-right: 0.75rem;
             border: 1px solid rgba(255,255,255,0.3);
-            flex-shrink: 0;
         }
 
         .card-player-name-wrapper {
             flex: 1;
             display: flex;
             align-items: center;
-            min-width: 0;
+            overflow: hidden;
         }
 
         .card-player-name-bg {
             background: #c41e3a;
-            padding: 0.2rem 0.6rem;
-            padding-right: calc(0.6rem + 5%);
+            padding: 0.15rem 0.5rem;
             border-radius: 3px;
-            display: inline-block;
+            display: inline-flex;
         }
 
         .card-player-name {
             color: white;
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
             white-space: nowrap;
         }
 
         .card-position-badge {
             background: #d4af37;
             color: #1e3c72;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: bold;
-            padding: 0.25rem 0.6rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            flex-shrink: 0;
-            margin-left: auto;
+            margin-left: 0.5rem;
         }
 
-        /* ===== CARD RIGHT - Stats Section ===== */
+        /* ===== CARD BACK - Stats Section ===== */
         .card-back {
             background: linear-gradient(135deg, #f5e6c8 0%, #e8d9b8 100%);
             position: relative;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            border-radius: 0 6px 6px 0;
-            overflow: hidden;
         }
 
         .card-back::before {
@@ -5000,10 +4983,10 @@
         /* Back header with player info and headshot */
         .card-back-header {
             background: #1e3c72;
-            padding: 0.6rem 1rem;
+            padding: 0.5rem 0.75rem;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.6rem;
             position: relative;
         }
 
@@ -5011,10 +4994,10 @@
             background: #d4af37;
             color: #1e3c72;
             font-weight: 900;
-            font-size: 0.85rem;
-            padding: 0.25rem 0.6rem;
+            font-size: 0.8rem;
+            padding: 0.2rem 0.5rem;
             clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
-            padding-right: 1rem;
+            padding-right: 0.8rem;
         }
 
         .card-back-info {
@@ -5024,18 +5007,18 @@
         .card-back-name {
             color: white;
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1rem;
             text-transform: uppercase;
         }
 
         .card-back-team {
             color: #d4af37;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .card-back-headshot {
-            width: 50px;
-            height: 50px;
+            width: 46px;
+            height: 46px;
             border-radius: 50%;
             border: 2px solid #d4af37;
             object-fit: cover;
@@ -5045,7 +5028,7 @@
         /* Stats toggle */
         .card-stats-toggle {
             background: #1e3c72;
-            padding: 0.4rem 1rem;
+            padding: 0.4rem 0.75rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -5054,7 +5037,7 @@
 
         .card-stats-title {
             color: #d4af37;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -5064,11 +5047,11 @@
         }
 
         .card-toggle-btn {
-            padding: 0.3rem 0.7rem;
+            padding: 0.25rem 0.6rem;
             border: 2px solid #d4af37;
             background: transparent;
             color: #d4af37;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -5102,13 +5085,13 @@
             background: #d4af37;
             color: #1e3c72;
             font-weight: bold;
-            font-size: 0.8rem;
-            padding: 0.35rem 0.6rem;
-            min-width: 65px;
+            font-size: 0.75rem;
+            padding: 0.3rem 0.5rem;
+            min-width: 58px;
             display: flex;
             align-items: center;
             clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
-            padding-right: 1rem;
+            padding-right: 0.8rem;
         }
 
         .card-stats-cells {
@@ -5119,10 +5102,10 @@
 
         .card-stats-header-cell {
             color: white;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: bold;
             text-align: center;
-            padding: 0.35rem 0.15rem;
+            padding: 0.3rem 0.1rem;
             border-left: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -5140,13 +5123,13 @@
             background: #d4af37;
             color: #1e3c72;
             font-weight: bold;
-            font-size: 0.85rem;
-            padding: 0.4rem 0.6rem;
-            min-width: 65px;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.5rem;
+            min-width: 58px;
             display: flex;
             align-items: center;
             clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
-            padding-right: 1rem;
+            padding-right: 0.8rem;
         }
 
         .card-stats-data-cells {
@@ -5156,10 +5139,10 @@
         }
 
         .card-stats-data-cell {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 600;
             text-align: center;
-            padding: 0.4rem 0.15rem;
+            padding: 0.35rem 0.1rem;
             color: #333;
             border-left: 1px solid #d4c4a4;
         }
@@ -5167,7 +5150,7 @@
         /* Fantasy points row */
         .card-points-row {
             background: #1e3c72;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 0.75rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -5176,7 +5159,7 @@
 
         .card-points-label {
             color: white;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -5184,47 +5167,47 @@
         .card-points-value {
             background: #d4af37;
             color: #1e3c72;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             font-weight: 900;
-            padding: 0.3rem 0.75rem;
+            padding: 0.25rem 0.6rem;
             border-radius: 4px;
         }
 
         .card-points-rank {
             color: #d4af37;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: bold;
         }
 
         /* Draft info row */
         .card-draft-row {
             background: #1e3c72;
-            padding: 0.45rem 1rem;
+            padding: 0.4rem 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.6rem;
+            gap: 0.5rem;
             border-top: 1px solid rgba(212, 175, 55, 0.3);
         }
 
         .card-draft-label {
             color: rgba(255, 255, 255, 0.7);
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
         }
 
         .card-draft-value {
             color: #d4af37;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-weight: bold;
         }
 
         /* Acquisition row */
         .card-acquisition-row {
             background: #ebe0c8;
-            padding: 0.4rem 1rem;
+            padding: 0.4rem 0.75rem;
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: #555;
             border-top: 1px solid #d4c4a4;
         }
@@ -5233,13 +5216,13 @@
             color: #1e3c72;
         }
 
-        /* History section */
+        /* History section - FIXED HEIGHT */
         .card-history-wrapper {
-            flex: 1;
+            height: 120px;
+            max-height: 120px;
             overflow-y: auto;
             scrollbar-width: thin;
             scrollbar-color: #1e3c72 #e8d9b8;
-            min-height: 80px;
         }
 
         .card-history-wrapper::-webkit-scrollbar {
@@ -5258,18 +5241,18 @@
         .card-history-title {
             background: #1e3c72;
             color: #d4af37;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: bold;
             text-transform: uppercase;
-            padding: 0.45rem 1rem;
+            padding: 0.4rem 0.75rem;
         }
 
         .card-history-row {
             display: flex;
             align-items: center;
-            padding: 0.4rem 0.75rem;
+            padding: 0.35rem 0.6rem;
             border-bottom: 1px solid #d4c4a4;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             background: #f5e6c8;
         }
 
@@ -5280,13 +5263,12 @@
         .card-history-year {
             font-weight: bold;
             color: #1e3c72;
-            min-width: 42px;
-            font-size: 0.9rem;
+            min-width: 40px;
         }
 
         .card-history-logo {
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             margin-right: 0.4rem;
             object-fit: contain;
@@ -5297,26 +5279,25 @@
         .card-history-manager {
             flex: 1;
             color: #555;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         .card-history-pts {
             font-weight: bold;
             color: #1e3c72;
-            min-width: 55px;
+            min-width: 52px;
             text-align: right;
-            font-size: 0.9rem;
         }
 
         .card-history-rank {
             background: #1e3c72;
             color: #d4af37;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: bold;
-            padding: 0.2rem 0.4rem;
+            padding: 0.15rem 0.35rem;
             border-radius: 3px;
             margin-left: 0.4rem;
-            min-width: 32px;
+            min-width: 30px;
             text-align: center;
         }
 
@@ -5324,7 +5305,7 @@
         .card-manager-footer {
             background: #1e3c72;
             color: white;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 0.75rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -5332,7 +5313,7 @@
         }
 
         .card-manager-text {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
         }
 
         .card-manager-text span {
@@ -5348,18 +5329,18 @@
         .card-league-info {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
         }
 
         .card-league-logo {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             object-fit: contain;
         }
 
         .card-league-text {
             color: white;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -5373,15 +5354,15 @@
 
         #player-modal .modal-close {
             position: absolute;
-            top: -12px;
-            right: -12px;
+            top: -10px;
+            right: -10px;
             background: #1e3c72;
             color: #d4af37;
             border: 3px solid #d4af37;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             cursor: pointer;
             z-index: 100;
             display: flex;
@@ -5399,47 +5380,7 @@
             display: none;
         }
 
-
-
-        /* Mobile responsive - stack cards vertically */
-        @media (max-width: 850px) {
-            .player-modal-content {
-                max-width: 95vw;
-            }
-
-            .card-inner {
-                flex-direction: column;
-            }
-
-            .card-front {
-                flex: none;
-                max-width: none;
-            }
-
-            .card-photo-wrapper {
-                border-radius: 6px 6px 0 0;
-            }
-
-            .card-name-banner {
-                border-radius: 0;
-            }
-
-            .card-back {
-                border-radius: 0 0 6px 6px;
-            }
-
-            .card-photo-container {
-                aspect-ratio: 16 / 9;
-            }
-
-            .card-history-wrapper {
-                max-height: 120px;
-            }
-        }
-
-
-
-        /* Projection Modal Styles */
+                /* Projection Modal Styles */
         .projection-modal-content {
             max-width: 900px;
             width: 95vw;
@@ -22441,7 +22382,7 @@
             let cardHTML = `
             <div class="baseball-card">
                 <div class="card-inner">
-                    <!-- CARD FRONT - Photo Section -->
+                    <!-- Photo Section -->
                     <div class="card-front">
                         <div class="card-photo-wrapper">
                             <!-- MLB Logo - top left corner -->
@@ -22469,21 +22410,11 @@
                         </div>
                     </div>
                     
-                    <!-- CARD BACK - Stats Section -->
+                    <!-- Stats Section -->
                     <div class="card-back">
-                        <!-- Header with headshot -->
-                        <div class="card-back-header">
-                            <div class="card-back-number">${positionRank}</div>
-                            <div class="card-back-info">
-                                <div class="card-back-name">${player.name}</div>
-                                <div class="card-back-team">${mlbTeamText} • ${positionDisplay}</div>
-                            </div>
-                            <img src="${headshot}" alt="" class="card-back-headshot" onerror="this.src='${placeholderHeadshot}';">
-                        </div>
-                        
                         <div class="card-stats-section">
                             <div class="card-stats-header">
-                                <div class="card-stats-title">2026 Projected Statistics</div>
+                                <div class="card-stats-title">${mlbTeamText} • ${positionDisplay} • ${positionRank}</div>
                             </div>
                             <div id="projection-modal-stats-content">`;
 
