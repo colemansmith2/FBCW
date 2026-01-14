@@ -4918,30 +4918,25 @@
             background: #d4af37;
         }
 
+        .card-year-name-group {
+            display: inline-flex;
+            align-items: center;
+            background: #c41e3a;
+            padding: 0.2rem 0.6rem;
+            padding-right: calc(0.6rem + 5%);
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
         .card-year-badge {
             font-family: inherit;
             font-size: 0.85rem;
             font-weight: 900;
             color: white;
-            background: #c41e3a;
-            padding: 0.2rem 0.5rem;
+            background: rgba(0,0,0,0.2);
+            padding: 0.15rem 0.4rem;
             border-radius: 3px;
-            margin-right: 0.75rem;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
-        .card-player-name-wrapper {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-        }
-
-        .card-player-name-bg {
-            background: #c41e3a;
-            padding: 0.15rem 0.5rem;
-            border-radius: 3px;
-            display: inline-flex;
+            margin-right: 0.6rem;
         }
 
         .card-player-name {
@@ -4961,7 +4956,7 @@
             font-weight: bold;
             padding: 0.2rem 0.5rem;
             border-radius: 4px;
-            margin-left: 0.5rem;
+            margin-left: auto;
         }
 
         /* ===== CARD BACK - Stats Section ===== */
@@ -5527,7 +5522,7 @@
         }
 
         .projection-card-container .card-name-banner {
-            background: linear-gradient(90deg, #c41e3a 0%, #c41e3a 45%, #1e3c72 45%, #1e3c72 100%);
+            background: #1e3c72;
             padding: 0.5rem 1rem;
             display: flex;
             align-items: center;
@@ -5544,25 +5539,34 @@
             background: #d4af37;
         }
 
+        .projection-card-container .card-year-name-group {
+            display: inline-flex;
+            align-items: center;
+            background: #c41e3a;
+            padding: 0.2rem 0.6rem;
+            padding-right: calc(0.6rem + 5%);
+            border-radius: 3px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
         .projection-card-container .card-year-badge {
             font-size: 0.85rem;
             font-weight: 900;
             color: white;
-            background: #c41e3a;
-            padding: 0.2rem 0.5rem;
+            background: rgba(0,0,0,0.2);
+            padding: 0.15rem 0.4rem;
             border-radius: 3px;
-            margin-right: 0.75rem;
-            border: 1px solid rgba(255,255,255,0.3);
+            margin-right: 0.6rem;
         }
 
         .projection-card-container .card-player-name {
-            flex: 1;
             color: white;
             font-size: 1.1rem;
             font-weight: 900;
             text-transform: uppercase;
             letter-spacing: 1px;
             text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.5);
+            white-space: nowrap;
         }
 
         .projection-card-container .card-position-badge {
@@ -5572,6 +5576,7 @@
             font-weight: bold;
             padding: 0.2rem 0.5rem;
             border-radius: 4px;
+            margin-left: auto;
         }
 
         .projection-card-container .card-back {
@@ -11779,11 +11784,9 @@
                         
                         <!-- Player Name Banner -->
                         <div class="card-name-banner">
-                            <span class="card-year-badge">${selectedYear}</span>
-                            <div class="card-player-name-wrapper">
-                                <span class="card-player-name-bg">
-                                    <span class="card-player-name">${player.name}</span>
-                                </span>
+                            <div class="card-year-name-group">
+                                <span class="card-year-badge">${selectedYear}</span>
+                                <span class="card-player-name">${player.name}</span>
                             </div>
                             <span class="card-position-badge">${player.primary_position}</span>
                         </div>
@@ -22399,13 +22402,14 @@
                                 ${actionShotUrl 
                                     ? `<img src="${actionShotUrl}" alt="${player.name}" class="card-action-shot" onerror="this.className='card-headshot'; this.src='${headshot}';">` 
                                     : `<img src="${headshot}" alt="${player.name}" class="card-headshot" onerror="this.src='${placeholderHeadshot}';">`}
-                            </div>
                         </div>
                         
                         <!-- Player Name Banner -->
                         <div class="card-name-banner">
-                            <span class="card-year-badge">2026</span>
-                            <span class="card-player-name">${player.name}</span>
+                            <div class="card-year-name-group">
+                                <span class="card-year-badge">2026</span>
+                                <span class="card-player-name">${player.name}</span>
+                            </div>
                             <span class="card-position-badge">${primaryPos}</span>
                         </div>
                     </div>
