@@ -15320,6 +15320,13 @@
         }
 
         // ===== SHOW MANAGER DETAIL MODAL =====
+        // Generate hat filename from manager name
+        function getManagerHatFilename(managerName) {
+            // Normalize: lowercase, remove spaces, handle names like "Logan S" -> "logans"
+            const normalized = managerName.toLowerCase().replace(/\s+/g, '');
+            return `hat_${normalized}.png`;
+        }
+
         async function showManagerDetail(managerName) {
             const manager = allManagersData.find(m => m.manager_name === managerName);
             if (!manager) return;
@@ -15556,10 +15563,22 @@
                 modalAwardsHTML += '</div>';
             }
 
+            // Determine hat image path (dynamically generated from manager name)
+            const hatFilename = getManagerHatFilename(manager.manager_name);
+            const hatUrl = `data/hats/${hatFilename}`;
+            
+            // Always try hat first, fall back to team logo if hat doesn't exist
+            let profileImageHTML = '';
+            if (currentManagerLogo) {
+                profileImageHTML = `<img src="${hatUrl}" style="width: 80px; height: 80px; object-fit: contain;" onerror="this.src='${currentManagerLogo}'; this.style.borderRadius='50%'; this.style.width='50px'; this.style.height='50px'; this.style.border='3px solid #1e3c72'; this.style.objectFit='cover';">`;
+            } else {
+                profileImageHTML = `<img src="${hatUrl}" style="width: 80px; height: 80px; object-fit: contain;" onerror="this.style.display='none';">`;
+            }
+
             modalHeaderSection.innerHTML = `
                 <div class="modal-header">
                     <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-                        ${currentManagerLogo ? `<img src="${currentManagerLogo}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 3px solid #1e3c72;">` : ''}
+                        ${profileImageHTML}
                         <h2 style="margin: 0;">${manager.manager_name}</h2>
                         ${modalAwardsHTML}
                     </div>
