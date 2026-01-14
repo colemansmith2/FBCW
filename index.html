@@ -3941,6 +3941,237 @@
             }
         }
 
+        /* ===== PLAYOFF BRACKET STYLES ===== */
+        .playoff-bracket {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0;
+            padding: 1rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            overflow-x: auto;
+        }
+
+        .bracket-round {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .bracket-round.semifinals {
+            gap: 3rem;
+        }
+
+        .bracket-matchup {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            position: relative;
+        }
+
+        .bracket-team {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #1e3c72;
+            min-width: 140px;
+            transition: all 0.3s ease;
+        }
+
+        .bracket-team.winner {
+            border-color: #d4af37;
+            background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+        }
+
+        .bracket-team.loser {
+            opacity: 0.5;
+            border-color: #ccc;
+        }
+
+        .bracket-team.champion {
+            border-color: #d4af37;
+            border-width: 3px;
+            background: linear-gradient(135deg, #fff9e6 0%, #fffdf5 100%);
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+        }
+
+        .bracket-hat {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            transition: all 0.3s ease;
+        }
+
+        .bracket-team.loser .bracket-hat {
+            filter: grayscale(100%);
+        }
+
+        .bracket-team-info {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .bracket-manager {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #1e3c72;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bracket-score {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .bracket-team.loser .bracket-score {
+            color: #999;
+        }
+
+        .bracket-team.winner .bracket-score {
+            color: #1e3c72;
+        }
+
+        /* Connector lines */
+        .bracket-connector {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            width: 40px;
+            position: relative;
+        }
+
+        .bracket-connector.to-finals {
+            height: 100%;
+        }
+
+        .bracket-line {
+            position: absolute;
+            background: #1e3c72;
+        }
+
+        .bracket-line.horizontal {
+            height: 3px;
+            width: 40px;
+        }
+
+        .bracket-line.vertical {
+            width: 3px;
+        }
+
+        .bracket-line.loser-line {
+            background: #ccc;
+        }
+
+        /* Connector from top semifinal */
+        .connector-top .bracket-line.horizontal {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .connector-top .bracket-line.vertical {
+            right: 0;
+            top: 50%;
+            height: calc(50% + 1.5rem);
+        }
+
+        /* Connector from bottom semifinal */
+        .connector-bottom .bracket-line.horizontal {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .connector-bottom .bracket-line.vertical {
+            right: 0;
+            bottom: 50%;
+            height: calc(50% + 1.5rem);
+        }
+
+        /* Finals connector */
+        .connector-finals .bracket-line.horizontal {
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Champion badge */
+        .champion-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.25rem;
+        }
+
+        .champion-badge img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .champion-badge span {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #d4af37;
+            text-transform: uppercase;
+        }
+
+        /* Round labels */
+        .bracket-round-label {
+            text-align: center;
+            font-weight: bold;
+            color: #1e3c72;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 768px) {
+            .playoff-bracket {
+                padding: 0.75rem;
+                gap: 0;
+            }
+
+            .bracket-team {
+                min-width: 110px;
+                padding: 0.4rem 0.5rem;
+            }
+
+            .bracket-hat {
+                width: 40px;
+                height: 40px;
+            }
+
+            .bracket-manager {
+                font-size: 0.75rem;
+            }
+
+            .bracket-score {
+                font-size: 0.8rem;
+            }
+
+            .bracket-connector {
+                width: 25px;
+            }
+
+            .bracket-line.horizontal {
+                width: 25px;
+            }
+
+            .bracket-round.semifinals {
+                gap: 2rem;
+            }
+        }
+
         /* ===== IN-SEASON TOOLS STYLES ===== */
         .inseason-section {
             background: white;
@@ -9151,6 +9382,14 @@
                 </div>
             </div>
 
+            <!-- Playoff Bracket (for historical seasons) -->
+            <div id="playoff-bracket-container" style="display: none; margin-top: 2rem;">
+                <h3 style="color: #1e3c72; margin-bottom: 1rem; text-align: center;">Playoff Bracket</h3>
+                <div id="playoff-bracket" class="playoff-bracket">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
             <!-- Season Points Chart -->
             <div id="season-chart-container" style="display: none; margin-top: 2rem;">
                 <div
@@ -12402,6 +12641,7 @@
             const inseasonContainer = document.getElementById('inseason-tools-container');
             const draftGradesTicker = document.getElementById('draft-performance-ticker');
             const matchupsTicker = document.getElementById('matchups-ticker');
+            const bracketContainer = document.getElementById('playoff-bracket-container');
 
             if (!season) {
                 return; // No season selected yet
@@ -12414,6 +12654,7 @@
             inseasonContainer.style.display = 'none';
             if (draftGradesTicker) draftGradesTicker.style.display = 'none';
             if (matchupsTicker) matchupsTicker.style.display = 'none';
+            if (bracketContainer) bracketContainer.style.display = 'none';
             
             // Clear matchups ticker interval if switching away from 2026
             if (matchupsTickerInterval) {
@@ -12510,6 +12751,11 @@
 
                 // Load draft data for this season
                 await loadDraftResults(seasonNum, isCurrentSeason, teamLogos, teamData);
+
+                // Load playoff bracket for historical seasons
+                if (!isCurrentSeason && seasonNum < 2026) {
+                    await loadPlayoffBracket(seasonNum, standings, teamData);
+                }
 
                 // Load and render the season chart
                 await loadSeasonChart(seasonNum, isCurrentSeason, standings, teamLogos, teamData);
@@ -13038,6 +13284,277 @@
             if (cards.length === 0) return;
             currentMatchupIndex = (currentMatchupIndex + 1) % cards.length;
             scrollToMatchupCard(currentMatchupIndex);
+        }
+
+        // ===== PLAYOFF BRACKET FUNCTIONS =====
+        async function loadPlayoffBracket(seasonNum, standings, teamData) {
+            const bracketContainer = document.getElementById('playoff-bracket-container');
+            const bracketEl = document.getElementById('playoff-bracket');
+            
+            try {
+                // Load all_scores.json for this season
+                let scoresPath = seasonNum === 2025 
+                    ? 'data/current_season/all_scores.json'
+                    : `data/historical/${seasonNum}/all_scores.json`;
+                
+                const scoresResponse = await fetch(scoresPath);
+                if (!scoresResponse.ok) {
+                    bracketContainer.style.display = 'none';
+                    return;
+                }
+                
+                const allScores = await scoresResponse.json();
+                
+                // Find max week (finals week)
+                const maxWeek = Math.max(...allScores.map(s => s.week));
+                
+                // Build team info lookup
+                const teamInfo = {};
+                standings.forEach(t => {
+                    teamInfo[t.team_key] = {
+                        manager: t.manager,
+                        team_name: t.team_name,
+                        seed: t.rank
+                    };
+                });
+                
+                // Add team logos from teamData
+                teamData.forEach(t => {
+                    if (teamInfo[t.team_key]) {
+                        teamInfo[t.team_key].logo = t.team_logo;
+                    }
+                });
+                
+                // Get playoff teams (top 6)
+                const playoffKeys = standings.slice(0, 6).map(t => t.team_key);
+                
+                // Parse playoff matchups
+                // Week maxWeek-2: Quarterfinals (3v6, 4v5)
+                // Week maxWeek-1: Semifinals (1 vs 4/5 winner, 2 vs 3/6 winner)
+                // Week maxWeek: Finals
+                
+                const quarterfinalsWeek = maxWeek - 2;
+                const semifinalsWeek = maxWeek - 1;
+                const finalsWeek = maxWeek;
+                
+                // Helper to get matchup result
+                function getMatchup(week, team1Key, team2Key) {
+                    const match = allScores.find(s => 
+                        s.week === week && 
+                        s.team_key === team1Key && 
+                        s.opponent_key === team2Key
+                    );
+                    if (match) {
+                        return {
+                            team1: { key: team1Key, score: match.team_score },
+                            team2: { key: team2Key, score: match.opponent_score },
+                            winner: match.team_score > match.opponent_score ? team1Key : team2Key
+                        };
+                    }
+                    return null;
+                }
+                
+                // Find quarterfinal matchups (playoff teams only)
+                const qfMatches = [];
+                const qfScores = allScores.filter(s => s.week === quarterfinalsWeek);
+                const seen = new Set();
+                
+                for (const score of qfScores) {
+                    if (playoffKeys.includes(score.team_key) && playoffKeys.includes(score.opponent_key)) {
+                        const key = [score.team_key, score.opponent_key].sort().join('-');
+                        if (!seen.has(key)) {
+                            seen.add(key);
+                            qfMatches.push({
+                                team1: { key: score.team_key, score: score.team_score },
+                                team2: { key: score.opponent_key, score: score.opponent_score },
+                                winner: score.team_score > score.opponent_score ? score.team_key : score.opponent_key
+                            });
+                        }
+                    }
+                }
+                
+                // Sort quarterfinals: 3v6 first, then 4v5
+                qfMatches.sort((a, b) => {
+                    const aMinSeed = Math.min(teamInfo[a.team1.key]?.seed || 99, teamInfo[a.team2.key]?.seed || 99);
+                    const bMinSeed = Math.min(teamInfo[b.team1.key]?.seed || 99, teamInfo[b.team2.key]?.seed || 99);
+                    return aMinSeed - bMinSeed;
+                });
+                
+                // Get seeds 1 and 2 (bye teams)
+                const seed1Key = standings[0].team_key;
+                const seed2Key = standings[1].team_key;
+                
+                // Find semifinal matchups
+                const sfScores = allScores.filter(s => s.week === semifinalsWeek);
+                const sfMatches = [];
+                seen.clear();
+                
+                for (const score of sfScores) {
+                    if (playoffKeys.includes(score.team_key) && playoffKeys.includes(score.opponent_key)) {
+                        const key = [score.team_key, score.opponent_key].sort().join('-');
+                        if (!seen.has(key)) {
+                            seen.add(key);
+                            sfMatches.push({
+                                team1: { key: score.team_key, score: score.team_score },
+                                team2: { key: score.opponent_key, score: score.opponent_score },
+                                winner: score.team_score > score.opponent_score ? score.team_key : score.opponent_key
+                            });
+                        }
+                    }
+                }
+                
+                // Find the finals matchup
+                const finalsScores = allScores.filter(s => s.week === finalsWeek);
+                let finalsMatch = null;
+                seen.clear();
+                
+                for (const score of finalsScores) {
+                    if (playoffKeys.includes(score.team_key) && playoffKeys.includes(score.opponent_key)) {
+                        const key = [score.team_key, score.opponent_key].sort().join('-');
+                        if (!seen.has(key)) {
+                            seen.add(key);
+                            finalsMatch = {
+                                team1: { key: score.team_key, score: score.team_score },
+                                team2: { key: score.opponent_key, score: score.opponent_score },
+                                winner: score.team_score > score.opponent_score ? score.team_key : score.opponent_key
+                            };
+                            break;
+                        }
+                    }
+                }
+                
+                if (!finalsMatch) {
+                    bracketContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Determine bracket structure
+                // SF1: Seed 1 vs QF winner (lower seed matchup winner - 3v6)
+                // SF2: Seed 2 vs QF winner (higher seed matchup winner - 4v5)
+                
+                // Find which SF has seed 1 and which has seed 2
+                let sf1 = sfMatches.find(m => m.team1.key === seed1Key || m.team2.key === seed1Key);
+                let sf2 = sfMatches.find(m => m.team1.key === seed2Key || m.team2.key === seed2Key);
+                
+                // Build HTML for bracket
+                function renderTeam(teamKey, score, isWinner, isChampion = false) {
+                    const info = teamInfo[teamKey] || {};
+                    const manager = info.manager || 'Unknown';
+                    const hatFilename = getManagerHatFilename(manager);
+                    const hatUrl = `data/hats/${hatFilename}`;
+                    const logoUrl = info.logo || '';
+                    
+                    const classes = ['bracket-team'];
+                    if (isChampion) classes.push('champion', 'winner');
+                    else if (isWinner) classes.push('winner');
+                    else classes.push('loser');
+                    
+                    return `
+                        <div class="${classes.join(' ')}">
+                            <img src="${hatUrl}" class="bracket-hat" alt="${manager}" 
+                                 onerror="this.src='${logoUrl}'; this.style.borderRadius='50%'; this.style.border='2px solid #1e3c72';">
+                            <div class="bracket-team-info">
+                                <span class="bracket-manager">${manager}</span>
+                                <span class="bracket-score">${score.toFixed(2)}</span>
+                            </div>
+                            ${isChampion ? `<div class="champion-badge"><img src="champion_ring.png" alt=""><span>Champ</span></div>` : ''}
+                        </div>
+                    `;
+                }
+                
+                // Determine QF matchups for display
+                // QF1 feeds into SF1 (with seed 1), QF2 feeds into SF2 (with seed 2)
+                let qf1, qf2;
+                if (sf1) {
+                    const sf1Opponent = sf1.team1.key === seed1Key ? sf1.team2.key : sf1.team1.key;
+                    qf1 = qfMatches.find(m => m.winner === sf1Opponent);
+                }
+                if (sf2) {
+                    const sf2Opponent = sf2.team1.key === seed2Key ? sf2.team2.key : sf2.team1.key;
+                    qf2 = qfMatches.find(m => m.winner === sf2Opponent);
+                }
+                
+                // If we couldn't determine structure, use position-based
+                if (!qf1) qf1 = qfMatches[0];
+                if (!qf2) qf2 = qfMatches[1] || qfMatches[0];
+                
+                const champion = finalsMatch.winner;
+                const runnerUp = finalsMatch.team1.key === champion ? finalsMatch.team2.key : finalsMatch.team1.key;
+                
+                // Build the bracket HTML
+                let bracketHTML = `
+                    <!-- Quarterfinals -->
+                    <div class="bracket-round quarterfinals">
+                        <div class="bracket-round-label">Round 1</div>
+                        <div class="bracket-matchup" id="qf1">
+                            ${renderTeam(qf1.team1.key, qf1.team1.score, qf1.team1.key === qf1.winner)}
+                            ${renderTeam(qf1.team2.key, qf1.team2.score, qf1.team2.key === qf1.winner)}
+                        </div>
+                        <div class="bracket-matchup" id="qf2">
+                            ${renderTeam(qf2.team1.key, qf2.team1.score, qf2.team1.key === qf2.winner)}
+                            ${renderTeam(qf2.team2.key, qf2.team2.score, qf2.team2.key === qf2.winner)}
+                        </div>
+                    </div>
+                    
+                    <!-- Connector QF to SF -->
+                    <div class="bracket-connector">
+                        <svg width="40" height="100%" style="position: absolute; top: 0; left: 0;">
+                            <line x1="0" y1="25%" x2="20" y2="25%" stroke="${qf1.winner === sf1?.winner || qf1.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
+                            <line x1="20" y1="25%" x2="20" y2="37.5%" stroke="${qf1.winner === sf1?.winner || qf1.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
+                            <line x1="20" y1="37.5%" x2="40" y2="37.5%" stroke="${qf1.winner === sf1?.winner || qf1.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
+                            
+                            <line x1="0" y1="75%" x2="20" y2="75%" stroke="${qf2.winner === sf2?.winner || qf2.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
+                            <line x1="20" y1="62.5%" x2="20" y2="75%" stroke="${qf2.winner === sf2?.winner || qf2.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
+                            <line x1="20" y1="62.5%" x2="40" y2="62.5%" stroke="${qf2.winner === sf2?.winner || qf2.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Semifinals -->
+                    <div class="bracket-round semifinals">
+                        <div class="bracket-round-label">Semifinals</div>
+                        <div class="bracket-matchup" id="sf1">
+                            ${renderTeam(seed1Key, sf1 ? (sf1.team1.key === seed1Key ? sf1.team1.score : sf1.team2.score) : 0, sf1?.winner === seed1Key)}
+                            ${sf1 ? renderTeam(sf1.team1.key === seed1Key ? sf1.team2.key : sf1.team1.key, 
+                                sf1.team1.key === seed1Key ? sf1.team2.score : sf1.team1.score,
+                                sf1.winner !== seed1Key) : ''}
+                        </div>
+                        <div class="bracket-matchup" id="sf2">
+                            ${renderTeam(seed2Key, sf2 ? (sf2.team1.key === seed2Key ? sf2.team1.score : sf2.team2.score) : 0, sf2?.winner === seed2Key)}
+                            ${sf2 ? renderTeam(sf2.team1.key === seed2Key ? sf2.team2.key : sf2.team1.key,
+                                sf2.team1.key === seed2Key ? sf2.team2.score : sf2.team1.score,
+                                sf2.winner !== seed2Key) : ''}
+                        </div>
+                    </div>
+                    
+                    <!-- Connector SF to Finals -->
+                    <div class="bracket-connector">
+                        <svg width="40" height="100%" style="position: absolute; top: 0; left: 0;">
+                            <line x1="0" y1="25%" x2="20" y2="25%" stroke="${sf1?.winner === champion ? '#d4af37' : '#ccc'}" stroke-width="3"/>
+                            <line x1="20" y1="25%" x2="20" y2="50%" stroke="${sf1?.winner === champion ? '#d4af37' : '#ccc'}" stroke-width="3"/>
+                            <line x1="20" y1="50%" x2="40" y2="50%" stroke="${sf1?.winner === champion ? '#d4af37' : '#ccc'}" stroke-width="3"/>
+                            
+                            <line x1="0" y1="75%" x2="20" y2="75%" stroke="${sf2?.winner === champion ? '#d4af37' : '#ccc'}" stroke-width="3"/>
+                            <line x1="20" y1="50%" x2="20" y2="75%" stroke="${sf2?.winner === champion ? '#d4af37' : '#ccc'}" stroke-width="3"/>
+                        </svg>
+                    </div>
+                    
+                    <!-- Finals -->
+                    <div class="bracket-round finals">
+                        <div class="bracket-round-label">Championship</div>
+                        <div class="bracket-matchup" id="finals">
+                            ${renderTeam(finalsMatch.team1.key, finalsMatch.team1.score, finalsMatch.team1.key === champion, finalsMatch.team1.key === champion)}
+                            ${renderTeam(finalsMatch.team2.key, finalsMatch.team2.score, finalsMatch.team2.key === champion, finalsMatch.team2.key === champion)}
+                        </div>
+                    </div>
+                `;
+                
+                bracketEl.innerHTML = bracketHTML;
+                bracketContainer.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading playoff bracket:', error);
+                bracketContainer.style.display = 'none';
+            }
         }
 
         // ===== DRAFT RESULTS FUNCTIONS =====
