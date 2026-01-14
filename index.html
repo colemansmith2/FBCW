@@ -4804,6 +4804,7 @@
         .card-photo-wrapper {
             position: relative;
             padding: 6px;
+            background: linear-gradient(180deg, #5a8ac4 0%, #2d5a8f 100%);
         }
 
         .card-photo-container {
@@ -4821,6 +4822,26 @@
                 0 100%
             );
             background: linear-gradient(180deg, #4a7ab4 0%, #2d5a8f 100%);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .card-photo-container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            clip-path: polygon(
+                0 18px,
+                18px 0,
+                100% 0,
+                100% calc(100% - 18px),
+                calc(100% - 18px) 100%,
+                0 100%
+            );
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            pointer-events: none;
         }
 
         .card-action-shot {
@@ -4840,10 +4861,10 @@
         /* MLB Logo - top left corner, on top of image */
         .card-mlb-logo {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 44px;
-            height: 44px;
+            top: -2px;
+            left: -2px;
+            width: 48px;
+            height: 48px;
             background: white;
             border-radius: 50%;
             padding: 3px;
@@ -4869,16 +4890,16 @@
         /* Fantasy Logo - bottom right corner, on top of image */
         .card-fantasy-logo {
             position: absolute;
-            bottom: 0;
-            right: 0;
-            width: 40px;
-            height: 40px;
+            bottom: -2px;
+            right: -2px;
+            width: 52px;
+            height: 52px;
             background: white;
             border-radius: 50%;
             padding: 2px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
             z-index: 10;
-            border: 2px solid #d4af37;
+            border: 3px solid #d4af37;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -5393,8 +5414,305 @@
         }
 
         .projection-card-container {
-            flex: 0 0 420px;
-            max-width: 420px;
+            flex: 0 0 340px;
+            max-width: 340px;
+        }
+
+        /* Projection Baseball Card Styles */
+        .projection-card-container .baseball-card {
+            background: 
+                repeating-linear-gradient(
+                    90deg,
+                    #c4a574 0px,
+                    #d4b584 2px,
+                    #c4a574 4px,
+                    #b89564 6px,
+                    #c4a574 8px
+                );
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.35);
+        }
+
+        .projection-card-container .card-inner {
+            background: #1a1a1a;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .projection-card-container .card-photo-wrapper {
+            position: relative;
+            padding: 5px;
+            background: linear-gradient(180deg, #5a8ac4 0%, #2d5a8f 100%);
+        }
+
+        .projection-card-container .card-photo-container {
+            position: relative;
+            aspect-ratio: 16 / 9;
+            width: 100%;
+            overflow: hidden;
+            clip-path: polygon(
+                0 16px,
+                16px 0,
+                100% 0,
+                100% calc(100% - 16px),
+                calc(100% - 16px) 100%,
+                0 100%
+            );
+            background: linear-gradient(180deg, #4a7ab4 0%, #2d5a8f 100%);
+        }
+
+        .projection-card-container .card-action-shot,
+        .projection-card-container .card-headshot {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 25%;
+        }
+
+        .projection-card-container .card-mlb-logo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 38px;
+            height: 38px;
+            background: white;
+            border-radius: 50%;
+            padding: 3px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .projection-card-container .card-mlb-logo img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+        }
+
+        .projection-card-container .card-mlb-fa {
+            width: 38px;
+            height: 38px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.75rem;
+            color: #1e3c72;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 10;
+        }
+
+        .projection-card-container .card-keeper-logo-wrapper {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            z-index: 10;
+        }
+
+        .projection-card-container .card-team-logo-corner {
+            width: 42px;
+            height: 42px;
+            background: white;
+            border-radius: 50%;
+            padding: 2px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+            border: 2px solid #d4af37;
+            object-fit: contain;
+        }
+
+        .projection-card-container .card-keeper-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #d4af37;
+            color: #1e3c72;
+            font-size: 0.5rem;
+            font-weight: bold;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .projection-card-container .card-name-banner {
+            background: linear-gradient(90deg, #c41e3a 0%, #c41e3a 45%, #1e3c72 45%, #1e3c72 100%);
+            padding: 0.4rem 0.75rem;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .projection-card-container .card-name-banner::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 0;
+            height: 2px;
+            background: #d4af37;
+        }
+
+        .projection-card-container .card-year-badge {
+            font-size: 0.7rem;
+            font-weight: 900;
+            color: white;
+            background: #c41e3a;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            margin-right: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .projection-card-container .card-player-name {
+            flex: 1;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+
+        .projection-card-container .card-position-badge {
+            background: #d4af37;
+            color: #1e3c72;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+        }
+
+        .projection-card-container .card-back {
+            background: linear-gradient(135deg, #f5e6c8 0%, #e8d9b8 100%);
+        }
+
+        .projection-card-container .card-back-header {
+            background: #1e3c72;
+            padding: 0.4rem 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .projection-card-container .card-back-number {
+            background: #d4af37;
+            color: #1e3c72;
+            font-weight: 900;
+            font-size: 0.6rem;
+            padding: 0.15rem 0.4rem;
+            clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
+            padding-right: 0.6rem;
+        }
+
+        .projection-card-container .card-back-info {
+            flex: 1;
+        }
+
+        .projection-card-container .card-back-name {
+            color: white;
+            font-weight: bold;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+        }
+
+        .projection-card-container .card-back-team {
+            color: #d4af37;
+            font-size: 0.6rem;
+        }
+
+        .projection-card-container .card-back-headshot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #d4af37;
+            object-fit: cover;
+            background: #e0e0e0;
+        }
+
+        .projection-card-container .card-stats-section {
+            padding: 0.5rem;
+        }
+
+        .projection-card-container .card-stats-header {
+            background: #1e3c72;
+            padding: 0.3rem 0.5rem;
+            border-radius: 3px;
+            margin-bottom: 0.4rem;
+        }
+
+        .projection-card-container .card-stats-title {
+            color: #d4af37;
+            font-size: 0.6rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .projection-card-container .card-stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.6rem;
+        }
+
+        .projection-card-container .card-stats-table th {
+            background: #1e3c72;
+            color: white;
+            padding: 0.25rem 0.2rem;
+            font-weight: bold;
+        }
+
+        .projection-card-container .card-stats-table td {
+            background: #f5e6c8;
+            padding: 0.25rem 0.2rem;
+            text-align: center;
+            border: 1px solid #d4c4a4;
+        }
+
+        .projection-card-container .card-points-row {
+            background: #1e3c72;
+            padding: 0.35rem 0.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 2px solid #d4af37;
+        }
+
+        .projection-card-container .card-points-label {
+            color: white;
+            font-size: 0.6rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .projection-card-container .card-points-value {
+            background: #d4af37;
+            color: #1e3c72;
+            font-size: 0.85rem;
+            font-weight: 900;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+        }
+
+        .projection-card-container .card-points-rank {
+            color: #d4af37;
+            font-size: 0.65rem;
+            font-weight: bold;
+        }
+
+        .projection-card-container .card-info-strip {
+            display: none;
+        }
+
+        .projection-card-container .card-scrollable {
+            max-height: none;
         }
 
         .projection-charts-container {
@@ -21916,211 +22234,138 @@
                 }
             }
 
-            // Build baseball card HTML
+            // Build baseball card HTML - matching the player modal card style
+            // Get action shot URL
+            let mlbId = null;
+            if (player.headshot_url) {
+                const match = player.headshot_url.match(/\/people\/(\d+)\//);
+                if (match) mlbId = match[1];
+            }
+            const actionShotUrl = mlbId 
+                ? `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.png/q_auto:best/v1/people/${mlbId}/action/hero/current`
+                : null;
+
             let cardHTML = `
             <div class="baseball-card">
-                <div class="card-header">
-                    ${mlbLogoHtml}
-                    <div class="card-player-name">${player.name}</div>
-                </div>
-                
-                <div class="card-photo-section">
-                    ${keeperLogoHtml}
-                    <div class="card-stats-corner">
-                        <div class="card-team-badge">${mlbTeamText}</div>
-                        <div class="card-fantasy-points">
-                            ${projPoints}
-                            <span class="pts-label">PROJ</span>
+                <div class="card-inner">
+                    <!-- CARD FRONT - Photo Section -->
+                    <div class="card-front">
+                        <div class="card-photo-wrapper">
+                            <!-- MLB Logo - top left corner -->
+                            <div class="card-mlb-logo">
+                                ${mlbLogoUrl 
+                                    ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}" onerror="this.outerHTML='FA';">` 
+                                    : 'FA'}
+                            </div>
+                            
+                            <!-- Keeper/Fantasy Logo - bottom right corner -->
+                            ${keeperLogoHtml || ''}
+                            
+                            <div class="card-photo-container">
+                                ${actionShotUrl 
+                                    ? `<img src="${actionShotUrl}" alt="${player.name}" class="card-action-shot" onerror="this.className='card-headshot'; this.src='${headshot}';">` 
+                                    : `<img src="${headshot}" alt="${player.name}" class="card-headshot" onerror="this.src='${placeholderHeadshot}';">`}
+                            </div>
                         </div>
-                        <div class="card-position-rank">${positionRank}</div>
-                    </div>
-                    <div class="card-photo-frame">
-                        <img src="${headshot}" alt="${player.name}" class="card-headshot" onerror="this.src='${placeholderHeadshot}'">
-                        <div class="card-position-badge">${primaryPos}</div>
-                    </div>
-                </div>
-
-                <div class="card-info-strip">
-                    <span>📊 2026 Projections</span>
-                    <span>${positionDisplay}</span>
-                    <span>⚾ ${isBatter ? 'Batter' : 'Pitcher'}</span>
-                </div>
-
-                <div class="card-scrollable">
-                    <div class="card-stats-section">
-                        <div class="card-stats-header">
-                            <div class="card-stats-title">2026 Projected Statistics</div>
+                        
+                        <!-- Player Name Banner -->
+                        <div class="card-name-banner">
+                            <span class="card-year-badge">2026</span>
+                            <span class="card-player-name">${player.name}</span>
+                            <span class="card-position-badge">${primaryPos}</span>
                         </div>
-                        <div id="projection-modal-stats-content">`;
+                    </div>
+                    
+                    <!-- CARD BACK - Stats Section -->
+                    <div class="card-back">
+                        <!-- Header with headshot -->
+                        <div class="card-back-header">
+                            <div class="card-back-number">${positionRank}</div>
+                            <div class="card-back-info">
+                                <div class="card-back-name">${player.name}</div>
+                                <div class="card-back-team">${mlbTeamText} • ${positionDisplay}</div>
+                            </div>
+                            <img src="${headshot}" alt="" class="card-back-headshot" onerror="this.src='${placeholderHeadshot}';">
+                        </div>
+                        
+                        <div class="card-stats-section">
+                            <div class="card-stats-header">
+                                <div class="card-stats-title">2026 Projected Statistics</div>
+                            </div>
+                            <div id="projection-modal-stats-content">`;
 
             if (isBatter) {
                 const singles = (stats['1B'] || 0);
                 cardHTML += `
-                        <table class="card-stats-table">
-                            <tr>
-                                <th>G</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>R</th><th>SB</th>
-                            </tr>
-                            <tr>
-                                <td>${player.games || 0}</td>
-                                <td>${stats.PA || 0}</td>
-                                <td>${stats.H || 0}</td>
-                                <td>${stats.HR || 0}</td>
-                                <td>${stats.RBI || 0}</td>
-                                <td>${stats.R || 0}</td>
-                                <td>${stats.SB || 0}</td>
-                            </tr>
-                            <tr>
-                                <th>BB</th><th>1B</th><th>2B</th><th>3B</th><th>AVG</th><th>OPS</th><th>PPG</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.BB || 0}</td>
-                                <td>${singles}</td>
-                                <td>${stats['2B'] || 0}</td>
-                                <td>${stats['3B'] || 0}</td>
-                                <td>${stats.AVG ? stats.AVG.toFixed(3) : '.000'}</td>
-                                <td>${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</td>
-                                <td>${player.ppg ? player.ppg.toFixed(2) : '-'}</td>
-                            </tr>
-                        </table>`;
+                            <table class="card-stats-table">
+                                <tr>
+                                    <th>G</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>R</th><th>SB</th>
+                                </tr>
+                                <tr>
+                                    <td>${player.games || 0}</td>
+                                    <td>${stats.PA || 0}</td>
+                                    <td>${stats.H || 0}</td>
+                                    <td>${stats.HR || 0}</td>
+                                    <td>${stats.RBI || 0}</td>
+                                    <td>${stats.R || 0}</td>
+                                    <td>${stats.SB || 0}</td>
+                                </tr>
+                                <tr>
+                                    <th>BB</th><th>1B</th><th>2B</th><th>3B</th><th>AVG</th><th>OPS</th><th>PPG</th>
+                                </tr>
+                                <tr>
+                                    <td>${stats.BB || 0}</td>
+                                    <td>${singles}</td>
+                                    <td>${stats['2B'] || 0}</td>
+                                    <td>${stats['3B'] || 0}</td>
+                                    <td>${stats.AVG ? stats.AVG.toFixed(3) : '.000'}</td>
+                                    <td>${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</td>
+                                    <td>${player.ppg ? player.ppg.toFixed(2) : '-'}</td>
+                                </tr>
+                            </table>`;
             } else {
                 cardHTML += `
-                        <table class="card-stats-table">
-                            <tr>
-                                <th>W</th><th>L</th><th>SV</th><th>G</th><th>GS</th><th>IP</th><th>K</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.W || 0}</td>
-                                <td>${stats.L || 0}</td>
-                                <td>${stats.SV || 0}</td>
-                                <td>${stats.G || 0}</td>
-                                <td>${stats.GS || 0}</td>
-                                <td>${(stats.IP || 0).toFixed(1)}</td>
-                                <td>${stats.K || stats.SO || 0}</td>
-                            </tr>
-                            <tr>
-                                <th>BB</th><th>ER</th><th>H</th><th>ERA</th><th>WHIP</th><th>HLD</th><th>PPG</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.BB || 0}</td>
-                                <td>${stats.ER || 0}</td>
-                                <td>${stats.H || 0}</td>
-                                <td>${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</td>
-                                <td>${stats.WHIP ? stats.WHIP.toFixed(2) : '0.00'}</td>
-                                <td>${stats.HLD || 0}</td>
-                                <td>${player.ppg ? player.ppg.toFixed(2) : '-'}</td>
-                            </tr>
-                        </table>`;
+                            <table class="card-stats-table">
+                                <tr>
+                                    <th>W</th><th>L</th><th>SV</th><th>G</th><th>GS</th><th>IP</th><th>K</th>
+                                </tr>
+                                <tr>
+                                    <td>${stats.W || 0}</td>
+                                    <td>${stats.L || 0}</td>
+                                    <td>${stats.SV || 0}</td>
+                                    <td>${stats.G || 0}</td>
+                                    <td>${stats.GS || 0}</td>
+                                    <td>${(stats.IP || 0).toFixed(1)}</td>
+                                    <td>${stats.K || stats.SO || 0}</td>
+                                </tr>
+                                <tr>
+                                    <th>BB</th><th>ER</th><th>H</th><th>ERA</th><th>WHIP</th><th>HLD</th><th>PPG</th>
+                                </tr>
+                                <tr>
+                                    <td>${stats.BB || 0}</td>
+                                    <td>${stats.ER || 0}</td>
+                                    <td>${stats.H || 0}</td>
+                                    <td>${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</td>
+                                    <td>${stats.WHIP ? stats.WHIP.toFixed(2) : '0.00'}</td>
+                                    <td>${stats.HLD || 0}</td>
+                                    <td>${player.ppg ? player.ppg.toFixed(2) : '-'}</td>
+                                </tr>
+                            </table>`;
             }
 
             cardHTML += `</div></div>`; // Close stats content and section
 
-            // Build League History section with 2026 projection and past seasons
-            const normalizedName = playerName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            const playerHistory = playerHistoryData[normalizedName];
-
-            // Prepare history data
-            const historyLogos = {};
-            const historyRanks = {};
-
-            if (playerHistory && playerHistory.seasons && playerHistory.seasons.length > 0) {
-                for (const season of playerHistory.seasons) {
-                    const teams = await getTeamData(season.year);
-                    if (teams) {
-                        const team = teams.find(t => t.team_name === season.team_name);
-                        if (team) {
-                            historyLogos[`${season.year}_${season.team_name}`] = team.team_logo;
-                        }
-                    }
-
-                    const yearPlayers = await getPlayerStatsData(season.year);
-                    if (yearPlayers) {
-                        const posType = isBatter ? 'B' : 'P';
-                        const sameType = yearPlayers
-                            .filter(p => p.position_type === posType)
-                            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
-                        const overallRank = sameType.findIndex(p => p.name === playerName) + 1;
-
-                        const samePos = yearPlayers
-                            .filter(p => p.eligible_positions && p.eligible_positions.includes(primaryPos))
-                            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
-                        const posRank = samePos.findIndex(p => p.name === playerName) + 1;
-
-                        historyRanks[season.year] = {
-                            overall: overallRank > 0 ? overallRank : '-',
-                            position: posRank > 0 ? `${primaryPos}${posRank}` : '-'
-                        };
-                    } else {
-                        historyRanks[season.year] = { overall: '-', position: '-' };
-                    }
-                }
-            }
-
+            // Fantasy points row
             cardHTML += `
-                    <div class="card-history-section">
-                        <div class="card-history-title">📜 League History</div>
-                        <table class="card-history-table">
-                            <thead>
-                                <tr>
-                                    <th>Year</th>
-                                    <th>Team</th>
-                                    <th>Pts</th>
-                                    <th>Rk</th>
-                                    <th>Pos</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr style="background: rgba(245, 215, 66, 0.3);">
-                                    <td><strong>2026</strong></td>
-                                    <td><em>Projected</em></td>
-                                    <td>${(player.projected_points || 0).toFixed(0)}</td>
-                                    <td>${player.position_ranks ? (isBatter ? player.position_ranks['B'] : player.position_ranks['P']) || '-' : '-'}</td>
-                                    <td>${positionRank}</td>
-                                </tr>`;
-
-            // Add historical seasons
-            if (playerHistory && playerHistory.seasons && playerHistory.seasons.length > 0) {
-                playerHistory.seasons.sort((a, b) => b.year - a.year).forEach(season => {
-                    const logo = historyLogos[`${season.year}_${season.team_name}`] || '';
-                    const ranks = historyRanks[season.year] || { overall: '-', position: '-' };
-                    cardHTML += `
-                                <tr>
-                                    <td><strong>${season.year}</strong></td>
-                                    <td>${logo ? `<img src="${logo}" class="team-logo-small" alt="">` : ''}${season.manager || ''}</td>
-                                    <td>${(season.fantasy_points || 0).toFixed(0)}</td>
-                                    <td>${ranks.overall}</td>
-                                    <td>${ranks.position}</td>
-                                </tr>`;
-                });
-            }
-
-            cardHTML += `
-                            </tbody>
-                        </table>
-                    </div>`;
-
-            cardHTML += `</div>`; // Close card-scrollable
-
-            // Footer
-            cardHTML += `
-                <div class="card-footer">
-                    <div class="owner-info">
-                        <span style="color: #666; font-style: italic;">2026 Preseason Projection</span>
+                        <div class="card-points-row">
+                            <span class="card-points-label">Projected Points</span>
+                            <span class="card-points-value">${projPoints}</span>
+                            <span class="card-points-rank">${positionRank}</span>
+                        </div>
                     </div>
                 </div>
-            </div>`; // Close baseball-card
+            </div>`;
 
-            cardContainer.innerHTML = cardHTML;
-
-            // Render position ranking chart
-            renderPositionRankChart(player, posChartEl);
-
-            // Render scatter chart
-            scatterTitleEl.textContent = isBatter ? 'Points vs PA' : 'Points vs IP';
-            renderScatterChart(player, scatterChartEl, isBatter);
-
-            modal.classList.add('active');
-
-            // 1. Set Card HTML
             cardContainer.innerHTML = cardHTML;
 
             // 2. SHOW MODAL FIRST (Fixes width calculation)
