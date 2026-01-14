@@ -3945,23 +3945,32 @@
         .playoff-bracket {
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: stretch;
             gap: 0;
-            padding: 1rem;
+            padding: 1.5rem;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 12px;
             overflow-x: auto;
+            min-height: 350px;
         }
 
         .bracket-round {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            gap: 1rem;
+            justify-content: space-around;
+            padding: 0 0.5rem;
+        }
+
+        .bracket-round.quarterfinals {
+            gap: 1.5rem;
         }
 
         .bracket-round.semifinals {
-            gap: 3rem;
+            gap: 4rem;
+        }
+
+        .bracket-round.finals {
+            justify-content: center;
         }
 
         .bracket-matchup {
@@ -3979,7 +3988,7 @@
             background: white;
             border-radius: 8px;
             border: 2px solid #1e3c72;
-            min-width: 140px;
+            min-width: 150px;
             transition: all 0.3s ease;
         }
 
@@ -4042,65 +4051,20 @@
             color: #1e3c72;
         }
 
-        /* Connector lines */
+        /* Connector lines between rounds */
         .bracket-connector {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            width: 40px;
+            width: 50px;
             position: relative;
+            flex-shrink: 0;
         }
 
-        .bracket-connector.to-finals {
+        .bracket-connector svg {
+            width: 100%;
             height: 100%;
-        }
-
-        .bracket-line {
-            position: absolute;
-            background: #1e3c72;
-        }
-
-        .bracket-line.horizontal {
-            height: 3px;
-            width: 40px;
-        }
-
-        .bracket-line.vertical {
-            width: 3px;
-        }
-
-        .bracket-line.loser-line {
-            background: #ccc;
-        }
-
-        /* Connector from top semifinal */
-        .connector-top .bracket-line.horizontal {
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .connector-top .bracket-line.vertical {
-            right: 0;
-            top: 50%;
-            height: calc(50% + 1.5rem);
-        }
-
-        /* Connector from bottom semifinal */
-        .connector-bottom .bracket-line.horizontal {
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .connector-bottom .bracket-line.vertical {
-            right: 0;
-            bottom: 50%;
-            height: calc(50% + 1.5rem);
-        }
-
-        /* Finals connector */
-        .connector-finals .bracket-line.horizontal {
-            top: 50%;
-            transform: translateY(-50%);
+            overflow: visible;
         }
 
         /* Champion badge */
@@ -11048,7 +11012,7 @@
 
             try {
                 let statsPath = year === 2025
-                    ? 'data/current_season/player_stats.json'
+                    ? 'data/historical/2025/player_stats.json'
                     : `data/historical/${year}/player_stats.json`;
                 const response = await fetch(statsPath);
                 if (response.ok) {
@@ -11073,7 +11037,7 @@
             try {
                 let teamsResponse;
                 if (year === 2025) {
-                    teamsResponse = await fetch('data/current_season/teams.json');
+                    teamsResponse = await fetch('data/historical/2025/teams.json');
                 } else {
                     teamsResponse = await fetch(`data/historical/${year}/teams.json`);
                 }
@@ -11108,7 +11072,7 @@
                 // Determine the path based on year
                 let playerStatsPath;
                 if (selectedYear === 2025) {
-                    playerStatsPath = 'data/current_season/player_stats.json';
+                    playerStatsPath = 'data/historical/2025/player_stats.json';
                 } else {
                     playerStatsPath = `data/historical/${selectedYear}/player_stats.json`;
                 }
@@ -11904,7 +11868,7 @@
                 // Load draft data
                 let draftResponse;
                 if (selectedYear === 2025) {
-                    draftResponse = await fetch('data/current_season/draft.json');
+                    draftResponse = await fetch('data/historical/2025/draft.json');
                 } else {
                     draftResponse = await fetch(`data/historical/${selectedYear}/draft.json`);
                 }
@@ -11922,7 +11886,7 @@
                 // Load transaction data
                 let transResponse;
                 if (selectedYear === 2025) {
-                    transResponse = await fetch('data/current_season/transactions.json');
+                    transResponse = await fetch('data/historical/2025/transactions.json');
                 } else {
                     transResponse = await fetch(`data/historical/${selectedYear}/transactions.json`);
                 }
@@ -12576,34 +12540,23 @@
             const possibleSeasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
             const availableSeasons = [];
 
-            // Check current season
+            // Check for 2026 current season (in data/current_season/)
             try {
                 const response = await fetch('data/current_season/standings.json');
                 if (response.ok) {
-                    availableSeasons.push({ year: 2025, isCurrent: false, label: '2025' });
+                    availableSeasons.push({ year: 2026, isCurrent: true, label: '2026 (In Progress)' });
                 }
             } catch (e) { }
 
-            // Check historical seasons
-            for (const year of possibleSeasons.filter(y => y < 2025)) {
+            // Check historical seasons (including 2025 now in historical folder)
+            for (const year of possibleSeasons) {
                 try {
-                    const response = await fetch(`data/historical/${year}/final_standings.json`);
+                    const standingsFile = year === 2025 ? 'standings.json' : 'final_standings.json';
+                    const response = await fetch(`data/historical/${year}/${standingsFile}`);
                     if (response.ok) {
                         availableSeasons.push({ year: year, isCurrent: false, label: year.toString() });
                     }
                 } catch (e) { }
-            }
-            
-            // Add 2026 as upcoming/in-season year
-            try {
-                const response = await fetch('data/2026/teams.json');
-                if (response.ok) {
-                    availableSeasons.push({ year: 2026, isCurrent: true, label: '2026 (In Progress)' });
-                }
-            } catch (e) { 
-                // Still add 2026 if teams file doesn't exist yet but we want to show it
-                // Comment this out if you only want to show 2026 when data exists
-                // availableSeasons.push({ year: 2026, isCurrent: true, label: '2026 (Upcoming)' });
             }
 
             // Sort by year descending
@@ -12615,7 +12568,7 @@
                 const option = document.createElement('option');
                 option.value = season.year;
                 option.textContent = season.label;
-                // Default to 2025
+                // Default to most recent completed season (2025)
                 if (season.year === 2025) {
                     option.selected = true;
                 }
@@ -12627,6 +12580,7 @@
             scoringSelect.innerHTML = standingsSelect.innerHTML;
             // Ensure 2025 is selected in scoring dropdown
             scoringSelect.value = '2025';
+
 
             return availableSeasons;
         }
@@ -12674,22 +12628,12 @@
                 tableEl.style.display = 'none';
 
                 let response;
-
-                // Check if this is current season (2025) or historical
-                const currentSeasonCheck = await fetch('data/current_season/standings.json');
                 let isCurrentSeason = false;
 
-                if (currentSeasonCheck.ok) {
-                    // If current season data exists, it's 2025
-                    isCurrentSeason = (seasonNum === 2025);
-                }
-
-                // Load from appropriate location
-                if (isCurrentSeason) {
-                    response = await fetch('data/current_season/standings.json');
-                } else {
-                    response = await fetch(`data/historical/${season}/final_standings.json`);
-                }
+                // All completed seasons (2019-2025) are now in historical folder
+                // 2025 uses standings.json, others use final_standings.json
+                const standingsFile = seasonNum === 2025 ? 'standings.json' : 'final_standings.json';
+                response = await fetch(`data/historical/${season}/${standingsFile}`);
 
                 if (!response.ok) {
                     throw new Error(`Data not found for ${season}`);
@@ -12699,11 +12643,7 @@
 
                 // Load team logos
                 let teamsResponse;
-                if (isCurrentSeason) {
-                    teamsResponse = await fetch('data/current_season/teams.json');
-                } else {
-                    teamsResponse = await fetch(`data/historical/${season}/teams.json`);
-                }
+                teamsResponse = await fetch(`data/historical/${season}/teams.json`);
 
                 let teamLogos = {};
                 let teamData = [];
@@ -13293,9 +13233,8 @@
             
             try {
                 // Load all_scores.json for this season
-                let scoresPath = seasonNum === 2025 
-                    ? 'data/current_season/all_scores.json'
-                    : `data/historical/${seasonNum}/all_scores.json`;
+                // All historical seasons including 2025 are in data/historical/
+                let scoresPath = `data/historical/${seasonNum}/all_scores.json`;
                 
                 const scoresResponse = await fetch(scoresPath);
                 if (!scoresResponse.ok) {
@@ -13481,6 +13420,12 @@
                 const champion = finalsMatch.winner;
                 const runnerUp = finalsMatch.team1.key === champion ? finalsMatch.team2.key : finalsMatch.team1.key;
                 
+                // Determine line colors
+                const qf1WinnerAdvanced = qf1.winner === sf1?.winner || qf1.winner === champion;
+                const qf2WinnerAdvanced = qf2.winner === sf2?.winner || qf2.winner === champion;
+                const sf1WinnerIsChamp = sf1?.winner === champion;
+                const sf2WinnerIsChamp = sf2?.winner === champion;
+                
                 // Build the bracket HTML
                 let bracketHTML = `
                     <!-- Quarterfinals -->
@@ -13497,15 +13442,12 @@
                     </div>
                     
                     <!-- Connector QF to SF -->
-                    <div class="bracket-connector">
-                        <svg width="40" height="100%" style="position: absolute; top: 0; left: 0;">
-                            <line x1="0" y1="25%" x2="20" y2="25%" stroke="${qf1.winner === sf1?.winner || qf1.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
-                            <line x1="20" y1="25%" x2="20" y2="37.5%" stroke="${qf1.winner === sf1?.winner || qf1.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
-                            <line x1="20" y1="37.5%" x2="40" y2="37.5%" stroke="${qf1.winner === sf1?.winner || qf1.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
-                            
-                            <line x1="0" y1="75%" x2="20" y2="75%" stroke="${qf2.winner === sf2?.winner || qf2.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
-                            <line x1="20" y1="62.5%" x2="20" y2="75%" stroke="${qf2.winner === sf2?.winner || qf2.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
-                            <line x1="20" y1="62.5%" x2="40" y2="62.5%" stroke="${qf2.winner === sf2?.winner || qf2.winner === champion ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
+                    <div class="bracket-connector" style="height: 300px;">
+                        <svg viewBox="0 0 50 300" preserveAspectRatio="none" style="width: 50px; height: 100%;">
+                            <!-- QF1 winner line to SF1 -->
+                            <path d="M 0 75 L 25 75 L 25 112 L 50 112" fill="none" stroke="${qf1WinnerAdvanced ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
+                            <!-- QF2 winner line to SF2 -->
+                            <path d="M 0 225 L 25 225 L 25 188 L 50 188" fill="none" stroke="${qf2WinnerAdvanced ? '#1e3c72' : '#ccc'}" stroke-width="3"/>
                         </svg>
                     </div>
                     
@@ -13527,14 +13469,12 @@
                     </div>
                     
                     <!-- Connector SF to Finals -->
-                    <div class="bracket-connector">
-                        <svg width="40" height="100%" style="position: absolute; top: 0; left: 0;">
-                            <line x1="0" y1="25%" x2="20" y2="25%" stroke="${sf1?.winner === champion ? '#d4af37' : '#ccc'}" stroke-width="3"/>
-                            <line x1="20" y1="25%" x2="20" y2="50%" stroke="${sf1?.winner === champion ? '#d4af37' : '#ccc'}" stroke-width="3"/>
-                            <line x1="20" y1="50%" x2="40" y2="50%" stroke="${sf1?.winner === champion ? '#d4af37' : '#ccc'}" stroke-width="3"/>
-                            
-                            <line x1="0" y1="75%" x2="20" y2="75%" stroke="${sf2?.winner === champion ? '#d4af37' : '#ccc'}" stroke-width="3"/>
-                            <line x1="20" y1="50%" x2="20" y2="75%" stroke="${sf2?.winner === champion ? '#d4af37' : '#ccc'}" stroke-width="3"/>
+                    <div class="bracket-connector" style="height: 300px;">
+                        <svg viewBox="0 0 50 300" preserveAspectRatio="none" style="width: 50px; height: 100%;">
+                            <!-- SF1 winner line to Finals -->
+                            <path d="M 0 75 L 25 75 L 25 150 L 50 150" fill="none" stroke="${sf1WinnerIsChamp ? '#d4af37' : '#ccc'}" stroke-width="3"/>
+                            <!-- SF2 winner line to Finals -->
+                            <path d="M 0 225 L 25 225 L 25 150" fill="none" stroke="${sf2WinnerIsChamp ? '#d4af37' : '#ccc'}" stroke-width="3"/>
                         </svg>
                     </div>
                     
@@ -13587,7 +13527,7 @@
                 if (seasonNum === 2026) {
                     draftResponse = await fetch('data/2026/draft.json');
                 } else if (isCurrentSeason) {
-                    draftResponse = await fetch('data/current_season/draft.json');
+                    draftResponse = await fetch('data/historical/2025/draft.json');
                 } else {
                     draftResponse = await fetch(`data/historical/${seasonNum}/draft.json`);
                 }
@@ -13628,7 +13568,7 @@
                 // Load player stats to get fantasy points and position ranks
                 let playerStatsResponse;
                 if (isCurrentSeason) {
-                    playerStatsResponse = await fetch('data/current_season/player_stats.json');
+                    playerStatsResponse = await fetch('data/historical/2025/player_stats.json');
                 } else {
                     playerStatsResponse = await fetch(`data/historical/${seasonNum}/player_stats.json`);
                 }
@@ -13850,7 +13790,7 @@
                 // Load weekly scores data
                 let scoresResponse;
                 if (isCurrentSeason) {
-                    scoresResponse = await fetch('data/current_season/all_scores.json');
+                    scoresResponse = await fetch('data/historical/2025/all_scores.json');
                 } else {
                     scoresResponse = await fetch(`data/historical/${seasonNum}/all_scores.json`);
                 }
@@ -14353,7 +14293,7 @@
                 
                 // Load draft data
                 const draftPath = isCurrentSeason 
-                    ? 'data/current_season/draft.json'
+                    ? 'data/historical/2025/draft.json'
                     : `data/historical/${seasonNum}/draft.json`;
                 const draftResponse = await fetch(draftPath);
                 if (!draftResponse.ok) {
@@ -14364,7 +14304,7 @@
                 
                 // Load player stats
                 const statsPath = isCurrentSeason
-                    ? 'data/current_season/player_stats.json'
+                    ? 'data/historical/2025/player_stats.json'
                     : `data/historical/${seasonNum}/player_stats.json`;
                 const statsResponse = await fetch(statsPath);
                 if (!statsResponse.ok) {
@@ -14595,10 +14535,10 @@
                     let standingsResponse, playerStatsResponse, draftResponse, teamsResponse;
 
                     if (year === 2025) {
-                        standingsResponse = await fetch('data/current_season/standings.json');
-                        playerStatsResponse = await fetch('data/current_season/player_stats.json');
-                        draftResponse = await fetch('data/current_season/draft.json');
-                        teamsResponse = await fetch('data/current_season/teams.json');
+                        standingsResponse = await fetch('data/historical/2025/standings.json');
+                        playerStatsResponse = await fetch('data/historical/2025/player_stats.json');
+                        draftResponse = await fetch('data/historical/2025/draft.json');
+                        teamsResponse = await fetch('data/historical/2025/teams.json');
                     } else {
                         standingsResponse = await fetch(`data/historical/${year}/final_standings.json`);
                         playerStatsResponse = await fetch(`data/historical/${year}/player_stats.json`);
@@ -14865,16 +14805,16 @@
             for (const year of years) {
                 try {
                     // Load draft data
-                    const draftPath = year === 2025 
-                        ? 'data/current_season/draft.json'
+                    const draftPath = year === 2026 
+                        ? 'data/historical/2025/draft.json'
                         : `data/historical/${year}/draft.json`;
                     const draftResponse = await fetch(draftPath);
                     if (!draftResponse.ok) continue;
                     const draftData = await draftResponse.json();
                     
                     // Load teams to map team_key to manager
-                    const teamsPath = year === 2025
-                        ? 'data/current_season/teams.json'
+                    const teamsPath = year === 2026
+                        ? 'data/historical/2025/teams.json'
                         : `data/historical/${year}/teams.json`;
                     const teamsResponse = await fetch(teamsPath);
                     if (!teamsResponse.ok) continue;
@@ -14888,8 +14828,8 @@
                     });
                     
                     // Load player stats for actual points
-                    const statsPath = year === 2025
-                        ? 'data/current_season/player_stats.json'
+                    const statsPath = year === 2026
+                        ? 'data/historical/2025/player_stats.json'
                         : `data/historical/${year}/player_stats.json`;
                     const statsResponse = await fetch(statsPath);
                     if (!statsResponse.ok) continue;
@@ -15194,7 +15134,7 @@
                 }
 
                 // Determine which managers are currently active
-                const currentStandingsResponse = await fetch('data/current_season/standings.json');
+                const currentStandingsResponse = await fetch('data/historical/2025/standings.json');
                 let currentManagers = [];
                 if (currentStandingsResponse.ok) {
                     const currentStandings = await currentStandingsResponse.json();
@@ -15297,7 +15237,7 @@
                     try {
                         let response;
                         if (year === 2025) {
-                            response = await fetch('data/current_season/all_scores.json');
+                            response = await fetch('data/historical/2025/all_scores.json');
                         } else {
                             response = await fetch(`data/historical/${year}/all_scores.json`);
                         }
@@ -15308,7 +15248,7 @@
                             // Load standings to map team_key to manager
                             let standingsResponse;
                             if (year === 2025) {
-                                standingsResponse = await fetch('data/current_season/standings.json');
+                                standingsResponse = await fetch('data/historical/2025/standings.json');
                             } else {
                                 standingsResponse = await fetch(`data/historical/${year}/final_standings.json`);
                             }
@@ -16196,8 +16136,8 @@
                 for (const season of manager.season_history.map(h => h.year)) {
                     try {
                         let scoresResponse;
-                        if (season === 2025) {
-                            scoresResponse = await fetch('data/current_season/all_scores.json');
+                        if (season === 2026) {
+                            scoresResponse = await fetch('data/historical/2025/all_scores.json');
                         } else {
                             scoresResponse = await fetch(`data/historical/${season}/all_scores.json`);
                         }
@@ -16205,8 +16145,8 @@
                         if (!scoresResponse.ok) continue;
 
                         const scores = await scoresResponse.json();
-                        let standings = season === 2025
-                            ? await (await fetch('data/current_season/standings.json')).json()
+                        let standings = season === 2026
+                            ? await (await fetch('data/historical/2025/standings.json')).json()
                             : await (await fetch(`data/historical/${season}/final_standings.json`)).json();
 
                         // Normalize standings
@@ -16495,7 +16435,7 @@
                 seasons.slice().reverse().forEach(year => {
                     const option = document.createElement('option');
                     option.value = year;
-                    option.textContent = year === 2025 ? '2025 (Current)' : year;
+                    option.textContent = year === 2026 ? '2026 (Current)' : year;
                     seasonSelect.appendChild(option);
                 });
             }
@@ -16505,9 +16445,10 @@
             
             for (const year of seasons) {
                 try {
-                    const isCurrentSeason = year === 2025;
+                    const isCurrentSeason = year === 2026;
                     const dataPath = isCurrentSeason ? 'data/current_season' : `data/historical/${year}`;
-                    const standingsFile = isCurrentSeason ? 'standings.json' : 'final_standings.json';
+                    // 2025 uses standings.json, others use final_standings.json
+                    const standingsFile = isCurrentSeason ? 'standings.json' : (year === 2025 ? 'standings.json' : 'final_standings.json');
                     
                     const standingsResponse = await fetch(`${dataPath}/${standingsFile}`);
                     if (!standingsResponse.ok) {
@@ -16549,7 +16490,7 @@
             // Build the logo selector HTML
             let html = '';
             championsInfo.forEach(info => {
-                const isCurrentSeason = info.year === 2025;
+                const isCurrentSeason = info.year === 2026;
                 const currentClass = isCurrentSeason ? 'current-season' : '';
                 const ringBadge = isCurrentSeason ? '<img src="champion_ring.png" class="champion-ring-badge" alt="Current Leader">' : '';
                 html += `
@@ -16620,11 +16561,12 @@
                 // Update active logo state
                 selectChampionYear(selectedYear, false);
                 
-                const isCurrentSeason = selectedYear === 2025;
+                const isCurrentSeason = selectedYear === 2026;
                 const dataPath = isCurrentSeason ? 'data/current_season' : `data/historical/${selectedYear}`;
 
                 // Load standings to find champion
-                const standingsFile = isCurrentSeason ? 'standings.json' : 'final_standings.json';
+                // 2025 uses standings.json, others use final_standings.json
+                const standingsFile = isCurrentSeason ? 'standings.json' : (selectedYear === 2025 ? 'standings.json' : 'final_standings.json');
                 const standingsResponse = await fetch(`${dataPath}/${standingsFile}`);
                 if (!standingsResponse.ok) throw new Error(`No data for ${selectedYear}`);
                 let standings = await standingsResponse.json();
@@ -16697,7 +16639,7 @@
                 try {
                     let response;
                     if (year === 2025) {
-                        response = await fetch('data/current_season/standings.json');
+                        response = await fetch('data/historical/2025/standings.json');
                     } else {
                         response = await fetch(`data/historical/${year}/final_standings.json`);
                     }
@@ -16986,10 +16928,10 @@
                         let standingsResponse, teamsResponse, playerStatsResponse, draftResponse;
 
                         if (year === 2025) {
-                            standingsResponse = await fetch('data/current_season/standings.json');
-                            teamsResponse = await fetch('data/current_season/teams.json');
-                            playerStatsResponse = await fetch('data/current_season/player_stats.json');
-                            draftResponse = await fetch('data/current_season/draft.json');
+                            standingsResponse = await fetch('data/historical/2025/standings.json');
+                            teamsResponse = await fetch('data/historical/2025/teams.json');
+                            playerStatsResponse = await fetch('data/historical/2025/player_stats.json');
+                            draftResponse = await fetch('data/historical/2025/draft.json');
                         } else {
                             standingsResponse = await fetch(`data/historical/${year}/final_standings.json`);
                             teamsResponse = await fetch(`data/historical/${year}/teams.json`);
@@ -18605,7 +18547,7 @@
 
                 // Load 2025 draft data for cost calculations
                 try {
-                    const draftResponse = await fetch('data/current_season/draft.json');
+                    const draftResponse = await fetch('data/historical/2025/draft.json');
                     if (draftResponse.ok) {
                         keeperDraftData = await draftResponse.json();
                         console.log(`Loaded ${keeperDraftData.length} draft picks for keeper costs`);
@@ -18870,7 +18812,7 @@
 
             try {
                 // Load 2025 player stats to get roster
-                const response = await fetch('data/current_season/player_stats.json');
+                const response = await fetch('data/historical/2025/player_stats.json');
                 if (!response.ok) throw new Error('Could not load player data');
 
                 const allPlayers = await response.json();
@@ -20677,8 +20619,8 @@
             for (const year of years) {
                 try {
                     // Load draft data
-                    const draftPath = year === 2025 
-                        ? 'data/current_season/draft.json' 
+                    const draftPath = year === 2026 
+                        ? 'data/historical/2025/draft.json' 
                         : `data/historical/${year}/draft.json`;
                     const draftResponse = await fetch(draftPath);
                     if (!draftResponse.ok) {
@@ -20689,8 +20631,8 @@
                     console.log(`Loaded ${draftData.length} draft picks for ${year}`);
 
                     // Load player stats for that year
-                    const statsPath = year === 2025 
-                        ? 'data/current_season/player_stats.json' 
+                    const statsPath = year === 2026 
+                        ? 'data/historical/2025/player_stats.json' 
                         : `data/historical/${year}/player_stats.json`;
                     const statsResponse = await fetch(statsPath);
                     if (!statsResponse.ok) {
@@ -20872,7 +20814,7 @@
             // Step 3: Try to load teams data
             let teamsData = [];
             try {
-                const teamsResponse = await fetch('data/current_season/teams.json');
+                const teamsResponse = await fetch('data/historical/2025/teams.json');
                 if (teamsResponse.ok) {
                     teamsData = await teamsResponse.json();
                 }
@@ -22518,7 +22460,7 @@
             // Load team roster if not cached
             if (!teamRosters[teamKey]) {
                 try {
-                    const response = await fetch('data/current_season/player_stats.json');
+                    const response = await fetch('data/historical/2025/player_stats.json');
                     if (response.ok) {
                         const allPlayers = await response.json();
                         teamRosters[teamKey] = allPlayers.filter(p => p.team_key === teamKey);
@@ -23404,7 +23346,7 @@
         async function initializeSportsbook() {
             // Load team data from current season (2025)
             try {
-                const response = await fetch('data/current_season/teams.json');
+                const response = await fetch('data/historical/2025/teams.json');
                 if (response.ok) {
                     sportsbookTeamData = await response.json();
                 }
@@ -24038,8 +23980,8 @@
             for (const season of seasons) {
                 try {
                     let response;
-                    if (season === 2025) {
-                        response = await fetch('data/current_season/standings.json');
+                    if (season === 2026) {
+                        response = await fetch('data/historical/2025/standings.json');
                     } else {
                         response = await fetch(`data/historical/${season}/final_standings.json`);
                     }
@@ -24215,8 +24157,8 @@
                 for (const season of seasons) {
                     try {
                         let response;
-                        if (season === 2025) {
-                            response = await fetch('data/current_season/standings.json');
+                        if (season === 2026) {
+                            response = await fetch('data/historical/2025/standings.json');
                         } else {
                             response = await fetch(`data/historical/${season}/final_standings.json`);
                         }
