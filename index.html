@@ -4918,25 +4918,16 @@
             background: #d4af37;
         }
 
-        .card-year-name-group {
-            display: inline-flex;
-            align-items: center;
-            background: #c41e3a;
-            padding: 0.2rem 0.6rem;
-            padding-right: calc(0.6rem + 5%);
-            border-radius: 3px;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
         .card-year-badge {
             font-family: inherit;
             font-size: 0.85rem;
             font-weight: 900;
             color: white;
-            background: rgba(0,0,0,0.2);
-            padding: 0.15rem 0.4rem;
+            background: rgba(0,0,0,0.15);
+            padding: 0.2rem 0.5rem;
             border-radius: 3px;
-            margin-right: 0.6rem;
+            margin-right: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
         .card-player-name {
@@ -5522,7 +5513,7 @@
         }
 
         .projection-card-container .card-name-banner {
-            background: #1e3c72;
+            background: linear-gradient(90deg, #c41e3a 0%, #c41e3a 45%, #1e3c72 45%, #1e3c72 100%);
             padding: 0.5rem 1rem;
             display: flex;
             align-items: center;
@@ -5539,24 +5530,15 @@
             background: #d4af37;
         }
 
-        .projection-card-container .card-year-name-group {
-            display: inline-flex;
-            align-items: center;
-            background: #c41e3a;
-            padding: 0.2rem 0.6rem;
-            padding-right: calc(0.6rem + 5%);
-            border-radius: 3px;
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
         .projection-card-container .card-year-badge {
             font-size: 0.85rem;
             font-weight: 900;
             color: white;
-            background: rgba(0,0,0,0.2);
-            padding: 0.15rem 0.4rem;
+            background: rgba(0,0,0,0.15);
+            padding: 0.2rem 0.5rem;
             border-radius: 3px;
-            margin-right: 0.6rem;
+            margin-right: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.3);
         }
 
         .projection-card-container .card-player-name {
@@ -11783,13 +11765,25 @@
                         </div>
                         
                         <!-- Player Name Banner -->
-                        <div class="card-name-banner">
-                            <div class="card-year-name-group">
-                                <span class="card-year-badge">${selectedYear}</span>
-                                <span class="card-player-name">${player.name}</span>
-                            </div>
+                        <div class="card-name-banner" id="player-name-banner-${player.name.replace(/[^a-zA-Z0-9]/g, '')}">
+                            <span class="card-year-badge">${selectedYear}</span>
+                            <span class="card-player-name">${player.name}</span>
                             <span class="card-position-badge">${player.primary_position}</span>
                         </div>
+                        <script>
+                            (function() {
+                                const banner = document.getElementById('player-name-banner-${player.name.replace(/[^a-zA-Z0-9]/g, '')}');
+                                const name = banner.querySelector('.card-player-name');
+                                setTimeout(() => {
+                                    const nameWidth = name.offsetWidth;
+                                    const bannerWidth = banner.offsetWidth;
+                                    const yearBadge = banner.querySelector('.card-year-badge');
+                                    const yearWidth = yearBadge.offsetWidth + 12; // include margin
+                                    const redWidth = ((yearWidth + nameWidth + 20) / bannerWidth * 100) + 5;
+                                    banner.style.background = 'linear-gradient(90deg, #c41e3a 0%, #c41e3a ' + redWidth + '%, #1e3c72 ' + redWidth + '%, #1e3c72 100%)';
+                                }, 0);
+                            })();
+                        </script>
                     </div>
                     
                     <!-- CARD BACK - Stats Section -->
@@ -22402,23 +22396,46 @@
                                 ${actionShotUrl 
                                     ? `<img src="${actionShotUrl}" alt="${player.name}" class="card-action-shot" onerror="this.className='card-headshot'; this.src='${headshot}';">` 
                                     : `<img src="${headshot}" alt="${player.name}" class="card-headshot" onerror="this.src='${placeholderHeadshot}';">`}
+                            </div>
                         </div>
                         
                         <!-- Player Name Banner -->
-                        <div class="card-name-banner">
-                            <div class="card-year-name-group">
-                                <span class="card-year-badge">2026</span>
-                                <span class="card-player-name">${player.name}</span>
-                            </div>
+                        <div class="card-name-banner" id="proj-name-banner-${player.name.replace(/[^a-zA-Z0-9]/g, '')}">
+                            <span class="card-year-badge">2026</span>
+                            <span class="card-player-name">${player.name}</span>
                             <span class="card-position-badge">${primaryPos}</span>
                         </div>
+                        <script>
+                            (function() {
+                                const banner = document.getElementById('proj-name-banner-${player.name.replace(/[^a-zA-Z0-9]/g, '')}');
+                                const name = banner.querySelector('.card-player-name');
+                                setTimeout(() => {
+                                    const nameWidth = name.offsetWidth;
+                                    const bannerWidth = banner.offsetWidth;
+                                    const yearBadge = banner.querySelector('.card-year-badge');
+                                    const yearWidth = yearBadge.offsetWidth + 12;
+                                    const redWidth = ((yearWidth + nameWidth + 20) / bannerWidth * 100) + 5;
+                                    banner.style.background = 'linear-gradient(90deg, #c41e3a 0%, #c41e3a ' + redWidth + '%, #1e3c72 ' + redWidth + '%, #1e3c72 100%)';
+                                }, 0);
+                            })();
+                        </script>
                     </div>
                     
                     <!-- Stats Section -->
                     <div class="card-back">
+                        <!-- Header with headshot -->
+                        <div class="card-back-header">
+                            <div class="card-back-number">${positionRank}</div>
+                            <div class="card-back-info">
+                                <div class="card-back-name">${player.name}</div>
+                                <div class="card-back-team">${mlbTeamText} • ${positionDisplay}</div>
+                            </div>
+                            <img src="${headshot}" alt="" class="card-back-headshot" onerror="this.src='${placeholderHeadshot}';">
+                        </div>
+                        
                         <div class="card-stats-section">
                             <div class="card-stats-header">
-                                <div class="card-stats-title">${mlbTeamText} • ${positionDisplay} • ${positionRank}</div>
+                                <div class="card-stats-title">2026 Projected Statistics</div>
                             </div>
                             <div id="projection-modal-stats-content">`;
 
