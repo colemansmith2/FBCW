@@ -4792,13 +4792,14 @@
         .card-inner {
             background: #1a1a1a;
             border-radius: 6px;
-            overflow: hidden;
+            overflow: visible;
             border: 2px solid #111;
         }
 
         /* ===== CARD FRONT - Photo Section ===== */
         .card-front {
             position: relative;
+            overflow: visible;
         }
 
         .card-photo-wrapper {
@@ -4988,10 +4989,10 @@
         /* Back header with player info and headshot */
         .card-back-header {
             background: #1e3c72;
-            padding: 0.6rem 1rem;
+            padding: 0.5rem 0.75rem;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 0.6rem;
             position: relative;
         }
 
@@ -4999,7 +5000,7 @@
             background: #d4af37;
             color: #1e3c72;
             font-weight: 900;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             padding: 0.2rem 0.5rem;
             clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
             padding-right: 0.8rem;
@@ -5012,18 +5013,18 @@
         .card-back-name {
             color: white;
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 1rem;
             text-transform: uppercase;
         }
 
         .card-back-team {
             color: #d4af37;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
         }
 
         .card-back-headshot {
-            width: 50px;
-            height: 50px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: 2px solid #d4af37;
             object-fit: cover;
@@ -5033,7 +5034,7 @@
         /* Stats toggle */
         .card-stats-toggle {
             background: #1e3c72;
-            padding: 0.35rem 0.75rem;
+            padding: 0.4rem 0.75rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -5042,7 +5043,7 @@
 
         .card-stats-title {
             color: #d4af37;
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -5052,11 +5053,11 @@
         }
 
         .card-toggle-btn {
-            padding: 0.2rem 0.5rem;
+            padding: 0.25rem 0.6rem;
             border: 2px solid #d4af37;
             background: transparent;
             color: #d4af37;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.2s ease;
@@ -5090,13 +5091,13 @@
             background: #d4af37;
             color: #1e3c72;
             font-weight: bold;
-            font-size: 0.6rem;
-            padding: 0.25rem 0.4rem;
-            min-width: 55px;
+            font-size: 0.7rem;
+            padding: 0.3rem 0.5rem;
+            min-width: 58px;
             display: flex;
             align-items: center;
             clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
-            padding-right: 0.7rem;
+            padding-right: 0.8rem;
         }
 
         .card-stats-cells {
@@ -5107,10 +5108,10 @@
 
         .card-stats-header-cell {
             color: white;
-            font-size: 0.55rem;
+            font-size: 0.7rem;
             font-weight: bold;
             text-align: center;
-            padding: 0.25rem 0.1rem;
+            padding: 0.3rem 0.1rem;
             border-left: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -5128,13 +5129,13 @@
             background: #d4af37;
             color: #1e3c72;
             font-weight: bold;
-            font-size: 0.65rem;
-            padding: 0.3rem 0.4rem;
-            min-width: 55px;
+            font-size: 0.75rem;
+            padding: 0.35rem 0.5rem;
+            min-width: 58px;
             display: flex;
             align-items: center;
             clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
-            padding-right: 0.7rem;
+            padding-right: 0.8rem;
         }
 
         .card-stats-data-cells {
@@ -5144,10 +5145,10 @@
         }
 
         .card-stats-data-cell {
-            font-size: 0.65rem;
+            font-size: 0.8rem;
             font-weight: 600;
             text-align: center;
-            padding: 0.3rem 0.1rem;
+            padding: 0.35rem 0.1rem;
             color: #333;
             border-left: 1px solid #d4c4a4;
         }
@@ -5155,7 +5156,7 @@
         /* Fantasy points row */
         .card-points-row {
             background: #1e3c72;
-            padding: 0.4rem 0.75rem;
+            padding: 0.5rem 0.75rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -5164,7 +5165,7 @@
 
         .card-points-label {
             color: white;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -5172,7 +5173,7 @@
         .card-points-value {
             background: #d4af37;
             color: #1e3c72;
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 900;
             padding: 0.25rem 0.6rem;
             border-radius: 4px;
@@ -5180,16 +5181,16 @@
 
         .card-points-rank {
             color: #d4af37;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: bold;
         }
 
         /* Acquisition row */
         .card-acquisition-row {
             background: #ebe0c8;
-            padding: 0.3rem 0.75rem;
+            padding: 0.4rem 0.75rem;
             text-align: center;
-            font-size: 0.65rem;
+            font-size: 0.75rem;
             color: #555;
             border-top: 1px solid #d4c4a4;
         }
@@ -5222,18 +5223,18 @@
         .card-history-title {
             background: #1e3c72;
             color: #d4af37;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             font-weight: bold;
             text-transform: uppercase;
-            padding: 0.3rem 0.75rem;
+            padding: 0.35rem 0.75rem;
         }
 
         .card-history-row {
             display: flex;
             align-items: center;
-            padding: 0.25rem 0.5rem;
+            padding: 0.3rem 0.5rem;
             border-bottom: 1px solid #d4c4a4;
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             background: #f5e6c8;
         }
 
@@ -5244,12 +5245,12 @@
         .card-history-year {
             font-weight: bold;
             color: #1e3c72;
-            min-width: 32px;
+            min-width: 36px;
         }
 
         .card-history-logo {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             border-radius: 50%;
             margin-right: 0.3rem;
             object-fit: contain;
@@ -5260,22 +5261,22 @@
         .card-history-manager {
             flex: 1;
             color: #555;
-            font-size: 0.55rem;
+            font-size: 0.65rem;
         }
 
         .card-history-pts {
             font-weight: bold;
             color: #1e3c72;
-            min-width: 42px;
+            min-width: 48px;
             text-align: right;
         }
 
         .card-history-rank {
             background: #1e3c72;
             color: #d4af37;
-            font-size: 0.5rem;
+            font-size: 0.6rem;
             font-weight: bold;
-            padding: 0.1rem 0.25rem;
+            padding: 0.15rem 0.3rem;
             border-radius: 3px;
             margin-left: 0.3rem;
             min-width: 26px;
@@ -5286,7 +5287,7 @@
         .card-manager-footer {
             background: #1e3c72;
             color: white;
-            padding: 0.4rem 0.75rem;
+            padding: 0.5rem 0.75rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -5294,7 +5295,7 @@
         }
 
         .card-manager-text {
-            font-size: 0.65rem;
+            font-size: 0.8rem;
         }
 
         .card-manager-text span {
@@ -5314,14 +5315,14 @@
         }
 
         .card-league-logo {
-            width: 24px;
-            height: 24px;
+            width: 26px;
+            height: 26px;
             object-fit: contain;
         }
 
         .card-league-text {
             color: white;
-            font-size: 0.55rem;
+            font-size: 0.7rem;
             font-weight: bold;
             text-transform: uppercase;
         }
@@ -10938,9 +10939,9 @@
             const isBatter = player.position_type === 'B';
 
             // Update points display in the card
-            const ptsEl = document.querySelector('.card-fantasy-points');
-            if (ptsEl) {
-                ptsEl.innerHTML = `${fantasyPts.toFixed(1)}<span class="pts-label">PTS</span>`;
+            const ptsValueEl = document.querySelector('.card-points-value');
+            if (ptsValueEl) {
+                ptsValueEl.textContent = fantasyPts.toFixed(1);
             }
 
             // Update position rank
@@ -10951,70 +10952,114 @@
             const posRank = samePos.findIndex(p => p.name === player.name) + 1;
             const posRankDisplay = posRank > 0 ? `${primaryPos}${posRank}` : primaryPos;
 
-            const rankEl = document.querySelector('.card-position-rank');
+            const rankEl = document.querySelector('.card-points-rank');
             if (rankEl) {
                 rankEl.textContent = posRankDisplay;
             }
 
-            // Update stats table
+            // Update stats content
             const statsContent = document.getElementById('modal-stats-content');
             if (statsContent) {
                 if (isBatter) {
                     statsContent.innerHTML = `
-                        <table class="card-stats-table">
-                            <tr>
-                                <th>G</th><th>AB</th><th>H</th><th>HR</th><th>RBI</th><th>R</th><th>SB</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.G || 0}</td>
-                                <td>${stats.AB || 0}</td>
-                                <td>${stats.H || 0}</td>
-                                <td>${stats.HR || 0}</td>
-                                <td>${stats.RBI || 0}</td>
-                                <td>${stats.R || 0}</td>
-                                <td>${stats.SB || 0}</td>
-                            </tr>
-                            <tr>
-                                <th>BB</th><th>2B</th><th>3B</th><th>AVG</th><th>OBP</th><th>SLG</th><th>OPS</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.BB || 0}</td>
-                                <td>${stats['2B'] || 0}</td>
-                                <td>${stats['3B'] || 0}</td>
-                                <td>${stats.AVG ? stats.AVG.toFixed(3) : '.000'}</td>
-                                <td>${stats.OBP ? stats.OBP.toFixed(3) : '.000'}</td>
-                                <td>${stats.SLG ? stats.SLG.toFixed(3) : '.000'}</td>
-                                <td>${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</td>
-                            </tr>
-                        </table>`;
+                        <div class="card-stats-row">
+                            <div class="card-stats-label">SEASON</div>
+                            <div class="card-stats-cells">
+                                <div class="card-stats-header-cell">G</div>
+                                <div class="card-stats-header-cell">AB</div>
+                                <div class="card-stats-header-cell">H</div>
+                                <div class="card-stats-header-cell">HR</div>
+                                <div class="card-stats-header-cell">RBI</div>
+                                <div class="card-stats-header-cell">SB</div>
+                                <div class="card-stats-header-cell">AVG</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-data-row">
+                            <div class="card-stats-data-label">${window.selectedYear || '2025'}</div>
+                            <div class="card-stats-data-cells">
+                                <div class="card-stats-data-cell">${stats.G || 0}</div>
+                                <div class="card-stats-data-cell">${stats.AB || 0}</div>
+                                <div class="card-stats-data-cell">${stats.H || 0}</div>
+                                <div class="card-stats-data-cell">${stats.HR || 0}</div>
+                                <div class="card-stats-data-cell">${stats.RBI || 0}</div>
+                                <div class="card-stats-data-cell">${stats.SB || 0}</div>
+                                <div class="card-stats-data-cell">${stats.AVG ? stats.AVG.toFixed(3) : '.000'}</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-row">
+                            <div class="card-stats-label">MORE</div>
+                            <div class="card-stats-cells">
+                                <div class="card-stats-header-cell">R</div>
+                                <div class="card-stats-header-cell">BB</div>
+                                <div class="card-stats-header-cell">2B</div>
+                                <div class="card-stats-header-cell">3B</div>
+                                <div class="card-stats-header-cell">OBP</div>
+                                <div class="card-stats-header-cell">SLG</div>
+                                <div class="card-stats-header-cell">OPS</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-data-row">
+                            <div class="card-stats-data-label"></div>
+                            <div class="card-stats-data-cells">
+                                <div class="card-stats-data-cell">${stats.R || 0}</div>
+                                <div class="card-stats-data-cell">${stats.BB || 0}</div>
+                                <div class="card-stats-data-cell">${stats['2B'] || 0}</div>
+                                <div class="card-stats-data-cell">${stats['3B'] || 0}</div>
+                                <div class="card-stats-data-cell">${stats.OBP ? stats.OBP.toFixed(3) : '.000'}</div>
+                                <div class="card-stats-data-cell">${stats.SLG ? stats.SLG.toFixed(3) : '.000'}</div>
+                                <div class="card-stats-data-cell">${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</div>
+                            </div>
+                        </div>`;
                 } else {
                     statsContent.innerHTML = `
-                        <table class="card-stats-table">
-                            <tr>
-                                <th>W</th><th>L</th><th>SV</th><th>G</th><th>GS</th><th>IP</th><th>K</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.W || 0}</td>
-                                <td>${stats.L || 0}</td>
-                                <td>${stats.SV || 0}</td>
-                                <td>${stats.G || 0}</td>
-                                <td>${stats.GS || 0}</td>
-                                <td>${stats.IP || 0}</td>
-                                <td>${stats.SO || 0}</td>
-                            </tr>
-                            <tr>
-                                <th>BB</th><th>ERA</th><th>WHIP</th><th>K/9</th><th>K%</th><th>BB%</th><th>HLD</th>
-                            </tr>
-                            <tr>
-                                <td>${stats.BB || 0}</td>
-                                <td>${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</td>
-                                <td>${stats.WHIP ? stats.WHIP.toFixed(2) : '0.00'}</td>
-                                <td>${stats['K/9'] ? stats['K/9'].toFixed(1) : '0.0'}</td>
-                                <td>${stats['K%'] ? stats['K%'].toFixed(0) : '0'}%</td>
-                                <td>${stats['BB%'] ? stats['BB%'].toFixed(0) : '0'}%</td>
-                                <td>${stats.HLD || 0}</td>
-                            </tr>
-                        </table>`;
+                        <div class="card-stats-row">
+                            <div class="card-stats-label">SEASON</div>
+                            <div class="card-stats-cells">
+                                <div class="card-stats-header-cell">W</div>
+                                <div class="card-stats-header-cell">L</div>
+                                <div class="card-stats-header-cell">SV</div>
+                                <div class="card-stats-header-cell">G</div>
+                                <div class="card-stats-header-cell">IP</div>
+                                <div class="card-stats-header-cell">K</div>
+                                <div class="card-stats-header-cell">ERA</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-data-row">
+                            <div class="card-stats-data-label">${window.selectedYear || '2025'}</div>
+                            <div class="card-stats-data-cells">
+                                <div class="card-stats-data-cell">${stats.W || 0}</div>
+                                <div class="card-stats-data-cell">${stats.L || 0}</div>
+                                <div class="card-stats-data-cell">${stats.SV || 0}</div>
+                                <div class="card-stats-data-cell">${stats.G || 0}</div>
+                                <div class="card-stats-data-cell">${stats.IP || 0}</div>
+                                <div class="card-stats-data-cell">${stats.SO || 0}</div>
+                                <div class="card-stats-data-cell">${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-row">
+                            <div class="card-stats-label">MORE</div>
+                            <div class="card-stats-cells">
+                                <div class="card-stats-header-cell">GS</div>
+                                <div class="card-stats-header-cell">HLD</div>
+                                <div class="card-stats-header-cell">BB</div>
+                                <div class="card-stats-header-cell">WHIP</div>
+                                <div class="card-stats-header-cell">K/9</div>
+                                <div class="card-stats-header-cell">K%</div>
+                                <div class="card-stats-header-cell">BB%</div>
+                            </div>
+                        </div>
+                        <div class="card-stats-data-row">
+                            <div class="card-stats-data-label"></div>
+                            <div class="card-stats-data-cells">
+                                <div class="card-stats-data-cell">${stats.GS || 0}</div>
+                                <div class="card-stats-data-cell">${stats.HLD || 0}</div>
+                                <div class="card-stats-data-cell">${stats.BB || 0}</div>
+                                <div class="card-stats-data-cell">${stats.WHIP ? stats.WHIP.toFixed(2) : '0.00'}</div>
+                                <div class="card-stats-data-cell">${stats['K/9'] ? stats['K/9'].toFixed(1) : '0.0'}</div>
+                                <div class="card-stats-data-cell">${stats['K%'] ? stats['K%'].toFixed(0) : '0'}%</div>
+                                <div class="card-stats-data-cell">${stats['BB%'] ? stats['BB%'].toFixed(0) : '0'}%</div>
+                            </div>
+                        </div>`;
                 }
             }
         }
