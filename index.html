@@ -11621,7 +11621,7 @@
                 // Check if player is on a fantasy team
                 const hasFantasyTeam = player.team_key && player.team_key.trim() && player.team_name && player.team_name !== 'Free Agent' && player.team_name !== 'Drafted (Dropped)' && player.team_name !== 'Previously Rostered';
                 const fantasyTeamHtml = hasFantasyTeam
-                    ? `<img src="${player.team_logo}" alt="" class="player-team-logo" onerror="this.style.display='none'">
+                    ? `<img src="${fixTeamLogo(player.team_logo)}" alt="" class="player-team-logo" onerror="this.style.display='none'">
                        <span class="player-fantasy-team" title="${player.team_name}">${player.manager}</span>`
                     : '<span class="player-fantasy-team">FA</span>';
 
@@ -12011,7 +12011,7 @@
                             <!-- Fantasy Logo - bottom right corner -->
                             <div class="card-fantasy-logo ${hasFantasyTeam ? '' : 'fa-badge'}">
                                 ${hasFantasyTeam 
-                                    ? `<img src="${player.team_logo}" alt="" onerror="this.parentElement.classList.add('fa-badge'); this.outerHTML='FA';">` 
+                                    ? `<img src="${fixTeamLogo(player.team_logo)}" alt="" onerror="this.parentElement.classList.add('fa-badge'); this.outerHTML='FA';">` 
                                     : 'FA'}
                             </div>
                             
@@ -16918,7 +16918,7 @@
                 const teamData = teams.find(t => t.team_key === team.team_key);
                 teamKeyToInfo[team.team_key] = {
                     name: team.team_name,
-                    logo: teamData?.team_logo || ''
+                    logo: fixTeamLogo(t.team_logo)
                 };
             });
 
@@ -17206,7 +17206,7 @@
                         troutAwards.push({
                             year,
                             manager: topHitter.manager,
-                            team_logo: topHitter.team_logo,
+                            team_logo: topHitter.fixTeamLogo(team.logo),
                             player_name: topHitter.name,
                             player_headshot: topHitter.headshot_url,
                             value: Math.round(topHitter.fantasy_points || 0)
@@ -17222,7 +17222,7 @@
                         degromAwards.push({
                             year,
                             manager: topPitcher.manager,
-                            team_logo: topPitcher.team_logo,
+                            team_logo: topPitcher.fixTeamLogo(team.logo),
                             player_name: topPitcher.name,
                             player_headshot: topPitcher.headshot_url,
                             value: Math.round(topPitcher.fantasy_points || 0)
@@ -18878,7 +18878,7 @@
             // Set team logo
             const logoEl = document.getElementById('keeper-team-logo');
             if (teamInfo.team_logo) {
-                logoEl.src = teamInfo.team_logo;
+                logoEl.src = fixTeamLogo(teamInfo.team_logo);
                 logoEl.style.display = 'block';
             } else {
                 logoEl.style.display = 'none';
@@ -19866,7 +19866,7 @@
                 card.className = 'keeper-team-card';
 
                 const logoImg = teamInfo.team_logo
-                    ? `<img src="${teamInfo.team_logo}" class="keeper-team-card-logo" alt="">`
+                    ? `<img src="${fixTeamLogo(teamInfo.team_logo)}" class="keeper-team-card-logo" alt="">`
                     : '';
 
                 let keepersHtml = '';
@@ -20523,7 +20523,7 @@
             let html = '';
             sortedTeams.forEach(([teamKey, teamInfo]) => {
                 const logoImg = teamInfo.team_logo
-                    ? `<img src="${teamInfo.team_logo}" class="team-logo" alt="">`
+                    ? `<img src="${fixTeamLogo(teamInfo.team_logo)}" class="team-logo" alt="">`
                     : '<div class="team-logo" style="background: #1e3c72;"></div>';
 
                 // Get current budget (base + trades + manual adjustments)
@@ -22985,7 +22985,7 @@
                 if (keeperTeam.team_logo) {
                     keeperLogoHtml = `
                         <div class="card-keeper-logo-wrapper">
-                            <img src="${keeperTeam.team_logo}" alt="" class="card-team-logo-corner" onerror="this.style.display='none'">
+                            <img src="${fixTeamLogo(keeperTeam.team_logo)}" alt="" class="card-team-logo-corner" onerror="this.style.display='none'">
                             <div class="card-keeper-badge">K</div>
                         </div>`;
                 }
