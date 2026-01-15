@@ -12194,7 +12194,7 @@
                     if (teams) {
                         const team = teams.find(t => t.team_name === season.team_name);
                         if (team) {
-                            historyLogos[`${season.year}_${season.team_name}`] = team.team_logo;
+                            historyLogos[`${season.year}_${season.team_name}`] = fixTeamLogo(team.team_logo);
                         }
                     }
 
@@ -12828,7 +12828,7 @@
                     // Show teams without standings
                     teamData.forEach((team, idx) => {
                         const row = document.createElement('tr');
-                        const logo = team.team_logo ? `<img src="${team.team_logo}" class="team-logo" alt="Team Logo">` : '';
+                        const logo = team.team_logo ? `<img src="${fixTeamLogo(team.team_logo)}" class="team-logo" alt="Team Logo">` : '';
                         const manager = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
                         
                         row.innerHTML = `
@@ -15938,7 +15938,7 @@
                 if (teams) {
                     const managerTeam = teams.find(t => t.team_name === season.team_name);
                     if (managerTeam) {
-                        seasonLogos[season.year] = managerTeam.team_logo;
+                        seasonLogos[season.year] = fixTeamLogo(managerTeam.team_logo);
                     }
                 }
             }
@@ -17092,7 +17092,7 @@
                             // Create team logo map
                             const logoMap = {};
                             teams.forEach(team => {
-                                logoMap[team.team_key] = team.team_logo;
+                                logoMap[team.team_key] = fixTeamLogo(team.team_logo);
                             });
 
                             // Create team info map
@@ -17101,7 +17101,7 @@
                                 teamInfoMap[team.team_key] = {
                                     name: team.team_name,
                                     manager: team.manager,
-                                    logo: team.team_logo
+                                    logo: fixTeamLogo(team.team_logo)
                                 };
                             });
 
@@ -18787,7 +18787,7 @@
                     team_name: team.team_name,
                     manager: team.manager,
                     password_hash: passwordHash,
-                    team_logo: team.team_logo,
+                    team_logo: fixTeamLogo(team.team_logo),
                     keepers_locked: false
                 };
             }
@@ -20391,7 +20391,7 @@
                 <div class="lineup-ticker-dot ${index === lineupTickerIndex ? 'active' : ''}" 
                      onclick="goToLineupTeam(${index})"
                      data-index="${index}">
-                    <img src="${team.team_logo || placeholderLogo}" alt="${team.team_name}" onerror="this.src='${placeholderLogo}'">
+                    <img src="${fixTeamLogo(team.team_logo) || placeholderLogo}" alt="${team.team_name}" onerror="this.src='${placeholderLogo}'">
                     <div class="dot-tooltip">
                         <div>${team.team_name}</div>
                         <div style="font-size: 0.65rem; opacity: 0.8;">${team.manager}</div>
@@ -21037,7 +21037,7 @@
                         team_key: team.team_key,
                         team_name: team.team_name,
                         manager: team.manager,
-                        team_logo: team.team_logo,
+                        team_logo: fixTeamLogo(team.team_logo),
                         position: keeper.position || '',
                         roundCost: roundCost,
                         baseRoundCost: baseRoundCost,
@@ -21098,7 +21098,7 @@
                         team_key: team.team_key,
                         team_name: team.team_name,
                         manager: capitalizeManagerName(team.manager || 'Unknown'),
-                        team_logo: team.team_logo,
+                        team_logo: fixTeamLogo(team.team_logo),
                         keepers: keeperDetails,
                         totalProjected: totalProjected,
                         totalExpected: totalExpected,
@@ -21949,7 +21949,7 @@
                     <div class="team-value-card">
                         <div class="team-value-card-header">
                             <div class="team-info">
-                                ${team.team_logo ? `<img src="${team.team_logo}" class="team-logo" alt="">` : ''}
+                                ${team.team_logo ? `<img src="${fixTeamLogo(team.team_logo)}" class="team-logo" alt="">` : ''}
                                 <div>
                                     <div class="team-name">${team.team_name}</div>
                                     <div class="team-manager">${team.manager}</div>
@@ -23162,7 +23162,7 @@
                     if (teams) {
                         const team = teams.find(t => t.team_name === season.team_name);
                         if (team) {
-                            historyLogos[`${season.year}_${season.team_name}`] = team.team_logo;
+                            historyLogos[`${season.year}_${season.team_name}`] = fixTeamLogo(team.team_logo);
                         }
                     }
 
@@ -23510,7 +23510,7 @@
                      onclick="selectSportsbookTeam('${team.team_key}')"
                      data-team-key="${team.team_key}"
                      data-tooltip="${team.team_name} - ${normalizeManagerName(team.manager, 2026, team.team_name, team.team_key)}">
-                    <img src="${team.team_logo || 'league_logo.png'}" alt="${team.team_name}">
+                    <img src="${fixTeamLogo(team.team_logo) || 'league_logo.png'}" alt="${team.team_name}">
                     <span class="team-name">${normalizeManagerName(team.manager, 2026, team.team_name, team.team_key)}</span>
                 </div>
             `).join('');
@@ -24199,7 +24199,7 @@
                         ${teamsByWins.map(team => `
                             <div class="team-total-row">
                                 <div class="team-total-info">
-                                    <img class="team-total-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
+                                    <img class="team-total-logo" src="${fixTeamLogo(team.teamLogo) || 'league_logo.png'}" alt="${team.teamName}">
                                     <div class="team-total-details">
                                         <div class="team-total-name">${team.teamName}<span class="team-total-info-btn" onclick="event.stopPropagation(); showTeamTotalStats('${team.teamKey}', '${team.teamName}', 'wins')" title="View betting stats">i</span></div>
                                         <div class="team-total-manager">${team.manager}</div>
@@ -24224,7 +24224,7 @@
                         ${teamsByPoints.map(team => `
                             <div class="team-total-row">
                                 <div class="team-total-info">
-                                    <img class="team-total-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
+                                    <img class="team-total-logo" src="${fixTeamLogo(team.teamLogo) || 'league_logo.png'}" alt="${team.teamName}">
                                     <div class="team-total-details">
                                         <div class="team-total-name">${team.teamName}<span class="team-total-info-btn" onclick="event.stopPropagation(); showTeamTotalStats('${team.teamKey}', '${team.teamName}', 'points')" title="View betting stats">i</span></div>
                                         <div class="team-total-manager">${team.manager}</div>
@@ -24437,7 +24437,7 @@
                 teamValues.push({
                     teamKey: team.team_key,
                     teamName: team.team_name,
-                    teamLogo: team.team_logo,
+                    teamLogo: fixTeamLogo(team.team_logo),
                     manager: normalizeManagerName(team.manager, 2026, team.team_name, team.team_key),
                     rawManager: team.manager,
                     value: value,
@@ -24674,7 +24674,7 @@
                     <div class="season-bet-card" 
                          onclick="addToBetSlip('${betType}', '${team.teamKey}', '${team.teamName}', '${odds}', 'season')"
                          data-team-key="${team.teamKey}">
-                        <img class="season-bet-logo" src="${team.teamLogo || 'league_logo.png'}" alt="${team.teamName}">
+                        <img class="season-bet-logo" src="${fixTeamLogo(team.teamLogo) || 'league_logo.png'}" alt="${team.teamName}">
                         <div class="season-bet-card-info">
                             <div class="season-bet-team">${team.teamName}</div>
                             <div class="season-bet-manager">${team.manager}</div>
@@ -24726,7 +24726,7 @@
                     teamInfoLookup[team.team_key] = {
                         name: team.team_name,
                         manager: normalizeManagerName(team.manager, 2026, team.team_name, team.team_key),
-                        logo: team.team_logo || 'league_logo.png'
+                        logo: fixTeamLogo(team.team_logo) || 'league_logo.png'
                     };
                 });
                 
