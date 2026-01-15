@@ -3943,39 +3943,71 @@
 
         /* ===== PLAYOFF BRACKET STYLES ===== */
         .playoff-bracket {
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 1.5rem 2rem;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 12px;
             overflow-x: auto;
         }
 
-        .bracket-round {
+        .bracket-wrapper {
+            position: relative;
+            min-width: 800px;
+            min-height: 400px;
+        }
+
+        .bracket-lines-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .bracket-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-top: 10px;
+        }
+
+        .bracket-column {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            min-width: 160px;
+            align-items: center;
+            width: 170px;
         }
 
-        .bracket-round.quarterfinals .bracket-matchup {
-            margin: 0.5rem 0;
+        .bracket-connector-space {
+            width: 110px;
+            flex-shrink: 0;
         }
 
-        .bracket-round.semifinals .bracket-matchup {
-            margin: 2.5rem 0;
-        }
-
-        .bracket-round.finals {
-            justify-content: center;
+        .bracket-round-label {
+            text-align: center;
+            font-weight: bold;
+            color: #1e3c72;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
         }
 
         .bracket-matchup {
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
-            position: relative;
+            gap: 4px;
+        }
+
+        .bracket-spacer {
+            height: 60px;
+        }
+
+        .finals-column {
+            padding-top: 95px;
         }
 
         .bracket-team {
@@ -3987,8 +4019,8 @@
             border-radius: 8px;
             border: 2px solid #1e3c72;
             min-width: 150px;
-            transition: all 0.3s ease;
-            position: relative;
+            height: 66px;
+            box-sizing: border-box;
         }
 
         .bracket-team.winner {
@@ -3998,7 +4030,7 @@
         }
 
         .bracket-team.loser {
-            opacity: 0.5;
+            opacity: 0.6;
             border-color: #ccc;
         }
 
@@ -4013,7 +4045,6 @@
             width: 50px;
             height: 50px;
             object-fit: contain;
-            transition: all 0.3s ease;
         }
 
         .bracket-team.loser .bracket-hat {
@@ -4050,161 +4081,11 @@
             color: #1e3c72;
         }
 
-        /* SVG Connector columns */
-        .bracket-connector {
-            width: 60px;
-            flex-shrink: 0;
-        }
-
-        .bracket-connector svg {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        .bracket-connector-wide {
-            width: 100px;
-            flex-shrink: 0;
-            align-self: stretch;
-        }
-
-        .bracket-connector-wide svg {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        /* Div-based bracket lines */
-        .bracket-lines {
-            position: relative;
-            width: 80px;
-            flex-shrink: 0;
-        }
-
-        .bracket-lines .line-group {
-            position: absolute;
-            width: 100%;
-        }
-
-        /* Line colors */
-        .bracket-lines .gold { background-color: #d4af37; }
-        .bracket-lines .navy { background-color: #1e3c72; }
-        .bracket-lines .gray { background-color: #ccc; }
-
-        /* QF to SF connector positioning */
-        .bracket-lines.qf-to-sf {
-            height: 100%;
-        }
-
-        .bracket-lines.qf-to-sf .line-group.qf1 {
-            top: 0;
-            height: 50%;
-        }
-
-        .bracket-lines.qf-to-sf .line-group.qf2 {
-            bottom: 0;
-            height: 50%;
-        }
-
-        /* Horizontal lines from each team */
-        .bracket-lines .h-line {
-            position: absolute;
-            left: 0;
-            width: 30px;
-            height: 3px;
-        }
-
-        .bracket-lines.qf-to-sf .line-group.qf1 .h-line.top { top: 24%; }
-        .bracket-lines.qf-to-sf .line-group.qf1 .h-line.bottom { top: 52%; }
-        .bracket-lines.qf-to-sf .line-group.qf2 .h-line.top { top: 48%; }
-        .bracket-lines.qf-to-sf .line-group.qf2 .h-line.bottom { top: 76%; }
-
-        /* Vertical line connecting the two team lines */
-        .bracket-lines .v-line {
-            position: absolute;
-            left: 30px;
-            width: 3px;
-        }
-
-        .bracket-lines.qf-to-sf .line-group.qf1 .v-line {
-            top: 24%;
-            height: 31%;
-        }
-
-        .bracket-lines.qf-to-sf .line-group.qf2 .v-line {
-            top: 48%;
-            height: 31%;
-        }
-
-        /* Horizontal line going out to next round */
-        .bracket-lines .h-line-out {
-            position: absolute;
-            left: 30px;
-            right: 0;
-            height: 3px;
-        }
-
-        .bracket-lines.qf-to-sf .line-group.qf1 .h-line-out { top: 38%; }
-        .bracket-lines.qf-to-sf .line-group.qf2 .h-line-out { top: 62%; }
-
-        /* SF to Finals connector positioning */
-        .bracket-lines.sf-to-finals {
-            height: 100%;
-        }
-
-        .bracket-lines.sf-to-finals .line-group.sf1 {
-            top: 0;
-            height: 50%;
-        }
-
-        .bracket-lines.sf-to-finals .line-group.sf2 {
-            bottom: 0;
-            height: 50%;
-        }
-
-        .bracket-lines.sf-to-finals .line-group.sf1 .h-line.top { top: 30%; }
-        .bracket-lines.sf-to-finals .line-group.sf1 .h-line.bottom { top: 58%; }
-        .bracket-lines.sf-to-finals .line-group.sf2 .h-line.top { top: 42%; }
-        .bracket-lines.sf-to-finals .line-group.sf2 .h-line.bottom { top: 70%; }
-
-        .bracket-lines.sf-to-finals .line-group.sf1 .v-line {
-            top: 30%;
-            height: 31%;
-        }
-
-        .bracket-lines.sf-to-finals .line-group.sf2 .v-line {
-            top: 42%;
-            height: 31%;
-        }
-
-        .bracket-lines.sf-to-finals .line-group.sf1 .h-line-out { top: 44%; }
-        .bracket-lines.sf-to-finals .line-group.sf2 .h-line-out { top: 56%; }
-
-        /* Vertical line connecting SF1 and SF2 outputs to center, then to finals */
-        .bracket-lines.sf-to-finals .v-line-center {
-            position: absolute;
-            left: 50px;
-            top: 22%;
-            height: 56%;
-            width: 3px;
-            background-color: #1e3c72;
-        }
-
-        .bracket-lines.sf-to-finals .h-line-final {
-            position: absolute;
-            left: 50px;
-            right: 0;
-            top: 50%;
-            height: 3px;
-            background-color: #1e3c72;
-        }
-
         /* Champion badge */
         .champion-badge {
             display: flex;
             align-items: center;
             gap: 0.25rem;
-            margin-top: 0.25rem;
         }
 
         .champion-badge img {
@@ -4213,36 +4094,34 @@
         }
 
         .champion-badge span {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: bold;
             color: #d4af37;
             text-transform: uppercase;
         }
 
-        /* Round labels */
-        .bracket-round-label {
-            text-align: center;
-            font-weight: bold;
-            color: #1e3c72;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            margin-bottom: 0.75rem;
-            letter-spacing: 1px;
-        }
-
         /* Mobile adjustments for bracket */
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .playoff-bracket {
                 padding: 0.75rem;
             }
+            
+            .bracket-wrapper {
+                min-width: 700px;
+            }
 
-            .bracket-round {
-                min-width: 120px;
+            .bracket-column {
+                width: 140px;
+            }
+
+            .bracket-connector-space {
+                width: 70px;
             }
 
             .bracket-team {
-                min-width: 110px;
+                min-width: 120px;
                 padding: 0.4rem 0.5rem;
+                height: 56px;
             }
 
             .bracket-hat {
@@ -4256,10 +4135,6 @@
 
             .bracket-score {
                 font-size: 0.8rem;
-            }
-
-            .bracket-connector {
-                width: 40px;
             }
         }
 
@@ -13512,81 +13387,79 @@
                 const sf1Color = sf1WinnerIsChamp ? '#d4af37' : '#1e3c72';
                 const sf2Color = sf2WinnerIsChamp ? '#d4af37' : '#1e3c72';
                 
-                // Build the bracket HTML
-                // Team cards are ~66px tall with 4px gap between them in a matchup
-                // QF matchups have ~40px gap between them, SF matchups have more
+                // Build the bracket HTML with simple flex layout and SVG lines
                 const bracketHTML = `
-                    <!-- Quarterfinals -->
-                    <div class="bracket-round quarterfinals">
-                        <div class="bracket-round-label">Round 1</div>
-                        <div class="bracket-matchup">
-                            ${renderTeam(qf1.team1.key, qf1.team1.score, qf1.team1.key === qf1.winner)}
-                            ${renderTeam(qf1.team2.key, qf1.team2.score, qf1.team2.key === qf1.winner)}
-                        </div>
-                        <div class="bracket-matchup">
-                            ${renderTeam(qf2.team1.key, qf2.team1.score, qf2.team1.key === qf2.winner)}
-                            ${renderTeam(qf2.team2.key, qf2.team2.score, qf2.team2.key === qf2.winner)}
-                        </div>
-                    </div>
-                    
-                    <!-- Connector QF to SF using divs for precise positioning -->
-                    <div class="bracket-lines qf-to-sf">
-                        <!-- QF1 connector -->
-                        <div class="line-group qf1">
-                            <div class="h-line top ${qf1.team1.key === qf1.winner ? (qf1WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
-                            <div class="h-line bottom ${qf1.team2.key === qf1.winner ? (qf1WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
-                            <div class="v-line ${qf1WinnerIsChamp ? 'gold' : 'navy'}"></div>
-                            <div class="h-line-out ${qf1WinnerIsChamp ? 'gold' : 'navy'}"></div>
-                        </div>
-                        <!-- QF2 connector -->
-                        <div class="line-group qf2">
-                            <div class="h-line top ${qf2.team1.key === qf2.winner ? (qf2WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
-                            <div class="h-line bottom ${qf2.team2.key === qf2.winner ? (qf2WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
-                            <div class="v-line ${qf2WinnerIsChamp ? 'gold' : 'navy'}"></div>
-                            <div class="h-line-out ${qf2WinnerIsChamp ? 'gold' : 'navy'}"></div>
-                        </div>
-                    </div>
-                    
-                    <!-- Semifinals -->
-                    <div class="bracket-round semifinals">
-                        <div class="bracket-round-label">Semifinals</div>
-                        <div class="bracket-matchup">
-                            ${renderTeam(byeTeams[0], sf1.team1.key === byeTeams[0] ? sf1.team1.score : sf1.team2.score, sf1.winner === byeTeams[0])}
-                            ${renderTeam(sf1Opponent, sf1.team1.key === sf1Opponent ? sf1.team1.score : sf1.team2.score, sf1.winner === sf1Opponent)}
-                        </div>
-                        <div class="bracket-matchup">
-                            ${renderTeam(byeTeams[1], sf2.team1.key === byeTeams[1] ? sf2.team1.score : sf2.team2.score, sf2.winner === byeTeams[1])}
-                            ${renderTeam(sf2Opponent, sf2.team1.key === sf2Opponent ? sf2.team1.score : sf2.team2.score, sf2.winner === sf2Opponent)}
-                        </div>
-                    </div>
-                    
-                    <!-- Connector SF to Finals -->
-                    <div class="bracket-lines sf-to-finals">
-                        <!-- SF1 connector -->
-                        <div class="line-group sf1">
-                            <div class="h-line top ${sf1.winner === byeTeams[0] ? (sf1WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
-                            <div class="h-line bottom ${sf1.winner === sf1Opponent ? (sf1WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
-                            <div class="v-line ${sf1WinnerIsChamp ? 'gold' : 'navy'}"></div>
-                            <div class="h-line-out ${sf1WinnerIsChamp ? 'gold' : 'navy'}"></div>
-                        </div>
-                        <!-- SF2 connector -->
-                        <div class="line-group sf2">
-                            <div class="h-line top ${sf2.winner === byeTeams[1] ? (sf2WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
-                            <div class="h-line bottom ${sf2.winner === sf2Opponent ? (sf2WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
-                            <div class="v-line ${sf2WinnerIsChamp ? 'gold' : 'navy'}"></div>
-                            <div class="h-line-out ${sf2WinnerIsChamp ? 'gold' : 'navy'}"></div>
-                        </div>
-                        <!-- Vertical connector between SF1 and SF2 outputs -->
-                        <div class="v-line-center"></div>
-                        <div class="h-line-final"></div>
-                    </div>
-                    
-                    <!-- Finals -->
-                    <div class="bracket-round finals">
-                        <div class="bracket-round-label">Championship</div>
-                        <div class="bracket-matchup">
-                            ${renderTeam(sf1.winner, finalsMatch.team1.key === sf1.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf1.winner === champion, sf1.winner === champion)}
-                            ${renderTeam(sf2.winner, finalsMatch.team1.key === sf2.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf2.winner === champion, sf2.winner === champion)}
+                    <div class="bracket-wrapper">
+                        <!-- SVG overlay for all connector lines -->
+                        <svg class="bracket-lines-svg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
+                            <!-- QF1 connector: lines from teams at y=70,136 meeting at x=200, going to SF1 bottom at y=136 -->
+                            <path d="M 170 70 H 200 V 136 H 170" stroke="${qf1.team1.key === qf1.winner ? qf1WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
+                            <path d="M 170 136 H 200" stroke="${qf1.team2.key === qf1.winner ? qf1WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
+                            <path d="M 200 103 H 280" stroke="${qf1WinnerIsChamp ? '#d4af37' : '#1e3c72'}" stroke-width="3" fill="none"/>
+                            
+                            <!-- QF2 connector: lines from teams at y=264,330 meeting, going to SF2 bottom at y=330 -->
+                            <path d="M 170 264 H 200 V 330 H 170" stroke="${qf2.team1.key === qf2.winner ? qf2WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
+                            <path d="M 170 330 H 200" stroke="${qf2.team2.key === qf2.winner ? qf2WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
+                            <path d="M 200 297 H 280" stroke="${qf2WinnerIsChamp ? '#d4af37' : '#1e3c72'}" stroke-width="3" fill="none"/>
+                            
+                            <!-- SF1 connector: lines from teams at y=70,136 meeting, going to Finals top at y=165 -->
+                            <path d="M 450 70 H 480 V 136 H 450" stroke="${sf1.winner === byeTeams[0] ? sf1WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
+                            <path d="M 450 136 H 480" stroke="${sf1.winner === sf1Opponent ? sf1WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
+                            <path d="M 480 103 H 510 V 165" stroke="${sf1WinnerIsChamp ? '#d4af37' : '#1e3c72'}" stroke-width="3" fill="none"/>
+                            
+                            <!-- SF2 connector: lines from teams at y=264,330 meeting, going to Finals bottom at y=235 -->
+                            <path d="M 450 264 H 480 V 330 H 450" stroke="${sf2.winner === byeTeams[1] ? sf2WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
+                            <path d="M 450 330 H 480" stroke="${sf2.winner === sf2Opponent ? sf2WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
+                            <path d="M 480 297 H 510 V 235" stroke="${sf2WinnerIsChamp ? '#d4af37' : '#1e3c72'}" stroke-width="3" fill="none"/>
+                            
+                            <!-- Final horizontal line to championship -->
+                            <path d="M 510 200 H 560" stroke="${'#1e3c72'}" stroke-width="3" fill="none"/>
+                        </svg>
+                        
+                        <!-- Bracket content -->
+                        <div class="bracket-content">
+                            <!-- Quarterfinals column -->
+                            <div class="bracket-column qf-column">
+                                <div class="bracket-round-label">Round 1</div>
+                                <div class="bracket-matchup qf1-matchup">
+                                    ${renderTeam(qf1.team1.key, qf1.team1.score, qf1.team1.key === qf1.winner)}
+                                    ${renderTeam(qf1.team2.key, qf1.team2.score, qf1.team2.key === qf1.winner)}
+                                </div>
+                                <div class="bracket-spacer"></div>
+                                <div class="bracket-matchup qf2-matchup">
+                                    ${renderTeam(qf2.team1.key, qf2.team1.score, qf2.team1.key === qf2.winner)}
+                                    ${renderTeam(qf2.team2.key, qf2.team2.score, qf2.team2.key === qf2.winner)}
+                                </div>
+                            </div>
+                            
+                            <!-- Spacer for connectors -->
+                            <div class="bracket-connector-space"></div>
+                            
+                            <!-- Semifinals column -->
+                            <div class="bracket-column sf-column">
+                                <div class="bracket-round-label">Semifinals</div>
+                                <div class="bracket-matchup sf1-matchup">
+                                    ${renderTeam(byeTeams[0], sf1.team1.key === byeTeams[0] ? sf1.team1.score : sf1.team2.score, sf1.winner === byeTeams[0])}
+                                    ${renderTeam(sf1Opponent, sf1.team1.key === sf1Opponent ? sf1.team1.score : sf1.team2.score, sf1.winner === sf1Opponent)}
+                                </div>
+                                <div class="bracket-spacer"></div>
+                                <div class="bracket-matchup sf2-matchup">
+                                    ${renderTeam(byeTeams[1], sf2.team1.key === byeTeams[1] ? sf2.team1.score : sf2.team2.score, sf2.winner === byeTeams[1])}
+                                    ${renderTeam(sf2Opponent, sf2.team1.key === sf2Opponent ? sf2.team1.score : sf2.team2.score, sf2.winner === sf2Opponent)}
+                                </div>
+                            </div>
+                            
+                            <!-- Spacer for connectors -->
+                            <div class="bracket-connector-space"></div>
+                            
+                            <!-- Finals column -->
+                            <div class="bracket-column finals-column">
+                                <div class="bracket-round-label">Championship</div>
+                                <div class="bracket-matchup finals-matchup">
+                                    ${renderTeam(sf1.winner, finalsMatch.team1.key === sf1.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf1.winner === champion, sf1.winner === champion)}
+                                    ${renderTeam(sf2.winner, finalsMatch.team1.key === sf2.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf2.winner === champion, sf2.winner === champion)}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
