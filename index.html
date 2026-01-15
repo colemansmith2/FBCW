@@ -16918,7 +16918,7 @@
                 const teamData = teams.find(t => t.team_key === team.team_key);
                 teamKeyToInfo[team.team_key] = {
                     name: team.team_name,
-                    logo: fixTeamLogo(t.team_logo)
+                    logo: fixTeamLogo(team.team_logo)
                 };
             });
 
@@ -17206,7 +17206,7 @@
                         troutAwards.push({
                             year,
                             manager: topHitter.manager,
-                            team_logo: topHitter.fixTeamLogo(team.logo),
+                            team_logo: fixTeamLogo(playerTeam ? playerTeam.team_logo : ''),
                             player_name: topHitter.name,
                             player_headshot: topHitter.headshot_url,
                             value: Math.round(topHitter.fantasy_points || 0)
@@ -17222,7 +17222,7 @@
                         degromAwards.push({
                             year,
                             manager: topPitcher.manager,
-                            team_logo: topPitcher.fixTeamLogo(team.logo),
+                            team_logo: fixTeamLogo(playerTeam ? playerTeam.team_logo : ''),
                             player_name: topPitcher.name,
                             player_headshot: topPitcher.headshot_url,
                             value: Math.round(topPitcher.fantasy_points || 0)
