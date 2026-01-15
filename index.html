@@ -4074,6 +4074,131 @@
             height: 100%;
         }
 
+        /* Div-based bracket lines */
+        .bracket-lines {
+            position: relative;
+            width: 80px;
+            flex-shrink: 0;
+        }
+
+        .bracket-lines .line-group {
+            position: absolute;
+            width: 100%;
+        }
+
+        /* Line colors */
+        .bracket-lines .gold { background-color: #d4af37; }
+        .bracket-lines .navy { background-color: #1e3c72; }
+        .bracket-lines .gray { background-color: #ccc; }
+
+        /* QF to SF connector positioning */
+        .bracket-lines.qf-to-sf {
+            height: 100%;
+        }
+
+        .bracket-lines.qf-to-sf .line-group.qf1 {
+            top: 0;
+            height: 50%;
+        }
+
+        .bracket-lines.qf-to-sf .line-group.qf2 {
+            bottom: 0;
+            height: 50%;
+        }
+
+        /* Horizontal lines from each team */
+        .bracket-lines .h-line {
+            position: absolute;
+            left: 0;
+            width: 30px;
+            height: 3px;
+        }
+
+        .bracket-lines.qf-to-sf .line-group.qf1 .h-line.top { top: 24%; }
+        .bracket-lines.qf-to-sf .line-group.qf1 .h-line.bottom { top: 52%; }
+        .bracket-lines.qf-to-sf .line-group.qf2 .h-line.top { top: 48%; }
+        .bracket-lines.qf-to-sf .line-group.qf2 .h-line.bottom { top: 76%; }
+
+        /* Vertical line connecting the two team lines */
+        .bracket-lines .v-line {
+            position: absolute;
+            left: 30px;
+            width: 3px;
+        }
+
+        .bracket-lines.qf-to-sf .line-group.qf1 .v-line {
+            top: 24%;
+            height: 31%;
+        }
+
+        .bracket-lines.qf-to-sf .line-group.qf2 .v-line {
+            top: 48%;
+            height: 31%;
+        }
+
+        /* Horizontal line going out to next round */
+        .bracket-lines .h-line-out {
+            position: absolute;
+            left: 30px;
+            right: 0;
+            height: 3px;
+        }
+
+        .bracket-lines.qf-to-sf .line-group.qf1 .h-line-out { top: 38%; }
+        .bracket-lines.qf-to-sf .line-group.qf2 .h-line-out { top: 62%; }
+
+        /* SF to Finals connector positioning */
+        .bracket-lines.sf-to-finals {
+            height: 100%;
+        }
+
+        .bracket-lines.sf-to-finals .line-group.sf1 {
+            top: 0;
+            height: 50%;
+        }
+
+        .bracket-lines.sf-to-finals .line-group.sf2 {
+            bottom: 0;
+            height: 50%;
+        }
+
+        .bracket-lines.sf-to-finals .line-group.sf1 .h-line.top { top: 30%; }
+        .bracket-lines.sf-to-finals .line-group.sf1 .h-line.bottom { top: 58%; }
+        .bracket-lines.sf-to-finals .line-group.sf2 .h-line.top { top: 42%; }
+        .bracket-lines.sf-to-finals .line-group.sf2 .h-line.bottom { top: 70%; }
+
+        .bracket-lines.sf-to-finals .line-group.sf1 .v-line {
+            top: 30%;
+            height: 31%;
+        }
+
+        .bracket-lines.sf-to-finals .line-group.sf2 .v-line {
+            top: 42%;
+            height: 31%;
+        }
+
+        .bracket-lines.sf-to-finals .line-group.sf1 .h-line-out { top: 44%; }
+        .bracket-lines.sf-to-finals .line-group.sf2 .h-line-out { top: 56%; }
+
+        /* Vertical line connecting SF1 and SF2 outputs to center, then to finals */
+        .bracket-lines.sf-to-finals .v-line-center {
+            position: absolute;
+            left: 50px;
+            top: 22%;
+            height: 56%;
+            width: 3px;
+            background-color: #1e3c72;
+        }
+
+        .bracket-lines.sf-to-finals .h-line-final {
+            position: absolute;
+            left: 50px;
+            right: 0;
+            top: 50%;
+            height: 3px;
+            background-color: #1e3c72;
+        }
+
         /* Champion badge */
         .champion-badge {
             display: flex;
@@ -13387,7 +13512,9 @@
                 const sf1Color = sf1WinnerIsChamp ? '#d4af37' : '#1e3c72';
                 const sf2Color = sf2WinnerIsChamp ? '#d4af37' : '#1e3c72';
                 
-                // Build the bracket HTML with SVG connectors using percentage-based positioning
+                // Build the bracket HTML
+                // Team cards are ~66px tall with 4px gap between them in a matchup
+                // QF matchups have ~40px gap between them, SF matchups have more
                 const bracketHTML = `
                     <!-- Quarterfinals -->
                     <div class="bracket-round quarterfinals">
@@ -13402,27 +13529,22 @@
                         </div>
                     </div>
                     
-                    <!-- Connector QF to SF -->
-                    <div class="bracket-connector-wide">
-                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:100%;">
-                            <!-- QF1 top team line -->
-                            <line x1="0" y1="12" x2="35" y2="12" stroke="${qf1.team1.key === qf1.winner ? qf1Color : '#ccc'}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- QF1 bottom team line -->
-                            <line x1="0" y1="28" x2="35" y2="28" stroke="${qf1.team2.key === qf1.winner ? qf1Color : '#ccc'}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- QF1 vertical connector -->
-                            <line x1="35" y1="12" x2="35" y2="28" stroke="${qf1Color}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- QF1 to SF line -->
-                            <line x1="35" y1="20" x2="100" y2="30" stroke="${qf1Color}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            
-                            <!-- QF2 top team line -->
-                            <line x1="0" y1="72" x2="35" y2="72" stroke="${qf2.team1.key === qf2.winner ? qf2Color : '#ccc'}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- QF2 bottom team line -->
-                            <line x1="0" y1="88" x2="35" y2="88" stroke="${qf2.team2.key === qf2.winner ? qf2Color : '#ccc'}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- QF2 vertical connector -->
-                            <line x1="35" y1="72" x2="35" y2="88" stroke="${qf2Color}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- QF2 to SF line -->
-                            <line x1="35" y1="80" x2="100" y2="70" stroke="${qf2Color}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                        </svg>
+                    <!-- Connector QF to SF using divs for precise positioning -->
+                    <div class="bracket-lines qf-to-sf">
+                        <!-- QF1 connector -->
+                        <div class="line-group qf1">
+                            <div class="h-line top ${qf1.team1.key === qf1.winner ? (qf1WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
+                            <div class="h-line bottom ${qf1.team2.key === qf1.winner ? (qf1WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
+                            <div class="v-line ${qf1WinnerIsChamp ? 'gold' : 'navy'}"></div>
+                            <div class="h-line-out ${qf1WinnerIsChamp ? 'gold' : 'navy'}"></div>
+                        </div>
+                        <!-- QF2 connector -->
+                        <div class="line-group qf2">
+                            <div class="h-line top ${qf2.team1.key === qf2.winner ? (qf2WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
+                            <div class="h-line bottom ${qf2.team2.key === qf2.winner ? (qf2WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
+                            <div class="v-line ${qf2WinnerIsChamp ? 'gold' : 'navy'}"></div>
+                            <div class="h-line-out ${qf2WinnerIsChamp ? 'gold' : 'navy'}"></div>
+                        </div>
                     </div>
                     
                     <!-- Semifinals -->
@@ -13439,26 +13561,24 @@
                     </div>
                     
                     <!-- Connector SF to Finals -->
-                    <div class="bracket-connector-wide">
-                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" style="width:100%;height:100%;">
-                            <!-- SF1 top team (bye) line -->
-                            <line x1="0" y1="17" x2="35" y2="17" stroke="${sf1.winner === byeTeams[0] ? sf1Color : '#ccc'}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- SF1 bottom team (QF winner) line -->
-                            <line x1="0" y1="33" x2="35" y2="33" stroke="${sf1.winner === sf1Opponent ? sf1Color : '#ccc'}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- SF1 vertical connector -->
-                            <line x1="35" y1="17" x2="35" y2="33" stroke="${sf1Color}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- SF1 to Finals line -->
-                            <line x1="35" y1="25" x2="100" y2="42" stroke="${sf1Color}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            
-                            <!-- SF2 top team (bye) line -->
-                            <line x1="0" y1="67" x2="35" y2="67" stroke="${sf2.winner === byeTeams[1] ? sf2Color : '#ccc'}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- SF2 bottom team (QF winner) line -->
-                            <line x1="0" y1="83" x2="35" y2="83" stroke="${sf2.winner === sf2Opponent ? sf2Color : '#ccc'}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- SF2 vertical connector -->
-                            <line x1="35" y1="67" x2="35" y2="83" stroke="${sf2Color}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                            <!-- SF2 to Finals line -->
-                            <line x1="35" y1="75" x2="100" y2="58" stroke="${sf2Color}" stroke-width="2" vector-effect="non-scaling-stroke"/>
-                        </svg>
+                    <div class="bracket-lines sf-to-finals">
+                        <!-- SF1 connector -->
+                        <div class="line-group sf1">
+                            <div class="h-line top ${sf1.winner === byeTeams[0] ? (sf1WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
+                            <div class="h-line bottom ${sf1.winner === sf1Opponent ? (sf1WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
+                            <div class="v-line ${sf1WinnerIsChamp ? 'gold' : 'navy'}"></div>
+                            <div class="h-line-out ${sf1WinnerIsChamp ? 'gold' : 'navy'}"></div>
+                        </div>
+                        <!-- SF2 connector -->
+                        <div class="line-group sf2">
+                            <div class="h-line top ${sf2.winner === byeTeams[1] ? (sf2WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
+                            <div class="h-line bottom ${sf2.winner === sf2Opponent ? (sf2WinnerIsChamp ? 'gold' : 'navy') : 'gray'}"></div>
+                            <div class="v-line ${sf2WinnerIsChamp ? 'gold' : 'navy'}"></div>
+                            <div class="h-line-out ${sf2WinnerIsChamp ? 'gold' : 'navy'}"></div>
+                        </div>
+                        <!-- Vertical connector between SF1 and SF2 outputs -->
+                        <div class="v-line-center"></div>
+                        <div class="h-line-final"></div>
                     </div>
                     
                     <!-- Finals -->
