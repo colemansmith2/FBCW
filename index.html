@@ -4036,9 +4036,9 @@
         }
 
         .bracket-team.winner {
-            border-color: #d4af37;
-            background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
-            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+            border-color: #1e3c72;
+            background: white;
+            box-shadow: 0 2px 8px rgba(30, 60, 114, 0.2);
         }
 
         .bracket-team.loser {
@@ -12327,6 +12327,16 @@
             return normalized;
         }
 
+        // Helper function to replace Josh B's GIF logo with static PNG
+        function fixTeamLogo(logoUrl) {
+            if (!logoUrl) return logoUrl;
+            // Check if it's Josh B's Charmander GIF and replace with static PNG
+            if (logoUrl.includes('Charmander') && logoUrl.includes('.gif')) {
+                return 'data/managers/joshb_logo.png';
+            }
+            return logoUrl;
+        }
+
         function normalizeStandingsData(standings, year) {
             return standings.map(team => ({
                 ...team,
@@ -12664,7 +12674,7 @@
                 if (teamsResponse.ok) {
                     teamData = await teamsResponse.json();
                     teamData.forEach(team => {
-                        teamLogos[team.team_key] = team.team_logo;
+                        teamLogos[team.team_key] = fixTeamLogo(team.team_logo);
                     });
                 }
 
@@ -12763,7 +12773,7 @@
                 if (teamsResponse.ok) {
                     teamData = await teamsResponse.json();
                     teamData.forEach(team => {
-                        teamLogos[team.team_key] = team.team_logo;
+                        teamLogos[team.team_key] = fixTeamLogo(team.team_logo);
                     });
                 }
                 
@@ -13273,7 +13283,7 @@
                 // Add team logos from teamData
                 teamData.forEach(t => {
                     if (teamInfo[t.team_key]) {
-                        teamInfo[t.team_key].logo = t.team_logo;
+                        teamInfo[t.team_key].logo = fixTeamLogo(t.team_logo);
                     }
                 });
                 
@@ -13556,8 +13566,10 @@
             
             svgContent += `<line x1="${qf1Right}" y1="${qf1Top}" x2="${qfConnX}" y2="${qf1Top}" stroke="${qf1TopColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${qf1Right}" y1="${qf1Bot}" x2="${qfConnX}" y2="${qf1Bot}" stroke="${qf1BotColor}" stroke-width="3"/>`;
-            svgContent += `<line x1="${qfConnX}" y1="${qf1Top}" x2="${qfConnX}" y2="${qf1Bot}" stroke="${qf1WinnerColor}" stroke-width="3"/>`;
-            // Horizontal line from QF1 midpoint to SF1 bottom team
+            // Split vertical connector: top to mid, bottom to mid (each with own color)
+            svgContent += `<line x1="${qfConnX}" y1="${qf1Top}" x2="${qfConnX}" y2="${qf1MidY}" stroke="${qf1TopColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${qfConnX}" y1="${qf1Bot}" x2="${qfConnX}" y2="${qf1MidY}" stroke="${qf1BotColor}" stroke-width="3"/>`;
+            // Line from midpoint to SF1 bottom team
             svgContent += `<line x1="${qfConnX}" y1="${qf1MidY}" x2="${qfConnX}" y2="${sf1Bot}" stroke="${qf1WinnerColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${qfConnX}" y1="${sf1Bot}" x2="${sf1Left}" y2="${sf1Bot}" stroke="${qf1WinnerColor}" stroke-width="3"/>`;
             
@@ -13569,8 +13581,10 @@
             
             svgContent += `<line x1="${qf2Right}" y1="${qf2Top}" x2="${qfConnX}" y2="${qf2Top}" stroke="${qf2TopColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${qf2Right}" y1="${qf2Bot}" x2="${qfConnX}" y2="${qf2Bot}" stroke="${qf2BotColor}" stroke-width="3"/>`;
-            svgContent += `<line x1="${qfConnX}" y1="${qf2Top}" x2="${qfConnX}" y2="${qf2Bot}" stroke="${qf2WinnerColor}" stroke-width="3"/>`;
-            // Horizontal line from QF2 midpoint to SF2 bottom team
+            // Split vertical connector: top to mid, bottom to mid (each with own color)
+            svgContent += `<line x1="${qfConnX}" y1="${qf2Top}" x2="${qfConnX}" y2="${qf2MidY}" stroke="${qf2TopColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${qfConnX}" y1="${qf2Bot}" x2="${qfConnX}" y2="${qf2MidY}" stroke="${qf2BotColor}" stroke-width="3"/>`;
+            // Line from midpoint to SF2 bottom team
             svgContent += `<line x1="${qfConnX}" y1="${qf2MidY}" x2="${qfConnX}" y2="${sf2Bot}" stroke="${qf2WinnerColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${qfConnX}" y1="${sf2Bot}" x2="${sf2Left}" y2="${sf2Bot}" stroke="${qf2WinnerColor}" stroke-width="3"/>`;
             
@@ -13582,7 +13596,9 @@
             
             svgContent += `<line x1="${sf1Right}" y1="${sf1Top}" x2="${sfConnX}" y2="${sf1Top}" stroke="${sf1TopColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${sf1Right}" y1="${sf1Bot}" x2="${sfConnX}" y2="${sf1Bot}" stroke="${sf1BotColor}" stroke-width="3"/>`;
-            svgContent += `<line x1="${sfConnX}" y1="${sf1Top}" x2="${sfConnX}" y2="${sf1Bot}" stroke="${sf1WinnerColor}" stroke-width="3"/>`;
+            // Split vertical connector: top to mid, bottom to mid (each with own color)
+            svgContent += `<line x1="${sfConnX}" y1="${sf1Top}" x2="${sfConnX}" y2="${sf1MidY}" stroke="${sf1TopColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sfConnX}" y1="${sf1Bot}" x2="${sfConnX}" y2="${sf1MidY}" stroke="${sf1BotColor}" stroke-width="3"/>`;
             // Horizontal from SF1 midpoint to second connector X
             svgContent += `<line x1="${sfConnX}" y1="${sf1MidY}" x2="${sfConnX2}" y2="${sf1MidY}" stroke="${sf1WinnerColor}" stroke-width="3"/>`;
             // Vertical from SF1 midpoint Y to finals top team Y
@@ -13598,7 +13614,9 @@
             
             svgContent += `<line x1="${sf2Right}" y1="${sf2Top}" x2="${sfConnX}" y2="${sf2Top}" stroke="${sf2TopColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${sf2Right}" y1="${sf2Bot}" x2="${sfConnX}" y2="${sf2Bot}" stroke="${sf2BotColor}" stroke-width="3"/>`;
-            svgContent += `<line x1="${sfConnX}" y1="${sf2Top}" x2="${sfConnX}" y2="${sf2Bot}" stroke="${sf2WinnerColor}" stroke-width="3"/>`;
+            // Split vertical connector: top to mid, bottom to mid (each with own color)
+            svgContent += `<line x1="${sfConnX}" y1="${sf2Top}" x2="${sfConnX}" y2="${sf2MidY}" stroke="${sf2TopColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sfConnX}" y1="${sf2Bot}" x2="${sfConnX}" y2="${sf2MidY}" stroke="${sf2BotColor}" stroke-width="3"/>`;
             // Horizontal from SF2 midpoint to second connector X
             svgContent += `<line x1="${sfConnX}" y1="${sf2MidY}" x2="${sfConnX2}" y2="${sf2MidY}" stroke="${sf2WinnerColor}" stroke-width="3"/>`;
             // Vertical from SF2 midpoint Y to finals bottom team Y
@@ -14671,7 +14689,7 @@
                             teamInfoMap[team.team_key] = {
                                 name: team.team_name,
                                 manager: team.manager,
-                                logo: team.team_logo
+                                logo: fixTeamLogo(team.team_logo)
                             };
                         });
 
@@ -15240,7 +15258,7 @@
                     if (teams) {
                         const managerTeam = teams.find(t => t.team_name === recentSeasonData.team_name);
                         if (managerTeam) {
-                            managerLogos[manager.manager_name] = managerTeam.team_logo;
+                            managerLogos[manager.manager_name] = fixTeamLogo(managerTeam.team_logo);
                         }
                     }
                 }
