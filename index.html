@@ -3981,6 +3981,11 @@
             width: 170px;
         }
 
+        .bracket-column.qf-column {
+            /* Offset QF matchups down so their midpoints align with SF bottom teams */
+            padding-top: 35px;
+        }
+
         .bracket-connector-space {
             width: 110px;
             flex-shrink: 0;
@@ -4007,7 +4012,7 @@
         }
 
         .finals-column {
-            padding-top: 95px;
+            padding-top: 130px;
         }
 
         .bracket-team {
@@ -13526,7 +13531,6 @@
             // Calculate connector X positions
             const qfConnX = qf1Right + 30; // 30px to the right of QF boxes
             const sfConnX = sf1Right + 30;
-            const sfMidX = (sf1Right + finalsLeft) / 2;
             
             // Colors
             const gold = '#d4af37';
@@ -13536,7 +13540,7 @@
             // Build SVG content
             let svgContent = '';
             
-            // QF1 connector
+            // QF1 connector - horizontal line goes to sf1Bot Y position (bottom team of SF1)
             const qf1TopColor = matchupData.qf1.team1 === matchupData.qf1.winner ? (matchupData.qf1.winnerIsChamp ? gold : navy) : gray;
             const qf1BotColor = matchupData.qf1.team2 === matchupData.qf1.winner ? (matchupData.qf1.winnerIsChamp ? gold : navy) : gray;
             const qf1WinnerColor = matchupData.qf1.winnerIsChamp ? gold : navy;
@@ -13545,9 +13549,11 @@
             svgContent += `<line x1="${qf1Right}" y1="${qf1Top}" x2="${qfConnX}" y2="${qf1Top}" stroke="${qf1TopColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${qf1Right}" y1="${qf1Bot}" x2="${qfConnX}" y2="${qf1Bot}" stroke="${qf1BotColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${qfConnX}" y1="${qf1Top}" x2="${qfConnX}" y2="${qf1Bot}" stroke="${qf1WinnerColor}" stroke-width="3"/>`;
-            svgContent += `<line x1="${qfConnX}" y1="${qf1MidY}" x2="${sf1Left}" y2="${sf1Bot}" stroke="${qf1WinnerColor}" stroke-width="3"/>`;
+            // Horizontal line from QF1 midpoint to SF1 bottom team - need vertical segment first, then horizontal
+            svgContent += `<line x1="${qfConnX}" y1="${qf1MidY}" x2="${qfConnX}" y2="${sf1Bot}" stroke="${qf1WinnerColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${qfConnX}" y1="${sf1Bot}" x2="${sf1Left}" y2="${sf1Bot}" stroke="${qf1WinnerColor}" stroke-width="3"/>`;
             
-            // QF2 connector
+            // QF2 connector - horizontal line goes to sf2Bot Y position (bottom team of SF2)
             const qf2TopColor = matchupData.qf2.team1 === matchupData.qf2.winner ? (matchupData.qf2.winnerIsChamp ? gold : navy) : gray;
             const qf2BotColor = matchupData.qf2.team2 === matchupData.qf2.winner ? (matchupData.qf2.winnerIsChamp ? gold : navy) : gray;
             const qf2WinnerColor = matchupData.qf2.winnerIsChamp ? gold : navy;
@@ -13556,9 +13562,11 @@
             svgContent += `<line x1="${qf2Right}" y1="${qf2Top}" x2="${qfConnX}" y2="${qf2Top}" stroke="${qf2TopColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${qf2Right}" y1="${qf2Bot}" x2="${qfConnX}" y2="${qf2Bot}" stroke="${qf2BotColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${qfConnX}" y1="${qf2Top}" x2="${qfConnX}" y2="${qf2Bot}" stroke="${qf2WinnerColor}" stroke-width="3"/>`;
-            svgContent += `<line x1="${qfConnX}" y1="${qf2MidY}" x2="${sf2Left}" y2="${sf2Bot}" stroke="${qf2WinnerColor}" stroke-width="3"/>`;
+            // Horizontal line from QF2 midpoint to SF2 bottom team - need vertical segment first, then horizontal
+            svgContent += `<line x1="${qfConnX}" y1="${qf2MidY}" x2="${qfConnX}" y2="${sf2Bot}" stroke="${qf2WinnerColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${qfConnX}" y1="${sf2Bot}" x2="${sf2Left}" y2="${sf2Bot}" stroke="${qf2WinnerColor}" stroke-width="3"/>`;
             
-            // SF1 connector
+            // SF1 connector - goes to Finals TOP team
             const sf1TopColor = matchupData.sf1.winner === matchupData.sf1.byeTeam ? (matchupData.sf1.winnerIsChamp ? gold : navy) : gray;
             const sf1BotColor = matchupData.sf1.winner === matchupData.sf1.qfWinner ? (matchupData.sf1.winnerIsChamp ? gold : navy) : gray;
             const sf1WinnerColor = matchupData.sf1.winnerIsChamp ? gold : navy;
@@ -13567,10 +13575,11 @@
             svgContent += `<line x1="${sf1Right}" y1="${sf1Top}" x2="${sfConnX}" y2="${sf1Top}" stroke="${sf1TopColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${sf1Right}" y1="${sf1Bot}" x2="${sfConnX}" y2="${sf1Bot}" stroke="${sf1BotColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${sfConnX}" y1="${sf1Top}" x2="${sfConnX}" y2="${sf1Bot}" stroke="${sf1WinnerColor}" stroke-width="3"/>`;
-            svgContent += `<line x1="${sfConnX}" y1="${sf1MidY}" x2="${sfMidX}" y2="${sf1MidY}" stroke="${sf1WinnerColor}" stroke-width="3"/>`;
-            svgContent += `<line x1="${sfMidX}" y1="${sf1MidY}" x2="${sfMidX}" y2="${finalsTop}" stroke="${sf1WinnerColor}" stroke-width="3"/>`;
+            // Go from SF1 midpoint, down/up to finalsTop Y, then horizontal to finals
+            svgContent += `<line x1="${sfConnX}" y1="${sf1MidY}" x2="${sfConnX}" y2="${finalsTop}" stroke="${sf1WinnerColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sfConnX}" y1="${finalsTop}" x2="${finalsLeft}" y2="${finalsTop}" stroke="${sf1WinnerColor}" stroke-width="3"/>`;
             
-            // SF2 connector
+            // SF2 connector - goes to Finals BOTTOM team
             const sf2TopColor = matchupData.sf2.winner === matchupData.sf2.byeTeam ? (matchupData.sf2.winnerIsChamp ? gold : navy) : gray;
             const sf2BotColor = matchupData.sf2.winner === matchupData.sf2.qfWinner ? (matchupData.sf2.winnerIsChamp ? gold : navy) : gray;
             const sf2WinnerColor = matchupData.sf2.winnerIsChamp ? gold : navy;
@@ -13579,12 +13588,9 @@
             svgContent += `<line x1="${sf2Right}" y1="${sf2Top}" x2="${sfConnX}" y2="${sf2Top}" stroke="${sf2TopColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${sf2Right}" y1="${sf2Bot}" x2="${sfConnX}" y2="${sf2Bot}" stroke="${sf2BotColor}" stroke-width="3"/>`;
             svgContent += `<line x1="${sfConnX}" y1="${sf2Top}" x2="${sfConnX}" y2="${sf2Bot}" stroke="${sf2WinnerColor}" stroke-width="3"/>`;
-            svgContent += `<line x1="${sfConnX}" y1="${sf2MidY}" x2="${sfMidX}" y2="${sf2MidY}" stroke="${sf2WinnerColor}" stroke-width="3"/>`;
-            svgContent += `<line x1="${sfMidX}" y1="${sf2MidY}" x2="${sfMidX}" y2="${finalsBot}" stroke="${sf2WinnerColor}" stroke-width="3"/>`;
-            
-            // Horizontal line to finals
-            const finalsMidY = (finalsTop + finalsBot) / 2;
-            svgContent += `<line x1="${sfMidX}" y1="${finalsMidY}" x2="${finalsLeft}" y2="${finalsMidY}" stroke="${navy}" stroke-width="3"/>`;
+            // Go from SF2 midpoint, up to finalsBot Y, then horizontal to finals
+            svgContent += `<line x1="${sfConnX}" y1="${sf2MidY}" x2="${sfConnX}" y2="${finalsBot}" stroke="${sf2WinnerColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sfConnX}" y1="${finalsBot}" x2="${finalsLeft}" y2="${finalsBot}" stroke="${sf2WinnerColor}" stroke-width="3"/>`;
             
             svg.innerHTML = svgContent;
         }
