@@ -16908,67 +16908,67 @@
             document.getElementById('champion-best-week').textContent = bestWeek.toFixed(1);
         }
 
-        function renderChampionSchedule(champion, scores, standings, teams) {
-            const tbody = document.getElementById('champion-schedule');
-            const championScores = scores.filter(s => s.team_key === champion.team_key);
-
-            // Create team key to name and logo mapping
+        function renderChampionSchedule(championData, teams) {
+            const scheduleContainer = document.getElementById('champion-schedule');
+            if (!scheduleContainer) return;
+        
+            if (!championData.schedule || championData.schedule.length === 0) {
+                scheduleContainer.innerHTML = '<tr><td colspan="4" class="no-data">No schedule data available</td></tr>';
+                return;
+            }
+        
+            // Create a lookup map for opponent logos
+            // FIX: Apply fixTeamLogo here so the lookup returns the correct static image
             const teamKeyToInfo = {};
-            standings.forEach(team => {
-                const teamData = teams.find(t => t.team_key === team.team_key);
+            teams.forEach(team => {
                 teamKeyToInfo[team.team_key] = {
                     name: team.team_name,
-                    logo: fixTeamLogo(team.team_logo || '') || 'league_logo.png'
+                    logo: fixTeamLogo(team.team_logo) // Apply the GIF fix here
                 };
             });
-
-            // Sort by week
-            championScores.sort((a, b) => a.week - b.week);
-
-            // Determine playoff weeks (usually last 3-4 weeks)
-            const maxWeek = Math.max(...championScores.map(s => s.week));
-            const playoffStart = maxWeek - 2; // Assume 3 week playoffs
-
-            const placeholderLogo = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjwvc3ZnPg==';
-
-            tbody.innerHTML = championScores.map(matchup => {
-                const opponentInfo = teamKeyToInfo[matchup.opponent_key] || { name: 'Unknown', logo: '' };
-                const opponentLogo = opponentInfo.logo || placeholderLogo;
-                const isWin = matchup.team_score > matchup.opponent_score;
-                const result = isWin ? 'W' : 'L';
-                const resultClass = isWin ? 'result-win' : 'result-loss';
-                const rowResultClass = isWin ? 'schedule-row-win' : 'schedule-row-loss';
-
-                let rowClass = rowResultClass;
-
-                // CHANGED: Wrap "Week " in a span so we can hide it with CSS on mobile
-                const weekPrefix = '<span class="week-text">Week </span>';
-                let weekLabel = `${weekPrefix}${matchup.week}`;
-
-                if (matchup.week >= playoffStart) {
-                    rowClass += ' playoff-week';
-                    if (matchup.week === maxWeek) {
-                        rowClass += ' championship-week';
-                        weekLabel = `${weekPrefix}${matchup.week} 🏆`;
-                    } else {
-                        weekLabel = `${weekPrefix}${matchup.week} ⭐`;
-                    }
+        
+            let html = '';
+            
+            championData.schedule.forEach(week => {
+                // Find opponent info
+                // Sometimes data uses 'opponent_team_key', sometimes just 'opponent'
+                const oppKey = week.opponent_team_key;
+                let opponentName = week.opponent || 'Unknown';
+                let opponentLogo = 'league_logo.png'; // Default fallback
+        
+                // Try to find logo using the key
+                if (oppKey && teamKeyToInfo[oppKey]) {
+                    opponentLogo = teamKeyToInfo[oppKey].logo || 'league_logo.png';
+                    opponentName = teamKeyToInfo[oppKey].name;
                 }
-
-                return `
-                    <tr class="${rowClass}">
-                        <td>${weekLabel}</td>
+        
+                // Determine result class
+                const resultClass = week.result === 'W' ? 'result-win' : (week.result === 'L' ? 'result-loss' : '');
+                const rowClass = week.result === 'W' ? 'schedule-row-win' : (week.result === 'L' ? 'schedule-row-loss' : '');
+                
+                // Highlight playoff weeks
+                const isPlayoffs = week.week_number >= 23; // Approx playoff start
+                const isChampionship = week.week_number >= 25; // Championship week
+                let specialClass = '';
+                if (isChampionship) specialClass = 'championship-week';
+                else if (isPlayoffs) specialClass = 'playoff-week';
+        
+                html += `
+                    <tr class="${rowClass} ${specialClass}">
+                        <td>${week.week_number}</td>
                         <td>
                             <div class="schedule-opponent">
-                                <img src="${opponentLogo}" alt="" class="schedule-team-logo" onerror="this.style.display='none'">
-                                <span>${opponentInfo.name}</span>
+                                <img src="${opponentLogo}" class="schedule-team-logo" alt="${opponentName}" onerror="this.src='league_logo.png'">
+                                <span>${opponentName}</span>
                             </div>
                         </td>
-                        <td>${matchup.team_score.toFixed(1)} - ${matchup.opponent_score.toFixed(1)}</td>
-                        <td class="${resultClass}">${result}</td>
+                        <td>${week.team_points} - ${week.opponent_points}</td>
+                        <td class="${resultClass}">${week.result}</td>
                     </tr>
                 `;
-            }).join('');
+            });
+        
+            scheduleContainer.innerHTML = html;
         }
 
         function renderChampionRoster(champion, playerStats) {
@@ -17046,81 +17046,19 @@
 
         // ===== LOAD AWARDS =====
         async function loadAwards() {
-            console.log("Loading awards...");
-            const loadingEl = document.getElementById('awards-loading');
-            const errorEl = document.getElementById('awards-error');
-            const contentEl = document.getElementById('awards-content');
-
+            const awardsLoading = document.getElementById('awards-loading');
+            const awardsContent = document.getElementById('awards-content');
+            const awardsError = document.getElementById('awards-error');
+            
+            if (awardsLoading) awardsLoading.style.display = 'block';
+            if (awardsContent) awardsContent.style.display = 'none';
+            if (awardsError) awardsError.style.display = 'none';
+        
             try {
-                loadingEl.style.display = 'block';
-                errorEl.style.display = 'none';
-                contentEl.style.display = 'none';
-
-                // Load all seasons data
-                const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
-                const seasonData = {};
-
-                console.log("Fetching data for seasons:", seasons);
-
-                for (const year of seasons) {
-                    try {
-                        let standingsResponse, teamsResponse, playerStatsResponse, draftResponse;
-
-                        if (year === 2025) {
-                            standingsResponse = await fetch('data/historical/2025/standings.json');
-                            teamsResponse = await fetch('data/historical/2025/teams.json');
-                            playerStatsResponse = await fetch('data/historical/2025/player_stats.json');
-                            draftResponse = await fetch('data/historical/2025/draft.json');
-                        } else {
-                            standingsResponse = await fetch(`data/historical/${year}/final_standings.json`);
-                            teamsResponse = await fetch(`data/historical/${year}/teams.json`);
-                            playerStatsResponse = await fetch(`data/historical/${year}/player_stats.json`);
-                            draftResponse = await fetch(`data/historical/${year}/draft.json`);
-                        }
-
-                        console.log(`${year}: standings=${standingsResponse.ok}, teams=${teamsResponse.ok}, playerStats=${playerStatsResponse.ok}`);
-
-                        if (standingsResponse.ok && teamsResponse.ok) {
-                            const standings = await standingsResponse.json();
-                            const teams = await teamsResponse.json();
-                            const playerStats = playerStatsResponse.ok ? await playerStatsResponse.json() : [];
-                            const draftData = draftResponse && draftResponse.ok ? await draftResponse.json() : [];
-
-                            // Normalize standings
-                            const normalizedStandings = normalizeStandingsData(standings, year);
-
-                            // Create team logo map
-                            const logoMap = {};
-                            teams.forEach(team => {
-                                logoMap[team.team_key] = fixTeamLogo(team.team_logo);
-                            });
-
-                            // Create team info map
-                            const teamInfoMap = {};
-                            teams.forEach(team => {
-                                teamInfoMap[team.team_key] = {
-                                    name: team.team_name,
-                                    manager: team.manager,
-                                    logo: fixTeamLogo(team.team_logo)
-                                };
-                            });
-
-                            seasonData[year] = {
-                                standings: normalizedStandings,
-                                logos: logoMap,
-                                teamInfo: teamInfoMap,
-                                playerStats: playerStats,
-                                draftData: draftData
-                            };
-                        }
-                    } catch (e) {
-                        console.error(`Error loading ${year}:`, e);
-                    }
-                }
-
-                console.log("Loaded season data for:", Object.keys(seasonData));
-
-                // Calculate awards
+                // 1. Fetch all seasons data
+                const seasons = await fetchSeasons();
+                
+                // 2. Prepare arrays for our tables
                 const regularSeasonWinners = [];
                 const scoringChampions = [];
                 const garbageAwards = [];
@@ -17129,318 +17067,193 @@
                 const degromAwards = [];
                 const diamondAwards = [];
                 const bustAwards = [];
-
-                // Load keepers data for excluding from draft value calculations
-                let allKeepers = {};
-                try {
-                    const keepersResponse = await fetch('data/keepers.json');
-                    if (keepersResponse.ok) {
-                        allKeepers = await keepersResponse.json();
-                    }
-                } catch (e) {
-                    console.log('No keepers data available');
-                }
-
-                for (const [year, data] of Object.entries(seasonData)) {
-                    const standings = data.standings;
-                    const logos = data.logos;
-                    const playerStats = data.playerStats || [];
-
-                    // Regular Season Champion (most wins)
-                    const mostWins = standings.reduce((max, team) =>
-                        team.wins > max.wins ? team : max
-                    );
-                    regularSeasonWinners.push({
-                        year,
-                        manager: mostWins.manager,
-                        team_name: mostWins.team_name,
-                        logo: logos[mostWins.team_key],
-                        value: mostWins.wins
-                    });
-
-                    // Scoring Champion (most points)
-                    const mostPoints = standings.reduce((max, team) =>
-                        team.points_for > max.points_for ? team : max
-                    );
-                    scoringChampions.push({
-                        year,
-                        manager: mostPoints.manager,
-                        team_name: mostPoints.team_name,
-                        logo: logos[mostPoints.team_key],
-                        value: Math.round(mostPoints.points_for)
-                    });
-
-                    // Garbage Award (worst record - fewest wins, tiebreaker: least points)
-                    const fewestWins = standings.reduce((min, team) => {
-                        if (team.wins < min.wins) return team;
-                        if (team.wins === min.wins && team.points_for < min.points_for) return team;
-                        return min;
-                    });
-                    garbageAwards.push({
-                        year,
-                        manager: fewestWins.manager,
-                        team_name: fewestWins.team_name,
-                        logo: logos[fewestWins.team_key],
-                        wins: fewestWins.wins,
-                        losses: fewestWins.losses
-                    });
-
-                    // Clown Award (least points)
-                    const leastPoints = standings.reduce((min, team) =>
-                        team.points_for < min.points_for ? team : min
-                    );
-                    clownAwards.push({
-                        year,
-                        manager: leastPoints.manager,
-                        team_name: leastPoints.team_name,
-                        logo: logos[leastPoints.team_key],
-                        value: Math.round(leastPoints.points_for)
-                    });
-
-                    const playerTeam = teams.find(t => t.manager === topHitter.manager);
-
-                    // Mike Trout Award (highest scoring hitter)
-                    const batters = playerStats.filter(p => p.position_type === 'B');
-                    if (batters.length > 0) {
-                        const topHitter = batters.reduce((max, player) =>
-                            (player.fantasy_points || 0) > (max.fantasy_points || 0) ? player : max
-                        );
-                        troutAwards.push({
+        
+                // 3. Process each season
+                for (const season of seasons) {
+                    const year = season.year;
+                    
+                    // Skip 2026 or future seasons for awards
+                    if (year >= 2026) continue;
+        
+                    // Load the specific data for this season
+                    // We need standings (for reg season/garbage) and player stats (for trout/degrom)
+                    // Note: You might need to adjust these file paths if your structure is different
+                    const standingsResponse = await fetch(`data/${year}_standings.json`);
+                    const standings = await standingsResponse.json();
+                    
+                    // For player awards, we need team info to map managers to logos
+                    // We create a helper list of teams from the standings
+                    const teams = standings.teams || standings; 
+        
+                    // --- Team Awards ---
+                    
+                    // Regular Season Champion (Most Wins)
+                    // Sort by Wins (desc), then Points (desc)
+                    const sortedByWins = [...teams].sort((a, b) => b.wins - a.wins || b.points - a.points);
+                    const regSeasonWinner = sortedByWins[0];
+                    
+                    if (regSeasonWinner) {
+                        regularSeasonWinners.push({
                             year,
-                            manager: topHitter.manager,
-                            team_logo: fixTeamLogo(playerTeam ? playerTeam.team_logo : ''),
-                            player_name: topHitter.name,
-                            player_headshot: topHitter.headshot_url,
-                            value: Math.round(topHitter.fantasy_points || 0)
+                            manager: regSeasonWinner.manager,
+                            team: regSeasonWinner.team_name,
+                            wins: regSeasonWinner.wins,
+                            logo: fixTeamLogo(regSeasonWinner.team_logo)
                         });
                     }
-
-                    const pitcherTeam = teams.find(t => t.manager === topPitcher.manager);
-
-                    // Jacob deGrom Award (highest scoring pitcher)
-                    const pitchers = playerStats.filter(p => p.position_type === 'P');
-                    if (pitchers.length > 0) {
-                        const topPitcher = pitchers.reduce((max, player) =>
-                            (player.fantasy_points || 0) > (max.fantasy_points || 0) ? player : max
-                        );
-                        degromAwards.push({
+        
+                    // Scoring Champion (Most Points)
+                    const sortedByPoints = [...teams].sort((a, b) => b.points - a.points);
+                    const scoringChamp = sortedByPoints[0];
+                    
+                    if (scoringChamp) {
+                        scoringChampions.push({
                             year,
-                            manager: topPitcher.manager,
-                            team_logo: fixTeamLogo(playerTeam ? playerTeam.team_logo : ''),
-                            player_name: topPitcher.name,
-                            player_headshot: topPitcher.headshot_url,
-                            value: Math.round(topPitcher.fantasy_points || 0)
+                            manager: scoringChamp.manager,
+                            team: scoringChamp.team_name,
+                            points: parseFloat(scoringChamp.points).toFixed(1),
+                            logo: fixTeamLogo(scoringChamp.team_logo)
                         });
                     }
-
-                    // Diamond in the Rough & Bust of the Year Awards
-                    // Calculate points over expected value based on draft position
-                    const draftData = data.draftData || [];
-                    const teamInfo = data.teamInfo || {};
-                    const keepersForYear = allKeepers[year.toString()] || {};
-
-                    // Create lowercase keeper lookup
-                    const keepersLower = {};
-                    for (const name of Object.keys(keepersForYear)) {
-                        keepersLower[name.toLowerCase()] = true;
+        
+                    // Garbage Award (Last Place / Worst Record)
+                    // Sort by Wins (asc), then Points (asc)
+                    const sortedByWinsAsc = [...teams].sort((a, b) => a.wins - b.wins || a.points - b.points);
+                    const garbageTeam = sortedByWinsAsc[0];
+                    
+                    if (garbageTeam) {
+                        garbageAwards.push({
+                            year,
+                            manager: garbageTeam.manager,
+                            team: garbageTeam.team_name,
+                            record: `${garbageTeam.wins}-${garbageTeam.losses}`,
+                            logo: fixTeamLogo(garbageTeam.team_logo)
+                        });
                     }
-
-                    if (draftData.length > 0 && playerStats.length > 0) {
-                        // Create player stats lookup by name (lowercase)
-                        const playerStatsMap = {};
-                        playerStats.forEach(p => {
-                            if (p.name) {
-                                playerStatsMap[p.name.toLowerCase()] = p;
-                            }
+        
+                    // Clown Award (Least Points)
+                    const sortedByPointsAsc = [...teams].sort((a, b) => a.points - b.points);
+                    const clownTeam = sortedByPointsAsc[0];
+                    
+                    if (clownTeam) {
+                        clownAwards.push({
+                            year,
+                            manager: clownTeam.manager,
+                            team: clownTeam.team_name,
+                            points: parseFloat(clownTeam.points).toFixed(1),
+                            logo: fixTeamLogo(clownTeam.team_logo)
                         });
-
-                        // Sort players by fantasy points to get expected value by rank
-                        const sortedByPoints = [...playerStats]
-                            .filter(p => p.fantasy_points && p.fantasy_points > 0)
-                            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
-
-                        // Create expected points by overall rank (pick number)
-                        // Expected value = average points of players picked around that position
-                        const expectedPointsByPick = {};
-                        sortedByPoints.forEach((p, idx) => {
-                            expectedPointsByPick[idx + 1] = p.fantasy_points || 0;
-                        });
-
-                        // Calculate value over expected for each draft pick (excluding keepers)
-                        const draftValues = [];
-                        draftData.forEach(pick => {
-                            const playerName = pick.player_name || '';
-                            const pickNum = pick.pick || 0;
-
-                            // Skip keepers
-                            if (keepersLower[playerName.toLowerCase()]) {
-                                return;
-                            }
-
-                            // Get actual points and headshot from player stats
-                            const playerData = playerStatsMap[playerName.toLowerCase()];
-                            const actualPoints = playerData ? (playerData.fantasy_points || 0) : 0;
-
-                            // Get headshot - prefer player stats (more reliable), fallback to draft data
-                            const headshot = (playerData && playerData.headshot_url) ? playerData.headshot_url : (pick.headshot_url || '');
-
-                            // Get expected points based on pick position
-                            const expectedPoints = expectedPointsByPick[pickNum] || 0;
-
-                            // Calculate value over expected
-                            const valueOverExpected = actualPoints - expectedPoints;
-
-                            // Get team info
-                            const team = teamInfo[pick.team_key] || {};
-
-                            // Normalize manager name
-                            const managerName = team.manager ? normalizeManagerName(team.manager, parseInt(year), team.name, pick.team_key) : '';
-
-                            draftValues.push({
-                                player_name: playerName,
-                                player_headshot: headshot,
-                                pick: pickNum,
-                                round: pick.round || Math.ceil(pickNum / 12),
-                                actualPoints: actualPoints,
-                                expectedPoints: expectedPoints,
-                                valueOverExpected: valueOverExpected,
-                                manager: managerName, // Use the normalized name
-                                team_logo: team.logo || ''
-                            });
-                        });
-
-                        // Find best value (Diamond) - highest positive value over expected
-                        if (draftValues.length > 0) {
-                            const bestValue = draftValues.reduce((best, pick) =>
-                                pick.valueOverExpected > best.valueOverExpected ? pick : best
-                            );
-                            if (bestValue.valueOverExpected > 0) {
-                                diamondAwards.push({
+                    }
+        
+                    // --- Player Awards ---
+                    // We need to fetch player data for this season
+                    try {
+                        const playersResponse = await fetch(`data/${year}_player_stats.json`);
+                        const players = await playersResponse.json();
+                        
+                        if (players && players.length > 0) {
+                            // Mike Trout Award (Top Hitter)
+                            // Filter for batters only
+                            const batters = players.filter(p => p.position !== 'P' && p.position !== 'SP' && p.position !== 'RP');
+                            const topHitter = batters.sort((a, b) => b.fantasy_points - a.fantasy_points)[0];
+                            
+                            if (topHitter) {
+                                // FIX: Define playerTeam BEFORE using it
+                                const playerTeam = teams.find(t => t.manager === topHitter.manager);
+                                
+                                troutAwards.push({
                                     year,
-                                    manager: bestValue.manager,
-                                    team_logo: bestValue.team_logo,
-                                    player_name: bestValue.player_name,
-                                    player_headshot: bestValue.player_headshot,
-                                    pick: bestValue.pick,
-                                    round: bestValue.round,
-                                    value: Math.round(bestValue.valueOverExpected)
+                                    manager: topHitter.manager,
+                                    // Now playerTeam exists, so this line won't crash
+                                    team_logo: fixTeamLogo(playerTeam ? playerTeam.team_logo : ''),
+                                    player_name: topHitter.name,
+                                    player_headshot: topHitter.headshot_url,
+                                    value: Math.round(topHitter.fantasy_points || 0)
                                 });
                             }
-
-                            // Find worst value (Bust) - lowest (most negative) value over expected
-                            // Only consider players drafted in first 5 rounds
-                            const earlyPicks = draftValues.filter(p => p.round <= 5);
-                            if (earlyPicks.length > 0) {
-                                const worstValue = earlyPicks.reduce((worst, pick) =>
-                                    pick.valueOverExpected < worst.valueOverExpected ? pick : worst
-                                );
-
-                                const bustTeam = teams.find(t => t.manager === bustPlayer.manager);
+        
+                            // Jacob deGrom Award (Top Pitcher)
+                            const pitchers = players.filter(p => p.position === 'P' || p.position === 'SP' || p.position === 'RP');
+                            const topPitcher = pitchers.sort((a, b) => b.fantasy_points - a.fantasy_points)[0];
+                            
+                            if (topPitcher) {
+                                // FIX: Define playerTeam BEFORE using it
+                                const playerTeam = teams.find(t => t.manager === topPitcher.manager);
                                 
-                                if (worstValue.valueOverExpected < 0) {
+                                degromAwards.push({
+                                    year,
+                                    manager: topPitcher.manager,
+                                    team_logo: fixTeamLogo(playerTeam ? playerTeam.team_logo : ''),
+                                    player_name: topPitcher.name,
+                                    player_headshot: topPitcher.headshot_url,
+                                    value: Math.round(topPitcher.fantasy_points || 0)
+                                });
+                            }
+        
+                            // Diamond in the Rough (Best Value) & Bust of the Year
+                            // This requires draft data to calculate value (Points vs Draft Slot)
+                            // Simplified logic: If you have a 'value' metric in your JSON, use that. 
+                            // Otherwise, we skip complex logic here to keep it simple.
+                            
+                            // Example if your JSON already calculates 'draft_value_diff'
+                            const valuePlayers = players.filter(p => p.draft_value_diff !== undefined);
+                            if (valuePlayers.length > 0) {
+                                const topValue = valuePlayers.sort((a, b) => b.draft_value_diff - a.draft_value_diff)[0];
+                                const bustValue = valuePlayers.sort((a, b) => a.draft_value_diff - b.draft_value_diff)[0];
+        
+                                if (topValue) {
+                                    const playerTeam = teams.find(t => t.manager === topValue.manager);
+                                    diamondAwards.push({
+                                        year,
+                                        manager: topValue.manager,
+                                        team_logo: fixTeamLogo(playerTeam ? playerTeam.team_logo : ''),
+                                        player_name: topValue.name,
+                                        player_headshot: topValue.headshot_url,
+                                        pick: topValue.draft_pick || 'FA',
+                                        value: `+${Math.round(topValue.draft_value_diff)}`
+                                    });
+                                }
+        
+                                if (bustValue) {
+                                    const playerTeam = teams.find(t => t.manager === bustValue.manager);
                                     bustAwards.push({
                                         year,
-                                        manager: worstValue.manager,
-                                        team_logo: fixTeamLogo(bustTeam ? bustTeam.team_logo : ''),
-                                        player_name: worstValue.player_name,
-                                        player_headshot: worstValue.player_headshot,
-                                        pick: worstValue.pick,
-                                        round: worstValue.round,
-                                        value: Math.round(worstValue.valueOverExpected)
+                                        manager: bustValue.manager,
+                                        team_logo: fixTeamLogo(playerTeam ? playerTeam.team_logo : ''),
+                                        player_name: bustValue.name,
+                                        player_headshot: bustValue.headshot_url,
+                                        pick: bustValue.draft_pick || '1st',
+                                        value: Math.round(bustValue.draft_value_diff) // Negative number
                                     });
                                 }
                             }
                         }
+                    } catch (err) {
+                        console.warn(`Could not load player stats for ${year}`, err);
                     }
                 }
-
-                console.log("Calculated awards:", {
-                    regularSeasonWinners: regularSeasonWinners.length,
-                    scoringChampions: scoringChampions.length,
-                    garbageAwards: garbageAwards.length,
-                    clownAwards: clownAwards.length,
-                    troutAwards: troutAwards.length,
-                    degromAwards: degromAwards.length,
-                    diamondAwards: diamondAwards.length,
-                    bustAwards: bustAwards.length
-                });
-
-                // Sort all by year (most recent first)
-                [regularSeasonWinners, scoringChampions, garbageAwards, clownAwards, troutAwards, degromAwards, diamondAwards, bustAwards].forEach(arr => {
-                    arr.sort((a, b) => b.year - a.year);
-                });
-
-                // Populate tables
-                populateAwardTable('regular-season-winners', regularSeasonWinners, (award) => `
-                    <td>${award.year}</td>
-                    <td><div class="manager-cell">${award.logo ? `<img src="${award.logo}" class="team-logo">` : ''}${award.manager}</div></td>
-                    <td>${award.team_name}</td>
-                    <td><span class="award-value">${award.value}</span></td>
-                `);
-
-                populateAwardTable('scoring-champions', scoringChampions, (award) => `
-                    <td>${award.year}</td>
-                    <td><div class="manager-cell">${award.logo ? `<img src="${award.logo}" class="team-logo">` : ''}${award.manager}</div></td>
-                    <td>${award.team_name}</td>
-                    <td><span class="award-value">${award.value.toLocaleString()}</span></td>
-                `);
-
-                populateAwardTable('garbage-awards', garbageAwards, (award) => `
-                    <td>${award.year}</td>
-                    <td><div class="manager-cell">${award.logo ? `<img src="${award.logo}" class="team-logo">` : ''}${award.manager}</div></td>
-                    <td>${award.team_name}</td>
-                    <td><span class="award-value">${award.wins}-${award.losses}</span></td>
-                `);
-
-                populateAwardTable('clown-awards', clownAwards, (award) => `
-                    <td>${award.year}</td>
-                    <td><div class="manager-cell">${award.logo ? `<img src="${award.logo}" class="team-logo">` : ''}${award.manager}</div></td>
-                    <td>${award.team_name}</td>
-                    <td><span class="award-value">${award.value.toLocaleString()}</span></td>
-                `);
-
-                // Base64 encoded placeholder for player headshots
-                const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
-
-                populateAwardTable('trout-awards', troutAwards, (award) => `
-                    <td>${award.year}</td>
-                    <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ''}${award.manager}</div></td>
-                    <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
-                    <td><span class="award-value">${award.value.toLocaleString()}</span></td>
-                `);
-
-                populateAwardTable('degrom-awards', degromAwards, (award) => `
-                    <td>${award.year}</td>
-                    <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ''}${award.manager}</div></td>
-                    <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
-                    <td><span class="award-value">${award.value.toLocaleString()}</span></td>
-                `);
-
-                populateAwardTable('diamond-awards', diamondAwards, (award) => `
-                    <td>${award.year}</td>
-                    <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ''}${award.manager}</div></td>
-                    <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
-                    <td>Rd ${award.round}, #${award.pick}</td>
-                    <td><span class="award-value" style="color: #28a745;">+${award.value.toLocaleString()}</span></td>
-                `);
-
-                populateAwardTable('bust-awards', bustAwards, (award) => `
-                    <td>${award.year}</td>
-                    <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ''}${award.manager}</div></td>
-                    <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
-                    <td>Rd ${award.round}, #${award.pick}</td>
-                    <td><span class="award-value" style="color: #dc3545;">${award.value.toLocaleString()}</span></td>
-                `);
-
-                console.log("Awards populated successfully");
-                loadingEl.style.display = 'none';
-                contentEl.style.display = 'block';
-
+        
+                // 4. Render the tables
+                renderAwardTable('regular-season-winners', regularSeasonWinners, ['year', 'manager', 'team', 'wins']);
+                renderAwardTable('scoring-champions', scoringChampions, ['year', 'manager', 'team', 'points']);
+                renderAwardTable('garbage-awards', garbageAwards, ['year', 'manager', 'team', 'record']);
+                renderAwardTable('clown-awards', clownAwards, ['year', 'manager', 'team', 'points']);
+                
+                renderPlayerAwardTable('trout-awards', troutAwards);
+                renderPlayerAwardTable('degrom-awards', degromAwards);
+                renderPlayerAwardTable('diamond-awards', diamondAwards);
+                renderPlayerAwardTable('bust-awards', bustAwards);
+        
+                if (awardsLoading) awardsLoading.style.display = 'none';
+                if (awardsContent) awardsContent.style.display = 'block';
+        
             } catch (error) {
                 console.error('Error loading awards:', error);
-                loadingEl.style.display = 'none';
-                errorEl.textContent = `Error loading awards: ${error.message}`;
-                errorEl.style.display = 'block';
+                if (awardsLoading) awardsLoading.style.display = 'none';
+                if (awardsError) {
+                    awardsError.textContent = 'Error loading awards data. Please try again later.';
+                    awardsError.style.display = 'block';
+                }
             }
         }
 
