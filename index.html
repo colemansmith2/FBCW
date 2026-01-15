@@ -14574,7 +14574,7 @@
                                 return `
                                     <div class="draft-ticker-card" data-index="${idx}" onclick="scrollToTickerCard(${idx})" style="border-left-color: ${gradeColor};">
                                         <div class="draft-perf-header">
-                                            ${team.logo ? `<img src="${team.logo}" class="draft-perf-logo" alt="">` : '<div class="draft-perf-logo-placeholder"></div>'}
+                                            ${team.logo ? `<img src="${fixTeamLogo(team.logo)}" class="draft-perf-logo" alt="">` : '<div class="draft-perf-logo-placeholder"></div>'}
                                             <div class="draft-perf-team-info">
                                                 <div class="draft-perf-team-name">${team.teamName}</div>
                                                 <div class="draft-perf-manager">${team.manager}</div>
@@ -21847,7 +21847,7 @@
                     <tr data-keeper-value="${team.totalValue}" data-draft-value="${totalPickValue}" data-total="${combinedTotal}">
                         <td>
                             <div class="team-cell">
-                                ${team.team_logo ? `<img src="${team.team_logo}" class="team-logo-small" alt="">` : ''}
+                                ${team.team_logo ? `<img src="${fixTeamLogo(team.team_logo)}" class="team-logo-small" alt="">` : ''}
                                 <div>
                                     <div style="font-weight: 500;">${team.team_name}</div>
                                     <div style="font-size: 0.7rem; color: #666;">${team.manager}</div>
@@ -23674,7 +23674,7 @@
                     ${sortedTeams.map((team, i) => `
                         <div class="bet-stats-legend-item">
                             ${betStatsChartMode === 'logos' 
-                                ? `<img class="bet-stats-legend-logo" src="${team.logo}" alt="${team.teamName}">`
+                                ? `<img class="bet-stats-legend-logo" src="${fixTeamLogo(team.logo)}" alt="${team.teamName}">`
                                 : `<div class="bet-stats-legend-color" style="background: ${pieColors[i % pieColors.length]};"></div>`
                             }
                             <span>${team.teamName}: ${((team.units / stats.totalUnits) * 100).toFixed(1)}%</span>
