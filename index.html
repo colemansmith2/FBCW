@@ -13387,46 +13387,23 @@
                 const sf1Color = sf1WinnerIsChamp ? '#d4af37' : '#1e3c72';
                 const sf2Color = sf2WinnerIsChamp ? '#d4af37' : '#1e3c72';
                 
-                // Build the bracket HTML with simple flex layout and SVG lines
+                // Build the bracket HTML with simple flex layout - SVG will be added after render
                 const bracketHTML = `
                     <div class="bracket-wrapper">
-                        <!-- SVG overlay for all connector lines -->
-                        <svg class="bracket-lines-svg" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
-                            <!-- QF1 connector: lines from teams at y=70,136 meeting at x=200, going to SF1 bottom at y=136 -->
-                            <path d="M 170 70 H 200 V 136 H 170" stroke="${qf1.team1.key === qf1.winner ? qf1WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
-                            <path d="M 170 136 H 200" stroke="${qf1.team2.key === qf1.winner ? qf1WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
-                            <path d="M 200 103 H 280" stroke="${qf1WinnerIsChamp ? '#d4af37' : '#1e3c72'}" stroke-width="3" fill="none"/>
-                            
-                            <!-- QF2 connector: lines from teams at y=264,330 meeting, going to SF2 bottom at y=330 -->
-                            <path d="M 170 264 H 200 V 330 H 170" stroke="${qf2.team1.key === qf2.winner ? qf2WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
-                            <path d="M 170 330 H 200" stroke="${qf2.team2.key === qf2.winner ? qf2WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
-                            <path d="M 200 297 H 280" stroke="${qf2WinnerIsChamp ? '#d4af37' : '#1e3c72'}" stroke-width="3" fill="none"/>
-                            
-                            <!-- SF1 connector: lines from teams at y=70,136 meeting, going to Finals top at y=165 -->
-                            <path d="M 450 70 H 480 V 136 H 450" stroke="${sf1.winner === byeTeams[0] ? sf1WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
-                            <path d="M 450 136 H 480" stroke="${sf1.winner === sf1Opponent ? sf1WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
-                            <path d="M 480 103 H 510 V 165" stroke="${sf1WinnerIsChamp ? '#d4af37' : '#1e3c72'}" stroke-width="3" fill="none"/>
-                            
-                            <!-- SF2 connector: lines from teams at y=264,330 meeting, going to Finals bottom at y=235 -->
-                            <path d="M 450 264 H 480 V 330 H 450" stroke="${sf2.winner === byeTeams[1] ? sf2WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
-                            <path d="M 450 330 H 480" stroke="${sf2.winner === sf2Opponent ? sf2WinnerIsChamp ? '#d4af37' : '#1e3c72' : '#ccc'}" stroke-width="3" fill="none"/>
-                            <path d="M 480 297 H 510 V 235" stroke="${sf2WinnerIsChamp ? '#d4af37' : '#1e3c72'}" stroke-width="3" fill="none"/>
-                            
-                            <!-- Final horizontal line to championship -->
-                            <path d="M 510 200 H 560" stroke="${'#1e3c72'}" stroke-width="3" fill="none"/>
-                        </svg>
+                        <!-- SVG overlay will be inserted here by JavaScript -->
+                        <svg class="bracket-lines-svg" id="bracket-svg-${seasonNum}"></svg>
                         
                         <!-- Bracket content -->
                         <div class="bracket-content">
                             <!-- Quarterfinals column -->
                             <div class="bracket-column qf-column">
                                 <div class="bracket-round-label">Round 1</div>
-                                <div class="bracket-matchup qf1-matchup">
+                                <div class="bracket-matchup qf1-matchup" data-matchup="qf1">
                                     ${renderTeam(qf1.team1.key, qf1.team1.score, qf1.team1.key === qf1.winner)}
                                     ${renderTeam(qf1.team2.key, qf1.team2.score, qf1.team2.key === qf1.winner)}
                                 </div>
                                 <div class="bracket-spacer"></div>
-                                <div class="bracket-matchup qf2-matchup">
+                                <div class="bracket-matchup qf2-matchup" data-matchup="qf2">
                                     ${renderTeam(qf2.team1.key, qf2.team1.score, qf2.team1.key === qf2.winner)}
                                     ${renderTeam(qf2.team2.key, qf2.team2.score, qf2.team2.key === qf2.winner)}
                                 </div>
@@ -13438,12 +13415,12 @@
                             <!-- Semifinals column -->
                             <div class="bracket-column sf-column">
                                 <div class="bracket-round-label">Semifinals</div>
-                                <div class="bracket-matchup sf1-matchup">
+                                <div class="bracket-matchup sf1-matchup" data-matchup="sf1">
                                     ${renderTeam(byeTeams[0], sf1.team1.key === byeTeams[0] ? sf1.team1.score : sf1.team2.score, sf1.winner === byeTeams[0])}
                                     ${renderTeam(sf1Opponent, sf1.team1.key === sf1Opponent ? sf1.team1.score : sf1.team2.score, sf1.winner === sf1Opponent)}
                                 </div>
                                 <div class="bracket-spacer"></div>
-                                <div class="bracket-matchup sf2-matchup">
+                                <div class="bracket-matchup sf2-matchup" data-matchup="sf2">
                                     ${renderTeam(byeTeams[1], sf2.team1.key === byeTeams[1] ? sf2.team1.score : sf2.team2.score, sf2.winner === byeTeams[1])}
                                     ${renderTeam(sf2Opponent, sf2.team1.key === sf2Opponent ? sf2.team1.score : sf2.team2.score, sf2.winner === sf2Opponent)}
                                 </div>
@@ -13455,7 +13432,7 @@
                             <!-- Finals column -->
                             <div class="bracket-column finals-column">
                                 <div class="bracket-round-label">Championship</div>
-                                <div class="bracket-matchup finals-matchup">
+                                <div class="bracket-matchup finals-matchup" data-matchup="finals">
                                     ${renderTeam(sf1.winner, finalsMatch.team1.key === sf1.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf1.winner === champion, sf1.winner === champion)}
                                     ${renderTeam(sf2.winner, finalsMatch.team1.key === sf2.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf2.winner === champion, sf2.winner === champion)}
                                 </div>
@@ -13467,10 +13444,149 @@
                 bracketEl.innerHTML = bracketHTML;
                 bracketContainer.style.display = 'block';
                 
+                // Draw the SVG lines after a brief delay to let the DOM settle
+                setTimeout(() => {
+                    drawBracketLines(seasonNum, {
+                        qf1: { winner: qf1.winner, team1: qf1.team1.key, team2: qf1.team2.key, winnerIsChamp: qf1WinnerIsChamp },
+                        qf2: { winner: qf2.winner, team1: qf2.team1.key, team2: qf2.team2.key, winnerIsChamp: qf2WinnerIsChamp },
+                        sf1: { winner: sf1.winner, byeTeam: byeTeams[0], qfWinner: sf1Opponent, winnerIsChamp: sf1WinnerIsChamp },
+                        sf2: { winner: sf2.winner, byeTeam: byeTeams[1], qfWinner: sf2Opponent, winnerIsChamp: sf2WinnerIsChamp }
+                    });
+                }, 50);
+                
             } catch (error) {
                 console.error('Error loading playoff bracket:', error);
                 bracketContainer.style.display = 'none';
             }
+        }
+
+        // Function to draw bracket connector lines using actual element positions
+        function drawBracketLines(seasonNum, matchupData) {
+            const svg = document.getElementById(`bracket-svg-${seasonNum}`);
+            if (!svg) return;
+            
+            const wrapper = svg.closest('.bracket-wrapper');
+            if (!wrapper) return;
+            
+            const wrapperRect = wrapper.getBoundingClientRect();
+            
+            // Helper to get center Y of a team box relative to wrapper
+            function getTeamY(matchupSelector, teamIndex) {
+                const matchup = wrapper.querySelector(matchupSelector);
+                if (!matchup) return 0;
+                const teams = matchup.querySelectorAll('.bracket-team');
+                if (!teams[teamIndex]) return 0;
+                const rect = teams[teamIndex].getBoundingClientRect();
+                return rect.top - wrapperRect.top + rect.height / 2;
+            }
+            
+            // Helper to get right edge of team box
+            function getTeamRight(matchupSelector) {
+                const matchup = wrapper.querySelector(matchupSelector);
+                if (!matchup) return 0;
+                const team = matchup.querySelector('.bracket-team');
+                if (!team) return 0;
+                const rect = team.getBoundingClientRect();
+                return rect.right - wrapperRect.left;
+            }
+            
+            // Helper to get left edge of team box
+            function getTeamLeft(matchupSelector) {
+                const matchup = wrapper.querySelector(matchupSelector);
+                if (!matchup) return 0;
+                const team = matchup.querySelector('.bracket-team');
+                if (!team) return 0;
+                const rect = team.getBoundingClientRect();
+                return rect.left - wrapperRect.left;
+            }
+            
+            // Get positions
+            const qf1Top = getTeamY('.qf1-matchup', 0);
+            const qf1Bot = getTeamY('.qf1-matchup', 1);
+            const qf1Right = getTeamRight('.qf1-matchup');
+            
+            const qf2Top = getTeamY('.qf2-matchup', 0);
+            const qf2Bot = getTeamY('.qf2-matchup', 1);
+            const qf2Right = getTeamRight('.qf2-matchup');
+            
+            const sf1Top = getTeamY('.sf1-matchup', 0);
+            const sf1Bot = getTeamY('.sf1-matchup', 1);
+            const sf1Right = getTeamRight('.sf1-matchup');
+            const sf1Left = getTeamLeft('.sf1-matchup');
+            
+            const sf2Top = getTeamY('.sf2-matchup', 0);
+            const sf2Bot = getTeamY('.sf2-matchup', 1);
+            const sf2Right = getTeamRight('.sf2-matchup');
+            const sf2Left = getTeamLeft('.sf2-matchup');
+            
+            const finalsTop = getTeamY('.finals-matchup', 0);
+            const finalsBot = getTeamY('.finals-matchup', 1);
+            const finalsLeft = getTeamLeft('.finals-matchup');
+            
+            // Calculate connector X positions
+            const qfConnX = qf1Right + 30; // 30px to the right of QF boxes
+            const sfConnX = sf1Right + 30;
+            const sfMidX = (sf1Right + finalsLeft) / 2;
+            
+            // Colors
+            const gold = '#d4af37';
+            const navy = '#1e3c72';
+            const gray = '#ccc';
+            
+            // Build SVG content
+            let svgContent = '';
+            
+            // QF1 connector
+            const qf1TopColor = matchupData.qf1.team1 === matchupData.qf1.winner ? (matchupData.qf1.winnerIsChamp ? gold : navy) : gray;
+            const qf1BotColor = matchupData.qf1.team2 === matchupData.qf1.winner ? (matchupData.qf1.winnerIsChamp ? gold : navy) : gray;
+            const qf1WinnerColor = matchupData.qf1.winnerIsChamp ? gold : navy;
+            const qf1MidY = (qf1Top + qf1Bot) / 2;
+            
+            svgContent += `<line x1="${qf1Right}" y1="${qf1Top}" x2="${qfConnX}" y2="${qf1Top}" stroke="${qf1TopColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${qf1Right}" y1="${qf1Bot}" x2="${qfConnX}" y2="${qf1Bot}" stroke="${qf1BotColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${qfConnX}" y1="${qf1Top}" x2="${qfConnX}" y2="${qf1Bot}" stroke="${qf1WinnerColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${qfConnX}" y1="${qf1MidY}" x2="${sf1Left}" y2="${sf1Bot}" stroke="${qf1WinnerColor}" stroke-width="3"/>`;
+            
+            // QF2 connector
+            const qf2TopColor = matchupData.qf2.team1 === matchupData.qf2.winner ? (matchupData.qf2.winnerIsChamp ? gold : navy) : gray;
+            const qf2BotColor = matchupData.qf2.team2 === matchupData.qf2.winner ? (matchupData.qf2.winnerIsChamp ? gold : navy) : gray;
+            const qf2WinnerColor = matchupData.qf2.winnerIsChamp ? gold : navy;
+            const qf2MidY = (qf2Top + qf2Bot) / 2;
+            
+            svgContent += `<line x1="${qf2Right}" y1="${qf2Top}" x2="${qfConnX}" y2="${qf2Top}" stroke="${qf2TopColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${qf2Right}" y1="${qf2Bot}" x2="${qfConnX}" y2="${qf2Bot}" stroke="${qf2BotColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${qfConnX}" y1="${qf2Top}" x2="${qfConnX}" y2="${qf2Bot}" stroke="${qf2WinnerColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${qfConnX}" y1="${qf2MidY}" x2="${sf2Left}" y2="${sf2Bot}" stroke="${qf2WinnerColor}" stroke-width="3"/>`;
+            
+            // SF1 connector
+            const sf1TopColor = matchupData.sf1.winner === matchupData.sf1.byeTeam ? (matchupData.sf1.winnerIsChamp ? gold : navy) : gray;
+            const sf1BotColor = matchupData.sf1.winner === matchupData.sf1.qfWinner ? (matchupData.sf1.winnerIsChamp ? gold : navy) : gray;
+            const sf1WinnerColor = matchupData.sf1.winnerIsChamp ? gold : navy;
+            const sf1MidY = (sf1Top + sf1Bot) / 2;
+            
+            svgContent += `<line x1="${sf1Right}" y1="${sf1Top}" x2="${sfConnX}" y2="${sf1Top}" stroke="${sf1TopColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sf1Right}" y1="${sf1Bot}" x2="${sfConnX}" y2="${sf1Bot}" stroke="${sf1BotColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sfConnX}" y1="${sf1Top}" x2="${sfConnX}" y2="${sf1Bot}" stroke="${sf1WinnerColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sfConnX}" y1="${sf1MidY}" x2="${sfMidX}" y2="${sf1MidY}" stroke="${sf1WinnerColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sfMidX}" y1="${sf1MidY}" x2="${sfMidX}" y2="${finalsTop}" stroke="${sf1WinnerColor}" stroke-width="3"/>`;
+            
+            // SF2 connector
+            const sf2TopColor = matchupData.sf2.winner === matchupData.sf2.byeTeam ? (matchupData.sf2.winnerIsChamp ? gold : navy) : gray;
+            const sf2BotColor = matchupData.sf2.winner === matchupData.sf2.qfWinner ? (matchupData.sf2.winnerIsChamp ? gold : navy) : gray;
+            const sf2WinnerColor = matchupData.sf2.winnerIsChamp ? gold : navy;
+            const sf2MidY = (sf2Top + sf2Bot) / 2;
+            
+            svgContent += `<line x1="${sf2Right}" y1="${sf2Top}" x2="${sfConnX}" y2="${sf2Top}" stroke="${sf2TopColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sf2Right}" y1="${sf2Bot}" x2="${sfConnX}" y2="${sf2Bot}" stroke="${sf2BotColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sfConnX}" y1="${sf2Top}" x2="${sfConnX}" y2="${sf2Bot}" stroke="${sf2WinnerColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sfConnX}" y1="${sf2MidY}" x2="${sfMidX}" y2="${sf2MidY}" stroke="${sf2WinnerColor}" stroke-width="3"/>`;
+            svgContent += `<line x1="${sfMidX}" y1="${sf2MidY}" x2="${sfMidX}" y2="${finalsBot}" stroke="${sf2WinnerColor}" stroke-width="3"/>`;
+            
+            // Horizontal line to finals
+            const finalsMidY = (finalsTop + finalsBot) / 2;
+            svgContent += `<line x1="${sfMidX}" y1="${finalsMidY}" x2="${finalsLeft}" y2="${finalsMidY}" stroke="${navy}" stroke-width="3"/>`;
+            
+            svg.innerHTML = svgContent;
         }
 
         // ===== DRAFT RESULTS FUNCTIONS =====
