@@ -16918,7 +16918,7 @@
                 const teamData = teams.find(t => t.team_key === team.team_key);
                 teamKeyToInfo[team.team_key] = {
                     name: team.team_name,
-                    logo: fixTeamLogo(team.team_logo)
+                    logo: fixTeamLogo(team.team_logo || '') || 'league_logo.png'
                 };
             });
 
@@ -17197,6 +17197,8 @@
                         value: Math.round(leastPoints.points_for)
                     });
 
+                    const playerTeam = teams.find(t => t.manager === topHitter.manager);
+
                     // Mike Trout Award (highest scoring hitter)
                     const batters = playerStats.filter(p => p.position_type === 'B');
                     if (batters.length > 0) {
@@ -17212,6 +17214,8 @@
                             value: Math.round(topHitter.fantasy_points || 0)
                         });
                     }
+
+                    const pitcherTeam = teams.find(t => t.manager === topPitcher.manager);
 
                     // Jacob deGrom Award (highest scoring pitcher)
                     const pitchers = playerStats.filter(p => p.position_type === 'P');
@@ -17330,11 +17334,14 @@
                                 const worstValue = earlyPicks.reduce((worst, pick) =>
                                     pick.valueOverExpected < worst.valueOverExpected ? pick : worst
                                 );
+
+                                const bustTeam = teams.find(t => t.manager === bustPlayer.manager);
+                                
                                 if (worstValue.valueOverExpected < 0) {
                                     bustAwards.push({
                                         year,
                                         manager: worstValue.manager,
-                                        team_logo: worstValue.team_logo,
+                                        team_logo: fixTeamLogo(bustTeam ? bustTeam.team_logo : ''),
                                         player_name: worstValue.player_name,
                                         player_headshot: worstValue.player_headshot,
                                         pick: worstValue.pick,
