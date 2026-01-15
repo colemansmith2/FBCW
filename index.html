@@ -4041,6 +4041,12 @@
             box-shadow: 0 2px 8px rgba(30, 60, 114, 0.2);
         }
 
+        .bracket-team.champion-path {
+            border-color: #d4af37;
+            background: linear-gradient(135deg, #fff9e6 0%, #fff 100%);
+            box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+        }
+
         .bracket-team.loser {
             opacity: 0.6;
             border-color: #ccc;
@@ -12331,7 +12337,9 @@
         function fixTeamLogo(logoUrl) {
             if (!logoUrl) return logoUrl;
             // Check if it's Josh B's Charmander GIF and replace with static PNG
-            if (logoUrl.includes('Charmander') && logoUrl.includes('.gif')) {
+            // The actual URL contains: 25231662271_f6454b2bed.gif
+            if (logoUrl.includes('25231662271_f6454b2bed.gif') || 
+                (logoUrl.includes('.gif') && logoUrl.includes('fantasy-logos'))) {
                 return 'data/managers/joshb_logo.png';
             }
             return logoUrl;
@@ -13378,7 +13386,7 @@
                 const sf2WinnerIsChamp = sf2.winner === champion;
                 
                 // Build HTML for bracket team
-                function renderTeam(teamKey, score, isWinner, isChampion = false) {
+                function renderTeam(teamKey, score, isWinner, isChampion = false, isChampionPath = false) {
                     const info = teamInfo[teamKey] || {};
                     const manager = info.manager || 'Unknown';
                     const hatFilename = getManagerHatFilename(manager);
@@ -13387,6 +13395,7 @@
                     
                     const classes = ['bracket-team'];
                     if (isChampion) classes.push('champion', 'winner');
+                    else if (isWinner && isChampionPath) classes.push('champion-path', 'winner');
                     else if (isWinner) classes.push('winner');
                     else classes.push('loser');
                     
@@ -13421,13 +13430,13 @@
                             <div class="bracket-column qf-column">
                                 <div class="bracket-round-label">Round 1</div>
                                 <div class="bracket-matchup qf1-matchup" data-matchup="qf1">
-                                    ${renderTeam(qf1.team1.key, qf1.team1.score, qf1.team1.key === qf1.winner)}
-                                    ${renderTeam(qf1.team2.key, qf1.team2.score, qf1.team2.key === qf1.winner)}
+                                    ${renderTeam(qf1.team1.key, qf1.team1.score, qf1.team1.key === qf1.winner, false, qf1.team1.key === qf1.winner && qf1WinnerIsChamp)}
+                                    ${renderTeam(qf1.team2.key, qf1.team2.score, qf1.team2.key === qf1.winner, false, qf1.team2.key === qf1.winner && qf1WinnerIsChamp)}
                                 </div>
                                 <div class="bracket-spacer"></div>
                                 <div class="bracket-matchup qf2-matchup" data-matchup="qf2">
-                                    ${renderTeam(qf2.team1.key, qf2.team1.score, qf2.team1.key === qf2.winner)}
-                                    ${renderTeam(qf2.team2.key, qf2.team2.score, qf2.team2.key === qf2.winner)}
+                                    ${renderTeam(qf2.team1.key, qf2.team1.score, qf2.team1.key === qf2.winner, false, qf2.team1.key === qf2.winner && qf2WinnerIsChamp)}
+                                    ${renderTeam(qf2.team2.key, qf2.team2.score, qf2.team2.key === qf2.winner, false, qf2.team2.key === qf2.winner && qf2WinnerIsChamp)}
                                 </div>
                             </div>
                             
@@ -13438,13 +13447,13 @@
                             <div class="bracket-column sf-column">
                                 <div class="bracket-round-label">Semifinals</div>
                                 <div class="bracket-matchup sf1-matchup" data-matchup="sf1">
-                                    ${renderTeam(byeTeams[0], sf1.team1.key === byeTeams[0] ? sf1.team1.score : sf1.team2.score, sf1.winner === byeTeams[0])}
-                                    ${renderTeam(sf1Opponent, sf1.team1.key === sf1Opponent ? sf1.team1.score : sf1.team2.score, sf1.winner === sf1Opponent)}
+                                    ${renderTeam(byeTeams[0], sf1.team1.key === byeTeams[0] ? sf1.team1.score : sf1.team2.score, sf1.winner === byeTeams[0], false, sf1.winner === byeTeams[0] && sf1WinnerIsChamp)}
+                                    ${renderTeam(sf1Opponent, sf1.team1.key === sf1Opponent ? sf1.team1.score : sf1.team2.score, sf1.winner === sf1Opponent, false, sf1.winner === sf1Opponent && sf1WinnerIsChamp)}
                                 </div>
                                 <div class="bracket-spacer"></div>
                                 <div class="bracket-matchup sf2-matchup" data-matchup="sf2">
-                                    ${renderTeam(byeTeams[1], sf2.team1.key === byeTeams[1] ? sf2.team1.score : sf2.team2.score, sf2.winner === byeTeams[1])}
-                                    ${renderTeam(sf2Opponent, sf2.team1.key === sf2Opponent ? sf2.team1.score : sf2.team2.score, sf2.winner === sf2Opponent)}
+                                    ${renderTeam(byeTeams[1], sf2.team1.key === byeTeams[1] ? sf2.team1.score : sf2.team2.score, sf2.winner === byeTeams[1], false, sf2.winner === byeTeams[1] && sf2WinnerIsChamp)}
+                                    ${renderTeam(sf2Opponent, sf2.team1.key === sf2Opponent ? sf2.team1.score : sf2.team2.score, sf2.winner === sf2Opponent, false, sf2.winner === sf2Opponent && sf2WinnerIsChamp)}
                                 </div>
                             </div>
                             
@@ -13455,8 +13464,8 @@
                             <div class="bracket-column finals-column">
                                 <div class="bracket-round-label">Championship</div>
                                 <div class="bracket-matchup finals-matchup" data-matchup="finals">
-                                    ${renderTeam(sf1.winner, finalsMatch.team1.key === sf1.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf1.winner === champion, sf1.winner === champion)}
-                                    ${renderTeam(sf2.winner, finalsMatch.team1.key === sf2.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf2.winner === champion, sf2.winner === champion)}
+                                    ${renderTeam(sf1.winner, finalsMatch.team1.key === sf1.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf1.winner === champion, sf1.winner === champion, false)}
+                                    ${renderTeam(sf2.winner, finalsMatch.team1.key === sf2.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf2.winner === champion, sf2.winner === champion, false)}
                                 </div>
                             </div>
                         </div>
