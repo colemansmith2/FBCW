@@ -3945,29 +3945,26 @@
         .playoff-bracket {
             display: flex;
             justify-content: center;
-            align-items: stretch;
-            gap: 0;
+            align-items: center;
             padding: 1.5rem 2rem;
             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 12px;
             overflow-x: auto;
-            min-height: 380px;
         }
 
         .bracket-round {
             display: flex;
             flex-direction: column;
-            justify-content: space-around;
-            padding: 0 0.5rem;
+            justify-content: center;
             min-width: 160px;
         }
 
-        .bracket-round.quarterfinals {
-            gap: 2rem;
+        .bracket-round.quarterfinals .bracket-matchup {
+            margin: 0.5rem 0;
         }
 
-        .bracket-round.semifinals {
-            gap: 5rem;
+        .bracket-round.semifinals .bracket-matchup {
+            margin: 2.5rem 0;
         }
 
         .bracket-round.finals {
@@ -3991,6 +3988,7 @@
             border: 2px solid #1e3c72;
             min-width: 150px;
             transition: all 0.3s ease;
+            position: relative;
         }
 
         .bracket-team.winner {
@@ -4052,52 +4050,45 @@
             color: #1e3c72;
         }
 
-        /* Connector lines between QF and SF */
-        .bracket-connector-qf-sf {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-around;
+        /* SVG Connector columns */
+        .bracket-connector {
             width: 60px;
-            padding: 0 5px;
-            position: relative;
+            flex-shrink: 0;
         }
 
-        .bracket-connector-qf-sf .connector-line-group {
-            position: relative;
-            height: 70px;
+        .bracket-connector svg {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
 
-        .bracket-connector-qf-sf .connector-line-group.top {
-            margin-bottom: 2rem;
+        /* Champion badge */
+        .champion-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.25rem;
         }
 
-        .bracket-connector-qf-sf .connector-line-group.bottom {
-            margin-top: 2rem;
+        .champion-badge img {
+            width: 20px;
+            height: 20px;
         }
 
-        .bracket-connector-qf-sf .h-line {
-            position: absolute;
-            top: 50%;
-            left: 0;
-            width: 25px;
-            height: 3px;
-            background: #1e3c72;
+        .champion-badge span {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: #d4af37;
+            text-transform: uppercase;
         }
 
-        .bracket-connector-qf-sf .v-line {
-            position: absolute;
-            left: 25px;
-            width: 3px;
-            background: #1e3c72;
-        }
-
-        .bracket-connector-qf-sf .top .v-line {
-            top: 50%;
-            height: 50%;
-        }
-
-        .bracket-connector-qf-sf .bottom .v-line {
-            bottom: 50%;
+        /* Round labels */
+        .bracket-round-label {
+            text-align: center;
+            font-weight: bold;
+            color: #1e3c72;
+            font-size: 0.8rem;
+            text-transform: uppercase;
             height: 50%;
         }
 
@@ -4181,33 +4172,6 @@
         }
 
         .loser-line {
-            background: #ccc !important;
-        }
-
-        .champ-line {
-            background: #d4af37 !important;
-        }
-
-        /* Champion badge */
-        .champion-badge {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-            margin-top: 0.25rem;
-        }
-
-        .champion-badge img {
-            width: 20px;
-            height: 20px;
-        }
-
-        .champion-badge span {
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: #d4af37;
-            text-transform: uppercase;
-        }
-
         /* Round labels */
         .bracket-round-label {
             text-align: center;
@@ -4215,15 +4179,18 @@
             color: #1e3c72;
             font-size: 0.8rem;
             text-transform: uppercase;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.75rem;
             letter-spacing: 1px;
         }
 
-        /* Mobile adjustments */
+        /* Mobile adjustments for bracket */
         @media (max-width: 768px) {
             .playoff-bracket {
                 padding: 0.75rem;
-                gap: 0;
+            }
+
+            .bracket-round {
+                min-width: 120px;
             }
 
             .bracket-team {
@@ -4245,15 +4212,7 @@
             }
 
             .bracket-connector {
-                width: 25px;
-            }
-
-            .bracket-line.horizontal {
-                width: 25px;
-            }
-
-            .bracket-round.semifinals {
-                gap: 2rem;
+                width: 40px;
             }
         }
 
@@ -13354,7 +13313,6 @@
             
             try {
                 // Load all_scores.json for this season
-                // All historical seasons including 2025 are in data/historical/
                 let scoresPath = `data/historical/${seasonNum}/all_scores.json`;
                 
                 const scoresResponse = await fetch(scoresPath);
@@ -13374,7 +13332,7 @@
                     teamInfo[t.team_key] = {
                         manager: t.manager,
                         team_name: t.team_name,
-                        seed: t.rank
+                        rank: t.rank
                     };
                 });
                 
@@ -13385,75 +13343,82 @@
                     }
                 });
                 
-                // Get playoff teams (top 6)
-                const playoffKeys = standings.slice(0, 6).map(t => t.team_key);
-                
-                // Parse playoff matchups
-                // Week maxWeek-2: Quarterfinals (3v6, 4v5)
-                // Week maxWeek-1: Semifinals (1 vs 4/5 winner, 2 vs 3/6 winner)
-                // Week maxWeek: Finals
-                
+                // Playoff weeks
                 const quarterfinalsWeek = maxWeek - 2;
                 const semifinalsWeek = maxWeek - 1;
                 const finalsWeek = maxWeek;
                 
-                // Get seeds 1 and 2 (bye teams)
-                const seed1Key = standings[0].team_key;
-                const seed2Key = standings[1].team_key;
+                // Get all playoff teams (top 6 by final rank)
+                const playoffTeams = standings.slice(0, 6);
+                const playoffKeys = playoffTeams.map(t => t.team_key);
                 
-                // Helper to find matchup between two specific teams
-                function findMatchup(week, teamKeys) {
+                // Find ALL matchups in each playoff week between playoff teams
+                function getPlayoffMatchups(week) {
                     const weekScores = allScores.filter(s => s.week === week);
+                    const matchups = [];
+                    const seen = new Set();
+                    
                     for (const score of weekScores) {
-                        if (teamKeys.includes(score.team_key) && teamKeys.includes(score.opponent_key)) {
-                            return {
-                                team1: { key: score.team_key, score: score.team_score },
-                                team2: { key: score.opponent_key, score: score.opponent_score },
-                                winner: score.team_score > score.opponent_score ? score.team_key : score.opponent_key,
-                                loser: score.team_score > score.opponent_score ? score.opponent_key : score.team_key
-                            };
+                        if (playoffKeys.includes(score.team_key) && playoffKeys.includes(score.opponent_key)) {
+                            const key = [score.team_key, score.opponent_key].sort().join('-');
+                            if (!seen.has(key)) {
+                                seen.add(key);
+                                matchups.push({
+                                    team1: { key: score.team_key, score: score.team_score },
+                                    team2: { key: score.opponent_key, score: score.opponent_score },
+                                    winner: score.team_score > score.opponent_score ? score.team_key : score.opponent_key,
+                                    loser: score.team_score > score.opponent_score ? score.opponent_key : score.team_key
+                                });
+                            }
                         }
                     }
-                    return null;
+                    return matchups;
                 }
                 
-                // Find quarterfinal matchups (playoff teams only, excluding bye teams)
-                const qfTeams = playoffKeys.filter(k => k !== seed1Key && k !== seed2Key);
-                const qfScores = allScores.filter(s => s.week === quarterfinalsWeek);
-                const qfMatches = [];
-                const seen = new Set();
+                const qfMatchups = getPlayoffMatchups(quarterfinalsWeek);
+                const sfMatchups = getPlayoffMatchups(semifinalsWeek);
+                const finalsMatchups = getPlayoffMatchups(finalsWeek);
                 
-                for (const score of qfScores) {
-                    if (qfTeams.includes(score.team_key) && qfTeams.includes(score.opponent_key)) {
-                        const key = [score.team_key, score.opponent_key].sort().join('-');
-                        if (!seen.has(key)) {
-                            seen.add(key);
-                            qfMatches.push({
-                                team1: { key: score.team_key, score: score.team_score },
-                                team2: { key: score.opponent_key, score: score.opponent_score },
-                                winner: score.team_score > score.opponent_score ? score.team_key : score.opponent_key,
-                                loser: score.team_score > score.opponent_score ? score.opponent_key : score.team_key
-                            });
-                        }
-                    }
-                }
+                // Identify bye teams - teams in SF who weren't in QF
+                const qfParticipants = new Set();
+                qfMatchups.forEach(m => {
+                    qfParticipants.add(m.team1.key);
+                    qfParticipants.add(m.team2.key);
+                });
                 
-                if (qfMatches.length < 2) {
+                const byeTeams = playoffKeys.filter(k => !qfParticipants.has(k));
+                
+                if (qfMatchups.length < 2 || sfMatchups.length < 2 || byeTeams.length < 2) {
                     bracketContainer.style.display = 'none';
                     return;
                 }
                 
-                // Find semifinal matchups - seed 1 plays one QF winner, seed 2 plays the other
-                const sf1 = findMatchup(semifinalsWeek, [seed1Key, qfMatches[0].winner, qfMatches[1].winner]);
-                const sf2 = findMatchup(semifinalsWeek, [seed2Key, qfMatches[0].winner, qfMatches[1].winner]);
+                // Find which SF matchup each bye team is in
+                let sf1 = sfMatchups.find(m => m.team1.key === byeTeams[0] || m.team2.key === byeTeams[0]);
+                let sf2 = sfMatchups.find(m => m.team1.key === byeTeams[1] || m.team2.key === byeTeams[1]);
                 
                 if (!sf1 || !sf2) {
                     bracketContainer.style.display = 'none';
                     return;
                 }
                 
-                // The championship is SPECIFICALLY between sf1.winner and sf2.winner
-                const finalsMatch = findMatchup(finalsWeek, [sf1.winner, sf2.winner]);
+                // Identify the QF that feeds into each SF
+                const sf1Opponent = sf1.team1.key === byeTeams[0] ? sf1.team2.key : sf1.team1.key;
+                const sf2Opponent = sf2.team1.key === byeTeams[1] ? sf2.team2.key : sf2.team1.key;
+                
+                const qf1 = qfMatchups.find(m => m.winner === sf1Opponent);
+                const qf2 = qfMatchups.find(m => m.winner === sf2Opponent);
+                
+                if (!qf1 || !qf2) {
+                    bracketContainer.style.display = 'none';
+                    return;
+                }
+                
+                // Find the championship game between SF winners
+                const finalsMatch = finalsMatchups.find(m => 
+                    (m.team1.key === sf1.winner && m.team2.key === sf2.winner) ||
+                    (m.team1.key === sf2.winner && m.team2.key === sf1.winner)
+                );
                 
                 if (!finalsMatch) {
                     bracketContainer.style.display = 'none';
@@ -13462,15 +13427,13 @@
                 
                 const champion = finalsMatch.winner;
                 
-                // Determine which QF feeds into which SF
-                // QF1 is the one whose winner faced seed1 in SF1
-                const sf1Opponent = sf1.team1.key === seed1Key ? sf1.team2.key : sf1.team1.key;
-                const sf2Opponent = sf2.team1.key === seed2Key ? sf2.team2.key : sf2.team1.key;
+                // Determine line colors
+                const qf1WinnerIsChamp = qf1.winner === champion;
+                const qf2WinnerIsChamp = qf2.winner === champion;
+                const sf1WinnerIsChamp = sf1.winner === champion;
+                const sf2WinnerIsChamp = sf2.winner === champion;
                 
-                const qf1 = qfMatches.find(m => m.winner === sf1Opponent) || qfMatches[0];
-                const qf2 = qfMatches.find(m => m.winner === sf2Opponent) || qfMatches[1];
-                
-                // Build HTML for bracket
+                // Build HTML for bracket team
                 function renderTeam(teamKey, score, isWinner, isChampion = false) {
                     const info = teamInfo[teamKey] || {};
                     const manager = info.manager || 'Unknown';
@@ -13496,71 +13459,74 @@
                     `;
                 }
                 
-                // Determine winner advancement for line colors
-                const qf1WinnerIsChamp = qf1.winner === champion;
-                const qf2WinnerIsChamp = qf2.winner === champion;
-                const sf1WinnerIsChamp = sf1.winner === champion;
-                const sf2WinnerIsChamp = sf2.winner === champion;
-                
-                // Build the bracket HTML with proper connector lines
-                let bracketHTML = `
+                // Build the bracket HTML with SVG connectors
+                // Each team card is roughly 70px tall, matchup gap is 4px, so matchup height ~144px
+                const bracketHTML = `
                     <!-- Quarterfinals -->
                     <div class="bracket-round quarterfinals">
                         <div class="bracket-round-label">Round 1</div>
-                        <div class="bracket-matchup" id="qf1">
+                        <div class="bracket-matchup">
                             ${renderTeam(qf1.team1.key, qf1.team1.score, qf1.team1.key === qf1.winner)}
                             ${renderTeam(qf1.team2.key, qf1.team2.score, qf1.team2.key === qf1.winner)}
                         </div>
-                        <div class="bracket-matchup" id="qf2">
+                        <div class="bracket-matchup">
                             ${renderTeam(qf2.team1.key, qf2.team1.score, qf2.team1.key === qf2.winner)}
                             ${renderTeam(qf2.team2.key, qf2.team2.score, qf2.team2.key === qf2.winner)}
                         </div>
                     </div>
                     
                     <!-- Connector QF to SF -->
-                    <div class="bracket-connector-qf-sf">
-                        <div class="connector-line-group top">
-                            <div class="h-line ${qf1WinnerIsChamp ? 'winner-line' : 'loser-line'}"></div>
-                            <div class="v-line ${qf1WinnerIsChamp ? 'winner-line' : 'loser-line'}"></div>
-                            <div class="h-line-out ${qf1WinnerIsChamp ? 'winner-line' : 'loser-line'}"></div>
-                        </div>
-                        <div class="connector-line-group bottom">
-                            <div class="h-line ${qf2WinnerIsChamp ? 'winner-line' : 'loser-line'}"></div>
-                            <div class="v-line ${qf2WinnerIsChamp ? 'winner-line' : 'loser-line'}"></div>
-                            <div class="h-line-out ${qf2WinnerIsChamp ? 'winner-line' : 'loser-line'}"></div>
-                        </div>
+                    <div class="bracket-connector">
+                        <svg width="60" height="340" viewBox="0 0 60 340">
+                            <!-- QF1: lines from both teams meeting, then to SF1 winner slot -->
+                            <path d="M 0 36 H 20" stroke="${qf1WinnerIsChamp ? '#1e3c72' : '#ccc'}" stroke-width="2" fill="none"/>
+                            <path d="M 0 108 H 20" stroke="${qf1WinnerIsChamp ? '#1e3c72' : '#ccc'}" stroke-width="2" fill="none"/>
+                            <path d="M 20 36 V 108" stroke="${qf1WinnerIsChamp ? '#1e3c72' : '#ccc'}" stroke-width="2" fill="none"/>
+                            <path d="M 20 72 H 60" stroke="${qf1WinnerIsChamp ? '#1e3c72' : '#ccc'}" stroke-width="2" fill="none"/>
+                            
+                            <!-- QF2: lines from both teams meeting, then to SF2 winner slot -->
+                            <path d="M 0 232 H 20" stroke="${qf2WinnerIsChamp ? '#1e3c72' : '#ccc'}" stroke-width="2" fill="none"/>
+                            <path d="M 0 304 H 20" stroke="${qf2WinnerIsChamp ? '#1e3c72' : '#ccc'}" stroke-width="2" fill="none"/>
+                            <path d="M 20 232 V 304" stroke="${qf2WinnerIsChamp ? '#1e3c72' : '#ccc'}" stroke-width="2" fill="none"/>
+                            <path d="M 20 268 H 60" stroke="${qf2WinnerIsChamp ? '#1e3c72' : '#ccc'}" stroke-width="2" fill="none"/>
+                        </svg>
                     </div>
                     
                     <!-- Semifinals -->
                     <div class="bracket-round semifinals">
                         <div class="bracket-round-label">Semifinals</div>
-                        <div class="bracket-matchup" id="sf1">
-                            ${renderTeam(seed1Key, sf1.team1.key === seed1Key ? sf1.team1.score : sf1.team2.score, sf1.winner === seed1Key)}
+                        <div class="bracket-matchup">
+                            ${renderTeam(byeTeams[0], sf1.team1.key === byeTeams[0] ? sf1.team1.score : sf1.team2.score, sf1.winner === byeTeams[0])}
                             ${renderTeam(sf1Opponent, sf1.team1.key === sf1Opponent ? sf1.team1.score : sf1.team2.score, sf1.winner === sf1Opponent)}
                         </div>
-                        <div class="bracket-matchup" id="sf2">
-                            ${renderTeam(seed2Key, sf2.team1.key === seed2Key ? sf2.team1.score : sf2.team2.score, sf2.winner === seed2Key)}
+                        <div class="bracket-matchup">
+                            ${renderTeam(byeTeams[1], sf2.team1.key === byeTeams[1] ? sf2.team1.score : sf2.team2.score, sf2.winner === byeTeams[1])}
                             ${renderTeam(sf2Opponent, sf2.team1.key === sf2Opponent ? sf2.team1.score : sf2.team2.score, sf2.winner === sf2Opponent)}
                         </div>
                     </div>
                     
                     <!-- Connector SF to Finals -->
-                    <div class="bracket-connector-sf-finals">
-                        <div class="connector-line-group top">
-                            <div class="h-line ${sf1WinnerIsChamp ? 'champ-line' : 'loser-line'}"></div>
-                            <div class="v-line ${sf1WinnerIsChamp ? 'champ-line' : 'loser-line'}"></div>
-                        </div>
-                        <div class="connector-line-group bottom">
-                            <div class="h-line ${sf2WinnerIsChamp ? 'champ-line' : 'loser-line'}"></div>
-                            <div class="v-line ${sf2WinnerIsChamp ? 'champ-line' : 'loser-line'}"></div>
-                        </div>
-                        <div class="h-line-final ${sf1WinnerIsChamp ? 'champ-line' : ''} ${sf2WinnerIsChamp ? 'champ-line' : ''}"></div>
+                    <div class="bracket-connector">
+                        <svg width="60" height="340" viewBox="0 0 60 340">
+                            <!-- SF1: lines from both teams meeting, then to Finals -->
+                            <path d="M 0 36 H 20" stroke="${sf1WinnerIsChamp ? '#d4af37' : '#ccc'}" stroke-width="2" fill="none"/>
+                            <path d="M 0 108 H 20" stroke="${sf1WinnerIsChamp ? '#d4af37' : '#ccc'}" stroke-width="2" fill="none"/>
+                            <path d="M 20 36 V 170" stroke="${sf1WinnerIsChamp ? '#d4af37' : '#ccc'}" stroke-width="2" fill="none"/>
+                            
+                            <!-- SF2: lines from both teams meeting, then to Finals -->
+                            <path d="M 0 232 H 20" stroke="${sf2WinnerIsChamp ? '#d4af37' : '#ccc'}" stroke-width="2" fill="none"/>
+                            <path d="M 0 304 H 20" stroke="${sf2WinnerIsChamp ? '#d4af37' : '#ccc'}" stroke-width="2" fill="none"/>
+                            <path d="M 20 304 V 170" stroke="${sf2WinnerIsChamp ? '#d4af37' : '#ccc'}" stroke-width="2" fill="none"/>
+                            
+                            <!-- Horizontal line to finals -->
+                            <path d="M 20 170 H 60" stroke="#d4af37" stroke-width="2" fill="none"/>
+                        </svg>
                     </div>
                     
                     <!-- Finals -->
                     <div class="bracket-round finals">
                         <div class="bracket-round-label">Championship</div>
-                        <div class="bracket-matchup" id="finals">
+                        <div class="bracket-matchup">
                             ${renderTeam(sf1.winner, finalsMatch.team1.key === sf1.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf1.winner === champion, sf1.winner === champion)}
                             ${renderTeam(sf2.winner, finalsMatch.team1.key === sf2.winner ? finalsMatch.team1.score : finalsMatch.team2.score, sf2.winner === champion, sf2.winner === champion)}
                         </div>
