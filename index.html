@@ -22328,6 +22328,8 @@
                         pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
                     });
                     
+                    console.log(`${managerName} pick calc: usedRounds=`, usedRounds, 'pickCounts=', pickCounts);
+                    
                     // Calculate total unused pick value
                     let totalPickValue = 0;
                     Object.keys(pickCounts).forEach(round => {
@@ -22337,9 +22339,12 @@
                         const unused = available - used;
                         if (unused > 0) {
                             const expectedPts = expectedPointsByRound[roundNum]?.avg || 0;
+                            console.log(`  Round ${roundNum}: available=${available}, used=${used}, unused=${unused}, expectedPts=${expectedPts}`);
                             totalPickValue += expectedPts * unused;
                         }
                     });
+                    
+                    console.log(`${managerName} totalPickValue: ${totalPickValue}`);
                     
                     teamValues.push({
                         team_key: team.team_key,
