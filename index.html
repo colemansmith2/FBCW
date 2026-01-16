@@ -9358,7 +9358,13 @@
                     
                     <!-- Weekly Matchups Ticker (for 2026 in-season) -->
                     <div id="matchups-ticker" style="display: none; margin-top: 1rem;">
-                        <h3 class="panel-title" style="font-size: 1rem;">Week <span id="matchups-week-num">0</span> Matchups</h3>
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <h3 class="panel-title" style="font-size: 1rem; margin-bottom: 0;">Week <span id="matchups-week-num">1</span> Matchups</h3>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <button class="chart-toggle-btn" onclick="changeMatchupsWeek(-1)" title="Previous Week">‹ Prev</button>
+                                <button class="chart-toggle-btn" onclick="changeMatchupsWeek(1)" title="Next Week">Next ›</button>
+                            </div>
+                        </div>
                         <div id="matchups-cards" class="matchups-ticker-grid">
                             <!-- Populated by JS -->
                         </div>
@@ -9395,7 +9401,7 @@
             <div id="inseason-tools-container" style="display: none; margin-top: 2rem;">
                 <!-- Top Performers Section -->
                 <div class="inseason-section">
-                    <h3 class="panel-title">🔥 Top Performers This Week</h3>
+                    <h3 class="panel-title">🔥 Top Performers <span id="top-performers-week-label" style="font-size: 0.85em; font-weight: normal;">(Week 1)</span></h3>
                     <div class="top-performers-grid">
                         <div class="performers-column">
                             <h4>Top Hitters</h4>
@@ -9414,7 +9420,7 @@
                 
                 <!-- Weekly Category Leaders -->
                 <div class="inseason-section" style="margin-top: 1.5rem;">
-                    <h3 class="panel-title">👑 Weekly Category Leaders</h3>
+                    <h3 class="panel-title">👑 Category Leaders <span id="category-leaders-week-label" style="font-size: 0.85em; font-weight: normal;">(Week 1)</span></h3>
                     <div class="category-leaders-grid" id="category-leaders-grid">
                         <div class="no-data">Season has not started</div>
                     </div>
@@ -12867,26 +12873,231 @@
         }
         
         // ===== IN-SEASON STATS FUNCTIONS =====
+        let currentMatchupsWeek = 1;
+        let maxAvailableWeek = 1;
+        let cachedStandings = null;
+        
         async function loadInSeasonStats(teamData, teamLogos, standings) {
+            // Cache these for week switching
+            cachedTeamData = teamData;
+            cachedTeamLogos = teamLogos;
+            cachedStandings = standings;
+            
             // Try to load weekly stats data
             try {
                 const statsResponse = await fetch('data/current_season/weekly_stats.json');
                 if (statsResponse.ok) {
                     const weeklyStats = await statsResponse.json();
+                    cachedWeeklyStats = weeklyStats;
                     renderWeeklyStats(weeklyStats, teamData, teamLogos);
                     populateWeekSelector(weeklyStats);
                     await loadTopPerformers(weeklyStats);
                     await loadCategoryLeaders(weeklyStats);
+                    
+                    // Set max week from weekly stats
+                    if (weeklyStats.weeks) {
+                        const weeks = Object.keys(weeklyStats.weeks).map(Number);
+                        maxAvailableWeek = Math.max(...weeks, 1);
+                        currentMatchupsWeek = weeklyStats.currentWeek || maxAvailableWeek;
+                    }
+                    
+                    // Load matchups from weekly stats
                     await loadMatchupsTicker(weeklyStats, teamData, teamLogos, standings);
                 } else {
-                    // No stats yet - show placeholder
+                    // No weekly stats yet - try to load matchups from week score files
                     document.getElementById('stats-no-data').style.display = 'block';
                     document.getElementById('hitting-stats-table').style.display = 'none';
                     document.getElementById('pitching-stats-table').style.display = 'none';
+                    
+                    // Still try to load matchups from week files
+                    await loadMatchupsFromWeekFiles(teamData, teamLogos, standings);
                 }
             } catch (e) {
                 console.log('No weekly stats available yet:', e);
                 document.getElementById('stats-no-data').style.display = 'block';
+                
+                // Still try to load matchups from week files
+                await loadMatchupsFromWeekFiles(teamData, teamLogos, standings);
+            }
+        }
+        
+        async function loadMatchupsFromWeekFiles(teamData, teamLogos, standings) {
+            // Find the highest available week
+            let highestWeek = 0;
+            for (let week = 1; week <= 26; week++) {
+                try {
+                    const response = await fetch(`data/current_season/week_${week}_scores.json`);
+                    if (response.ok) {
+                        highestWeek = week;
+                    } else {
+                        break; // Stop when we hit a missing week
+                    }
+                } catch (e) {
+                    break;
+                }
+            }
+            
+            if (highestWeek > 0) {
+                maxAvailableWeek = highestWeek;
+                currentMatchupsWeek = 1; // Start at week 1
+                await loadMatchupsForWeek(currentMatchupsWeek, teamData, teamLogos, standings);
+            }
+        }
+        
+        async function loadMatchupsForWeek(week, teamData, teamLogos, standings) {
+            const tickerContainer = document.getElementById('matchups-ticker');
+            const cardsContainer = document.getElementById('matchups-cards');
+            const weekNumEl = document.getElementById('matchups-week-num');
+            
+            if (!tickerContainer || !cardsContainer) return;
+            
+            // Clear existing interval
+            if (matchupsTickerInterval) {
+                clearInterval(matchupsTickerInterval);
+                matchupsTickerInterval = null;
+            }
+            
+            try {
+                // First check if we have weekly_stats.json with this week's data
+                if (cachedWeeklyStats && cachedWeeklyStats.weeks && cachedWeeklyStats.weeks[week]) {
+                    const weekData = cachedWeeklyStats.weeks[week];
+                    if (weekData.matchups && weekData.matchups.length > 0) {
+                        weekNumEl.textContent = week;
+                        renderMatchupsFromWeeklyStats(weekData.matchups, teamData, teamLogos, standings);
+                        tickerContainer.style.display = 'block';
+                        return;
+                    }
+                }
+                
+                // Fall back to week_X_scores.json file
+                const response = await fetch(`data/current_season/week_${week}_scores.json`);
+                if (!response.ok) {
+                    console.log(`No data for week ${week}`);
+                    return;
+                }
+                
+                const scoresData = await response.json();
+                
+                // Convert scores data to matchups format
+                const matchups = convertScoresToMatchups(scoresData);
+                
+                if (matchups.length === 0) {
+                    tickerContainer.style.display = 'none';
+                    return;
+                }
+                
+                weekNumEl.textContent = week;
+                
+                // Build team info lookup
+                const teamInfoLookup = {};
+                teamData.forEach(team => {
+                    teamInfoLookup[team.team_key] = {
+                        name: team.team_name,
+                        manager: normalizeManagerName(team.manager, 2026, team.team_name, team.team_key),
+                        logo: teamLogos[team.team_key] || ''
+                    };
+                });
+                
+                // Build standings lookup
+                const standingsLookup = {};
+                if (standings && standings.length > 0) {
+                    standings.forEach(team => {
+                        standingsLookup[team.team_key] = {
+                            rank: team.rank || '-',
+                            wins: team.wins || 0,
+                            losses: team.losses || 0
+                        };
+                    });
+                }
+                
+                renderMatchupsTicker(cardsContainer, matchups, teamInfoLookup, standingsLookup);
+                tickerContainer.style.display = 'block';
+                
+                // Start auto-scroll
+                currentMatchupIndex = 0;
+                matchupsTickerInterval = setInterval(() => {
+                    currentMatchupIndex = (currentMatchupIndex + 1) % matchups.length;
+                    scrollToMatchupCard(currentMatchupIndex);
+                }, 15000);
+                
+            } catch (e) {
+                console.log(`Error loading matchups for week ${week}:`, e);
+                tickerContainer.style.display = 'none';
+            }
+        }
+        
+        function convertScoresToMatchups(scoresData) {
+            // Group scores into matchups (2 teams per matchup)
+            const matchupMap = {};
+            
+            scoresData.forEach(score => {
+                // Create a unique matchup key (sorted team keys)
+                const keys = [score.team_key, score.opponent_key].sort();
+                const matchupKey = keys.join('_');
+                
+                if (!matchupMap[matchupKey]) {
+                    matchupMap[matchupKey] = {
+                        team1_key: score.team_key,
+                        team1_score: score.team_score,
+                        team2_key: score.opponent_key,
+                        team2_score: score.opponent_score
+                    };
+                }
+            });
+            
+            return Object.values(matchupMap);
+        }
+        
+        function renderMatchupsFromWeeklyStats(matchups, teamData, teamLogos, standings) {
+            const cardsContainer = document.getElementById('matchups-cards');
+            
+            // Build team info lookup
+            const teamInfoLookup = {};
+            teamData.forEach(team => {
+                teamInfoLookup[team.team_key] = {
+                    name: team.team_name,
+                    manager: normalizeManagerName(team.manager, 2026, team.team_name, team.team_key),
+                    logo: teamLogos[team.team_key] || ''
+                };
+            });
+            
+            // Build standings lookup
+            const standingsLookup = {};
+            if (standings && standings.length > 0) {
+                standings.forEach(team => {
+                    standingsLookup[team.team_key] = {
+                        rank: team.rank || '-',
+                        wins: team.wins || 0,
+                        losses: team.losses || 0
+                    };
+                });
+            }
+            
+            renderMatchupsTicker(cardsContainer, matchups, teamInfoLookup, standingsLookup);
+            
+            // Start auto-scroll
+            currentMatchupIndex = 0;
+            if (matchupsTickerInterval) {
+                clearInterval(matchupsTickerInterval);
+            }
+            matchupsTickerInterval = setInterval(() => {
+                currentMatchupIndex = (currentMatchupIndex + 1) % matchups.length;
+                scrollToMatchupCard(currentMatchupIndex);
+            }, 15000);
+        }
+        
+        function changeMatchupsWeek(delta) {
+            const newWeek = currentMatchupsWeek + delta;
+            
+            if (newWeek < 1 || newWeek > maxAvailableWeek) {
+                return; // Out of bounds
+            }
+            
+            currentMatchupsWeek = newWeek;
+            
+            // Reload matchups for the new week
+            if (cachedTeamData && cachedTeamLogos) {
+                loadMatchupsForWeek(newWeek, cachedTeamData, cachedTeamLogos, cachedStandings);
             }
         }
         
@@ -12928,7 +13139,38 @@
             // Reload stats for selected week
             if (cachedWeeklyStats && cachedTeamData && cachedTeamLogos) {
                 renderWeeklyStats(cachedWeeklyStats, cachedTeamData, cachedTeamLogos, week);
+                
+                // Also update matchups, top performers, and category leaders if a specific week is selected
+                if (week !== 'cumulative') {
+                    currentMatchupsWeek = week;
+                    loadMatchupsForWeek(week, cachedTeamData, cachedTeamLogos, cachedStandings);
+                    updateTopPerformersForWeek(cachedWeeklyStats, week);
+                    updateCategoryLeadersForWeek(cachedWeeklyStats, week);
+                } else {
+                    // For cumulative, show the latest week's matchups
+                    const latestWeek = cachedWeeklyStats.currentWeek || maxAvailableWeek;
+                    currentMatchupsWeek = latestWeek;
+                    loadMatchupsForWeek(latestWeek, cachedTeamData, cachedTeamLogos, cachedStandings);
+                    updateTopPerformersForWeek(cachedWeeklyStats, latestWeek);
+                    updateCategoryLeadersForWeek(cachedWeeklyStats, latestWeek);
+                }
             }
+        }
+        
+        function updateTopPerformersForWeek(weeklyStats, week) {
+            const weekLabel = document.getElementById('top-performers-week-label');
+            if (weekLabel) {
+                weekLabel.textContent = `(Week ${week})`;
+            }
+            loadTopPerformers(weeklyStats, week);
+        }
+        
+        function updateCategoryLeadersForWeek(weeklyStats, week) {
+            const weekLabel = document.getElementById('category-leaders-week-label');
+            if (weekLabel) {
+                weekLabel.textContent = `(Week ${week})`;
+            }
+            loadCategoryLeaders(weeklyStats, week);
         }
         
         function setStatsType(type) {
@@ -13030,19 +13272,25 @@
             }).join('');
         }
         
-        async function loadTopPerformers(weeklyStats) {
+        async function loadTopPerformers(weeklyStats, week = null) {
             const hittersList = document.getElementById('top-hitters-list');
             const pitchersList = document.getElementById('top-pitchers-list');
+            const weekLabel = document.getElementById('top-performers-week-label');
             
-            if (!weeklyStats.currentWeek) {
+            const targetWeek = week || weeklyStats.currentWeek;
+            
+            if (!targetWeek) {
                 hittersList.innerHTML = '<div class="no-data">Season has not started</div>';
                 pitchersList.innerHTML = '<div class="no-data">Season has not started</div>';
                 return;
             }
             
-            const currentWeek = weeklyStats.currentWeek;
-            const topHitters = weeklyStats.weeks?.[currentWeek]?.topHitters || [];
-            const topPitchers = weeklyStats.weeks?.[currentWeek]?.topPitchers || [];
+            if (weekLabel) {
+                weekLabel.textContent = `(Week ${targetWeek})`;
+            }
+            
+            const topHitters = weeklyStats.weeks?.[targetWeek]?.topHitters || [];
+            const topPitchers = weeklyStats.weeks?.[targetWeek]?.topPitchers || [];
             
             hittersList.innerHTML = topHitters.slice(0, 5).map((player, idx) => `
                 <div class="performer-item">
@@ -13069,16 +13317,22 @@
             `).join('') || '<div class="no-data">No data available</div>';
         }
         
-        async function loadCategoryLeaders(weeklyStats) {
+        async function loadCategoryLeaders(weeklyStats, week = null) {
             const leadersGrid = document.getElementById('category-leaders-grid');
+            const weekLabel = document.getElementById('category-leaders-week-label');
             
-            if (!weeklyStats.currentWeek) {
+            const targetWeek = week || weeklyStats.currentWeek;
+            
+            if (!targetWeek) {
                 leadersGrid.innerHTML = '<div class="no-data">Season has not started</div>';
                 return;
             }
             
-            const currentWeek = weeklyStats.currentWeek;
-            const leaders = weeklyStats.weeks?.[currentWeek]?.categoryLeaders || {};
+            if (weekLabel) {
+                weekLabel.textContent = `(Week ${targetWeek})`;
+            }
+            
+            const leaders = weeklyStats.weeks?.[targetWeek]?.categoryLeaders || {};
             
             const categories = [
                 { key: 'HR', label: 'HR' },
@@ -13121,29 +13375,34 @@
                 matchupsTickerInterval = null;
             }
             
-            const currentWeek = weeklyStats.currentWeek;
+            // Determine which week to show
+            const currentWeek = weeklyStats.currentWeek || 1;
+            currentMatchupsWeek = currentWeek;
+            
+            // Set max available week
+            if (weeklyStats.weeks) {
+                const weeks = Object.keys(weeklyStats.weeks).map(Number);
+                maxAvailableWeek = Math.max(...weeks, 1);
+            }
+            
             const weekData = weeklyStats.weeks?.[currentWeek] || weeklyStats.weeks?.[String(currentWeek)];
             
-            if (!currentWeek || !weekData?.matchups) {
-                tickerContainer.style.display = 'none';
+            if (!weekData?.matchups || weekData.matchups.length === 0) {
+                // Fall back to loading from week files
+                await loadMatchupsForWeek(currentWeek, teamData, teamLogos, standings);
                 return;
             }
             
-            const matchups = weekData.matchups || [];
-            
-            if (matchups.length === 0) {
-                tickerContainer.style.display = 'none';
-                return;
-            }
+            const matchups = weekData.matchups;
             
             // Build standings lookup
             const standingsLookup = {};
             if (standings && standings.length > 0) {
                 standings.forEach(team => {
                     standingsLookup[team.team_key] = {
-                        rank: team.rank,
-                        wins: team.wins,
-                        losses: team.losses
+                        rank: team.rank || '-',
+                        wins: team.wins || 0,
+                        losses: team.losses || 0
                     };
                 });
             }
