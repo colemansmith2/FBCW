@@ -25213,8 +25213,6 @@
             }
             
             // Authentication successful
-            const team = sportsbookTeamData.find(t => t.team_key === selectedSportsbookTeam);
-            const managerName = normalizeManagerName(team?.manager, 2026, team?.team_name, team?.team_key);
             sportsbookUser = {
                 visitorId: managerName, // Use manager name as primary identifier (persists across seasons)
                 teamKey: selectedSportsbookTeam, // Current season team key (for display only)
