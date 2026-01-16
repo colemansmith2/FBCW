@@ -774,6 +774,13 @@
                 inset 0 3px 0 rgba(255,255,255,0.3),
                 2px 2px 4px rgba(0,0,0,0.3);
             text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .week-number:hover {
+            background: linear-gradient(135deg, #ffe082 0%, #ffc107 50%, #ffa000 100%);
+            transform: scale(1.05);
         }
         
         .mario-arrow {
@@ -782,7 +789,11 @@
             border-radius: 4px;
             color: #5d4037;
             font-size: 0.6rem;
-            padding: 0.1rem 0.4rem;
+            width: 24px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
             transition: all 0.15s ease;
             box-shadow: 
@@ -790,6 +801,7 @@
                 inset 0 2px 0 rgba(255,255,255,0.3),
                 1px 1px 2px rgba(0,0,0,0.2);
             line-height: 1;
+            padding: 0;
         }
         
         .mario-arrow:hover {
@@ -816,6 +828,81 @@
         
         .mario-down {
             margin-top: 2px;
+        }
+        
+        /* Week Dropdown */
+        .week-dropdown-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9998;
+            display: none;
+        }
+        
+        .week-dropdown-overlay.active {
+            display: block;
+        }
+        
+        .week-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            border: 3px solid #5d4037;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            padding: 0.5rem;
+            z-index: 9999;
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .week-dropdown.active {
+            display: block;
+        }
+        
+        .week-dropdown-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+        }
+        
+        .week-dropdown-item {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            border: 2px solid #bdbdbd;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        
+        .week-dropdown-item:hover {
+            background: linear-gradient(135deg, #ffd54f 0%, #ffb300 100%);
+            border-color: #5d4037;
+            transform: scale(1.1);
+        }
+        
+        .week-dropdown-item.active {
+            background: linear-gradient(135deg, #ffd54f 0%, #ffb300 50%, #ff8f00 100%);
+            border-color: #5d4037;
+            color: #1e3c72;
+        }
+        
+        .week-dropdown-item.unavailable {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
         }
         
         /* Clickable team cells */
@@ -857,8 +944,8 @@
         .schedule-modal {
             background: white;
             border-radius: 12px;
-            max-width: 900px;
-            width: 95%;
+            max-width: 95vw;
+            width: 1100px;
             max-height: 90vh;
             overflow: hidden;
             box-shadow: 0 10px 40px rgba(0,0,0,0.3);
@@ -879,11 +966,13 @@
             gap: 1rem;
         }
         
-        .schedule-modal-header img {
+        .schedule-modal-header .team-logo {
             width: 50px;
             height: 50px;
-            border-radius: 8px;
+            border-radius: 50%;
             border: 2px solid rgba(255,255,255,0.3);
+            background: white;
+            padding: 3px;
         }
         
         .schedule-modal-title {
@@ -922,158 +1011,170 @@
         }
         
         .schedule-modal-body {
-            padding: 1.5rem;
-            max-height: calc(90vh - 100px);
+            padding: 1rem;
+            max-height: calc(90vh - 80px);
             overflow-y: auto;
         }
         
-        /* H2H Summary */
-        .h2h-summary {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 0.75rem;
-            margin-bottom: 1.5rem;
+        /* Schedule Table */
+        .schedule-table-wrapper {
+            overflow-x: auto;
         }
         
-        .h2h-card {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 0.75rem;
-            text-align: center;
-            border: 2px solid #e0e0e0;
-            transition: all 0.2s ease;
-        }
-        
-        .h2h-card.good {
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-            border-color: #66bb6a;
-        }
-        
-        .h2h-card.bad {
-            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-            border-color: #ef5350;
-        }
-        
-        .h2h-card.neutral {
-            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-            border-color: #ffca28;
-        }
-        
-        .h2h-opponent-logo {
-            width: 32px;
-            height: 32px;
-            border-radius: 4px;
-            margin-bottom: 0.25rem;
-        }
-        
-        .h2h-opponent-name {
-            font-size: 0.7rem;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 0.25rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .h2h-record {
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
             font-size: 0.85rem;
+        }
+        
+        .schedule-table th {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 0.6rem 0.5rem;
+            text-align: center;
             font-weight: bold;
-            color: #1e3c72;
+            position: sticky;
+            top: 0;
+            z-index: 1;
         }
         
-        .h2h-winpct {
-            font-size: 0.7rem;
-            color: #666;
+        .schedule-table th:first-child {
+            text-align: left;
+            padding-left: 1rem;
         }
         
-        /* Schedule Grid */
-        .schedule-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        .schedule-table td {
+            padding: 0.5rem;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: center;
+            vertical-align: middle;
+        }
+        
+        .schedule-table td:first-child {
+            text-align: left;
+            padding-left: 0.5rem;
+        }
+        
+        .schedule-table tr:hover {
+            background: rgba(42, 82, 152, 0.05);
+        }
+        
+        .schedule-opponent-cell {
+            display: flex;
+            align-items: center;
             gap: 0.5rem;
         }
         
-        .schedule-week {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 0.5rem;
-            text-align: center;
-            border: 2px solid #e0e0e0;
-            transition: all 0.2s ease;
-        }
-        
-        .schedule-week.win {
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-            border-color: #66bb6a;
-        }
-        
-        .schedule-week.loss {
-            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-            border-color: #ef5350;
-        }
-        
-        .schedule-week.tie {
-            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-            border-color: #ffca28;
-        }
-        
-        .schedule-week.upcoming {
-            background: #f5f5f5;
-            border-color: #bdbdbd;
-            opacity: 0.8;
-        }
-        
-        .schedule-week-num {
-            font-size: 0.65rem;
-            color: #666;
-            font-weight: bold;
-            margin-bottom: 0.25rem;
-        }
-        
-        .schedule-opponent {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.25rem;
-        }
-        
-        .schedule-opponent img {
+        .schedule-opponent-cell .team-logo {
             width: 28px;
             height: 28px;
-            border-radius: 4px;
+            border-radius: 50%;
+            background: white;
+            padding: 2px;
+            flex-shrink: 0;
         }
         
         .schedule-opponent-name {
-            font-size: 0.65rem;
+            font-weight: 500;
+        }
+        
+        .schedule-result {
             font-weight: bold;
-            color: #333;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 100%;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            display: inline-block;
+            min-width: 30px;
+        }
+        
+        .schedule-result.win {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            color: #2e7d32;
+        }
+        
+        .schedule-result.loss {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            color: #c62828;
+        }
+        
+        .schedule-result.tie {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+            color: #f57f17;
+        }
+        
+        .schedule-result.upcoming {
+            background: #f5f5f5;
+            color: #9e9e9e;
         }
         
         .schedule-score {
-            font-size: 0.7rem;
-            font-weight: bold;
-            margin-top: 0.25rem;
+            font-size: 0.8rem;
+            color: #666;
         }
         
         .schedule-score.win { color: #2e7d32; }
         .schedule-score.loss { color: #c62828; }
-        .schedule-score.tie { color: #f57f17; }
         
-        .schedule-section-title {
-            font-size: 1rem;
-            color: #1e3c72;
-            margin: 1.5rem 0 0.75rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid #2a5298;
+        /* H2H Column */
+        .h2h-cell {
+            white-space: nowrap;
         }
         
-        .schedule-section-title:first-child {
-            margin-top: 0;
+        .h2h-record-badge {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            min-width: 60px;
+        }
+        
+        .h2h-record-badge.good {
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border: 1px solid #66bb6a;
+        }
+        
+        .h2h-record-badge.bad {
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border: 1px solid #ef5350;
+        }
+        
+        .h2h-record-badge.neutral {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+            border: 1px solid #ffca28;
+        }
+        
+        .h2h-record-badge.no-history {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .h2h-record-text {
+            font-weight: bold;
+            font-size: 0.85rem;
+            color: #333;
+        }
+        
+        .h2h-winpct-text {
+            font-size: 0.7rem;
+            color: #666;
+        }
+        
+        @media (max-width: 768px) {
+            .schedule-modal {
+                width: 100%;
+                max-width: 100%;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+            
+            .schedule-table {
+                font-size: 0.75rem;
+            }
+            
+            .schedule-opponent-cell .team-logo {
+                width: 24px;
+                height: 24px;
+            }
         }
 
         /* Standings and Draft side-by-side layout */
@@ -9643,10 +9744,16 @@
                     <span class="week-label">Week:</span>
                     <div class="mario-week-control">
                         <button class="mario-arrow mario-up" onclick="changeHeaderWeek(1)" title="Next Week">▲</button>
-                        <span class="week-number" id="header-week-number">1</span>
+                        <span class="week-number" id="header-week-number" onclick="toggleWeekDropdown()" title="Click to select week">1</span>
                         <button class="mario-arrow mario-down" onclick="changeHeaderWeek(-1)" title="Previous Week">▼</button>
+                        <div class="week-dropdown" id="week-dropdown">
+                            <div class="week-dropdown-grid" id="week-dropdown-grid">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <div class="week-dropdown-overlay" id="week-dropdown-overlay" onclick="closeWeekDropdown()"></div>
             </div>
 
             <div id="standings-loading" class="loading">Loading standings...</div>
@@ -13508,7 +13615,7 @@
         }
         
         // ===== SCHEDULE MODAL FUNCTIONS =====
-        function openScheduleModal(teamKey) {
+        async function openScheduleModal(teamKey) {
             const data = window.cached2026Data;
             if (!data) {
                 console.log('No cached 2026 data');
@@ -13536,12 +13643,11 @@
             const teamSchedule = allScores.filter(s => s.team_key === teamKey);
             teamSchedule.sort((a, b) => a.week - b.week);
             
-            // Calculate H2H records against each opponent
-            const h2hRecords = calculateH2HRecords(teamKey, allScores, teamData, teamLogos);
-            renderH2HSummary(h2hRecords);
+            // Load historical H2H records for this manager
+            const historicalH2H = await loadHistoricalH2HForManager(manager);
             
-            // Render full schedule
-            renderScheduleGrid(teamSchedule, teamData, teamLogos);
+            // Render schedule table with H2H column
+            renderScheduleTable(teamSchedule, teamData, teamLogos, historicalH2H);
             
             // Show modal
             document.getElementById('schedule-modal-overlay').classList.add('active');
@@ -13554,133 +13660,205 @@
             document.body.style.overflow = '';
         }
         
-        function calculateH2HRecords(teamKey, allScores, teamData, teamLogos) {
-            // Group scores by opponent
-            const h2h = {};
+        async function loadHistoricalH2HForManager(managerName) {
+            // Similar to calculateHeadToHeadRecords but returns a map for quick lookup
+            const h2hMap = {};
             
-            allScores.filter(s => s.team_key === teamKey).forEach(game => {
-                const oppKey = game.opponent_key;
-                if (!h2h[oppKey]) {
-                    h2h[oppKey] = { wins: 0, losses: 0, ties: 0 };
-                }
+            try {
+                // Load all historical seasons
+                const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
                 
-                // Only count games that have been played (scores > 0 or both 0 is tie)
-                const played = game.team_score > 0 || game.opponent_score > 0;
-                if (played) {
-                    if (game.team_score > game.opponent_score) {
-                        h2h[oppKey].wins++;
-                    } else if (game.team_score < game.opponent_score) {
-                        h2h[oppKey].losses++;
-                    } else {
-                        h2h[oppKey].ties++;
+                for (const season of seasons) {
+                    try {
+                        const scoresResponse = await fetch(`data/historical/${season}/all_scores.json`);
+                        if (!scoresResponse.ok) continue;
+                        
+                        const scores = await scoresResponse.json();
+                        const standingsResponse = await fetch(`data/historical/${season}/final_standings.json`);
+                        if (!standingsResponse.ok) continue;
+                        
+                        let standings = await standingsResponse.json();
+                        standings = normalizeStandingsData(standings, season);
+                        
+                        // Create team_key to manager mapping
+                        const teamToManager = {};
+                        standings.forEach(team => {
+                            teamToManager[team.team_key] = team.manager;
+                        });
+                        
+                        // Find manager's team key for this season
+                        const managerTeam = standings.find(team => team.manager === managerName);
+                        if (!managerTeam) continue;
+                        
+                        // Process matchups
+                        scores.forEach(matchup => {
+                            if (matchup.team_key === managerTeam.team_key) {
+                                const opponent = teamToManager[matchup.opponent_key];
+                                if (!opponent) return;
+                                
+                                if (!h2hMap[opponent]) {
+                                    h2hMap[opponent] = {
+                                        wins: 0,
+                                        losses: 0,
+                                        games: 0
+                                    };
+                                }
+                                
+                                h2hMap[opponent].games++;
+                                
+                                if (matchup.team_score > matchup.opponent_score) {
+                                    h2hMap[opponent].wins++;
+                                } else if (matchup.team_score < matchup.opponent_score) {
+                                    h2hMap[opponent].losses++;
+                                }
+                            }
+                        });
+                    } catch (e) {
+                        // Skip this season if error
                     }
                 }
-            });
+            } catch (e) {
+                console.log('Error loading historical H2H:', e);
+            }
             
-            // Convert to array with team info
-            return Object.keys(h2h).map(oppKey => {
-                const oppTeam = teamData.find(t => t.team_key === oppKey);
-                const record = h2h[oppKey];
-                const total = record.wins + record.losses + record.ties;
-                const winPct = total > 0 ? record.wins / total : 0;
-                
-                return {
-                    team_key: oppKey,
-                    team_name: oppTeam?.team_name || 'Unknown',
-                    manager: oppTeam ? normalizeManagerName(oppTeam.manager, 2026, oppTeam.team_name, oppKey) : 'Unknown',
-                    logo: teamLogos[oppKey] || '',
-                    wins: record.wins,
-                    losses: record.losses,
-                    ties: record.ties,
-                    total: total,
-                    winPct: winPct
-                };
-            }).sort((a, b) => b.winPct - a.winPct);
+            return h2hMap;
         }
         
-        function renderH2HSummary(records) {
-            const container = document.getElementById('schedule-h2h-summary');
+        function renderScheduleTable(schedule, teamData, teamLogos, historicalH2H) {
+            const tbody = document.getElementById('schedule-table-body');
             
-            container.innerHTML = records.map(rec => {
-                let cardClass = 'neutral';
-                if (rec.total > 0) {
-                    if (rec.winPct >= 0.6) cardClass = 'good';
-                    else if (rec.winPct <= 0.4) cardClass = 'bad';
-                }
-                
-                const recordStr = rec.ties > 0 
-                    ? `${rec.wins}-${rec.losses}-${rec.ties}`
-                    : `${rec.wins}-${rec.losses}`;
-                
-                const winPctStr = rec.total > 0 
-                    ? `${(rec.winPct * 100).toFixed(0)}%` 
-                    : '-';
-                
-                return `
-                    <div class="h2h-card ${cardClass}">
-                        <img src="${rec.logo}" class="h2h-opponent-logo" alt="" onerror="this.style.display='none'">
-                        <div class="h2h-opponent-name">${rec.manager}</div>
-                        <div class="h2h-record">${recordStr}</div>
-                        <div class="h2h-winpct">${winPctStr}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-        
-        function renderScheduleGrid(schedule, teamData, teamLogos) {
-            const container = document.getElementById('schedule-grid');
-            
-            // Determine current week (highest week with scores)
-            let currentWeek = 0;
-            schedule.forEach(game => {
-                if (game.team_score > 0 || game.opponent_score > 0) {
-                    currentWeek = Math.max(currentWeek, game.week);
-                }
-            });
-            
-            container.innerHTML = schedule.map(game => {
+            tbody.innerHTML = schedule.map(game => {
                 const oppTeam = teamData.find(t => t.team_key === game.opponent_key);
-                const oppName = oppTeam ? normalizeManagerName(oppTeam.manager, 2026, oppTeam.team_name, game.opponent_key) : 'Unknown';
+                const oppManager = oppTeam ? normalizeManagerName(oppTeam.manager, 2026, oppTeam.team_name, game.opponent_key) : 'Unknown';
                 const oppLogo = teamLogos[game.opponent_key] || '';
                 
                 const played = game.team_score > 0 || game.opponent_score > 0;
                 let resultClass = 'upcoming';
-                let scoreClass = '';
+                let resultText = '-';
                 let scoreText = 'vs';
+                let scoreClass = '';
                 
                 if (played) {
                     if (game.team_score > game.opponent_score) {
                         resultClass = 'win';
+                        resultText = 'W';
                         scoreClass = 'win';
-                        scoreText = `W ${game.team_score.toFixed(1)}-${game.opponent_score.toFixed(1)}`;
                     } else if (game.team_score < game.opponent_score) {
                         resultClass = 'loss';
+                        resultText = 'L';
                         scoreClass = 'loss';
-                        scoreText = `L ${game.team_score.toFixed(1)}-${game.opponent_score.toFixed(1)}`;
                     } else {
                         resultClass = 'tie';
-                        scoreClass = 'tie';
-                        scoreText = `T ${game.team_score.toFixed(1)}-${game.opponent_score.toFixed(1)}`;
+                        resultText = 'T';
                     }
+                    scoreText = `${game.team_score.toFixed(1)} - ${game.opponent_score.toFixed(1)}`;
+                }
+                
+                // Get historical H2H for this opponent
+                const h2h = historicalH2H[oppManager] || null;
+                let h2hHTML = '';
+                
+                if (h2h && h2h.games > 0) {
+                    const winPct = h2h.wins / (h2h.wins + h2h.losses);
+                    let badgeClass = 'neutral';
+                    if (winPct >= 0.6) badgeClass = 'good';
+                    else if (winPct <= 0.4) badgeClass = 'bad';
+                    
+                    h2hHTML = `
+                        <div class="h2h-record-badge ${badgeClass}">
+                            <span class="h2h-record-text">${h2h.wins}-${h2h.losses}</span>
+                            <span class="h2h-winpct-text">${(winPct * 100).toFixed(0)}%</span>
+                        </div>
+                    `;
+                } else {
+                    h2hHTML = `
+                        <div class="h2h-record-badge no-history">
+                            <span class="h2h-record-text">0-0</span>
+                            <span class="h2h-winpct-text">New</span>
+                        </div>
+                    `;
                 }
                 
                 return `
-                    <div class="schedule-week ${resultClass}">
-                        <div class="schedule-week-num">Week ${game.week}</div>
-                        <div class="schedule-opponent">
-                            <img src="${oppLogo}" alt="" onerror="this.style.display='none'">
-                            <div class="schedule-opponent-name">${oppName}</div>
-                        </div>
-                        <div class="schedule-score ${scoreClass}">${scoreText}</div>
-                    </div>
+                    <tr>
+                        <td><strong>${game.week}</strong></td>
+                        <td>
+                            <div class="schedule-opponent-cell">
+                                <img src="${oppLogo}" class="team-logo" alt="" onerror="this.style.visibility='hidden'">
+                                <span class="schedule-opponent-name">${oppManager}</span>
+                            </div>
+                        </td>
+                        <td><span class="schedule-result ${resultClass}">${resultText}</span></td>
+                        <td><span class="schedule-score ${scoreClass}">${scoreText}</span></td>
+                        <td class="h2h-cell">${h2hHTML}</td>
+                    </tr>
                 `;
             }).join('');
+        }
+        
+        // Week dropdown functions
+        function toggleWeekDropdown() {
+            const dropdown = document.getElementById('week-dropdown');
+            const overlay = document.getElementById('week-dropdown-overlay');
+            const isActive = dropdown.classList.contains('active');
+            
+            if (isActive) {
+                closeWeekDropdown();
+            } else {
+                // Populate dropdown grid
+                populateWeekDropdown();
+                dropdown.classList.add('active');
+                overlay.classList.add('active');
+            }
+        }
+        
+        function closeWeekDropdown() {
+            document.getElementById('week-dropdown').classList.remove('active');
+            document.getElementById('week-dropdown-overlay').classList.remove('active');
+        }
+        
+        function populateWeekDropdown() {
+            const grid = document.getElementById('week-dropdown-grid');
+            let html = '';
+            
+            for (let week = 1; week <= 26; week++) {
+                const isActive = week === currentMatchupsWeek;
+                const isUnavailable = week > maxAvailableWeek;
+                
+                let classes = 'week-dropdown-item';
+                if (isActive) classes += ' active';
+                if (isUnavailable) classes += ' unavailable';
+                
+                html += `<div class="${classes}" onclick="selectWeekFromDropdown(${week})">${week}</div>`;
+            }
+            
+            grid.innerHTML = html;
+        }
+        
+        function selectWeekFromDropdown(week) {
+            if (week > maxAvailableWeek) return;
+            
+            closeWeekDropdown();
+            
+            // Update the current week
+            currentMatchupsWeek = week;
+            
+            // Update header display
+            const headerWeekNum = document.getElementById('header-week-number');
+            if (headerWeekNum) headerWeekNum.textContent = week;
+            updateHeaderWeekArrows();
+            
+            // Reload matchups for the new week
+            if (cachedTeamData && cachedTeamLogos) {
+                loadMatchupsForWeek(week, cachedTeamData, cachedTeamLogos, cachedStandings);
+            }
         }
         
         // Close modal on escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeScheduleModal();
+                closeWeekDropdown();
             }
         });
         
@@ -25992,7 +26170,7 @@
     <div class="schedule-modal-overlay" id="schedule-modal-overlay" onclick="closeScheduleModal(event)">
         <div class="schedule-modal" onclick="event.stopPropagation()">
             <div class="schedule-modal-header">
-                <img id="schedule-modal-logo" src="" alt="">
+                <img id="schedule-modal-logo" class="team-logo" src="" alt="">
                 <div class="schedule-modal-title">
                     <h3 id="schedule-modal-team-name">Team Schedule</h3>
                     <p id="schedule-modal-manager">Manager</p>
@@ -26000,14 +26178,21 @@
                 <button class="schedule-modal-close" onclick="closeScheduleModal()">&times;</button>
             </div>
             <div class="schedule-modal-body">
-                <h4 class="schedule-section-title">Head-to-Head Records</h4>
-                <div class="h2h-summary" id="schedule-h2h-summary">
-                    <!-- H2H cards populated by JS -->
-                </div>
-                
-                <h4 class="schedule-section-title">Full Schedule</h4>
-                <div class="schedule-grid" id="schedule-grid">
-                    <!-- Schedule weeks populated by JS -->
+                <div class="schedule-table-wrapper">
+                    <table class="schedule-table" id="schedule-table">
+                        <thead>
+                            <tr>
+                                <th>Week</th>
+                                <th>Opponent</th>
+                                <th>Result</th>
+                                <th>Score</th>
+                                <th>All-Time H2H</th>
+                            </tr>
+                        </thead>
+                        <tbody id="schedule-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
