@@ -628,6 +628,24 @@ def get_standings(oauth, year: int) -> List[Dict]:
     standings = lg.standings()
     teams = lg.teams()
 
+    def safe_int(value, default=0):
+        """Safely convert to int, handling empty strings and None."""
+        if value is None or value == '':
+            return default
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return default
+    
+    def safe_float(value, default=0.0):
+        """Safely convert to float, handling empty strings and None."""
+        if value is None or value == '':
+            return default
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            return default
+
     results = []
     for standing in standings:
         team_key = standing['team_key']
@@ -636,17 +654,19 @@ def get_standings(oauth, year: int) -> List[Dict]:
         raw_manager = team_info['managers'][0]['manager'].get('nickname', 'Unknown Manager')
         manager = normalize_manager_name(raw_manager, year, team_name)
         
+        outcome_totals = standing.get('outcome_totals', {})
+        
         results.append({
-            'rank': int(standing.get('rank', 0)),
+            'rank': safe_int(standing.get('rank'), 0),
             'team_key': team_key,
             'team_name': team_name,
             'manager': manager,
-            'wins': int(standing.get('outcome_totals', {}).get('wins', 0)),
-            'losses': int(standing.get('outcome_totals', {}).get('losses', 0)),
-            'ties': int(standing.get('outcome_totals', {}).get('ties', 0)),
-            'win_pct': float(standing.get('outcome_totals', {}).get('percentage', 0)),
-            'points_for': float(standing.get('points_for', 0)),
-            'points_against': float(standing.get('points_against', 0))
+            'wins': safe_int(outcome_totals.get('wins'), 0),
+            'losses': safe_int(outcome_totals.get('losses'), 0),
+            'ties': safe_int(outcome_totals.get('ties'), 0),
+            'win_pct': safe_float(outcome_totals.get('percentage'), 0.0),
+            'points_for': safe_float(standing.get('points_for'), 0.0),
+            'points_against': safe_float(standing.get('points_against'), 0.0)
         })
     
     return results
@@ -2021,25 +2041,30 @@ def quick_update():
     print("Updating current week scores...")
     try:
         current_week = lg.current_week()
-        scores = get_all_season_scores(oauth, CURRENT_SEASON, num_weeks=current_week)
         
-        # Save all_scores.json
-        with open(f"{current_season_dir}/all_scores.json", 'w', encoding='utf-8') as f:
-            json.dump(scores, f, indent=2, ensure_ascii=False)
-        
-        # Save individual week files
-        scores_by_week = {}
-        for score in scores:
-            week = score['week']
-            if week not in scores_by_week:
-                scores_by_week[week] = []
-            scores_by_week[week].append(score)
-        
-        for week, week_scores in scores_by_week.items():
-            with open(f"{current_season_dir}/week_{week}_scores.json", 'w', encoding='utf-8') as f:
-                json.dump(week_scores, f, indent=2, ensure_ascii=False)
-        
-        print(f"  ✓ Scores updated through week {current_week}")
+        # Handle preseason when current_week might be 0 or None
+        if not current_week or current_week < 1:
+            print("  ⚠ Season has not started yet, no scores to collect")
+        else:
+            scores = get_all_season_scores(oauth, CURRENT_SEASON, num_weeks=current_week)
+            
+            # Save all_scores.json
+            with open(f"{current_season_dir}/all_scores.json", 'w', encoding='utf-8') as f:
+                json.dump(scores, f, indent=2, ensure_ascii=False)
+            
+            # Save individual week files
+            scores_by_week = {}
+            for score in scores:
+                week = score['week']
+                if week not in scores_by_week:
+                    scores_by_week[week] = []
+                scores_by_week[week].append(score)
+            
+            for week, week_scores in scores_by_week.items():
+                with open(f"{current_season_dir}/week_{week}_scores.json", 'w', encoding='utf-8') as f:
+                    json.dump(week_scores, f, indent=2, ensure_ascii=False)
+            
+            print(f"  ✓ Scores updated through week {current_week}")
     except Exception as e:
         print(f"  ⚠ Could not update scores: {e}")
     
