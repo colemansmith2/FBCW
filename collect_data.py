@@ -393,15 +393,118 @@ def _build_scoring_df(lg: League, settings: Dict) -> pd.DataFrame:
 # =============================================================================
 
 def setup_oauth():
-    """Initialize OAuth for Yahoo Fantasy API"""
+    """Initialize OAuth for Yahoo Fantasy API.
+    
+    Creates oauth2.json from environment variables if running in CI/CD,
+    or uses existing file if running locally.
+    """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     oauth_path = os.path.join(script_dir, 'oauth2.json')
+    
+    # Check for environment variables (GitHub Actions)
+    consumer_key = os.environ.get('YAHOO_CONSUMER_KEY')
+    consumer_secret = os.environ.get('YAHOO_CONSUMER_SECRET')
+    access_token = os.environ.get('YAHOO_ACCESS_TOKEN')
+    refresh_token = os.environ.get('YAHOO_REFRESH_TOKEN')
+    token_time = os.environ.get('YAHOO_TOKEN_TIME')
+    
+    # If we have environment variables, create oauth2.json
+    if all([consumer_key, consumer_secret, access_token, refresh_token, token_time]):
+        print("Creating oauth2.json from environment variables...")
+        oauth_data = {
+            "consumer_key": consumer_key,
+            "consumer_secret": consumer_secret,
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_time": float(token_time),
+            "token_type": "bearer"
+        }
+        with open(oauth_path, 'w') as f:
+            json.dump(oauth_data, f, indent=2)
+        print(f"  ✓ Created {oauth_path}")
     
     if not os.path.exists(oauth_path):
         raise FileNotFoundError(f"oauth2.json not found at: {oauth_path}")
     
     oauth = OAuth2(None, None, from_file=oauth_path)
+    
+    # Check if token was refreshed and update GitHub secrets if running in CI
+    if os.environ.get('GITHUB_PAT') and os.environ.get('GITHUB_REPOSITORY'):
+        try:
+            with open(oauth_path, 'r') as f:
+                new_oauth_data = json.load(f)
+            
+            # Check if tokens changed
+            if (new_oauth_data.get('access_token') != access_token or 
+                new_oauth_data.get('refresh_token') != refresh_token):
+                print("Tokens were refreshed, updating GitHub secrets...")
+                update_github_secrets(new_oauth_data)
+        except Exception as e:
+            print(f"  Warning: Could not check/update GitHub secrets: {e}")
+    
     return oauth
+
+def update_github_secrets(oauth_data):
+    """Update GitHub repository secrets with new OAuth tokens."""
+    try:
+        from base64 import b64encode
+        from nacl import encoding, public
+        import requests
+        
+        github_token = os.environ.get('GITHUB_PAT')
+        repo = os.environ.get('GITHUB_REPOSITORY')
+        
+        if not github_token or not repo:
+            print("  Missing GITHUB_PAT or GITHUB_REPOSITORY")
+            return
+        
+        headers = {
+            'Authorization': f'token {github_token}',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+        
+        # Get repository public key for encrypting secrets
+        key_url = f'https://api.github.com/repos/{repo}/actions/secrets/public-key'
+        key_response = requests.get(key_url, headers=headers)
+        key_response.raise_for_status()
+        key_data = key_response.json()
+        
+        public_key = public.PublicKey(key_data['key'].encode('utf-8'), encoding.Base64Encoder())
+        
+        def encrypt_secret(secret_value):
+            """Encrypt a secret using the repository's public key."""
+            sealed_box = public.SealedBox(public_key)
+            encrypted = sealed_box.encrypt(secret_value.encode('utf-8'))
+            return b64encode(encrypted).decode('utf-8')
+        
+        # Update secrets
+        secrets_to_update = {
+            'YAHOO_ACCESS_TOKEN': oauth_data.get('access_token', ''),
+            'YAHOO_REFRESH_TOKEN': oauth_data.get('refresh_token', ''),
+            'YAHOO_TOKEN_TIME': str(oauth_data.get('token_time', ''))
+        }
+        
+        for secret_name, secret_value in secrets_to_update.items():
+            if secret_value:
+                secret_url = f'https://api.github.com/repos/{repo}/actions/secrets/{secret_name}'
+                encrypted_value = encrypt_secret(secret_value)
+                response = requests.put(
+                    secret_url,
+                    headers=headers,
+                    json={
+                        'encrypted_value': encrypted_value,
+                        'key_id': key_data['key_id']
+                    }
+                )
+                response.raise_for_status()
+                print(f"  ✓ Updated {secret_name}")
+        
+        print("  ✓ GitHub secrets updated successfully")
+        
+    except ImportError:
+        print("  Warning: pynacl not installed, cannot update GitHub secrets")
+    except Exception as e:
+        print(f"  Warning: Failed to update GitHub secrets: {e}")
 
 def get_league_id_by_name(oauth, year: int) -> str:
     """Get league ID for a specific year"""
