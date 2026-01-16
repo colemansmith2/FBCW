@@ -40,7 +40,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install yahoo_oauth yahoo_fantasy_api
+          pip install yahoo_oauth yahoo_fantasy_api pandas
 
       - name: Run quick update
         env:
