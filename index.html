@@ -16388,6 +16388,51 @@
                 // Normalize and merge manager data
                 allManagersData = normalizeAndMergeManagerData(rawManagersData, managerHistoryData);
 
+                // Inject 2026 season data from current_season if not already present
+                const currentStandingsForInjection = await fetch('data/current_season/standings.json');
+                if (currentStandingsForInjection.ok) {
+                    const currentStandings2026 = await currentStandingsForInjection.json();
+                    const normalized2026 = normalizeStandingsData(currentStandings2026, 2026);
+                    
+                    // Get 2026 team data for logos
+                    const teams2026 = await getTeamData(2026);
+                    
+                    allManagersData.forEach(manager => {
+                        // Check if manager already has 2026 season
+                        const has2026 = manager.season_history.some(s => s.year === 2026);
+                        if (!has2026) {
+                            // Find this manager in current standings
+                            const current2026 = normalized2026.find(t => 
+                                normalizeManagerName(t.manager, 2026, t.team_name) === manager.manager_name
+                            );
+                            if (current2026) {
+                                // Add 2026 season to history
+                                manager.season_history.push({
+                                    year: 2026,
+                                    team_name: current2026.team_name,
+                                    wins: current2026.wins || 0,
+                                    losses: current2026.losses || 0,
+                                    ties: current2026.ties || 0,
+                                    points_for: current2026.points_for || 0,
+                                    points_against: current2026.points_against || 0,
+                                    rank: current2026.rank || 0
+                                });
+                                
+                                // Update totals
+                                manager.total_wins += current2026.wins || 0;
+                                manager.total_losses += current2026.losses || 0;
+                                manager.total_ties += current2026.ties || 0;
+                                manager.total_points_for += current2026.points_for || 0;
+                                manager.seasons_played += 1;
+                                
+                                // Recalculate win percentage
+                                const totalGames = manager.total_wins + manager.total_losses + manager.total_ties;
+                                manager.win_pct = totalGames > 0 ? manager.total_wins / totalGames : 0;
+                            }
+                        }
+                    });
+                }
+
                 // Determine all unique seasons we need to load
                 const allSeasons = new Set();
                 allManagersData.forEach(manager => {
@@ -19893,8 +19938,13 @@
         }
 
         async function generateDefaultKeeperConfig() {
-            // Load teams from 2025
-            const teams = await getTeamData(2025);
+            // Load teams from 2026 (current season) for logos
+            let teams = await getTeamData(2026);
+            
+            // Fallback to 2025 if 2026 not available
+            if (!teams || teams.length === 0) {
+                teams = await getTeamData(2025);
+            }
             if (!teams) return;
 
             // Load manager history to get join years
@@ -22093,10 +22143,10 @@
                 console.error('Error rendering expected points chart:', e);
             }
 
-            // Step 3: Try to load teams data
+            // Step 3: Try to load teams data from current season
             let teamsData = [];
             try {
-                const teamsResponse = await fetch('data/historical/2025/teams.json');
+                const teamsResponse = await fetch('data/current_season/teams.json');
                 if (teamsResponse.ok) {
                     teamsData = await teamsResponse.json();
                 }
@@ -24626,9 +24676,9 @@
         
         // Initialize sportsbook when section is shown
         async function initializeSportsbook() {
-            // Load team data from current season (2025)
+            // Load team data from current season
             try {
-                const response = await fetch('data/historical/2025/teams.json');
+                const response = await fetch('data/current_season/teams.json');
                 if (response.ok) {
                     sportsbookTeamData = await response.json();
                 }
