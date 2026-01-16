@@ -25171,10 +25171,34 @@
             }
             
             const password = document.getElementById('sportsbook-password').value;
-            const teamConfig = keeperConfig.teams?.[selectedSportsbookTeam];
+            
+            // Find team from current season data
+            const team = sportsbookTeamData.find(t => t.team_key === selectedSportsbookTeam);
+            if (!team) {
+                document.getElementById('sportsbook-login-error').textContent = 'Team not found.';
+                document.getElementById('sportsbook-login-error').style.display = 'block';
+                return;
+            }
+            
+            const managerName = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
+            
+            // Find team config by manager name (works across season key changes)
+            // First try direct key lookup, then fall back to manager name search
+            let teamConfig = keeperConfig.teams?.[selectedSportsbookTeam];
             
             if (!teamConfig) {
-                document.getElementById('sportsbook-login-error').textContent = 'Team not found in configuration.';
+                // Search by manager name in keeperConfig.teams
+                const configEntry = Object.entries(keeperConfig.teams || {}).find(([key, config]) => {
+                    const configManager = normalizeManagerName(config.manager, 2026, config.team_name, key);
+                    return configManager === managerName;
+                });
+                if (configEntry) {
+                    teamConfig = configEntry[1];
+                }
+            }
+            
+            if (!teamConfig) {
+                document.getElementById('sportsbook-login-error').textContent = 'Team configuration not found. Please contact the commissioner.';
                 document.getElementById('sportsbook-login-error').style.display = 'block';
                 return;
             }
