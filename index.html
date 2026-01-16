@@ -24827,6 +24827,29 @@
                 return stats;
             }
             
+            // Build a mapping from 2025 team keys to current team data (for old bets)
+            const teamKey2025ToManager = {
+                '458.l.4156.t.1': 'Josh B',
+                '458.l.4156.t.2': 'Ryan',
+                '458.l.4156.t.3': 'Coleman',
+                '458.l.4156.t.4': 'Riley',
+                '458.l.4156.t.5': 'Dalton',
+                '458.l.4156.t.6': 'Robert',
+                '458.l.4156.t.7': 'Tyler',
+                '458.l.4156.t.8': 'Dylan',
+                '458.l.4156.t.9': 'Red',
+                '458.l.4156.t.10': 'Logan S',
+                '458.l.4156.t.11': 'Rich',
+                '458.l.4156.t.12': 'Nate'
+            };
+            
+            // Build manager to current team data mapping
+            const managerToTeamData = {};
+            sportsbookTeamData.forEach(team => {
+                const manager = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
+                managerToTeamData[manager.toLowerCase()] = team;
+            });
+            
             try {
                 const snapshot = await sportsbookBetsRef.once('value');
                 const allBets = snapshot.val();
@@ -24844,20 +24867,36 @@
                         stats.totalUnits += bet.wager || 0;
                         stats.totalBets++;
                         
-                        // selection contains the team key that was bet on
+                        // selection contains the team key that was bet on (may be 2025 or 2026 key)
                         const selectedTeamKey = bet.selection;
-                        if (!stats.teamBreakdown[selectedTeamKey]) {
-                            const teamInfo = sportsbookTeamData.find(t => t.team_key === selectedTeamKey);
-                            stats.teamBreakdown[selectedTeamKey] = {
+                        
+                        // Try to find team info - first by direct key match (2026), then by manager name (2025)
+                        let teamInfo = sportsbookTeamData.find(t => t.team_key === selectedTeamKey);
+                        
+                        if (!teamInfo) {
+                            // Try to find by manager name using 2025 key mapping
+                            const manager = teamKey2025ToManager[selectedTeamKey];
+                            if (manager) {
+                                teamInfo = managerToTeamData[manager.toLowerCase()];
+                            }
+                        }
+                        
+                        // Use manager name as the grouping key to combine 2025 and 2026 bets
+                        const managerKey = teamInfo 
+                            ? normalizeManagerName(teamInfo.manager, 2026, teamInfo.team_name, teamInfo.team_key).toLowerCase()
+                            : (teamKey2025ToManager[selectedTeamKey] || selectedTeamKey).toLowerCase();
+                        
+                        if (!stats.teamBreakdown[managerKey]) {
+                            stats.teamBreakdown[managerKey] = {
                                 teamName: teamInfo?.team_name || bet.selectionName || selectedTeamKey,
                                 logo: fixTeamLogo(teamInfo?.team_logo) || 'league_logo.png',
-                                manager: teamInfo ? normalizeManagerName(teamInfo.manager, 2026, teamInfo.team_name, teamInfo.team_key) : '',
+                                manager: teamInfo ? normalizeManagerName(teamInfo.manager, 2026, teamInfo.team_name, teamInfo.team_key) : managerKey,
                                 units: 0,
                                 bets: 0
                             };
                         }
-                        stats.teamBreakdown[selectedTeamKey].units += bet.wager || 0;
-                        stats.teamBreakdown[selectedTeamKey].bets++;
+                        stats.teamBreakdown[managerKey].units += bet.wager || 0;
+                        stats.teamBreakdown[managerKey].bets++;
                     }
                 });
                 
@@ -25063,22 +25102,48 @@
                 return stats;
             }
             
+            // Build mappings between 2025 and 2026 keys via manager name
+            const teamKey2025ToManager = {
+                '458.l.4156.t.1': 'Josh B',
+                '458.l.4156.t.2': 'Ryan',
+                '458.l.4156.t.3': 'Coleman',
+                '458.l.4156.t.4': 'Riley',
+                '458.l.4156.t.5': 'Dalton',
+                '458.l.4156.t.6': 'Robert',
+                '458.l.4156.t.7': 'Tyler',
+                '458.l.4156.t.8': 'Dylan',
+                '458.l.4156.t.9': 'Red',
+                '458.l.4156.t.10': 'Logan S',
+                '458.l.4156.t.11': 'Rich',
+                '458.l.4156.t.12': 'Nate'
+            };
+            
+            // Find the manager for the current team
+            const currentTeam = sportsbookTeamData.find(t => t.team_key === teamKey);
+            const currentManager = currentTeam 
+                ? normalizeManagerName(currentTeam.manager, 2026, currentTeam.team_name, currentTeam.team_key).toLowerCase()
+                : null;
+            
+            // Find the 2025 key for this manager
+            let team2025Key = null;
+            if (currentManager) {
+                for (const [key2025, manager] of Object.entries(teamKey2025ToManager)) {
+                    if (manager.toLowerCase() === currentManager) {
+                        team2025Key = key2025;
+                        break;
+                    }
+                }
+            }
+            
+            console.log('Looking for bets for team:', teamKey);
+            console.log('Manager:', currentManager, '2025 key:', team2025Key);
+            console.log('Bet type prefix:', betTypePrefix);
+            
             try {
                 const snapshot = await sportsbookBetsRef.once('value');
                 const allBets = snapshot.val();
                 
                 if (!allBets) return stats;
-                
-                // Create variations of the team key for matching
-                const teamKeyVariations = [
-                    teamKey,
-                    teamKey.replace(/[.#$\[\]]/g, '_'),
-                    teamKey.replace(/\./g, '_')
-                ];
-                
-                console.log('Looking for bets for team:', teamKey);
-                console.log('Key variations:', teamKeyVariations);
-                console.log('Bet type prefix:', betTypePrefix);
                 
                 // Bets are stored as a flat list
                 Object.entries(allBets).forEach(([betId, bet]) => {
@@ -25086,14 +25151,15 @@
                     
                     const bt = bet.betType;
                     
-                    // Check for over bets
+                    // Check for over bets - match against both 2025 and 2026 keys
                     if (bt.startsWith(`${betTypePrefix}_over_`)) {
                         const betTeamKey = bt.substring(`${betTypePrefix}_over_`.length);
-                        // Check if this matches any variation of our team key
-                        const matchesTeam = teamKeyVariations.some(tk => 
-                            betTeamKey === tk || 
-                            betTeamKey.replace(/[.#$\[\]]/g, '_') === tk.replace(/[.#$\[\]]/g, '_')
-                        );
+                        
+                        // Check if this matches current team key OR the 2025 key
+                        const matchesTeam = betTeamKey === teamKey || 
+                            betTeamKey === team2025Key ||
+                            betTeamKey.replace(/[.#$\[\]]/g, '_') === teamKey.replace(/[.#$\[\]]/g, '_') ||
+                            (team2025Key && betTeamKey.replace(/[.#$\[\]]/g, '_') === team2025Key.replace(/[.#$\[\]]/g, '_'));
                         
                         if (matchesTeam) {
                             stats.overUnits += bet.wager || 0;
@@ -25102,14 +25168,15 @@
                             console.log('✓ Found OVER bet:', bt, 'wager:', bet.wager);
                         }
                     }
-                    // Check for under bets
+                    // Check for under bets - match against both 2025 and 2026 keys
                     else if (bt.startsWith(`${betTypePrefix}_under_`)) {
                         const betTeamKey = bt.substring(`${betTypePrefix}_under_`.length);
-                        // Check if this matches any variation of our team key
-                        const matchesTeam = teamKeyVariations.some(tk => 
-                            betTeamKey === tk || 
-                            betTeamKey.replace(/[.#$\[\]]/g, '_') === tk.replace(/[.#$\[\]]/g, '_')
-                        );
+                        
+                        // Check if this matches current team key OR the 2025 key
+                        const matchesTeam = betTeamKey === teamKey || 
+                            betTeamKey === team2025Key ||
+                            betTeamKey.replace(/[.#$\[\]]/g, '_') === teamKey.replace(/[.#$\[\]]/g, '_') ||
+                            (team2025Key && betTeamKey.replace(/[.#$\[\]]/g, '_') === team2025Key.replace(/[.#$\[\]]/g, '_'));
                         
                         if (matchesTeam) {
                             stats.underUnits += bet.wager || 0;
