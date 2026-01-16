@@ -22191,9 +22191,36 @@
             const teamValues = [];
             const allKeepers = [];
             const prospects = [];
+            
+            // Build a mapping from manager name to keepers (handles 2025 vs 2026 key mismatch)
+            const managerToKeepers = {};
+            const teamKey2025ToManager = {
+                '458.l.4156.t.1': 'Josh',
+                '458.l.4156.t.2': 'Ryan',
+                '458.l.4156.t.3': 'Coleman',
+                '458.l.4156.t.4': 'Riley',
+                '458.l.4156.t.5': 'Dalton',
+                '458.l.4156.t.6': 'Robert',
+                '458.l.4156.t.7': 'Tyler',
+                '458.l.4156.t.8': 'Dylan',
+                '458.l.4156.t.9': 'Red',
+                '458.l.4156.t.10': 'Logan',
+                '458.l.4156.t.11': 'Rich',
+                '458.l.4156.t.12': 'Nate'
+            };
+            
+            for (const [teamKey, keepers] of Object.entries(keeperSelections)) {
+                const manager = teamKey2025ToManager[teamKey];
+                if (manager) {
+                    managerToKeepers[manager.toLowerCase()] = keepers;
+                }
+            }
+            console.log('Value Suite - Manager to keepers mapping:', Object.keys(managerToKeepers));
 
             for (const team of teamsData) {
-                const teamKeepers = keeperSelections[team.team_key] || [];
+                // Look up keepers by manager name (handles key mismatch between seasons)
+                const managerName = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
+                const teamKeepers = managerToKeepers[managerName.toLowerCase()] || keeperSelections[team.team_key] || [];
                 
                 if (teamKeepers.length === 0) continue;
 
@@ -25697,6 +25724,32 @@
                     }
                 }
                 
+                // Build a mapping from manager name to keepers (handles 2025 vs 2026 key mismatch)
+                // Firebase keys are sanitized 2025 keys like "458_l_4156_t_1"
+                const managerToKeepers = {};
+                const teamKey2025ToManager = {
+                    '458_l_4156_t_1': 'Josh',
+                    '458_l_4156_t_2': 'Ryan',
+                    '458_l_4156_t_3': 'Coleman',
+                    '458_l_4156_t_4': 'Riley',
+                    '458_l_4156_t_5': 'Dalton',
+                    '458_l_4156_t_6': 'Robert',
+                    '458_l_4156_t_7': 'Tyler',
+                    '458_l_4156_t_8': 'Dylan',
+                    '458_l_4156_t_9': 'Red',
+                    '458_l_4156_t_10': 'Logan',
+                    '458_l_4156_t_11': 'Rich',
+                    '458_l_4156_t_12': 'Nate'
+                };
+                
+                for (const [sanitizedKey, keepers] of Object.entries(allKeepers)) {
+                    const manager = teamKey2025ToManager[sanitizedKey];
+                    if (manager) {
+                        managerToKeepers[manager.toLowerCase()] = keepers;
+                    }
+                }
+                console.log('Manager to keepers mapping:', Object.keys(managerToKeepers));
+                
                 // Load projections
                 let projections = {};
                 try {
@@ -25719,7 +25772,9 @@
                 
                 // Calculate value for each team
                 for (const team of sportsbookTeamData) {
-                    const teamKeepers = allKeepers[team.team_key] || [];
+                    // Look up keepers by manager name (handles key mismatch between seasons)
+                    const managerName = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
+                    const teamKeepers = managerToKeepers[managerName.toLowerCase()] || allKeepers[team.team_key] || [];
                     let keeperValue = 0;
                     let draftValue = 0;
                     
