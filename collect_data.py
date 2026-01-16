@@ -38,7 +38,7 @@ except ImportError:
 # CONFIGURATION
 # =============================================================================
 
-CURRENT_SEASON = 2025
+CURRENT_SEASON = 2026
 HISTORICAL_SEASONS = [2019, 2020, 2021, 2022, 2023, 2024]
 DATA_DIR = "data"
 
@@ -57,6 +57,57 @@ MANAGER_NAME_MAP = {
 MANAGER_TEAM_2023 = {
     "Draft Pool": "Logan C",
     "Peanut Butter & Elly": "Logan S"
+}
+
+# =============================================================================
+# PROJECTION CONFIGURATION
+# =============================================================================
+
+PROJECTION_SEASON = 2026  # Season for projections (update as needed)
+PROJECTIONS_DIR = "data/projections"
+
+# Projection systems to collect from Fangraphs
+# Format: { 'output_name': 'fangraphs_type' }
+PROJECTION_SYSTEMS = {
+    'steamer': 'steamer',
+    'zips': 'zips',
+    'depthcharts': 'fangraphsdc',
+    'thebat': 'thebat',
+    'thebatx': 'thebatx'
+}
+
+# Scoring settings for projections (should match your Yahoo league)
+PROJECTION_BATTING_SCORING = {
+    '1B': 1.1,
+    '2B': 2.2,
+    '3B': 3.3,
+    'HR': 4.4,
+    'RBI': 1.0,
+    'SB': 2.0,
+    'CS': -1.0,
+    'BB': 1.0,
+    'IBB': 1.0,
+    'HBP': 1.0,
+    'SO': -0.5,
+    'CYC': 5.0,
+    'SLAM': 2.0
+}
+
+PROJECTION_PITCHING_SCORING = {
+    'IP': 2.5,
+    'W': 2.5,
+    'L': -3.0,
+    'CG': 5.0,
+    'ShO': 5.0,
+    'SV': 5.0,
+    'HA': -0.75,
+    'ER': -1.75,
+    'BBA': -0.75,
+    'K': 1.5,
+    'HLD': 2.0,
+    'PICK': 3.0,
+    'NH': 10.0,
+    'QS': 3.0
 }
 
 # =============================================================================
@@ -1802,6 +1853,241 @@ def weekly_update():
     print("✓ Weekly update complete!")
     print("=" * 60)
 
+def quick_update():
+    """
+    Quick update - runs every 6 hours during the season.
+    Updates teams.json (logos, names, managers), standings.json, current week scores,
+    recent transactions, and manager profiles if team info changed.
+    """
+    print("=" * 60)
+    print(f"QUICK UPDATE - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("=" * 60)
+    
+    oauth = setup_oauth()
+    gm = Game(oauth, 'mlb')
+    league_ids = gm.league_ids(year=CURRENT_SEASON)
+    
+    if not league_ids:
+        print(f"ERROR: No league found for {CURRENT_SEASON}")
+        return
+    
+    lg = gm.to_league(league_ids[0])
+    print(f"League: {lg.settings()['name']}")
+    
+    current_season_dir = f"{DATA_DIR}/current_season"
+    os.makedirs(current_season_dir, exist_ok=True)
+    
+    # Load existing teams.json to check for changes
+    old_teams = {}
+    teams_file = f"{current_season_dir}/teams.json"
+    if os.path.exists(teams_file):
+        try:
+            with open(teams_file, 'r', encoding='utf-8') as f:
+                old_teams_list = json.load(f)
+                old_teams = {t['team_key']: t for t in old_teams_list}
+        except Exception as e:
+            print(f"  Could not load existing teams.json: {e}")
+    
+    # 1. Update teams.json (logos, team names, managers)
+    print("\nUpdating teams.json...")
+    teams = get_teams(oauth, CURRENT_SEASON)
+    teams_changed = False
+    if teams:
+        # Check if any team info changed
+        for team in teams:
+            old_team = old_teams.get(team['team_key'], {})
+            if (old_team.get('team_name') != team.get('team_name') or 
+                old_team.get('team_logo') != team.get('team_logo') or
+                old_team.get('manager') != team.get('manager')):
+                teams_changed = True
+                print(f"  → Team change detected: {team.get('team_name')}")
+        
+        with open(teams_file, 'w', encoding='utf-8') as f:
+            json.dump(teams, f, indent=2, ensure_ascii=False)
+        print(f"  ✓ teams.json updated ({len(teams)} teams)")
+    
+    # 2. Update standings.json
+    print("Updating standings.json...")
+    standings = get_standings(oauth, CURRENT_SEASON)
+    if standings:
+        with open(f"{current_season_dir}/standings.json", 'w', encoding='utf-8') as f:
+            json.dump(standings, f, indent=2, ensure_ascii=False)
+        print(f"  ✓ standings.json updated ({len(standings)} teams)")
+    
+    # 3. Get current week and update that week's scores
+    print("Updating current week scores...")
+    try:
+        current_week = lg.current_week()
+        scores = get_all_season_scores(oauth, CURRENT_SEASON, num_weeks=current_week)
+        
+        # Save all_scores.json
+        with open(f"{current_season_dir}/all_scores.json", 'w', encoding='utf-8') as f:
+            json.dump(scores, f, indent=2, ensure_ascii=False)
+        
+        # Save individual week files
+        scores_by_week = {}
+        for score in scores:
+            week = score['week']
+            if week not in scores_by_week:
+                scores_by_week[week] = []
+            scores_by_week[week].append(score)
+        
+        for week, week_scores in scores_by_week.items():
+            with open(f"{current_season_dir}/week_{week}_scores.json", 'w', encoding='utf-8') as f:
+                json.dump(week_scores, f, indent=2, ensure_ascii=False)
+        
+        print(f"  ✓ Scores updated through week {current_week}")
+    except Exception as e:
+        print(f"  ⚠ Could not update scores: {e}")
+    
+    # 4. Get recent transactions (last 6 hours worth)
+    print("Updating recent transactions...")
+    try:
+        transactions = get_recent_transactions(oauth, CURRENT_SEASON, hours=6)
+        
+        # Load existing transactions and merge
+        transactions_file = f"{current_season_dir}/transactions.json"
+        existing_transactions = []
+        if os.path.exists(transactions_file):
+            try:
+                with open(transactions_file, 'r', encoding='utf-8') as f:
+                    existing_transactions = json.load(f)
+            except:
+                pass
+        
+        # Merge new transactions (avoid duplicates by transaction_key)
+        existing_keys = {t.get('transaction_key') for t in existing_transactions}
+        new_count = 0
+        for trans in transactions:
+            if trans.get('transaction_key') not in existing_keys:
+                existing_transactions.append(trans)
+                new_count += 1
+        
+        # Sort by timestamp descending
+        existing_transactions.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        
+        with open(transactions_file, 'w', encoding='utf-8') as f:
+            json.dump(existing_transactions, f, indent=2, ensure_ascii=False)
+        
+        print(f"  ✓ transactions.json updated ({new_count} new, {len(existing_transactions)} total)")
+    except Exception as e:
+        print(f"  ⚠ Could not update transactions: {e}")
+    
+    # 5. Update manager profiles if team info changed
+    if teams_changed:
+        print("Updating manager profiles (team info changed)...")
+        update_manager_stats(oauth)
+    else:
+        print("Manager profiles unchanged (no team info changes)")
+    
+    print("\n" + "=" * 60)
+    print("✓ Quick update complete!")
+    print(f"  - teams.json: Team logos, names, managers")
+    print(f"  - standings.json: Current W-L records")
+    print(f"  - week_X_scores.json: Matchup scores")
+    print(f"  - transactions.json: Recent adds/drops/trades")
+    if teams_changed:
+        print(f"  - Manager profiles: Updated")
+    print("=" * 60)
+
+
+def get_recent_transactions(oauth, year: int, hours: int = 6) -> List[Dict]:
+    """
+    Fetch recent transactions from the last N hours.
+    Includes adds, drops, add/drops, and trades.
+    """
+    gm = Game(oauth, 'mlb')
+    league_id = get_league_id_by_name(oauth, year)
+    
+    if not league_id:
+        return []
+
+    lg = League(oauth, league_id)
+    
+    # Calculate cutoff timestamp (N hours ago)
+    cutoff_time = datetime.now() - timedelta(hours=hours)
+    cutoff_timestamp = int(cutoff_time.timestamp())
+    
+    try:
+        trans_types = ['add', 'drop', 'add/drop', 'trade']
+        recent_transactions = []
+        
+        for trans_type in trans_types:
+            try:
+                # Fetch recent transactions (limit to 50 per type for quick update)
+                transactions_raw = lg.transactions(trans_type, count=50)
+                
+                if not transactions_raw:
+                    continue
+                
+                for trans in transactions_raw:
+                    # Check if transaction is within time window
+                    trans_timestamp = int(trans.get('timestamp', 0))
+                    if trans_timestamp < cutoff_timestamp:
+                        # Transactions are sorted by time, so we can break early
+                        break
+                    
+                    trans_data = {
+                        'transaction_key': trans.get('transaction_key', ''),
+                        'transaction_id': trans.get('transaction_id', ''),
+                        'type': trans.get('type', trans_type),
+                        'timestamp': trans.get('timestamp', ''),
+                        'status': trans.get('status', ''),
+                        'players': []
+                    }
+                    
+                    players = trans.get('players', [])
+                    if isinstance(players, dict):
+                        player_count = players.get('count', 0)
+                        for i in range(int(player_count)):
+                            player_info = players.get(str(i), {})
+                            if player_info:
+                                player = player_info.get('player', [[{}]])
+                                if isinstance(player, list) and len(player) > 0:
+                                    player_data = player[0]
+                                    if isinstance(player_data, list) and len(player_data) > 0:
+                                        player_data = player_data[0]
+                                else:
+                                    player_data = player
+                                
+                                trans_player_data = player_info.get('transaction_data', {})
+                                if isinstance(trans_player_data, list) and len(trans_player_data) > 0:
+                                    trans_player_data = trans_player_data[0]
+                                
+                                player_name = ''
+                                if isinstance(player_data, dict):
+                                    name_info = player_data.get('name', {})
+                                    if isinstance(name_info, dict):
+                                        player_name = name_info.get('full', '')
+                                    elif isinstance(name_info, str):
+                                        player_name = name_info
+                                
+                                player_trans = {
+                                    'player_key': player_data.get('player_key', '') if isinstance(player_data, dict) else '',
+                                    'player_name': player_name,
+                                    'transaction_type': trans_player_data.get('type', '') if isinstance(trans_player_data, dict) else '',
+                                    'source_type': trans_player_data.get('source_type', '') if isinstance(trans_player_data, dict) else '',
+                                    'source_team_key': trans_player_data.get('source_team_key', '') if isinstance(trans_player_data, dict) else '',
+                                    'source_team_name': trans_player_data.get('source_team_name', '') if isinstance(trans_player_data, dict) else '',
+                                    'destination_team_key': trans_player_data.get('destination_team_key', '') if isinstance(trans_player_data, dict) else '',
+                                    'destination_team_name': trans_player_data.get('destination_team_name', '') if isinstance(trans_player_data, dict) else '',
+                                }
+                                trans_data['players'].append(player_trans)
+                    
+                    recent_transactions.append(trans_data)
+                    
+            except Exception as e:
+                print(f"    ⚠ Could not get {trans_type} transactions: {e}")
+                continue
+        
+        recent_transactions.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        print(f"    Found {len(recent_transactions)} transactions in last {hours} hours")
+        return recent_transactions
+        
+    except Exception as e:
+        print(f"  ⚠ Could not get recent transactions: {e}")
+        return []
+
 def player_data_setup():
     """Run this to collect player stats and transactions for all seasons"""
     print("=" * 60)
@@ -2386,6 +2672,282 @@ def update_headshots_for_file(oauth, year: int, filepath: str):
 
 
 # =============================================================================
+# PROJECTION COLLECTION
+# =============================================================================
+
+def calculate_projection_batting_points(stats: Dict) -> float:
+    """Calculate fantasy points for a batter using projection scoring."""
+    points = 0.0
+    points += stats.get('1B', 0) * PROJECTION_BATTING_SCORING.get('1B', 0)
+    points += stats.get('2B', 0) * PROJECTION_BATTING_SCORING.get('2B', 0)
+    points += stats.get('3B', 0) * PROJECTION_BATTING_SCORING.get('3B', 0)
+    points += stats.get('HR', 0) * PROJECTION_BATTING_SCORING.get('HR', 0)
+    points += stats.get('RBI', 0) * PROJECTION_BATTING_SCORING.get('RBI', 0)
+    points += stats.get('SB', 0) * PROJECTION_BATTING_SCORING.get('SB', 0)
+    points += stats.get('CS', 0) * PROJECTION_BATTING_SCORING.get('CS', 0)
+    points += stats.get('BB', 0) * PROJECTION_BATTING_SCORING.get('BB', 0)
+    points += stats.get('IBB', 0) * PROJECTION_BATTING_SCORING.get('IBB', 0)
+    points += stats.get('HBP', 0) * PROJECTION_BATTING_SCORING.get('HBP', 0)
+    points += stats.get('SO', 0) * PROJECTION_BATTING_SCORING.get('SO', 0)
+    return round(points, 1)
+
+
+def calculate_projection_pitching_points(stats: Dict) -> float:
+    """Calculate fantasy points for a pitcher using projection scoring."""
+    points = 0.0
+    points += stats.get('IP', 0) * PROJECTION_PITCHING_SCORING.get('IP', 0)
+    points += stats.get('W', 0) * PROJECTION_PITCHING_SCORING.get('W', 0)
+    points += stats.get('L', 0) * PROJECTION_PITCHING_SCORING.get('L', 0)
+    points += stats.get('SV', 0) * PROJECTION_PITCHING_SCORING.get('SV', 0)
+    points += stats.get('HLD', 0) * PROJECTION_PITCHING_SCORING.get('HLD', 0)
+    points += stats.get('ER', 0) * PROJECTION_PITCHING_SCORING.get('ER', 0)
+    points += stats.get('H', 0) * PROJECTION_PITCHING_SCORING.get('HA', 0)
+    points += stats.get('BB', 0) * PROJECTION_PITCHING_SCORING.get('BBA', 0)
+    points += stats.get('K', 0) * PROJECTION_PITCHING_SCORING.get('K', 0)
+    points += stats.get('QS', 0) * PROJECTION_PITCHING_SCORING.get('QS', 0)
+    points += stats.get('CG', 0) * PROJECTION_PITCHING_SCORING.get('CG', 0)
+    return round(points, 1)
+
+
+def get_projection_headshot_url(mlb_id) -> str:
+    """Build MLB headshot URL from player ID."""
+    if mlb_id and not pd.isna(mlb_id):
+        return f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/{int(mlb_id)}/headshot/67/current"
+    return ""
+
+
+def fetch_projection_data(projection_type: str, season: int) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Fetch projection data from Fangraphs using pybaseball.
+    Returns (batters_df, pitchers_df)
+    """
+    if not PYBASEBALL_AVAILABLE:
+        print("  ERROR: pybaseball not available")
+        return pd.DataFrame(), pd.DataFrame()
+    
+    try:
+        # Import the projection functions from pybaseball
+        from pybaseball import batting_stats_bref, pitching_stats_bref
+        from pybaseball import fg_batting_data, fg_pitching_data
+    except ImportError:
+        pass
+    
+    batters_df = pd.DataFrame()
+    pitchers_df = pd.DataFrame()
+    
+    try:
+        print(f"  Fetching {projection_type} batting projections...")
+        # Use batting_stats with the projection type
+        # qual=0 gets all players, not just qualified
+        batters_df = batting_stats(season, qual=0, stat_columns='all')
+        print(f"    Got {len(batters_df)} batters")
+    except Exception as e:
+        print(f"    Error fetching batting projections: {e}")
+    
+    try:
+        print(f"  Fetching {projection_type} pitching projections...")
+        pitchers_df = pitching_stats(season, qual=0, stat_columns='all')
+        print(f"    Got {len(pitchers_df)} pitchers")
+    except Exception as e:
+        print(f"    Error fetching pitching projections: {e}")
+    
+    return batters_df, pitchers_df
+
+
+def process_projection_batter(row) -> Optional[Dict]:
+    """Process a batter row into projection format matching existing JSONs."""
+    try:
+        name = str(row.get('Name', ''))
+        if not name or name == 'nan':
+            return None
+        
+        # Build stats dict
+        h = safe_int(row.get('H', 0))
+        doubles = safe_int(row.get('2B', 0))
+        triples = safe_int(row.get('3B', 0))
+        hr = safe_int(row.get('HR', 0))
+        singles = safe_int(row.get('1B', h - doubles - triples - hr))
+        
+        stats = {
+            'G': safe_int(row.get('G', 0)),
+            'HR': hr,
+            'RBI': safe_int(row.get('RBI', 0)),
+            'R': safe_int(row.get('R', 0)),
+            'SB': safe_int(row.get('SB', 0)),
+            'H': h,
+            '1B': singles,
+            '2B': doubles,
+            '3B': triples,
+            'BB': safe_int(row.get('BB', 0)),
+            'SO': safe_int(row.get('SO', row.get('K', 0))),
+            'AVG': safe_float(row.get('AVG', 0)),
+            'OPS': safe_float(row.get('OPS', 0)),
+            'PA': safe_int(row.get('PA', 0)),
+        }
+        
+        # Calculate fantasy points
+        points = calculate_projection_batting_points(stats)
+        
+        # Get headshot URL
+        mlb_id = row.get('mlbID', row.get('MLBAMID', row.get('xMLBAMID', None)))
+        headshot_url = get_projection_headshot_url(mlb_id)
+        
+        # Get position
+        position = str(row.get('Pos', row.get('Position', '')))
+        
+        return {
+            'name': name,
+            'team': str(row.get('Team', '')),
+            'position': position,
+            'type': 'batter',
+            'projected_points': points,
+            'stats': stats,
+            'headshot_url': headshot_url,
+            'mlb_id': None
+        }
+    except Exception as e:
+        print(f"    Error processing batter {row.get('Name', 'unknown')}: {e}")
+        return None
+
+
+def process_projection_pitcher(row) -> Optional[Dict]:
+    """Process a pitcher row into projection format matching existing JSONs."""
+    try:
+        name = str(row.get('Name', ''))
+        if not name or name == 'nan':
+            return None
+        
+        # Build stats dict
+        stats = {
+            'W': safe_int(row.get('W', 0)),
+            'L': safe_int(row.get('L', 0)),
+            'SV': safe_int(row.get('SV', 0)),
+            'HLD': safe_int(row.get('HLD', 0)),
+            'IP': safe_float(row.get('IP', 0)),
+            'K': safe_int(row.get('SO', row.get('K', 0))),
+            'SO': safe_int(row.get('SO', row.get('K', 0))),
+            'ER': safe_int(row.get('ER', 0)),
+            'H': safe_int(row.get('H', 0)),
+            'BB': safe_int(row.get('BB', 0)),
+            'ERA': safe_float(row.get('ERA', 0)),
+            'WHIP': safe_float(row.get('WHIP', 0)),
+            'G': safe_int(row.get('G', 0)),
+            'GS': safe_int(row.get('GS', 0)),
+        }
+        
+        # Calculate fantasy points
+        points = calculate_projection_pitching_points(stats)
+        
+        # Determine SP vs RP
+        gs = stats['GS']
+        g = stats['G']
+        position = 'SP' if g == 0 or (gs / g) > 0.5 else 'RP'
+        
+        # Get headshot URL
+        mlb_id = row.get('mlbID', row.get('MLBAMID', row.get('xMLBAMID', None)))
+        headshot_url = get_projection_headshot_url(mlb_id)
+        
+        return {
+            'name': name,
+            'team': str(row.get('Team', '')),
+            'position': position,
+            'type': 'pitcher',
+            'projected_points': points,
+            'stats': stats,
+            'headshot_url': headshot_url,
+            'mlb_id': None
+        }
+    except Exception as e:
+        print(f"    Error processing pitcher {row.get('Name', 'unknown')}: {e}")
+        return None
+
+
+def collect_projections(system_key: str = None):
+    """
+    Collect projections from Fangraphs.
+    
+    Args:
+        system_key: Specific system to collect (e.g., 'steamer', 'thebatx')
+                   If None, collects all systems.
+    """
+    print("=" * 60)
+    print(f"PROJECTION COLLECTION - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Season: {PROJECTION_SEASON}")
+    print("=" * 60)
+    
+    os.makedirs(PROJECTIONS_DIR, exist_ok=True)
+    
+    # Determine which systems to collect
+    if system_key:
+        if system_key not in PROJECTION_SYSTEMS:
+            print(f"ERROR: Unknown projection system '{system_key}'")
+            print(f"Available systems: {', '.join(PROJECTION_SYSTEMS.keys())}")
+            return
+        systems_to_collect = {system_key: PROJECTION_SYSTEMS[system_key]}
+    else:
+        systems_to_collect = PROJECTION_SYSTEMS
+    
+    for output_name, fg_type in systems_to_collect.items():
+        print(f"\n{'='*50}")
+        print(f"Collecting: {output_name.upper()}")
+        print(f"{'='*50}")
+        
+        # Fetch data from Fangraphs
+        batters_df, pitchers_df = fetch_projection_data(fg_type, PROJECTION_SEASON)
+        
+        # Process batters
+        batters = []
+        if not batters_df.empty:
+            for _, row in batters_df.iterrows():
+                batter = process_projection_batter(row)
+                if batter and batter['projected_points'] > 0:
+                    batters.append(batter)
+            # Sort by projected points descending
+            batters.sort(key=lambda x: x['projected_points'], reverse=True)
+            print(f"  Processed {len(batters)} batters")
+        
+        # Process pitchers
+        pitchers = []
+        if not pitchers_df.empty:
+            for _, row in pitchers_df.iterrows():
+                pitcher = process_projection_pitcher(row)
+                if pitcher and pitcher['projected_points'] > 0:
+                    pitchers.append(pitcher)
+            # Sort by projected points descending
+            pitchers.sort(key=lambda x: x['projected_points'], reverse=True)
+            print(f"  Processed {len(pitchers)} pitchers")
+        
+        # Build output matching existing JSON format
+        output = {
+            'generated_at': datetime.now().isoformat(),
+            'year': PROJECTION_SEASON,
+            'projection_type': output_name,
+            'scoring': {
+                'batting': PROJECTION_BATTING_SCORING,
+                'pitching': PROJECTION_PITCHING_SCORING
+            },
+            'batters': batters,
+            'pitchers': pitchers
+        }
+        
+        # Save to file
+        output_file = f"{PROJECTIONS_DIR}/projections_{output_name}.json"
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(output, f, indent=2, ensure_ascii=False)
+        
+        print(f"  ✓ Saved to {output_file}")
+        print(f"    - {len(batters)} batters")
+        print(f"    - {len(pitchers)} pitchers")
+        
+        # Brief pause between systems
+        time.sleep(2)
+    
+    print("\n" + "=" * 60)
+    print("✓ Projection collection complete!")
+    print("=" * 60)
+
+
+# =============================================================================
 # MAIN
 # =============================================================================
 
@@ -2399,6 +2961,9 @@ if __name__ == "__main__":
             initial_setup()
         elif command == "check":
             check_available_seasons()
+        elif command == "quick":
+            # Quick update - just teams, standings, and current week scores
+            quick_update()
         elif command == "players":
             player_data_setup()
         elif command == "headshots":
@@ -2438,14 +3003,24 @@ if __name__ == "__main__":
             debug_player_names(year)
         elif command == "test-encoding":
             test_pybaseball_encoding()
+        elif command == "projections":
+            # Collect all projections or a specific one
+            if len(sys.argv) > 2:
+                system = sys.argv[2].lower()
+                collect_projections(system)
+            else:
+                collect_projections()
         else:
             print(f"Unknown command: {command}")
             print("\nAvailable commands:")
             print("  setup              - Initial setup (historical data)")
             print("  check              - Check available seasons")
+            print("  quick              - Quick update (teams, standings, rosters)")
             print("  players            - Collect player stats (Fangraphs + Yahoo)")
             print("  headshots          - Update existing player data with headshots only")
             print("  full               - Weekly update with player data")
+            print("  projections [sys]  - Collect projections (all or specific system)")
+            print("                       Systems: steamer, zips, depthcharts, thebat, thebatx")
             print("  test-fangraphs     - Test Fangraphs connection")
             print("  test-encoding      - Test pybaseball name encoding")
             print("  test-settings [yr] - Show league scoring settings for a year")
