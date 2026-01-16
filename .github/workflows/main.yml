@@ -1,0 +1,64 @@
+# .github/workflows/quick_update.yml
+# 
+# Quick updates every 6 hours for teams, standings, and rosters
+# Runs at 5 AM, 11 AM, 5 PM, and 11 PM EST
+# 
+# This is a lightweight update that doesn't collect weekly scores or player stats.
+# Use this for frequent roster tracking during the season.
+
+name: Quick Update (6hr)
+
+on:
+  schedule:
+    # Times are in UTC, converting from EST:
+    # 5 AM EST  = 10:00 UTC (9:00 during DST)
+    # 11 AM EST = 16:00 UTC (15:00 during DST)
+    # 5 PM EST  = 22:00 UTC (21:00 during DST)
+    # 11 PM EST = 04:00 UTC (03:00 during DST)
+    # Using non-DST times (EST = UTC-5)
+    - cron: '0 10 * * *'   # 5 AM EST
+    - cron: '0 16 * * *'   # 11 AM EST
+    - cron: '0 22 * * *'   # 5 PM EST
+    - cron: '0 4 * * *'    # 11 PM EST
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  quick-update:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install yahoo_oauth yahoo_fantasy_api
+
+      - name: Run quick update
+        env:
+          # Yahoo OAuth credentials
+          YAHOO_CONSUMER_KEY: ${{ secrets.YAHOO_CONSUMER_KEY }}
+          YAHOO_CONSUMER_SECRET: ${{ secrets.YAHOO_CONSUMER_SECRET }}
+          YAHOO_ACCESS_TOKEN: ${{ secrets.YAHOO_ACCESS_TOKEN }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
+          YAHOO_TOKEN_TIME: ${{ secrets.YAHOO_TOKEN_TIME }}
+          # GitHub PAT for auto-updating secrets when tokens refresh
+          GITHUB_PAT: ${{ secrets.PAT }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python collect_data.py quick
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff --staged --quiet || git commit -m "Quick update - $(date +'%Y-%m-%d %H:%M') [automated]"
+          git push
