@@ -25190,11 +25190,13 @@
             
             // Authentication successful
             const team = sportsbookTeamData.find(t => t.team_key === selectedSportsbookTeam);
+            const managerName = normalizeManagerName(team?.manager, 2026, team?.team_name, team?.team_key);
             sportsbookUser = {
-                teamKey: selectedSportsbookTeam,
+                visitorId: managerName, // Use manager name as primary identifier (persists across seasons)
+                teamKey: selectedSportsbookTeam, // Current season team key (for display only)
                 teamName: team?.team_name || 'Unknown',
                 teamLogo: fixTeamLogo(team?.team_logo) || 'league_logo.png',
-                manager: normalizeManagerName(team?.manager, 2026, team?.team_name, team?.team_key)
+                manager: managerName
             };
             
             closeSportsbookLogin();
@@ -25205,15 +25207,15 @@
         async function loadSportsbookData() {
             if (!sportsbookUser || !firebaseDb) return;
             
-            // Load user's balance
-            const sanitizedKey = sanitizeFirebaseKey(sportsbookUser.teamKey);
+            // Load user's balance using manager name (persists across seasons)
+            const sanitizedKey = sanitizeFirebaseKey(sportsbookUser.manager);
             try {
                 const balanceSnapshot = await sportsbookBalancesRef.child(sanitizedKey).once('value');
                 let balance = balanceSnapshot.val();
                 
                 if (balance === null) {
                     // Initialize new user with preseason budget
-                    balance = { total: PRESEASON_BUDGET, lastWeeklyAdd: 0, teamKey: sportsbookUser.teamKey };
+                    balance = { total: PRESEASON_BUDGET, lastWeeklyAdd: 0, manager: sportsbookUser.manager };
                     await sportsbookBalancesRef.child(sanitizedKey).set(balance);
                 }
                 
@@ -26162,7 +26164,8 @@
                 return;
             }
             
-            const sanitizedUserKey = sanitizeFirebaseKey(sportsbookUser.teamKey);
+            // Use manager name as identifier (persists across seasons)
+            const sanitizedUserKey = sanitizeFirebaseKey(sportsbookUser.manager);
             
             try {
                 // Record each bet
@@ -26170,8 +26173,8 @@
                 for (const bet of sportsbookBetSlip) {
                     if (bet.wager > 0) {
                         await sportsbookBetsRef.push({
-                            teamKey: sportsbookUser.teamKey,
-                            teamKeySanitized: sanitizedUserKey,
+                            manager: sportsbookUser.manager, // Primary identifier
+                            managerSanitized: sanitizedUserKey,
                             betType: bet.betType,
                             selection: bet.teamKey,
                             selectionName: bet.teamName,
@@ -26180,16 +26183,17 @@
                             wager: bet.wager,
                             potentialPayout: parseFloat(calculatePayout(bet.wager, bet.odds)),
                             status: 'pending',
-                            timestamp: timestamp
+                            timestamp: timestamp,
+                            season: 2026 // Track which season the bet was placed
                         });
                     }
                 }
                 
-                // Update balance using sanitized key
+                // Update balance using manager name
                 const newBalance = balance - totalWager;
                 await sportsbookBalancesRef.child(sanitizedUserKey).update({ 
                     total: newBalance,
-                    teamKey: sportsbookUser.teamKey  // Store original key for reference
+                    manager: sportsbookUser.manager
                 });
                 document.getElementById('sportsbook-balance').textContent = newBalance;
                 
@@ -26219,11 +26223,11 @@
             
             const tbody = document.getElementById('bet-history-body');
             const emptyEl = document.getElementById('bet-history-empty');
-            const sanitizedKey = sanitizeFirebaseKey(sportsbookUser.teamKey);
+            const sanitizedKey = sanitizeFirebaseKey(sportsbookUser.manager);
             
             try {
-                // Query by sanitized key for better Firebase compatibility
-                const snapshot = await sportsbookBetsRef.orderByChild('teamKeySanitized').equalTo(sanitizedKey).once('value');
+                // Query by manager name (persists across seasons)
+                const snapshot = await sportsbookBetsRef.orderByChild('managerSanitized').equalTo(sanitizedKey).once('value');
                 const bets = snapshot.val();
                 
                 if (!bets) {
