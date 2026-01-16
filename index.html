@@ -22348,6 +22348,7 @@
                     
                     teamValues.push({
                         team_key: team.team_key,
+                        keeper_config_key: keeperConfigTeamKey, // Key to use for getTeamPicks and keeperSelections
                         team_name: team.team_name,
                         manager: capitalizeManagerName(managerName || team.manager || 'Unknown'),
                         team_logo: fixTeamLogo(team.team_logo),
@@ -23044,13 +23045,15 @@
                 }).join('');
                 
                 // Get team's available picks and calculate which ones are NOT used for keepers
-                const teamPicks = getTeamPicks(team.team_key) || [];
-                const teamKeepers = keeperSelections[team.team_key] || [];
+                // Use keeper_config_key for lookups (handles 2025 vs 2026 key mismatch)
+                const lookupKey = team.keeper_config_key || team.team_key;
+                const teamPicks = getTeamPicks(lookupKey) || [];
+                const teamKeepers = keeperSelections[lookupKey] || [];
                 const nonProspectKeepers = teamKeepers.filter(k => !k.isProspect);
                 
                 // Calculate which rounds are used by keepers
                 const usedRounds = {};
-                const roundCosts = calculateTeamKeeperRoundCosts(team.team_key);
+                const roundCosts = calculateTeamKeeperRoundCosts(lookupKey);
                 roundCosts.forEach(rc => {
                     usedRounds[rc.actualRoundCost] = (usedRounds[rc.actualRoundCost] || 0) + 1;
                 });
