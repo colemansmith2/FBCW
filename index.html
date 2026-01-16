@@ -22209,20 +22209,6 @@
                 '458.l.4156.t.12': 'Nate'
             };
             
-            // Also create a mapping from 2025 keys to 2026 keys for draft picks
-            const teamKey2025To2026 = {};
-            for (const team of teamsData) {
-                const managerName = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
-                // Find the 2025 key that matches this manager
-                for (const [key2025, manager] of Object.entries(teamKey2025ToManager)) {
-                    if (manager.toLowerCase() === managerName.toLowerCase()) {
-                        teamKey2025To2026[key2025] = team.team_key;
-                        break;
-                    }
-                }
-            }
-            console.log('2025 to 2026 key mapping:', teamKey2025To2026);
-            
             for (const [teamKey, keepers] of Object.entries(keeperSelections)) {
                 const manager = teamKey2025ToManager[teamKey];
                 if (manager) {
@@ -22237,9 +22223,21 @@
                 const teamKeepers = managerToKeepers[managerName.toLowerCase()] || keeperSelections[team.team_key] || [];
                 
                 if (teamKeepers.length === 0) continue;
+                
+                // Find the keeperConfig team key for this manager
+                let keeperConfigTeamKey = team.team_key;
+                if (keeperConfig && keeperConfig.teams) {
+                    for (const [configKey, configTeam] of Object.entries(keeperConfig.teams)) {
+                        const configManager = normalizeManagerName(configTeam.manager, 2026, configTeam.team_name, configKey);
+                        if (configManager.toLowerCase() === managerName.toLowerCase()) {
+                            keeperConfigTeamKey = configKey;
+                            break;
+                        }
+                    }
+                }
 
                 // Calculate actual round costs (accounting for bumping when rounds are used)
-                const actualRoundCosts = calculateTeamKeeperRoundCosts(team.team_key);
+                const actualRoundCosts = calculateTeamKeeperRoundCosts(keeperConfigTeamKey);
                 const actualRoundMap = {};
                 actualRoundCosts.forEach(rc => {
                     actualRoundMap[rc.player_name.toLowerCase()] = rc.actualRoundCost;
@@ -22299,18 +22297,24 @@
                     // Calculate total keeper value (sum of individual keeper values)
                     const totalKeeperValue = keeperDetails.reduce((sum, k) => sum + k.value, 0);
                     
-                    // Find the 2025 team key for this manager (needed for getTeamPicks and calculateTeamKeeperRoundCosts)
-                    let teamKey2025 = null;
-                    for (const [key2025, manager] of Object.entries(teamKey2025ToManager)) {
-                        if (manager.toLowerCase() === managerName.toLowerCase()) {
-                            teamKey2025 = key2025;
-                            break;
+                    // Find the keeperConfig team key for this manager (needed for getTeamPicks and calculateTeamKeeperRoundCosts)
+                    // teamPicksOwned uses keys from keeperConfig.teams, which may be 2025 or 2026 keys
+                    let keeperConfigTeamKey = team.team_key; // default to current team key
+                    if (keeperConfig && keeperConfig.teams) {
+                        for (const [configKey, configTeam] of Object.entries(keeperConfig.teams)) {
+                            const configManager = normalizeManagerName(configTeam.manager, 2026, configTeam.team_name, configKey);
+                            if (configManager.toLowerCase() === managerName.toLowerCase()) {
+                                keeperConfigTeamKey = configKey;
+                                break;
+                            }
                         }
                     }
                     
-                    // Calculate pick value for this team (use 2025 key for picks lookup)
-                    const teamPicks = getTeamPicks(teamKey2025 || team.team_key) || [];
-                    const roundCostsForTeam = calculateTeamKeeperRoundCosts(teamKey2025 || team.team_key);
+                    // Calculate pick value for this team (use keeperConfig key for picks lookup)
+                    const teamPicks = getTeamPicks(keeperConfigTeamKey) || [];
+                    const roundCostsForTeam = calculateTeamKeeperRoundCosts(keeperConfigTeamKey);
+                    
+                    console.log(`${managerName}: keeperConfigTeamKey=${keeperConfigTeamKey}, picks=${teamPicks.length}`);
                     
                     // Count used rounds
                     const usedRounds = {};
