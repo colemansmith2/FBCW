@@ -22195,7 +22195,7 @@
             // Build a mapping from manager name to keepers (handles 2025 vs 2026 key mismatch)
             const managerToKeepers = {};
             const teamKey2025ToManager = {
-                '458.l.4156.t.1': 'Josh',
+                '458.l.4156.t.1': 'Josh B',
                 '458.l.4156.t.2': 'Ryan',
                 '458.l.4156.t.3': 'Coleman',
                 '458.l.4156.t.4': 'Riley',
@@ -22204,10 +22204,24 @@
                 '458.l.4156.t.7': 'Tyler',
                 '458.l.4156.t.8': 'Dylan',
                 '458.l.4156.t.9': 'Red',
-                '458.l.4156.t.10': 'Logan',
+                '458.l.4156.t.10': 'Logan S',
                 '458.l.4156.t.11': 'Rich',
                 '458.l.4156.t.12': 'Nate'
             };
+            
+            // Also create a mapping from 2025 keys to 2026 keys for draft picks
+            const teamKey2025To2026 = {};
+            for (const team of teamsData) {
+                const managerName = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
+                // Find the 2025 key that matches this manager
+                for (const [key2025, manager] of Object.entries(teamKey2025ToManager)) {
+                    if (manager.toLowerCase() === managerName.toLowerCase()) {
+                        teamKey2025To2026[key2025] = team.team_key;
+                        break;
+                    }
+                }
+            }
+            console.log('2025 to 2026 key mapping:', teamKey2025To2026);
             
             for (const [teamKey, keepers] of Object.entries(keeperSelections)) {
                 const manager = teamKey2025ToManager[teamKey];
@@ -22285,9 +22299,18 @@
                     // Calculate total keeper value (sum of individual keeper values)
                     const totalKeeperValue = keeperDetails.reduce((sum, k) => sum + k.value, 0);
                     
-                    // Calculate pick value for this team
-                    const teamPicks = getTeamPicks(team.team_key) || [];
-                    const roundCostsForTeam = calculateTeamKeeperRoundCosts(team.team_key);
+                    // Find the 2025 team key for this manager (needed for getTeamPicks and calculateTeamKeeperRoundCosts)
+                    let teamKey2025 = null;
+                    for (const [key2025, manager] of Object.entries(teamKey2025ToManager)) {
+                        if (manager.toLowerCase() === managerName.toLowerCase()) {
+                            teamKey2025 = key2025;
+                            break;
+                        }
+                    }
+                    
+                    // Calculate pick value for this team (use 2025 key for picks lookup)
+                    const teamPicks = getTeamPicks(teamKey2025 || team.team_key) || [];
+                    const roundCostsForTeam = calculateTeamKeeperRoundCosts(teamKey2025 || team.team_key);
                     
                     // Count used rounds
                     const usedRounds = {};
@@ -22317,7 +22340,7 @@
                     teamValues.push({
                         team_key: team.team_key,
                         team_name: team.team_name,
-                        manager: capitalizeManagerName(team.manager || 'Unknown'),
+                        manager: capitalizeManagerName(managerName || team.manager || 'Unknown'),
                         team_logo: fixTeamLogo(team.team_logo),
                         keepers: keeperDetails,
                         totalProjected: totalProjected,
@@ -25728,7 +25751,7 @@
                 // Firebase keys are sanitized 2025 keys like "458_l_4156_t_1"
                 const managerToKeepers = {};
                 const teamKey2025ToManager = {
-                    '458_l_4156_t_1': 'Josh',
+                    '458_l_4156_t_1': 'Josh B',
                     '458_l_4156_t_2': 'Ryan',
                     '458_l_4156_t_3': 'Coleman',
                     '458_l_4156_t_4': 'Riley',
@@ -25737,7 +25760,7 @@
                     '458_l_4156_t_7': 'Tyler',
                     '458_l_4156_t_8': 'Dylan',
                     '458_l_4156_t_9': 'Red',
-                    '458_l_4156_t_10': 'Logan',
+                    '458_l_4156_t_10': 'Logan S',
                     '458_l_4156_t_11': 'Rich',
                     '458_l_4156_t_12': 'Nate'
                 };
