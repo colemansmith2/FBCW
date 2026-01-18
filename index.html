@@ -9717,7 +9717,7 @@
         
         /* Matchup Ticker */
         .matchup-ticker-container {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: #1e3c72;
             border-radius: 12px;
             padding: 0.75rem 1rem;
             overflow: hidden;
@@ -9735,9 +9735,6 @@
             color: white;
             font-weight: 600;
             font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
         .matchup-ticker-week {
@@ -9748,22 +9745,43 @@
             color: white;
         }
         
+        .matchup-ticker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .matchup-ticker-arrow {
+            background: rgba(255,255,255,0.15);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .matchup-ticker-arrow:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
         .matchup-ticker-scroll {
             display: flex;
             gap: 1rem;
             overflow-x: auto;
             padding: 0.5rem 0;
-            scrollbar-width: thin;
-            scrollbar-color: rgba(255,255,255,0.3) transparent;
+            scrollbar-width: none;
+            flex: 1;
         }
         
         .matchup-ticker-scroll::-webkit-scrollbar {
-            height: 6px;
-        }
-        
-        .matchup-ticker-scroll::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.3);
-            border-radius: 3px;
+            display: none;
         }
         
         .matchup-ticker-item {
@@ -9775,7 +9793,6 @@
             align-items: center;
             gap: 0.75rem;
             min-width: 280px;
-            backdrop-filter: blur(5px);
         }
         
         .matchup-team {
@@ -9788,12 +9805,12 @@
         }
         
         .matchup-team-logo {
-            width: 36px;
-            height: 36px;
-            object-fit: contain;
-            border-radius: 6px;
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
             background: white;
-            padding: 2px;
+            border: 2px solid rgba(255,255,255,0.3);
         }
         
         .matchup-team-name {
@@ -9837,18 +9854,101 @@
             font-size: 0.7rem;
         }
         
+        /* Top Row: Standings + Position Rankings side by side */
+        .homepage-top-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1.5rem;
+        }
+        
+        /* Mini Standings Table - Compact */
+        .mini-standings {
+            background: white;
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            width: fit-content;
+        }
+        
+        .mini-standings-header {
+            margin-bottom: 0.5rem;
+        }
+        
+        .mini-standings-title {
+            font-weight: 600;
+            color: #1e3c72;
+            font-size: 0.9rem;
+        }
+        
+        .mini-standings-table {
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+        
+        .mini-standings-table th {
+            text-align: left;
+            padding: 0.3rem 0.4rem;
+            border-bottom: 2px solid #1e3c72;
+            color: #1e3c72;
+            font-weight: 600;
+            font-size: 0.65rem;
+            white-space: nowrap;
+        }
+        
+        .mini-standings-table th:not(:first-child) {
+            text-align: center;
+        }
+        
+        .mini-standings-table td {
+            padding: 0.25rem 0.4rem;
+            border-bottom: 1px solid #eee;
+            white-space: nowrap;
+        }
+        
+        .mini-standings-table td:not(:first-child) {
+            text-align: center;
+        }
+        
+        .mini-standings-team {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .mini-standings-rank {
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e3c72;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.55rem;
+            font-weight: 600;
+        }
+        
+        .mini-standings-hat {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+        }
+        
+        .mini-standings-manager {
+            font-weight: 500;
+            color: #333;
+            font-size: 0.7rem;
+        }
+        
         /* Transactions Ticker */
         .transactions-ticker {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background: #f8f9fa;
             border-radius: 12px;
             padding: 1rem 1.25rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
         
         .transactions-ticker-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             margin-bottom: 0.75rem;
         }
         
@@ -9856,9 +9956,6 @@
             font-weight: 600;
             color: #1e3c72;
             font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
         .transactions-list {
@@ -9920,94 +10017,13 @@
             white-space: nowrap;
         }
         
-        /* Mini Standings Table */
-        .mini-standings {
-            background: white;
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .mini-standings-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-        }
-        
-        .mini-standings-title {
-            font-weight: 600;
-            color: #1e3c72;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .mini-standings-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-        }
-        
-        .mini-standings-table th {
-            text-align: left;
-            padding: 0.5rem 0.25rem;
-            border-bottom: 2px solid #1e3c72;
-            color: #1e3c72;
-            font-weight: 600;
-            font-size: 0.7rem;
-        }
-        
-        .mini-standings-table th:not(:first-child) {
-            text-align: center;
-        }
-        
-        .mini-standings-table td {
-            padding: 0.4rem 0.25rem;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .mini-standings-table td:not(:first-child) {
-            text-align: center;
-        }
-        
-        .mini-standings-team {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .mini-standings-rank {
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #1e3c72;
-            color: white;
-            border-radius: 50%;
-            font-size: 0.65rem;
-            font-weight: 600;
-        }
-        
-        .mini-standings-hat {
-            width: 28px;
-            height: 28px;
-            object-fit: contain;
-        }
-        
-        .mini-standings-manager {
-            font-weight: 500;
-            color: #333;
-        }
-        
         /* Position Rankings */
         .position-rankings {
             background: white;
             border-radius: 12px;
             padding: 1rem 1.25rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            flex: 1;
         }
         
         .position-rankings-header {
@@ -10023,9 +10039,6 @@
             font-weight: 600;
             color: #1e3c72;
             font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
         .position-tabs {
@@ -10035,25 +10048,33 @@
         }
         
         .position-tab {
-            padding: 0.3rem 0.6rem;
+            padding: 0.25rem 0.5rem;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             transition: all 0.2s;
-            background: #f0f0f0;
-            color: #666;
         }
         
         .position-tab:hover {
-            background: #e0e0e0;
+            opacity: 0.85;
         }
         
         .position-tab.active {
-            background: #1e3c72;
-            color: white;
+            box-shadow: 0 0 0 2px #1e3c72;
         }
+        
+        /* Position tab colors matching position badges */
+        .position-tab[data-pos="C"]    { color: var(--pos-c-dark); background-color: var(--pos-c-light); }
+        .position-tab[data-pos="1B"]   { color: var(--pos-1b-dark); background-color: var(--pos-1b-light); }
+        .position-tab[data-pos="2B"]   { color: var(--pos-2b-dark); background-color: var(--pos-2b-light); }
+        .position-tab[data-pos="3B"]   { color: var(--pos-3b-dark); background-color: var(--pos-3b-light); }
+        .position-tab[data-pos="SS"]   { color: var(--pos-ss-dark); background-color: var(--pos-ss-light); }
+        .position-tab[data-pos="OF"]   { color: var(--pos-of-dark); background-color: var(--pos-of-light); }
+        .position-tab[data-pos="Util"] { color: var(--pos-dh-dark); background-color: var(--pos-dh-light); }
+        .position-tab[data-pos="SP"]   { color: var(--pos-sp-dark); background-color: var(--pos-sp-light); }
+        .position-tab[data-pos="RP"]   { color: var(--pos-rp-dark); background-color: var(--pos-rp-light); }
         
         .position-rankings-table {
             width: 100%;
@@ -10103,7 +10124,7 @@
         
         /* Top Scorers Sidebar */
         .top-scorers-sidebar {
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: #1e3c72;
             border-radius: 12px;
             padding: 1rem;
             color: white;
@@ -10119,9 +10140,6 @@
         .top-scorers-title {
             font-weight: 600;
             font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
         
         .top-scorers-date {
@@ -10159,9 +10177,9 @@
             font-size: 0.7rem;
         }
         
-        .top-scorer-rank.gold { background: linear-gradient(135deg, #ffd700, #ffb800); color: #000; }
-        .top-scorer-rank.silver { background: linear-gradient(135deg, #c0c0c0, #a0a0a0); color: #000; }
-        .top-scorer-rank.bronze { background: linear-gradient(135deg, #cd7f32, #b87333); color: #fff; }
+        .top-scorer-rank.gold { background: #ffd700; color: #000; }
+        .top-scorer-rank.silver { background: #c0c0c0; color: #000; }
+        .top-scorer-rank.bronze { background: #cd7f32; color: #fff; }
         
         .top-scorer-headshot {
             width: 36px;
@@ -10188,9 +10206,6 @@
         .top-scorer-team {
             font-size: 0.65rem;
             color: rgba(255,255,255,0.7);
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
         }
         
         .top-scorer-score {
@@ -10226,6 +10241,14 @@
                 order: -1;
             }
             
+            .homepage-top-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .mini-standings {
+                width: 100%;
+            }
+            
             .matchup-ticker-item {
                 min-width: 240px;
             }
@@ -10238,8 +10261,8 @@
             }
             
             .matchup-team-logo {
-                width: 28px;
-                height: 28px;
+                width: 32px;
+                height: 32px;
             }
             
             .position-tabs {
@@ -10247,8 +10270,8 @@
             }
             
             .position-tab {
-                padding: 0.25rem 0.4rem;
-                font-size: 0.6rem;
+                padding: 0.2rem 0.35rem;
+                font-size: 0.55rem;
             }
         }
     </style>
@@ -10383,75 +10406,81 @@
             <!-- Matchup Ticker -->
             <div class="matchup-ticker-container">
                 <div class="matchup-ticker-header">
-                    <div class="matchup-ticker-title">⚾ Current Matchups</div>
+                    <div class="matchup-ticker-title">Current Matchups</div>
                     <div class="matchup-ticker-week" id="home-matchup-week">Week 1</div>
                 </div>
-                <div class="matchup-ticker-scroll" id="home-matchup-ticker">
-                    <div class="homepage-placeholder">Loading matchups...</div>
+                <div class="matchup-ticker-wrapper">
+                    <button class="matchup-ticker-arrow" onclick="scrollMatchupTicker(-1)" title="Previous">&#9664;</button>
+                    <div class="matchup-ticker-scroll" id="home-matchup-ticker">
+                        <div class="homepage-placeholder">Loading matchups...</div>
+                    </div>
+                    <button class="matchup-ticker-arrow" onclick="scrollMatchupTicker(1)" title="Next">&#9654;</button>
                 </div>
             </div>
             
             <div class="homepage-layout">
                 <div class="homepage-main">
-                    <!-- Recent Transactions -->
+                    <!-- Top Row: Standings + Position Rankings -->
+                    <div class="homepage-top-row">
+                        <!-- Mini Standings -->
+                        <div class="mini-standings">
+                            <div class="mini-standings-header">
+                                <div class="mini-standings-title">Standings</div>
+                            </div>
+                            <table class="mini-standings-table">
+                                <thead>
+                                    <tr>
+                                        <th>Team</th>
+                                        <th>W-L</th>
+                                        <th>PF</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="home-standings-body">
+                                    <tr><td colspan="3" class="homepage-placeholder">Loading standings...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Position Rankings -->
+                        <div class="position-rankings">
+                            <div class="position-rankings-header">
+                                <div class="position-rankings-title">Position Rankings</div>
+                                <div class="position-tabs" id="home-position-tabs">
+                                    <button class="position-tab active" data-pos="C" onclick="selectHomePosition('C')">C</button>
+                                    <button class="position-tab" data-pos="1B" onclick="selectHomePosition('1B')">1B</button>
+                                    <button class="position-tab" data-pos="2B" onclick="selectHomePosition('2B')">2B</button>
+                                    <button class="position-tab" data-pos="3B" onclick="selectHomePosition('3B')">3B</button>
+                                    <button class="position-tab" data-pos="SS" onclick="selectHomePosition('SS')">SS</button>
+                                    <button class="position-tab" data-pos="OF" onclick="selectHomePosition('OF')">OF</button>
+                                    <button class="position-tab" data-pos="Util" onclick="selectHomePosition('Util')">Util</button>
+                                    <button class="position-tab" data-pos="SP" onclick="selectHomePosition('SP')">SP</button>
+                                    <button class="position-tab" data-pos="RP" onclick="selectHomePosition('RP')">RP</button>
+                                </div>
+                            </div>
+                            <table class="position-rankings-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Player</th>
+                                        <th>Team</th>
+                                        <th>Pts</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="home-position-rankings-body">
+                                    <tr><td colspan="4" class="homepage-placeholder">Loading rankings...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Transactions (moved to bottom) -->
                     <div class="transactions-ticker">
                         <div class="transactions-ticker-header">
-                            <div class="transactions-ticker-title">📋 Recent Transactions</div>
+                            <div class="transactions-ticker-title">Recent Transactions</div>
                         </div>
                         <div class="transactions-list" id="home-transactions-list">
                             <div class="homepage-placeholder">Loading transactions...</div>
                         </div>
-                    </div>
-                    
-                    <!-- Mini Standings -->
-                    <div class="mini-standings">
-                        <div class="mini-standings-header">
-                            <div class="mini-standings-title">🏆 Standings</div>
-                        </div>
-                        <table class="mini-standings-table">
-                            <thead>
-                                <tr>
-                                    <th>Team</th>
-                                    <th>W</th>
-                                    <th>L</th>
-                                    <th>PF</th>
-                                </tr>
-                            </thead>
-                            <tbody id="home-standings-body">
-                                <tr><td colspan="4" class="homepage-placeholder">Loading standings...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <!-- Position Rankings -->
-                    <div class="position-rankings">
-                        <div class="position-rankings-header">
-                            <div class="position-rankings-title">📊 Position Rankings</div>
-                            <div class="position-tabs" id="home-position-tabs">
-                                <button class="position-tab active" data-pos="C" onclick="selectHomePosition('C')">C</button>
-                                <button class="position-tab" data-pos="1B" onclick="selectHomePosition('1B')">1B</button>
-                                <button class="position-tab" data-pos="2B" onclick="selectHomePosition('2B')">2B</button>
-                                <button class="position-tab" data-pos="3B" onclick="selectHomePosition('3B')">3B</button>
-                                <button class="position-tab" data-pos="SS" onclick="selectHomePosition('SS')">SS</button>
-                                <button class="position-tab" data-pos="OF" onclick="selectHomePosition('OF')">OF</button>
-                                <button class="position-tab" data-pos="DH" onclick="selectHomePosition('DH')">DH</button>
-                                <button class="position-tab" data-pos="SP" onclick="selectHomePosition('SP')">SP</button>
-                                <button class="position-tab" data-pos="RP" onclick="selectHomePosition('RP')">RP</button>
-                            </div>
-                        </div>
-                        <table class="position-rankings-table">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Player</th>
-                                    <th>Team</th>
-                                    <th>Pts</th>
-                                </tr>
-                            </thead>
-                            <tbody id="home-position-rankings-body">
-                                <tr><td colspan="4" class="homepage-placeholder">Loading rankings...</td></tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
                 
@@ -10459,7 +10488,7 @@
                 <div class="homepage-sidebar">
                     <div class="top-scorers-sidebar">
                         <div class="top-scorers-header">
-                            <div class="top-scorers-title">🔥 Top Scorers</div>
+                            <div class="top-scorers-title">Top Scorers</div>
                             <div class="top-scorers-date" id="home-top-scorers-date">Yesterday</div>
                         </div>
                         <div class="top-scorers-list" id="home-top-scorers-list">
@@ -27121,6 +27150,12 @@
         let homeTransactionsData = [];
         let homeScoresData = [];
         
+        function scrollMatchupTicker(direction) {
+            const container = document.getElementById('home-matchup-ticker');
+            const scrollAmount = 300;
+            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+        
         async function loadHomepageData() {
             if (homepageDataLoaded) return;
             
@@ -27253,7 +27288,7 @@
             const tbody = document.getElementById('home-standings-body');
             
             if (!homeStandingsData || homeStandingsData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="homepage-placeholder">Standings will appear once the season starts.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" class="homepage-placeholder">Standings will appear once the season starts.</td></tr>';
                 return;
             }
             
@@ -27261,9 +27296,12 @@
             const sorted = [...homeStandingsData].sort((a, b) => (a.rank || 999) - (b.rank || 999));
             
             tbody.innerHTML = sorted.map((team, idx) => {
-                const manager = capitalizeManagerName(team.manager || '');
+                // Use normalizeManagerName to handle Josh B and Logan S
+                const rawManager = team.manager || '';
+                const manager = normalizeManagerName(rawManager, 2026, team.team_name, team.team_key);
                 const hatFilename = getManagerHatFilename(manager);
                 const rank = team.rank || (idx + 1);
+                const record = `${team.wins || 0}-${team.losses || 0}`;
                 
                 return `
                     <tr>
@@ -27271,11 +27309,10 @@
                             <div class="mini-standings-team">
                                 <span class="mini-standings-rank">${rank}</span>
                                 <img src="data/hats/${hatFilename}" class="mini-standings-hat" alt="${manager}" onerror="this.style.display='none'">
-                                <span class="mini-standings-manager">${manager}</span>
+                                <span class="mini-standings-manager">${capitalizeManagerName(manager)}</span>
                             </div>
                         </td>
-                        <td>${team.wins || 0}</td>
-                        <td>${team.losses || 0}</td>
+                        <td>${record}</td>
                         <td>${(team.points_for || 0).toFixed(0)}</td>
                     </tr>
                 `;
@@ -27298,28 +27335,28 @@
                 const timestamp = trans.timestamp ? new Date(trans.timestamp * 1000) : new Date();
                 const timeAgo = getTimeAgo(timestamp);
                 
-                let icon = '➕';
+                let icon = '+';
                 let typeClass = 'trans-add';
                 let description = '';
                 
                 if (type === 'add') {
-                    icon = '➕';
+                    icon = '+';
                     typeClass = 'trans-add';
                     const player = trans.players?.[0];
                     description = `<span class="transaction-player">${player?.player_name || 'Unknown'}</span> added by ${player?.destination_team_name || 'Unknown'}`;
                 } else if (type === 'drop') {
-                    icon = '➖';
+                    icon = '−';
                     typeClass = 'trans-drop';
                     const player = trans.players?.[0];
                     description = `<span class="transaction-player">${player?.player_name || 'Unknown'}</span> dropped by ${player?.source_team_name || 'Unknown'}`;
                 } else if (type === 'add/drop') {
-                    icon = '🔄';
+                    icon = '±';
                     typeClass = 'trans-add-drop';
                     const addPlayer = trans.players?.find(p => p.transaction_type === 'add');
                     const dropPlayer = trans.players?.find(p => p.transaction_type === 'drop');
                     description = `<span class="transaction-player">${addPlayer?.player_name || 'Unknown'}</span> added, ${dropPlayer?.player_name || 'Unknown'} dropped`;
                 } else if (type === 'trade') {
-                    icon = '🤝';
+                    icon = '⇄';
                     typeClass = 'trans-trade';
                     // Get unique team names involved
                     const teams = new Set();
@@ -27381,6 +27418,9 @@
                 const pos = (p.position || p.primary_position || '').toUpperCase();
                 if (homeCurrentPosition === 'OF') {
                     return pos === 'OF' || pos === 'LF' || pos === 'CF' || pos === 'RF';
+                }
+                if (homeCurrentPosition === 'Util') {
+                    return pos === 'DH' || pos === 'UTIL';
                 }
                 return pos === homeCurrentPosition;
             });
@@ -27449,7 +27489,7 @@
                         <img src="${headshot}" class="top-scorer-headshot" alt="" onerror="this.src='${placeholderImg}'">
                         <div class="top-scorer-info">
                             <div class="top-scorer-name">${player.name || 'Unknown'}</div>
-                            <div class="top-scorer-team">${teamName}${manager ? ` • ${capitalizeManagerName(manager)}` : ''}</div>
+                            <div class="top-scorer-team">${teamName}${manager ? ` - ${capitalizeManagerName(manager)}` : ''}</div>
                         </div>
                         <div class="top-scorer-position">${getPositionBadge(position, player.name)}</div>
                         <div class="top-scorer-score">${(player.total_points || 0).toFixed(0)}</div>
