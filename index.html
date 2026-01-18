@@ -9697,22 +9697,34 @@
            ================================================================= */
         
         .homepage-layout {
-            display: grid;
-            grid-template-columns: 1fr 280px;
+            display: flex;
+            flex-direction: column;
             gap: 1.5rem;
             margin-top: 1rem;
         }
         
-        .homepage-main {
-            display: flex;
-            flex-direction: column;
+        /* Three Column Layout */
+        .homepage-three-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 1.5rem;
         }
         
-        .homepage-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
+        .homepage-column {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .homepage-column-header {
+            margin-bottom: 0.75rem;
+        }
+        
+        .homepage-column-title {
+            font-weight: 600;
+            color: #1e3c72;
+            font-size: 1rem;
         }
         
         /* Matchup Ticker */
@@ -9854,44 +9866,20 @@
             font-size: 0.7rem;
         }
         
-        /* Top Row: Standings + Position Rankings side by side */
-        .homepage-top-row {
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 1.5rem;
-        }
-        
-        /* Mini Standings Table - Compact */
-        .mini-standings {
-            background: white;
-            border-radius: 12px;
-            padding: 0.75rem 1rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            width: fit-content;
-        }
-        
-        .mini-standings-header {
-            margin-bottom: 0.5rem;
-        }
-        
-        .mini-standings-title {
-            font-weight: 600;
-            color: #1e3c72;
-            font-size: 0.9rem;
-        }
-        
+        /* Mini Standings Table */
         .mini-standings-table {
+            width: 100%;
             border-collapse: collapse;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
         }
         
         .mini-standings-table th {
             text-align: left;
-            padding: 0.3rem 0.4rem;
+            padding: 0.4rem 0.3rem;
             border-bottom: 2px solid #1e3c72;
             color: #1e3c72;
             font-weight: 600;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             white-space: nowrap;
         }
         
@@ -9900,7 +9888,7 @@
         }
         
         .mini-standings-table td {
-            padding: 0.25rem 0.4rem;
+            padding: 0.35rem 0.3rem;
             border-bottom: 1px solid #eee;
             white-space: nowrap;
         }
@@ -9912,35 +9900,202 @@
         .mini-standings-team {
             display: flex;
             align-items: center;
-            gap: 0.3rem;
+            gap: 0.4rem;
         }
         
         .mini-standings-rank {
-            width: 16px;
-            height: 16px;
+            width: 18px;
+            height: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
             background: #1e3c72;
             color: white;
             border-radius: 50%;
-            font-size: 0.55rem;
+            font-size: 0.6rem;
             font-weight: 600;
+            flex-shrink: 0;
         }
         
         .mini-standings-hat {
-            width: 22px;
-            height: 22px;
+            width: 32px;
+            height: 32px;
             object-fit: contain;
+            flex-shrink: 0;
         }
         
         .mini-standings-manager {
             font-weight: 500;
             color: #333;
+            font-size: 0.75rem;
+        }
+        
+        /* Top Teams Table */
+        .top-teams-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        
+        .top-teams-table th {
+            text-align: left;
+            padding: 0.4rem 0.3rem;
+            border-bottom: 2px solid #1e3c72;
+            color: #1e3c72;
+            font-weight: 600;
             font-size: 0.7rem;
         }
         
-        /* Transactions Ticker */
+        .top-teams-table th:last-child {
+            text-align: right;
+        }
+        
+        .top-teams-table td {
+            padding: 0.35rem 0.3rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .top-teams-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+        }
+        
+        .top-teams-team {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        .top-teams-rank {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e3c72;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.6rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .top-teams-rank.gold { background: #ffd700; color: #000; }
+        .top-teams-rank.silver { background: #c0c0c0; color: #000; }
+        .top-teams-rank.bronze { background: #cd7f32; color: #fff; }
+        
+        .top-teams-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #f0f0f0;
+            flex-shrink: 0;
+        }
+        
+        .top-teams-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        
+        .top-teams-name {
+            font-weight: 500;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .top-teams-manager {
+            font-size: 0.65rem;
+            color: #666;
+        }
+        
+        /* Top Players Table */
+        .top-players-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+        
+        .top-players-table th {
+            text-align: left;
+            padding: 0.4rem 0.3rem;
+            border-bottom: 2px solid #1e3c72;
+            color: #1e3c72;
+            font-weight: 600;
+            font-size: 0.7rem;
+        }
+        
+        .top-players-table th:last-child {
+            text-align: right;
+        }
+        
+        .top-players-table td {
+            padding: 0.35rem 0.3rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .top-players-table td:last-child {
+            text-align: right;
+            font-weight: 600;
+            color: #22c55e;
+        }
+        
+        .top-players-player {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        
+        .top-players-rank {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e3c72;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.6rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .top-players-rank.gold { background: #ffd700; color: #000; }
+        .top-players-rank.silver { background: #c0c0c0; color: #000; }
+        .top-players-rank.bronze { background: #cd7f32; color: #fff; }
+        
+        .top-players-headshot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #f0f0f0;
+            flex-shrink: 0;
+        }
+        
+        .top-players-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        
+        .top-players-name {
+            font-weight: 500;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .top-players-team {
+            font-size: 0.65rem;
+            color: #666;
+        }
+        
+        /* Transactions Ticker - Vertical */
         .transactions-ticker {
             background: #f8f9fa;
             border-radius: 12px;
@@ -9949,6 +10104,9 @@
         }
         
         .transactions-ticker-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             margin-bottom: 0.75rem;
         }
         
@@ -9958,12 +10116,37 @@
             font-size: 1rem;
         }
         
+        .transactions-ticker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .transactions-ticker-arrow {
+            background: #1e3c72;
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        
+        .transactions-ticker-arrow:hover {
+            background: #2a5298;
+        }
+        
         .transactions-list {
             display: flex;
-            flex-direction: column;
             gap: 0.5rem;
-            max-height: 200px;
-            overflow-y: auto;
+            flex: 1;
+            overflow: hidden;
         }
         
         .transaction-item {
@@ -9975,6 +10158,9 @@
             border-radius: 8px;
             font-size: 0.8rem;
             border-left: 3px solid #1e3c72;
+            flex-shrink: 0;
+            min-width: 280px;
+            max-width: 350px;
         }
         
         .transaction-item.trans-add {
@@ -9995,10 +10181,14 @@
         
         .transaction-icon {
             font-size: 1rem;
+            font-weight: 700;
+            width: 20px;
+            text-align: center;
         }
         
         .transaction-content {
             flex: 1;
+            min-width: 0;
         }
         
         .transaction-player {
@@ -10009,218 +10199,15 @@
         .transaction-details {
             color: #666;
             font-size: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .transaction-time {
             color: #999;
             font-size: 0.7rem;
             white-space: nowrap;
-        }
-        
-        /* Position Rankings */
-        .position-rankings {
-            background: white;
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            flex: 1;
-        }
-        
-        .position-rankings-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-        
-        .position-rankings-title {
-            font-weight: 600;
-            color: #1e3c72;
-            font-size: 1rem;
-        }
-        
-        .position-tabs {
-            display: flex;
-            gap: 0.25rem;
-            flex-wrap: wrap;
-        }
-        
-        .position-tab {
-            padding: 0.25rem 0.5rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.65rem;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-        
-        .position-tab:hover {
-            opacity: 0.85;
-        }
-        
-        .position-tab.active {
-            box-shadow: 0 0 0 2px #1e3c72;
-        }
-        
-        /* Position tab colors matching position badges */
-        .position-tab[data-pos="C"]    { color: var(--pos-c-dark); background-color: var(--pos-c-light); }
-        .position-tab[data-pos="1B"]   { color: var(--pos-1b-dark); background-color: var(--pos-1b-light); }
-        .position-tab[data-pos="2B"]   { color: var(--pos-2b-dark); background-color: var(--pos-2b-light); }
-        .position-tab[data-pos="3B"]   { color: var(--pos-3b-dark); background-color: var(--pos-3b-light); }
-        .position-tab[data-pos="SS"]   { color: var(--pos-ss-dark); background-color: var(--pos-ss-light); }
-        .position-tab[data-pos="OF"]   { color: var(--pos-of-dark); background-color: var(--pos-of-light); }
-        .position-tab[data-pos="Util"] { color: var(--pos-dh-dark); background-color: var(--pos-dh-light); }
-        .position-tab[data-pos="SP"]   { color: var(--pos-sp-dark); background-color: var(--pos-sp-light); }
-        .position-tab[data-pos="RP"]   { color: var(--pos-rp-dark); background-color: var(--pos-rp-light); }
-        
-        .position-rankings-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.8rem;
-        }
-        
-        .position-rankings-table th {
-            text-align: left;
-            padding: 0.5rem 0.25rem;
-            border-bottom: 2px solid #1e3c72;
-            color: #1e3c72;
-            font-weight: 600;
-            font-size: 0.7rem;
-        }
-        
-        .position-rankings-table th:not(:first-child):not(:nth-child(2)) {
-            text-align: center;
-        }
-        
-        .position-rankings-table td {
-            padding: 0.4rem 0.25rem;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .position-rankings-table td:not(:first-child):not(:nth-child(2)) {
-            text-align: center;
-        }
-        
-        .position-player-cell {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .position-player-headshot {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: #f0f0f0;
-        }
-        
-        .position-player-name {
-            font-weight: 500;
-        }
-        
-        /* Top Scorers Sidebar */
-        .top-scorers-sidebar {
-            background: #1e3c72;
-            border-radius: 12px;
-            padding: 1rem;
-            color: white;
-        }
-        
-        .top-scorers-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 0.75rem;
-        }
-        
-        .top-scorers-title {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        
-        .top-scorers-date {
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.7);
-            background: rgba(255,255,255,0.1);
-            padding: 0.2rem 0.5rem;
-            border-radius: 10px;
-        }
-        
-        .top-scorers-list {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-        
-        .top-scorer-item {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem;
-            background: rgba(255,255,255,0.1);
-            border-radius: 8px;
-        }
-        
-        .top-scorer-rank {
-            width: 22px;
-            height: 22px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.7rem;
-        }
-        
-        .top-scorer-rank.gold { background: #ffd700; color: #000; }
-        .top-scorer-rank.silver { background: #c0c0c0; color: #000; }
-        .top-scorer-rank.bronze { background: #cd7f32; color: #fff; }
-        
-        .top-scorer-headshot {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            object-fit: cover;
-            background: white;
-            border: 2px solid rgba(255,255,255,0.3);
-        }
-        
-        .top-scorer-info {
-            flex: 1;
-            min-width: 0;
-        }
-        
-        .top-scorer-name {
-            font-weight: 600;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .top-scorer-team {
-            font-size: 0.65rem;
-            color: rgba(255,255,255,0.7);
-        }
-        
-        .top-scorer-score {
-            font-weight: 700;
-            font-size: 1rem;
-            color: #4ade80;
-        }
-        
-        .top-scorer-position {
-            margin-left: auto;
-        }
-        
-        .top-scorer-position .position-badge {
-            font-size: 0.6rem;
-            padding: 0.15rem 0.4rem;
         }
         
         /* Homepage placeholder message */
@@ -10232,29 +10219,31 @@
         }
         
         /* Responsive */
-        @media (max-width: 900px) {
-            .homepage-layout {
+        @media (max-width: 1100px) {
+            .homepage-three-columns {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .homepage-three-columns .homepage-column:nth-child(3) {
+                grid-column: 1 / -1;
+            }
+        }
+        
+        @media (max-width: 700px) {
+            .homepage-three-columns {
                 grid-template-columns: 1fr;
-            }
-            
-            .homepage-sidebar {
-                order: -1;
-            }
-            
-            .homepage-top-row {
-                grid-template-columns: 1fr;
-            }
-            
-            .mini-standings {
-                width: 100%;
             }
             
             .matchup-ticker-item {
                 min-width: 240px;
             }
+            
+            .transaction-item {
+                min-width: 250px;
+            }
         }
         
-        @media (max-width: 600px) {
+        @media (max-width: 500px) {
             .matchup-ticker-item {
                 min-width: 200px;
                 padding: 0.5rem;
@@ -10263,15 +10252,6 @@
             .matchup-team-logo {
                 width: 32px;
                 height: 32px;
-            }
-            
-            .position-tabs {
-                gap: 0.15rem;
-            }
-            
-            .position-tab {
-                padding: 0.2rem 0.35rem;
-                font-size: 0.55rem;
             }
         }
     </style>
@@ -10419,81 +10399,75 @@
             </div>
             
             <div class="homepage-layout">
-                <div class="homepage-main">
-                    <!-- Top Row: Standings + Position Rankings -->
-                    <div class="homepage-top-row">
-                        <!-- Mini Standings -->
-                        <div class="mini-standings">
-                            <div class="mini-standings-header">
-                                <div class="mini-standings-title">Standings</div>
-                            </div>
-                            <table class="mini-standings-table">
-                                <thead>
-                                    <tr>
-                                        <th>Team</th>
-                                        <th>W-L</th>
-                                        <th>PF</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="home-standings-body">
-                                    <tr><td colspan="3" class="homepage-placeholder">Loading standings...</td></tr>
-                                </tbody>
-                            </table>
+                <!-- Three Column Layout -->
+                <div class="homepage-three-columns">
+                    <!-- Column 1: Standings -->
+                    <div class="homepage-column">
+                        <div class="homepage-column-header">
+                            <div class="homepage-column-title">Standings</div>
                         </div>
-                        
-                        <!-- Position Rankings -->
-                        <div class="position-rankings">
-                            <div class="position-rankings-header">
-                                <div class="position-rankings-title">Position Rankings</div>
-                                <div class="position-tabs" id="home-position-tabs">
-                                    <button class="position-tab active" data-pos="C" onclick="selectHomePosition('C')">C</button>
-                                    <button class="position-tab" data-pos="1B" onclick="selectHomePosition('1B')">1B</button>
-                                    <button class="position-tab" data-pos="2B" onclick="selectHomePosition('2B')">2B</button>
-                                    <button class="position-tab" data-pos="3B" onclick="selectHomePosition('3B')">3B</button>
-                                    <button class="position-tab" data-pos="SS" onclick="selectHomePosition('SS')">SS</button>
-                                    <button class="position-tab" data-pos="OF" onclick="selectHomePosition('OF')">OF</button>
-                                    <button class="position-tab" data-pos="Util" onclick="selectHomePosition('Util')">Util</button>
-                                    <button class="position-tab" data-pos="SP" onclick="selectHomePosition('SP')">SP</button>
-                                    <button class="position-tab" data-pos="RP" onclick="selectHomePosition('RP')">RP</button>
-                                </div>
-                            </div>
-                            <table class="position-rankings-table">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Player</th>
-                                        <th>Team</th>
-                                        <th>Pts</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="home-position-rankings-body">
-                                    <tr><td colspan="4" class="homepage-placeholder">Loading rankings...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
+                        <table class="mini-standings-table">
+                            <thead>
+                                <tr>
+                                    <th>Team</th>
+                                    <th>W-L</th>
+                                    <th>PF</th>
+                                </tr>
+                            </thead>
+                            <tbody id="home-standings-body">
+                                <tr><td colspan="3" class="homepage-placeholder">Loading standings...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                     
-                    <!-- Recent Transactions (moved to bottom) -->
-                    <div class="transactions-ticker">
-                        <div class="transactions-ticker-header">
-                            <div class="transactions-ticker-title">Recent Transactions</div>
+                    <!-- Column 2: Top Teams -->
+                    <div class="homepage-column">
+                        <div class="homepage-column-header">
+                            <div class="homepage-column-title">Top Teams</div>
                         </div>
-                        <div class="transactions-list" id="home-transactions-list">
-                            <div class="homepage-placeholder">Loading transactions...</div>
+                        <table class="top-teams-table">
+                            <thead>
+                                <tr>
+                                    <th>Team</th>
+                                    <th>Pts</th>
+                                </tr>
+                            </thead>
+                            <tbody id="home-top-teams-body">
+                                <tr><td colspan="2" class="homepage-placeholder">Loading top teams...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Column 3: Top Players -->
+                    <div class="homepage-column">
+                        <div class="homepage-column-header">
+                            <div class="homepage-column-title">Top Players</div>
                         </div>
+                        <table class="top-players-table">
+                            <thead>
+                                <tr>
+                                    <th>Player</th>
+                                    <th>Pts</th>
+                                </tr>
+                            </thead>
+                            <tbody id="home-top-players-body">
+                                <tr><td colspan="2" class="homepage-placeholder">Loading top players...</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
                 
-                <!-- Sidebar: Top Scorers -->
-                <div class="homepage-sidebar">
-                    <div class="top-scorers-sidebar">
-                        <div class="top-scorers-header">
-                            <div class="top-scorers-title">Top Scorers</div>
-                            <div class="top-scorers-date" id="home-top-scorers-date">Yesterday</div>
+                <!-- Transactions Ticker (horizontal scroll) -->
+                <div class="transactions-ticker">
+                    <div class="transactions-ticker-header">
+                        <div class="transactions-ticker-title">Recent Transactions</div>
+                    </div>
+                    <div class="transactions-ticker-wrapper">
+                        <button class="transactions-ticker-arrow" onclick="scrollTransactionsTicker(-1)" title="Previous">&#9664;</button>
+                        <div class="transactions-list" id="home-transactions-list">
+                            <div class="homepage-placeholder">Loading transactions...</div>
                         </div>
-                        <div class="top-scorers-list" id="home-top-scorers-list">
-                            <div class="homepage-placeholder" style="color: rgba(255,255,255,0.7);">Loading top scorers...</div>
-                        </div>
+                        <button class="transactions-ticker-arrow" onclick="scrollTransactionsTicker(1)" title="Next">&#9654;</button>
                     </div>
                 </div>
             </div>
@@ -27143,7 +27117,6 @@
 
         // ===== HOMEPAGE FUNCTIONS =====
         let homepageDataLoaded = false;
-        let homeCurrentPosition = 'C';
         let homePlayersData = [];
         let homeTeamsData = [];
         let homeStandingsData = [];
@@ -27153,6 +27126,12 @@
         function scrollMatchupTicker(direction) {
             const container = document.getElementById('home-matchup-ticker');
             const scrollAmount = 300;
+            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+        
+        function scrollTransactionsTicker(direction) {
+            const container = document.getElementById('home-transactions-list');
+            const scrollAmount = 320;
             container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
         }
         
@@ -27184,7 +27163,7 @@
                     homeScoresData = await scoresResponse.json();
                 }
                 
-                // Load player data for position rankings (use most recent historical data if no current season)
+                // Load player data for top players (use most recent historical data if no current season)
                 try {
                     const playersResponse = await fetch('data/historical/2025/all_players.json');
                     if (playersResponse.ok) {
@@ -27199,9 +27178,9 @@
                 // Render all homepage components
                 renderMatchupTicker();
                 renderHomeStandings();
+                renderHomeTopTeams();
+                renderHomeTopPlayers();
                 renderHomeTransactions();
-                renderHomePositionRankings();
-                renderTopScorers();
                 
             } catch (e) {
                 console.log('Error loading homepage data:', e);
@@ -27319,6 +27298,81 @@
             }).join('');
         }
         
+        function renderHomeTopTeams() {
+            const tbody = document.getElementById('home-top-teams-body');
+            
+            // For now, use standings data sorted by points_for as proxy for "top teams"
+            // In-season this would be daily/weekly team scores
+            if (!homeStandingsData || homeStandingsData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="homepage-placeholder">Top teams will appear once the season starts.</td></tr>';
+                return;
+            }
+            
+            // Sort by points_for (highest first)
+            const sorted = [...homeStandingsData].sort((a, b) => (b.points_for || 0) - (a.points_for || 0));
+            
+            tbody.innerHTML = sorted.map((team, idx) => {
+                const teamData = homeTeamsData.find(t => t.team_key === team.team_key) || {};
+                const logo = fixTeamLogo(teamData.team_logo) || 'league_logo.png';
+                const rawManager = team.manager || teamData.manager || '';
+                const manager = normalizeManagerName(rawManager, 2026, team.team_name, team.team_key);
+                const rankClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
+                
+                return `
+                    <tr>
+                        <td>
+                            <div class="top-teams-team">
+                                <span class="top-teams-rank ${rankClass}">${idx + 1}</span>
+                                <img src="${logo}" class="top-teams-logo" alt="" onerror="this.src='league_logo.png'">
+                                <div class="top-teams-info">
+                                    <div class="top-teams-name">${team.team_name || 'Unknown'}</div>
+                                    <div class="top-teams-manager">${capitalizeManagerName(manager)}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${(team.points_for || 0).toFixed(0)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function renderHomeTopPlayers() {
+            const tbody = document.getElementById('home-top-players-body');
+            
+            if (!homePlayersData || homePlayersData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2" class="homepage-placeholder">Top players will appear once the season starts.</td></tr>';
+                return;
+            }
+            
+            // Sort by total points and take top 12
+            const sorted = [...homePlayersData].sort((a, b) => (b.total_points || 0) - (a.total_points || 0)).slice(0, 12);
+            
+            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+            
+            tbody.innerHTML = sorted.map((player, idx) => {
+                const headshot = player.headshot_url || placeholderImg;
+                const rankClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
+                const teamName = player.team_name || 'FA';
+                const manager = player.manager ? capitalizeManagerName(player.manager) : '';
+                
+                return `
+                    <tr>
+                        <td>
+                            <div class="top-players-player">
+                                <span class="top-players-rank ${rankClass}">${idx + 1}</span>
+                                <img src="${headshot}" class="top-players-headshot" alt="" onerror="this.src='${placeholderImg}'">
+                                <div class="top-players-info">
+                                    <div class="top-players-name">${player.name || 'Unknown'}</div>
+                                    <div class="top-players-team">${teamName}${manager ? ` - ${manager}` : ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${(player.total_points || 0).toFixed(0)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
         function renderHomeTransactions() {
             const container = document.getElementById('home-transactions-list');
             
@@ -27327,8 +27381,8 @@
                 return;
             }
             
-            // Show most recent 10 transactions
-            const recent = homeTransactionsData.slice(0, 10);
+            // Show most recent 15 transactions for horizontal scroll
+            const recent = homeTransactionsData.slice(0, 15);
             
             container.innerHTML = recent.map(trans => {
                 const type = trans.type || 'add';
@@ -27358,7 +27412,6 @@
                 } else if (type === 'trade') {
                     icon = '⇄';
                     typeClass = 'trans-trade';
-                    // Get unique team names involved
                     const teams = new Set();
                     trans.players?.forEach(p => {
                         if (p.source_team_name) teams.add(p.source_team_name);
@@ -27392,110 +27445,6 @@
             if (diffHours < 24) return `${diffHours}h ago`;
             if (diffDays < 7) return `${diffDays}d ago`;
             return date.toLocaleDateString();
-        }
-        
-        function selectHomePosition(pos) {
-            homeCurrentPosition = pos;
-            
-            // Update active tab
-            document.querySelectorAll('#home-position-tabs .position-tab').forEach(tab => {
-                tab.classList.toggle('active', tab.dataset.pos === pos);
-            });
-            
-            renderHomePositionRankings();
-        }
-        
-        function renderHomePositionRankings() {
-            const tbody = document.getElementById('home-position-rankings-body');
-            
-            if (!homePlayersData || homePlayersData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="homepage-placeholder">Player rankings will appear once the season starts.</td></tr>';
-                return;
-            }
-            
-            // Filter by position
-            const positionPlayers = homePlayersData.filter(p => {
-                const pos = (p.position || p.primary_position || '').toUpperCase();
-                if (homeCurrentPosition === 'OF') {
-                    return pos === 'OF' || pos === 'LF' || pos === 'CF' || pos === 'RF';
-                }
-                if (homeCurrentPosition === 'Util') {
-                    return pos === 'DH' || pos === 'UTIL';
-                }
-                return pos === homeCurrentPosition;
-            });
-            
-            // Sort by total points
-            positionPlayers.sort((a, b) => (b.total_points || 0) - (a.total_points || 0));
-            
-            // Take top 10
-            const top10 = positionPlayers.slice(0, 10);
-            
-            if (top10.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="4" class="homepage-placeholder">No players found for this position.</td></tr>';
-                return;
-            }
-            
-            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
-            
-            tbody.innerHTML = top10.map((player, idx) => {
-                const headshot = player.headshot_url || placeholderImg;
-                const teamName = player.team_name || 'FA';
-                
-                return `
-                    <tr>
-                        <td>${idx + 1}</td>
-                        <td>
-                            <div class="position-player-cell">
-                                <img src="${headshot}" class="position-player-headshot" alt="" onerror="this.src='${placeholderImg}'">
-                                <span class="position-player-name">${player.name || 'Unknown'}</span>
-                            </div>
-                        </td>
-                        <td style="font-size: 0.7rem; color: #666;">${teamName}</td>
-                        <td><strong>${(player.total_points || 0).toFixed(1)}</strong></td>
-                    </tr>
-                `;
-            }).join('');
-        }
-        
-        function renderTopScorers() {
-            const container = document.getElementById('home-top-scorers-list');
-            const dateLabel = document.getElementById('home-top-scorers-date');
-            
-            // Use player data to show top scorers from the season
-            // In a real scenario, this would pull daily scores - for now show season leaders
-            if (!homePlayersData || homePlayersData.length === 0) {
-                container.innerHTML = '<div class="homepage-placeholder" style="color: rgba(255,255,255,0.7);">Top scorers will appear once the season starts.</div>';
-                return;
-            }
-            
-            dateLabel.textContent = '2025 Season';
-            
-            // Get top 8 scorers overall
-            const sorted = [...homePlayersData].sort((a, b) => (b.total_points || 0) - (a.total_points || 0)).slice(0, 8);
-            
-            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
-            
-            container.innerHTML = sorted.map((player, idx) => {
-                const headshot = player.headshot_url || placeholderImg;
-                const rankClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
-                const position = player.position || player.primary_position || 'Util';
-                const teamName = player.team_name || 'FA';
-                const manager = player.manager || '';
-                
-                return `
-                    <div class="top-scorer-item">
-                        <div class="top-scorer-rank ${rankClass}">${idx + 1}</div>
-                        <img src="${headshot}" class="top-scorer-headshot" alt="" onerror="this.src='${placeholderImg}'">
-                        <div class="top-scorer-info">
-                            <div class="top-scorer-name">${player.name || 'Unknown'}</div>
-                            <div class="top-scorer-team">${teamName}${manager ? ` - ${capitalizeManagerName(manager)}` : ''}</div>
-                        </div>
-                        <div class="top-scorer-position">${getPositionBadge(position, player.name)}</div>
-                        <div class="top-scorer-score">${(player.total_points || 0).toFixed(0)}</div>
-                    </div>
-                `;
-            }).join('');
         }
 
         // ===== INITIALIZE ON PAGE LOAD =====
