@@ -9739,14 +9739,14 @@
         .matchup-ticker-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 0.75rem;
             margin-bottom: 0.5rem;
         }
         
         .matchup-ticker-title {
             color: white;
-            font-weight: 600;
-            font-size: 0.85rem;
+            font-weight: 700;
+            font-size: 1.1rem;
         }
         
         .matchup-ticker-week {
@@ -9764,23 +9764,32 @@
         }
         
         .matchup-ticker-arrow {
-            background: rgba(255,255,255,0.15);
-            border: none;
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            cursor: pointer;
+            background: linear-gradient(135deg, #ffd54f 0%, #ffb300 50%, #ff8f00 100%);
+            border: 2px solid #5d4037;
+            border-radius: 4px;
+            color: #5d4037;
+            font-size: 0.55rem;
+            width: 20px;
+            height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
-            transition: background 0.2s;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                inset 0 -2px 0 rgba(0,0,0,0.2),
+                inset 0 2px 0 rgba(255,255,255,0.3),
+                1px 1px 2px rgba(0,0,0,0.2);
             flex-shrink: 0;
         }
         
         .matchup-ticker-arrow:hover {
-            background: rgba(255,255,255,0.3);
+            background: linear-gradient(135deg, #ffe082 0%, #ffc107 50%, #ffa000 100%);
+            transform: scale(1.1);
+        }
+        
+        .matchup-ticker-arrow:active {
+            transform: scale(0.95);
         }
         
         .matchup-ticker-scroll {
@@ -9917,6 +9926,10 @@
             flex-shrink: 0;
         }
         
+        .mini-standings-rank.gold { background: #ffd700; color: #000; }
+        .mini-standings-rank.silver { background: #c0c0c0; color: #000; }
+        .mini-standings-rank.bronze { background: #cd7f32; color: #fff; }
+        
         .mini-standings-hat {
             width: 32px;
             height: 32px;
@@ -9980,13 +9993,9 @@
             flex-shrink: 0;
         }
         
-        .top-teams-rank.gold { background: #ffd700; color: #000; }
-        .top-teams-rank.silver { background: #c0c0c0; color: #000; }
-        .top-teams-rank.bronze { background: #cd7f32; color: #fff; }
-        
         .top-teams-logo {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
             background: #f0f0f0;
@@ -10068,8 +10077,8 @@
         .top-players-rank.bronze { background: #cd7f32; color: #fff; }
         
         .top-players-headshot {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
             background: #f0f0f0;
@@ -10123,23 +10132,32 @@
         }
         
         .transactions-ticker-arrow {
-            background: #1e3c72;
-            border: none;
-            color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
-            cursor: pointer;
+            background: linear-gradient(135deg, #ffd54f 0%, #ffb300 50%, #ff8f00 100%);
+            border: 2px solid #5d4037;
+            border-radius: 4px;
+            color: #5d4037;
+            font-size: 0.55rem;
+            width: 20px;
+            height: 20px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
-            transition: background 0.2s;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            box-shadow: 
+                inset 0 -2px 0 rgba(0,0,0,0.2),
+                inset 0 2px 0 rgba(255,255,255,0.3),
+                1px 1px 2px rgba(0,0,0,0.2);
             flex-shrink: 0;
         }
         
         .transactions-ticker-arrow:hover {
-            background: #2a5298;
+            background: linear-gradient(135deg, #ffe082 0%, #ffc107 50%, #ffa000 100%);
+            transform: scale(1.1);
+        }
+        
+        .transactions-ticker-arrow:active {
+            transform: scale(0.95);
         }
         
         .transactions-list {
@@ -10423,7 +10441,7 @@
                     <!-- Column 2: Top Teams -->
                     <div class="homepage-column">
                         <div class="homepage-column-header">
-                            <div class="homepage-column-title">Top Teams</div>
+                            <div class="homepage-column-title">Top Teams on <span id="home-top-teams-date">1/18</span></div>
                         </div>
                         <table class="top-teams-table">
                             <thead>
@@ -27281,12 +27299,13 @@
                 const hatFilename = getManagerHatFilename(manager);
                 const rank = team.rank || (idx + 1);
                 const record = `${team.wins || 0}-${team.losses || 0}`;
+                const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
                 
                 return `
                     <tr>
                         <td>
                             <div class="mini-standings-team">
-                                <span class="mini-standings-rank">${rank}</span>
+                                <span class="mini-standings-rank ${rankClass}">${rank}</span>
                                 <img src="data/hats/${hatFilename}" class="mini-standings-hat" alt="${manager}" onerror="this.style.display='none'">
                                 <span class="mini-standings-manager">${capitalizeManagerName(manager)}</span>
                             </div>
@@ -27300,6 +27319,13 @@
         
         function renderHomeTopTeams() {
             const tbody = document.getElementById('home-top-teams-body');
+            const dateSpan = document.getElementById('home-top-teams-date');
+            
+            // Set the date to yesterday (or today if no data)
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const dateStr = `${yesterday.getMonth() + 1}/${yesterday.getDate()}`;
+            if (dateSpan) dateSpan.textContent = dateStr;
             
             // For now, use standings data sorted by points_for as proxy for "top teams"
             // In-season this would be daily/weekly team scores
@@ -27316,13 +27342,12 @@
                 const logo = fixTeamLogo(teamData.team_logo) || 'league_logo.png';
                 const rawManager = team.manager || teamData.manager || '';
                 const manager = normalizeManagerName(rawManager, 2026, team.team_name, team.team_key);
-                const rankClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
                 
                 return `
                     <tr>
                         <td>
                             <div class="top-teams-team">
-                                <span class="top-teams-rank ${rankClass}">${idx + 1}</span>
+                                <span class="top-teams-rank">${idx + 1}</span>
                                 <img src="${logo}" class="top-teams-logo" alt="" onerror="this.src='league_logo.png'">
                                 <div class="top-teams-info">
                                     <div class="top-teams-name">${team.team_name || 'Unknown'}</div>
