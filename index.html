@@ -9807,13 +9807,14 @@
         
         .matchup-ticker-item {
             flex-shrink: 0;
-            background: rgba(255,255,255,0.1);
+            background: white;
             border-radius: 10px;
             padding: 0.75rem 1rem;
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            min-width: 280px;
+            min-width: 300px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
         
         .matchup-team {
@@ -9822,30 +9823,39 @@
             align-items: center;
             gap: 0.25rem;
             flex: 1;
-            min-width: 80px;
+            min-width: 90px;
         }
         
         .matchup-team-logo {
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             object-fit: cover;
             border-radius: 50%;
-            background: white;
-            border: 2px solid rgba(255,255,255,0.3);
+            background: #f0f0f0;
+            border: 2px solid #e0e0e0;
+        }
+        
+        .matchup-team-hat {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            margin-top: -8px;
+            margin-bottom: -4px;
         }
         
         .matchup-team-name {
-            color: white;
+            color: #333;
             font-size: 0.65rem;
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 80px;
+            max-width: 90px;
+            font-weight: 500;
         }
         
         .matchup-team-manager {
-            color: rgba(255,255,255,0.7);
+            color: #666;
             font-size: 0.6rem;
         }
         
@@ -9853,8 +9863,8 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.25rem 0.5rem;
-            background: rgba(255,255,255,0.15);
+            padding: 0.35rem 0.6rem;
+            background: #1e3c72;
             border-radius: 6px;
         }
         
@@ -9871,7 +9881,7 @@
         }
         
         .matchup-vs {
-            color: rgba(255,255,255,0.5);
+            color: rgba(255,255,255,0.6);
             font-size: 0.7rem;
         }
         
@@ -14018,7 +14028,7 @@
                     });
                 }
                 
-                // Load all_scores for schedule modal
+                // Load all_scores for schedule modal - try all_scores.json first, then individual week files
                 let allScores = [];
                 try {
                     const scoresResponse = await fetch('data/current_season/all_scores.json');
@@ -14027,6 +14037,28 @@
                     }
                 } catch (e) {
                     console.log('No all_scores.json yet');
+                }
+                
+                // If all_scores is empty or incomplete, load individual week files
+                const weeksInAllScores = new Set(allScores.map(s => s.week));
+                if (weeksInAllScores.size < 21) {
+                    // Load all 24 week files in parallel
+                    const weekPromises = [];
+                    for (let week = 1; week <= 24; week++) {
+                        if (!weeksInAllScores.has(week)) {
+                            weekPromises.push(
+                                fetch(`data/current_season/week_${week}_scores.json`)
+                                    .then(r => r.ok ? r.json() : [])
+                                    .catch(() => [])
+                            );
+                        }
+                    }
+                    const weekResults = await Promise.all(weekPromises);
+                    weekResults.forEach(weekData => {
+                        if (weekData && weekData.length > 0) {
+                            allScores = allScores.concat(weekData);
+                        }
+                    });
                 }
                 
                 // Store globally for schedule modal
@@ -27175,10 +27207,36 @@
                     homeTransactionsData = await transResponse.json();
                 }
                 
-                // Load all scores for matchup ticker
-                const scoresResponse = await fetch('data/current_season/all_scores.json');
-                if (scoresResponse.ok) {
-                    homeScoresData = await scoresResponse.json();
+                // Load all scores for matchup ticker - try all_scores.json first, then individual week files
+                homeScoresData = [];
+                try {
+                    const scoresResponse = await fetch('data/current_season/all_scores.json');
+                    if (scoresResponse.ok) {
+                        homeScoresData = await scoresResponse.json();
+                    }
+                } catch (e) {
+                    console.log('No all_scores.json');
+                }
+                
+                // If all_scores is empty or incomplete, load individual week files
+                const weeksInScores = new Set(homeScoresData.map(s => s.week));
+                if (weeksInScores.size < 21) {
+                    const weekPromises = [];
+                    for (let week = 1; week <= 24; week++) {
+                        if (!weeksInScores.has(week)) {
+                            weekPromises.push(
+                                fetch(`data/current_season/week_${week}_scores.json`)
+                                    .then(r => r.ok ? r.json() : [])
+                                    .catch(() => [])
+                            );
+                        }
+                    }
+                    const weekResults = await Promise.all(weekPromises);
+                    weekResults.forEach(weekData => {
+                        if (weekData && weekData.length > 0) {
+                            homeScoresData = homeScoresData.concat(weekData);
+                        }
+                    });
                 }
                 
                 // Load player data for top players (use most recent historical data if no current season)
@@ -27234,18 +27292,24 @@
                 const team1 = homeTeamsData.find(t => t.team_key === score.team_key) || {};
                 const team2 = homeTeamsData.find(t => t.team_key === score.opponent_key) || {};
                 
+                // Normalize manager names for hat filenames
+                const manager1 = normalizeManagerName(team1.manager || score.manager || '', 2026, team1.team_name, score.team_key);
+                const manager2 = normalizeManagerName(team2.manager || opponentScore?.manager || '', 2026, team2.team_name, score.opponent_key);
+                
                 matchups.push({
                     team1: {
                         name: team1.team_name || score.team_name || 'Team 1',
-                        manager: team1.manager || score.manager || '',
+                        manager: manager1,
                         logo: fixTeamLogo(team1.team_logo) || 'league_logo.png',
-                        score: score.points || 0
+                        score: score.points || 0,
+                        hat: getManagerHatFilename(manager1)
                     },
                     team2: {
                         name: team2.team_name || (opponentScore?.team_name) || 'Team 2',
-                        manager: team2.manager || (opponentScore?.manager) || '',
+                        manager: manager2,
                         logo: fixTeamLogo(team2.team_logo) || 'league_logo.png',
-                        score: opponentScore?.points || score.opponent_points || 0
+                        score: opponentScore?.points || score.opponent_points || 0,
+                        hat: getManagerHatFilename(manager2)
                     }
                 });
             }
@@ -27263,6 +27327,7 @@
                     <div class="matchup-ticker-item">
                         <div class="matchup-team">
                             <img src="${m.team1.logo}" class="matchup-team-logo" alt="${m.team1.name}" onerror="this.src='league_logo.png'">
+                            <img src="data/hats/${m.team1.hat}" class="matchup-team-hat" alt="" onerror="this.style.display='none'">
                             <div class="matchup-team-name">${m.team1.name}</div>
                             <div class="matchup-team-manager">${capitalizeManagerName(m.team1.manager)}</div>
                         </div>
@@ -27273,6 +27338,7 @@
                         </div>
                         <div class="matchup-team">
                             <img src="${m.team2.logo}" class="matchup-team-logo" alt="${m.team2.name}" onerror="this.src='league_logo.png'">
+                            <img src="data/hats/${m.team2.hat}" class="matchup-team-hat" alt="" onerror="this.style.display='none'">
                             <div class="matchup-team-name">${m.team2.name}</div>
                             <div class="matchup-team-manager">${capitalizeManagerName(m.team2.manager)}</div>
                         </div>
