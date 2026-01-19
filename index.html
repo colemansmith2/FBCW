@@ -4287,7 +4287,14 @@
             height: 36px;
             border-radius: 50%;
             object-fit: contain;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.15rem;
+        }
+        
+        .matchup-team-hat {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            margin-bottom: 0.15rem;
         }
         
         .matchup-team-name {
@@ -9795,7 +9802,7 @@
         .matchup-ticker-scroll {
             display: flex;
             gap: 1rem;
-            overflow-x: auto;
+            overflow-x: hidden;
             padding: 0.5rem 0;
             scrollbar-width: none;
             flex: 1;
@@ -9806,73 +9813,66 @@
         }
         
         .matchup-ticker-item {
-            flex-shrink: 0;
+            flex: 0 0 calc((100% - 2rem) / 3);
             background: white;
             border-radius: 10px;
-            padding: 0.75rem 1rem;
+            padding: 0.75rem 0.75rem;
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            min-width: 300px;
+            gap: 0.5rem;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            min-width: 0;
         }
         
         .matchup-team {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.25rem;
+            gap: 0.2rem;
             flex: 1;
-            min-width: 90px;
+            min-width: 0;
         }
         
         .matchup-team-logo {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             object-fit: cover;
             border-radius: 50%;
             background: #f0f0f0;
             border: 2px solid #e0e0e0;
         }
         
-        .matchup-team-hat {
-            width: 24px;
-            height: 24px;
-            object-fit: contain;
-            margin-top: -8px;
-            margin-bottom: -4px;
-        }
-        
         .matchup-team-name {
             color: #333;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 90px;
+            max-width: 100%;
             font-weight: 500;
         }
         
         .matchup-team-manager {
             color: #666;
-            font-size: 0.6rem;
+            font-size: 0.55rem;
         }
         
         .matchup-score-box {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.35rem 0.6rem;
+            gap: 0.4rem;
+            padding: 0.3rem 0.5rem;
             background: #1e3c72;
             border-radius: 6px;
+            flex-shrink: 0;
         }
         
         .matchup-score {
             color: white;
             font-weight: 700;
-            font-size: 0.95rem;
-            min-width: 35px;
+            font-size: 0.85rem;
+            min-width: 30px;
             text-align: center;
         }
         
@@ -9882,7 +9882,7 @@
         
         .matchup-vs {
             color: rgba(255,255,255,0.6);
-            font-size: 0.7rem;
+            font-size: 0.65rem;
         }
         
         /* Mini Standings Table */
@@ -10255,6 +10255,10 @@
             .homepage-three-columns .homepage-column:nth-child(3) {
                 grid-column: 1 / -1;
             }
+            
+            .matchup-ticker-item {
+                flex: 0 0 calc((100% - 1rem) / 2);
+            }
         }
         
         @media (max-width: 700px) {
@@ -10263,7 +10267,7 @@
             }
             
             .matchup-ticker-item {
-                min-width: 240px;
+                flex: 0 0 100%;
             }
             
             .transaction-item {
@@ -10273,7 +10277,6 @@
         
         @media (max-width: 500px) {
             .matchup-ticker-item {
-                min-width: 200px;
                 padding: 0.5rem;
             }
             
@@ -15050,11 +15053,16 @@
                                 const team1Winner = matchup.team1_score > matchup.team2_score;
                                 const team2Winner = matchup.team2_score > matchup.team1_score;
                                 
+                                // Get hat filenames
+                                const hat1 = getManagerHatFilename(team1.manager);
+                                const hat2 = getManagerHatFilename(team2.manager);
+                                
                                 return `
                                     <div class="matchup-ticker-card" data-index="${idx}">
                                         <div class="matchup-teams">
                                             <div class="matchup-team ${team1Winner ? 'winner' : (team2Winner ? 'loser' : '')}">
                                                 ${team1.logo ? `<img src="${team1.logo}" class="matchup-team-logo" alt="">` : '<div class="matchup-team-logo" style="background:#e0e0e0;"></div>'}
+                                                <img src="data/hats/${hat1}" class="matchup-team-hat" alt="" onerror="this.style.display='none'">
                                                 <div class="matchup-team-name">${team1.name}</div>
                                                 <div class="matchup-manager">${team1.manager}</div>
                                                 <div class="matchup-record">(${standing1.wins}-${standing1.losses}) #${standing1.rank}</div>
@@ -15063,6 +15071,7 @@
                                             <div class="matchup-vs">VS</div>
                                             <div class="matchup-team ${team2Winner ? 'winner' : (team1Winner ? 'loser' : '')}">
                                                 ${team2.logo ? `<img src="${team2.logo}" class="matchup-team-logo" alt="">` : '<div class="matchup-team-logo" style="background:#e0e0e0;"></div>'}
+                                                <img src="data/hats/${hat2}" class="matchup-team-hat" alt="" onerror="this.style.display='none'">
                                                 <div class="matchup-team-name">${team2.name}</div>
                                                 <div class="matchup-manager">${team2.manager}</div>
                                                 <div class="matchup-record">(${standing2.wins}-${standing2.losses}) #${standing2.rank}</div>
@@ -27175,8 +27184,10 @@
         
         function scrollMatchupTicker(direction) {
             const container = document.getElementById('home-matchup-ticker');
-            const scrollAmount = 300;
-            container.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+            // Calculate width of 3 items plus gaps (each item is ~33% of container, plus 1rem gaps)
+            const containerWidth = container.offsetWidth;
+            // Scroll the full visible width (3 items)
+            container.scrollBy({ left: direction * containerWidth, behavior: 'smooth' });
         }
         
         function scrollTransactionsTicker(direction) {
@@ -27272,9 +27283,25 @@
                 return;
             }
             
-            // Find the most recent week with scores
-            const weeks = [...new Set(homeScoresData.map(s => s.week))];
-            const currentWeek = Math.max(...weeks);
+            // Find the current week - use Week 1 if all scores are 0, otherwise use most recent week with scores
+            const weeks = [...new Set(homeScoresData.map(s => s.week))].sort((a, b) => a - b);
+            
+            // Find the latest week that has actual scores (non-zero)
+            let currentWeek = 1;
+            for (let i = weeks.length - 1; i >= 0; i--) {
+                const weekScores = homeScoresData.filter(s => s.week === weeks[i]);
+                const hasScores = weekScores.some(s => (s.points || s.team_score || 0) > 0);
+                if (hasScores) {
+                    currentWeek = weeks[i];
+                    break;
+                }
+            }
+            
+            // If no week has scores yet (preseason), show Week 1
+            if (currentWeek === 1 || !weeks.includes(currentWeek)) {
+                currentWeek = Math.min(...weeks);
+            }
+            
             weekLabel.textContent = `Week ${currentWeek}`;
             
             // Get matchups for current week (pair up team1 and team2 scores)
@@ -27292,24 +27319,26 @@
                 const team1 = homeTeamsData.find(t => t.team_key === score.team_key) || {};
                 const team2 = homeTeamsData.find(t => t.team_key === score.opponent_key) || {};
                 
-                // Normalize manager names for hat filenames
+                // Normalize manager names
                 const manager1 = normalizeManagerName(team1.manager || score.manager || '', 2026, team1.team_name, score.team_key);
                 const manager2 = normalizeManagerName(team2.manager || opponentScore?.manager || '', 2026, team2.team_name, score.opponent_key);
+                
+                // Get score - handle different field names
+                const team1Score = score.points || score.team_score || 0;
+                const team2Score = opponentScore?.points || opponentScore?.team_score || score.opponent_score || 0;
                 
                 matchups.push({
                     team1: {
                         name: team1.team_name || score.team_name || 'Team 1',
                         manager: manager1,
                         logo: fixTeamLogo(team1.team_logo) || 'league_logo.png',
-                        score: score.points || 0,
-                        hat: getManagerHatFilename(manager1)
+                        score: team1Score
                     },
                     team2: {
                         name: team2.team_name || (opponentScore?.team_name) || 'Team 2',
                         manager: manager2,
                         logo: fixTeamLogo(team2.team_logo) || 'league_logo.png',
-                        score: opponentScore?.points || score.opponent_points || 0,
-                        hat: getManagerHatFilename(manager2)
+                        score: team2Score
                     }
                 });
             }
@@ -27327,7 +27356,6 @@
                     <div class="matchup-ticker-item">
                         <div class="matchup-team">
                             <img src="${m.team1.logo}" class="matchup-team-logo" alt="${m.team1.name}" onerror="this.src='league_logo.png'">
-                            <img src="data/hats/${m.team1.hat}" class="matchup-team-hat" alt="" onerror="this.style.display='none'">
                             <div class="matchup-team-name">${m.team1.name}</div>
                             <div class="matchup-team-manager">${capitalizeManagerName(m.team1.manager)}</div>
                         </div>
@@ -27338,7 +27366,6 @@
                         </div>
                         <div class="matchup-team">
                             <img src="${m.team2.logo}" class="matchup-team-logo" alt="${m.team2.name}" onerror="this.src='league_logo.png'">
-                            <img src="data/hats/${m.team2.hat}" class="matchup-team-hat" alt="" onerror="this.style.display='none'">
                             <div class="matchup-team-name">${m.team2.name}</div>
                             <div class="matchup-team-manager">${capitalizeManagerName(m.team2.manager)}</div>
                         </div>
