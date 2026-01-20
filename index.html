@@ -378,6 +378,27 @@
             padding-top: 0;
             z-index: 150;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.3) transparent;
+        }
+        
+        .side-nav::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .side-nav::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .side-nav::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+        }
+        
+        .side-nav::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
         }
 
         .side-nav-item {
@@ -3702,6 +3723,11 @@
             gap: 0.75rem;
         }
 
+        .manager-card .manager-logo-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
         .manager-card .manager-logo {
             width: 40px;
             height: 40px;
@@ -3709,6 +3735,15 @@
             background: white;
             border-radius: 50%;
             padding: 0.25rem;
+        }
+        
+        .manager-card .manager-ring-badge {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            width: 20px;
+            height: 20px;
+            object-fit: contain;
         }
 
         .manager-card .stat {
@@ -5139,8 +5174,25 @@
             margin-bottom: 1rem;
             font-size: 1.1rem;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 0.5rem;
+        }
+        
+        .award-title-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+        
+        .award-name {
+            font-size: 1.1rem;
+        }
+        
+        .award-description {
+            font-size: 0.75rem;
+            font-weight: normal;
+            color: #666;
+            font-family: 'Basis33', sans-serif;
         }
 
         .award-icon {
@@ -5259,6 +5311,18 @@
             border-radius: 4px;
             font-size: 0.9rem;
             min-width: 150px;
+        }
+        
+        .player-controls-logo {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+        
+        .player-controls-league-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
         }
 
         .player-search {
@@ -10725,7 +10789,7 @@
             <div id="awards-content" style="display: none;">
                 <div class="awards-grid">
                     <div class="award-section">
-                        <h3><span class="award-icon"><img src="data/awards/reg_season_champion.png" alt="Regular Season Champion" class="award-header-image"></span> Regular Season Champion (Most Wins)</h3>
+                        <h3><span class="award-icon"><img src="data/awards/reg_season_champion.png" alt="Regular Season Champion" class="award-header-image"></span> <span class="award-title-wrapper"><span class="award-name">Regular Season Champion</span><span class="award-description">Most Wins</span></span></h3>
                         <div class="award-table-wrapper">
                             <table class="award-table">
                                 <thead>
@@ -10743,7 +10807,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon"><img src="data/awards/scoring_champion.png" alt="Scoring Champion" class="award-header-image"></span> Scoring Champion (Most Points)</h3>
+                        <h3><span class="award-icon"><img src="data/awards/scoring_champion.png" alt="Scoring Champion" class="award-header-image"></span> <span class="award-title-wrapper"><span class="award-name">Scoring Champion</span><span class="award-description">Most Points</span></span></h3>
                         <div class="award-table-wrapper">
                             <table class="award-table">
                                 <thead>
@@ -10761,7 +10825,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon"><img src="data/awards/garbage.png" alt="Garbage Award" class="award-header-image"></span> Garbage Award (Worst Record)</h3>
+                        <h3><span class="award-icon"><img src="data/awards/garbage.png" alt="Garbage Award" class="award-header-image"></span> <span class="award-title-wrapper"><span class="award-name">Garbage Award</span><span class="award-description">Worst Record</span></span></h3>
                         <div class="award-table-wrapper">
                             <table class="award-table">
                                 <thead>
@@ -10780,7 +10844,7 @@
 
                     <div class="award-section">
                         <h3><span class="award-icon"><img src="data/awards/clown.png" alt="Clown Award"
-                                    class="award-header-image"></span> Clown Award (Least Points)</h3>
+                                    class="award-header-image"></span> <span class="award-title-wrapper"><span class="award-name">Clown Award</span><span class="award-description">Least Points</span></span></h3>
                         <div class="award-table-wrapper">
                             <table class="award-table">
                                 <thead>
@@ -10799,8 +10863,7 @@
 
                     <div class="award-section">
                         <h3><span class="award-icon"><img src="data/awards/hitter.png"
-                                    alt="Mike Trout Award" class="award-header-image"></span> Mike Trout Award (Highest
-                            Scoring Hitter)</h3>
+                                    alt="Mike Trout Award" class="award-header-image"></span> <span class="award-title-wrapper"><span class="award-name">Mike Trout Award</span><span class="award-description">Highest Scoring Hitter</span></span></h3>
                         <div class="award-table-wrapper">
                             <table class="award-table player-award-table">
                                 <thead>
@@ -10819,8 +10882,7 @@
 
                     <div class="award-section">
                         <h3><span class="award-icon"><img src="data/awards/pitcher.png"
-                                    alt="Jacob deGrom Award" class="award-header-image"></span> Jacob deGrom Award
-                            (Highest Scoring Pitcher)</h3>
+                                    alt="Jacob deGrom Award" class="award-header-image"></span> <span class="award-title-wrapper"><span class="award-name">Jacob deGrom Award</span><span class="award-description">Highest Scoring Pitcher</span></span></h3>
                         <div class="award-table-wrapper">
                             <table class="award-table player-award-table">
                                 <thead>
@@ -10838,7 +10900,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon"><img src="data/awards/diamond.png" alt="Diamond in the Rough" class="award-header-image"></span> Diamond in the Rough Award (Best Draft Value)</h3>
+                        <h3><span class="award-icon"><img src="data/awards/diamond.png" alt="Diamond in the Rough" class="award-header-image"></span> <span class="award-title-wrapper"><span class="award-name">Diamond in the Rough Award</span><span class="award-description">Best Draft Value</span></span></h3>
                         <div class="award-table-wrapper">
                             <table class="award-table player-award-table">
                                 <thead>
@@ -10857,7 +10919,7 @@
                     </div>
 
                     <div class="award-section">
-                        <h3><span class="award-icon"><img src="data/awards/bust.png" alt="Bust of the Year" class="award-header-image"></span> Bust of the Year Award (Worst Draft Value)</h3>
+                        <h3><span class="award-icon"><img src="data/awards/bust.png" alt="Bust of the Year" class="award-header-image"></span> <span class="award-title-wrapper"><span class="award-name">Bust of the Year Award</span><span class="award-description">Worst Draft Value</span></span></h3>
                         <div class="award-table-wrapper">
                             <table class="award-table player-award-table">
                                 <thead>
@@ -11007,6 +11069,10 @@
                             <option value="all">All Managers</option>
                             <!-- Will be populated dynamically -->
                         </select>
+                    </div>
+                    
+                    <div class="player-controls-logo">
+                        <img src="league_logo.png" alt="FBCW" class="player-controls-league-logo">
                     </div>
                 </div>
 
@@ -17239,6 +17305,20 @@
                     const normalizedStandings = normalizeStandingsData(currentStandings, 2026);
                     currentManagers = normalizedStandings.map(team => team.manager);
                 }
+                
+                // Find the most recent champion (manager who won the most recent completed season)
+                let mostRecentChampion = null;
+                const completedSeasons = [2025, 2024, 2023, 2022, 2021, 2020, 2019]; // Most recent first
+                for (const year of completedSeasons) {
+                    for (const manager of allManagersData) {
+                        const seasonData = manager.season_history.find(s => s.year === year && s.rank === 1);
+                        if (seasonData) {
+                            mostRecentChampion = manager.manager_name;
+                            break;
+                        }
+                    }
+                    if (mostRecentChampion) break;
+                }
 
                 // Sort by win percentage (best first)
                 allManagersData.sort((a, b) => b.win_pct - a.win_pct);
@@ -17252,8 +17332,15 @@
                     // Get last season played
                     const lastSeason = Math.max(...manager.season_history.map(s => s.year));
 
-                    // Get logo if available
-                    const logo = managerLogos[manager.manager_name] ? `<img src="${managerLogos[manager.manager_name]}" class="manager-logo" alt="${manager.manager_name}">` : '';
+                    // Get logo if available, add ring badge if most recent champion
+                    const isCurrentChampion = manager.manager_name === mostRecentChampion;
+                    let logo = '';
+                    if (managerLogos[manager.manager_name]) {
+                        logo = `<div class="manager-logo-wrapper">
+                            <img src="${managerLogos[manager.manager_name]}" class="manager-logo" alt="${manager.manager_name}">
+                            ${isCurrentChampion ? '<img src="champion_ring.png" class="manager-ring-badge" alt="Current Champion">' : ''}
+                        </div>`;
+                    }
 
                     // Build awards display
                     const awards = managerAwards[manager.manager_name] || {};
@@ -18822,7 +18909,7 @@
                     <div class="manager-name">Manager: ${champion.manager}</div>
                     <div class="season-year">${seasonLabel}</div>
                 </div>
-                <div class="trophy-icon"><img src="data/page_logos/seasons_logo.png" style="width:40px;height:40px;"></div>
+                <div class="trophy-icon"><img src="champion_ring.png" style="width:50px;height:50px;"></div>
             `;
         }
 
