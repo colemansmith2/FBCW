@@ -39,7 +39,7 @@ except ImportError:
 # =============================================================================
 
 CURRENT_SEASON = 2026
-HISTORICAL_SEASONS = [2019, 2020, 2021, 2022, 2023, 2024]
+HISTORICAL_SEASONS = [2019, 2020, 2021, 2022, 2023, 2024, 2025]
 DATA_DIR = "data"
 
 # Override league IDs for specific years (if needed)
@@ -1629,12 +1629,17 @@ def calculate_manager_stats(all_seasons_data: Dict) -> Dict:
             manager_stats[manager]['total_points_for'] += team['points_for']
             manager_stats[manager]['seasons_played'] += 1
             
-            if team['rank'] == 1:
-                manager_stats[manager]['championships'] += 1
-            if team['rank'] == 2:
-                manager_stats[manager]['runner_ups'] += 1
-            if team['rank'] <= 6:
-                manager_stats[manager]['playoff_appearances'] += 1
+            # Only count championships, runner-ups, and playoff appearances for completed seasons
+            # (seasons where games have been played - check if wins + losses > 0)
+            season_has_games = team['wins'] + team['losses'] > 0
+            
+            if season_has_games:
+                if team['rank'] == 1:
+                    manager_stats[manager]['championships'] += 1
+                if team['rank'] == 2:
+                    manager_stats[manager]['runner_ups'] += 1
+                if team['rank'] <= 6:
+                    manager_stats[manager]['playoff_appearances'] += 1
             
             manager_stats[manager]['season_history'].append({
                 'year': year,
