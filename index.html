@@ -17214,7 +17214,17 @@
 
                     const teams = await getTeamData(recentSeason);
                     if (teams) {
-                        const managerTeam = teams.find(t => t.team_name === recentSeasonData.team_name);
+                        // Try to match by team_name first, then by manager name
+                        let managerTeam = teams.find(t => t.team_name === recentSeasonData.team_name);
+                        
+                        // If not found by team name, try matching by manager name
+                        if (!managerTeam) {
+                            managerTeam = teams.find(t => {
+                                const teamManager = normalizeManagerName(t.manager, recentSeason, t.team_name, t.team_key);
+                                return teamManager === manager.manager_name;
+                            });
+                        }
+                        
                         if (managerTeam) {
                             managerLogos[manager.manager_name] = fixTeamLogo(managerTeam.team_logo);
                         }
@@ -17314,8 +17324,8 @@
             const chartEl = document.getElementById('winpct-chart');
 
             try {
-                // Load all scores for all seasons
-                const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+                // Load all scores for all seasons (historical + current)
+                const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
                 const allScoresData = [];
                 const seasonStartWeeks = {}; // Track week index where each season starts
 
@@ -17324,21 +17334,26 @@
                 for (const year of seasons) {
                     try {
                         let response;
-                        if (year === 2025) {
-                            response = await fetch('data/historical/2025/all_scores.json');
+                        let standingsResponse;
+                        
+                        if (year === 2026) {
+                            // Current season - load from current_season folder
+                            response = await fetch('data/current_season/all_scores.json');
+                            standingsResponse = await fetch('data/current_season/standings.json');
                         } else {
+                            // Historical seasons
                             response = await fetch(`data/historical/${year}/all_scores.json`);
+                            standingsResponse = await fetch(`data/historical/${year}/final_standings.json`);
                         }
 
                         if (response.ok) {
                             const scores = await response.json();
-
-                            // Load standings to map team_key to manager
-                            let standingsResponse;
-                            if (year === 2025) {
-                                standingsResponse = await fetch('data/historical/2025/standings.json');
-                            } else {
-                                standingsResponse = await fetch(`data/historical/${year}/final_standings.json`);
+                            
+                            // Skip if no actual games played (all scores are 0)
+                            const hasGames = scores.some(s => (s.team_score || s.points || 0) > 0);
+                            if (!hasGames && year === 2026) {
+                                console.log('Skipping 2026 - no games played yet');
+                                continue;
                             }
 
                             let standings = [];
@@ -17364,16 +17379,20 @@
                                 const weekScores = scores.filter(s => s.week === week);
                                 weekScores.forEach(score => {
                                     const manager = teamToManager[score.team_key];
-                                    if (manager) {
+                                    // Handle different score field names
+                                    const teamScore = score.team_score || score.points || 0;
+                                    const oppScore = score.opponent_score || score.opponent_points || 0;
+                                    
+                                    if (manager && teamScore > 0) {
                                         allScoresData.push({
                                             manager: manager,
                                             year: year,
                                             week: week,
                                             globalWeek: globalWeekIndex + weekIdx,
-                                            score: score.team_score,
-                                            opponentScore: score.opponent_score,
-                                            isWin: score.team_score > score.opponent_score,
-                                            isLoss: score.team_score < score.opponent_score
+                                            score: teamScore,
+                                            opponentScore: oppScore,
+                                            isWin: teamScore > oppScore,
+                                            isLoss: teamScore < oppScore
                                         });
                                     }
                                 });
