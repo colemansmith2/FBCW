@@ -378,8 +378,6 @@
             padding-top: 0;
             z-index: 150;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-            overflow-y: auto;
-            overflow-x: visible;
             scrollbar-width: thin;
             scrollbar-color: rgba(255,255,255,0.3) transparent;
         }
@@ -412,8 +410,9 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
             border: 2px solid transparent;
+            flex-shrink: 0;
         }
         
         .side-nav-item:first-child {
@@ -422,7 +421,6 @@
 
         .side-nav-item:hover {
             background: rgba(255, 255, 255, 0.25);
-            transform: scale(1.08);
         }
 
         .side-nav-item.active {
@@ -437,6 +435,7 @@
             border-radius: 50%;
             object-fit: cover;
             background: rgba(255, 255, 255, 0.2);
+            pointer-events: none;
         }
 
         .side-nav-item .nav-icon {
@@ -450,11 +449,10 @@
             opacity: 1;
         }
 
-        /* Tooltip on hover */
-        .side-nav-item::after {
-            content: attr(data-tooltip);
+        /* Tooltip on hover - using a span element instead of pseudo-elements */
+        .side-nav-tooltip {
             position: absolute;
-            left: 68px;
+            left: 70px;
             top: 50%;
             transform: translateY(-50%);
             background: var(--retro-blue);
@@ -466,26 +464,23 @@
             white-space: nowrap;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.2s ease;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
+            z-index: 9999;
+            pointer-events: none;
         }
-
-        .side-nav-item::before {
+        
+        .side-nav-tooltip::before {
             content: '';
             position: absolute;
-            left: 58px;
+            left: -10px;
             top: 50%;
             transform: translateY(-50%);
             border: 6px solid transparent;
             border-right-color: var(--retro-blue);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.2s ease;
         }
 
-        .side-nav-item:hover::after,
-        .side-nav-item:hover::before {
+        .side-nav-item:hover .side-nav-tooltip {
             opacity: 1;
             visibility: visible;
         }
@@ -9828,18 +9823,29 @@
             font-size: 1rem;
         }
         
+        /* Home Header with Green Monster */
+        .home-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+        
+        .home-header h2 {
+            margin: 0;
+        }
+        
         /* Green Monster Top Scoring Day Ticker */
         .green-monster-ticker {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            margin-left: auto;
+            gap: 0.6rem;
         }
         
         .green-monster-label {
-            color: white;
-            font-size: 0.75rem;
-            font-weight: 600;
+            color: #2d5016;
+            font-size: 0.8rem;
+            font-weight: 700;
             white-space: nowrap;
         }
         
@@ -9847,34 +9853,37 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            background: #1a1a1a;
-            border: 3px solid #2d5016;
-            border-radius: 6px;
-            padding: 0.35rem 0.6rem;
+            background: #2d5016;
+            border-radius: 8px;
+            padding: 0.4rem 0.6rem;
             box-shadow: 
-                inset 0 0 10px rgba(0,0,0,0.5),
-                0 0 8px rgba(45, 80, 22, 0.5);
+                inset 0 2px 4px rgba(255,255,255,0.1),
+                0 2px 8px rgba(45, 80, 22, 0.4);
         }
         
         .green-monster-logo {
-            width: 28px;
-            height: 28px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid #2d5016;
-            background: #333;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: #1a3d0c;
         }
         
-        .green-monster-info {
+        .green-monster-scoreboard {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.1rem;
+            gap: 0.15rem;
+            background: #0a0a0a;
+            border-radius: 4px;
+            padding: 0.25rem 0.5rem;
+            border: 1px solid #1a3d0c;
         }
         
         .green-monster-date {
             font-family: 'Basis33', monospace;
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: #ffd54f;
             text-shadow: 0 0 6px #ffd54f, 0 0 12px rgba(255, 213, 79, 0.5);
             letter-spacing: 1px;
@@ -9882,11 +9891,25 @@
         
         .green-monster-score {
             font-family: 'Basis33', monospace;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             font-weight: bold;
             color: #ffd54f;
             text-shadow: 0 0 8px #ffd54f, 0 0 16px rgba(255, 213, 79, 0.6);
             letter-spacing: 2px;
+            line-height: 1;
+        }
+        
+        @media (max-width: 600px) {
+            .home-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+            
+            .green-monster-ticker {
+                width: 100%;
+                justify-content: flex-start;
+            }
         }
         
         /* Matchup Ticker */
@@ -10374,10 +10397,6 @@
             
             .matchup-popup-team-score {
                 font-size: 1.4rem;
-            }
-            
-            .green-monster-ticker {
-                display: none;
             }
         }
         
@@ -10873,60 +10892,71 @@
 
     <!-- Side Navigation -->
     <aside class="side-nav">
-        <div class="side-nav-item active" data-tooltip="Home" onclick="showSection('home')">
+        <div class="side-nav-item active" onclick="showSection('home')">
             <img src="data/page_logos/home_logo.png" alt="Home">
+            <span class="side-nav-tooltip">Home</span>
         </div>
-        <div class="side-nav-item" data-tooltip="Seasons" onclick="showSection('standings')">
+        <div class="side-nav-item" onclick="showSection('standings')">
             <img src="data/page_logos/seasons_logo.png" alt="Seasons" loading="eager" decoding="async">
+            <span class="side-nav-tooltip">Seasons</span>
         </div>
-        <div class="side-nav-item" data-tooltip="Awards" onclick="showSection('awards')">
+        <div class="side-nav-item" onclick="showSection('awards')">
             <img src="data/page_logos/awards_logo.png" alt="Awards" loading="lazy" decoding="async">
+            <span class="side-nav-tooltip">Awards</span>
         </div>
-        <div class="side-nav-item" data-tooltip="Hall of Champions" onclick="showSection('champions')">
+        <div class="side-nav-item" onclick="showSection('champions')">
             <img src="data/page_logos/hall_of_champions_logo.png" alt="Hall of Champions" loading="lazy" decoding="async">
+            <span class="side-nav-tooltip">Hall of Champions</span>
         </div>
-        <div class="side-nav-item" data-tooltip="Player Scoring" onclick="showSection('scoring')">
+        <div class="side-nav-item" onclick="showSection('scoring')">
             <img src="data/page_logos/player_scoring_logo.png" alt="Player Scoring" loading="lazy" decoding="async">
+            <span class="side-nav-tooltip">Player Scoring</span>
         </div>
-        <div class="side-nav-item" data-tooltip="Manager Profiles" onclick="showSection('managers')">
+        <div class="side-nav-item" onclick="showSection('managers')">
             <img src="data/page_logos/manager_profiles_logo.png" alt="Manager Profiles" loading="lazy" decoding="async">
+            <span class="side-nav-tooltip">Manager Profiles</span>
         </div>
-        <div class="side-nav-item" data-tooltip="Preseason Tools" onclick="showSection('preseason')">
+        <div class="side-nav-item" onclick="showSection('preseason')">
             <img src="data/page_logos/preseason_tools_logo.png" alt="Preseason Tools" loading="lazy" decoding="async">
+            <span class="side-nav-tooltip">Preseason Tools</span>
         </div>
-        <div class="side-nav-item" data-tooltip="Value Suite" onclick="showSection('valuesuite')">
+        <div class="side-nav-item" onclick="showSection('valuesuite')">
             <img src="data/page_logos/value_suite_logo.png" alt="Value Suite" loading="lazy" decoding="async">
+            <span class="side-nav-tooltip">Value Suite</span>
         </div>
-        <div class="side-nav-item" data-tooltip="King Dylan's Sportsbook" onclick="showSection('sportsbook')">
+        <div class="side-nav-item" onclick="showSection('sportsbook')">
             <img src="data/page_logos/sportsbook_logo.png" alt="Sportsbook" loading="lazy" decoding="async">
+            <span class="side-nav-tooltip">Sportsbook</span>
         </div>
-        <div class="side-nav-item" data-tooltip="League Bylaws" onclick="showSection('bylaws')">
+        <div class="side-nav-item" onclick="showSection('bylaws')">
             <img src="data/page_logos/bylaws_logo.png" alt="Bylaws" loading="lazy" decoding="async">
+            <span class="side-nav-tooltip">League Bylaws</span>
         </div>
     </aside>
 
     <div class="container">
         <!-- Homepage Section -->
         <div id="home" class="section active">
-            <h2>Home</h2>
+            <div class="home-header">
+                <h2>Home</h2>
+                <!-- Green Monster Top Scoring Day -->
+                <div class="green-monster-ticker" id="green-monster-ticker" style="display: none;">
+                    <span class="green-monster-label">Top Scoring Day:</span>
+                    <div class="green-monster-display">
+                        <img class="green-monster-logo" id="green-monster-logo" src="league_logo.png" alt="">
+                        <div class="green-monster-scoreboard">
+                            <div class="green-monster-date" id="green-monster-date">--/--</div>
+                            <div class="green-monster-score" id="green-monster-score">---.-</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <!-- Matchup Ticker -->
             <div class="matchup-ticker-container">
                 <div class="matchup-ticker-header">
                     <div class="matchup-ticker-title">Current Matchups</div>
                     <div class="matchup-ticker-week" id="home-matchup-week">Week 1</div>
-                    
-                    <!-- Green Monster Top Scoring Day -->
-                    <div class="green-monster-ticker" id="green-monster-ticker" style="display: none;">
-                        <span class="green-monster-label">Top Scoring Day:</span>
-                        <div class="green-monster-display">
-                            <img class="green-monster-logo" id="green-monster-logo" src="league_logo.png" alt="">
-                            <div class="green-monster-info">
-                                <div class="green-monster-date" id="green-monster-date">--/--</div>
-                                <div class="green-monster-score" id="green-monster-score">---.-</div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
                 <div class="matchup-ticker-wrapper">
                     <button class="matchup-ticker-arrow" onclick="scrollMatchupTicker(-1)" title="Previous">&#9664;</button>
