@@ -5411,6 +5411,18 @@
             text-transform: uppercase;
             letter-spacing: 1px;
         }
+        
+        /* Mobile: Hide Export CSV button and left-align round divider text */
+        @media (max-width: 768px) {
+            .hide-mobile {
+                display: none !important;
+            }
+            
+            .player-table .round-divider td {
+                text-align: left;
+                padding-left: 1rem;
+            }
+        }
 
         .player-table td {
             padding: 0.6rem 0.5rem;
@@ -11727,7 +11739,7 @@
                 <div class="player-summary" style="display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <span id="proj-player-count">0 players</span>
-                        <button class="btn-export"
+                        <button class="btn-export hide-mobile"
                             style="margin-left: 1rem; padding: 0.3rem 0.8rem; font-size: 0.8rem; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;"
                             onclick="exportProjectionsCSV()">Export CSV</button>
                         <button id="btn-toggle-kept" onclick="toggleKeptPlayers()"
