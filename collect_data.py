@@ -18,7 +18,7 @@ import os
 import re
 import time
 import unicodedata
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from typing import List, Dict, Optional, Tuple
 from yahoo_oauth import OAuth2
 from yahoo_fantasy_api import Game, League
@@ -1995,8 +1995,6 @@ def update_top_scoring_day(oauth, current_season_dir: str):
         "date": "4/15"
     }
     """
-    from datetime import date
-    
     top_scoring_file = f"{current_season_dir}/top_scoring_day.json"
     cumulative_file = f"{current_season_dir}/cumulative_scores.json"
     
