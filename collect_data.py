@@ -1981,6 +1981,120 @@ def weekly_update():
     print("✓ Weekly update complete!")
     print("=" * 60)
 
+def update_top_scoring_day(oauth, current_season_dir: str):
+    """
+    Check yesterday's scores and update top_scoring_day.json if a new high was set.
+    This tracks the season's top single-day score by comparing cumulative totals.
+    
+    Output format for top_scoring_day.json:
+    {
+        "score": 52.3,
+        "team_key": "458.l.XXXXX.t.X",
+        "team_name": "Team Name",
+        "manager": "Manager Name", 
+        "date": "4/15"
+    }
+    """
+    from datetime import date
+    
+    top_scoring_file = f"{current_season_dir}/top_scoring_day.json"
+    cumulative_file = f"{current_season_dir}/cumulative_scores.json"
+    
+    # Load existing top score (if any)
+    existing_top = {'score': 0, 'team_key': '', 'team_name': '', 'manager': '', 'date': ''}
+    if os.path.exists(top_scoring_file):
+        try:
+            with open(top_scoring_file, 'r', encoding='utf-8') as f:
+                existing_top = json.load(f)
+        except:
+            pass
+    
+    # Get yesterday's date for display
+    yesterday = date.today() - timedelta(days=1)
+    yesterday_display = f"{yesterday.month}/{yesterday.day}"
+    
+    print("Checking top scoring day...")
+    
+    try:
+        # Get current standings with points
+        standings = get_standings(oauth, CURRENT_SEASON)
+        teams = get_teams(oauth, CURRENT_SEASON)
+        
+        if not standings:
+            print("  ⚠ Could not get standings")
+            return
+        
+        # Build team info map
+        team_info = {}
+        if teams:
+            for team in teams:
+                team_info[team['team_key']] = {
+                    'name': team.get('team_name', ''),
+                    'manager': team.get('manager', '')
+                }
+        
+        # Load yesterday's cumulative scores
+        yesterday_cumulative = {}
+        if os.path.exists(cumulative_file):
+            try:
+                with open(cumulative_file, 'r', encoding='utf-8') as f:
+                    yesterday_cumulative = json.load(f)
+            except:
+                pass
+        
+        # Get current cumulative scores from standings
+        current_cumulative = {}
+        for team in standings:
+            team_key = team.get('team_key', '')
+            points = float(team.get('points_for', 0) or 0)
+            if team_key:
+                current_cumulative[team_key] = points
+        
+        # Calculate daily scores (current cumulative - yesterday's cumulative)
+        if yesterday_cumulative:
+            daily_scores = {}
+            for team_key, current_points in current_cumulative.items():
+                yesterday_points = yesterday_cumulative.get(team_key, 0)
+                daily_score = current_points - yesterday_points
+                if daily_score > 0:
+                    daily_scores[team_key] = daily_score
+            
+            # Find highest daily score
+            if daily_scores:
+                top_team_key = max(daily_scores, key=daily_scores.get)
+                top_score = daily_scores[top_team_key]
+                
+                top_team_info = team_info.get(top_team_key, {})
+                print(f"  Yesterday's top: {top_team_info.get('name', 'Unknown')} with {top_score:.1f} pts")
+                
+                # Check if this beats the existing record
+                if top_score > existing_top.get('score', 0):
+                    existing_top = {
+                        'score': top_score,
+                        'team_key': top_team_key,
+                        'team_name': top_team_info.get('name', ''),
+                        'manager': top_team_info.get('manager', ''),
+                        'date': yesterday_display
+                    }
+                    
+                    with open(top_scoring_file, 'w', encoding='utf-8') as f:
+                        json.dump(existing_top, f, indent=2)
+                    print(f"  ✓ NEW RECORD! Updated top_scoring_day.json")
+                else:
+                    print(f"  Current record ({existing_top.get('score', 0):.1f} pts on {existing_top.get('date', 'N/A')}) still stands")
+            else:
+                print(f"  No scoring activity yesterday")
+        else:
+            print(f"  No previous cumulative data - will start tracking tomorrow")
+        
+        # Save current cumulative for tomorrow's comparison
+        with open(cumulative_file, 'w', encoding='utf-8') as f:
+            json.dump(current_cumulative, f, indent=2)
+        print(f"  ✓ Saved cumulative scores for tomorrow's comparison")
+        
+    except Exception as e:
+        print(f"  ⚠ Could not update top scoring day: {e}")
+
 def quick_update():
     """
     Quick update - runs every 6 hours during the season.
@@ -2106,7 +2220,10 @@ def quick_update():
     except Exception as e:
         print(f"  ⚠ Could not update transactions: {e}")
     
-    # 5. Update manager profiles if team info changed
+    # 5. Update top scoring day tracker
+    update_top_scoring_day(oauth, current_season_dir)
+    
+    # 6. Update manager profiles if team info changed
     if teams_changed:
         print("Updating manager profiles (team info changed)...")
         update_manager_stats(oauth)
@@ -2119,6 +2236,7 @@ def quick_update():
     print(f"  - standings.json: Current W-L records")
     print(f"  - week_X_scores.json: Matchup scores")
     print(f"  - transactions.json: Recent adds/drops/trades")
+    print(f"  - top_scoring_day.json: Season high single-day score")
     if teams_changed:
         print(f"  - Manager profiles: Updated")
     print("=" * 60)
