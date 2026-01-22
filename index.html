@@ -5394,6 +5394,24 @@
             color: var(--retro-blue);
         }
 
+        /* Projected Round Divider Bars */
+        .player-table .round-divider {
+            background: #d4a017;
+            border: none;
+        }
+        
+        .player-table .round-divider td {
+            background: #d4a017;
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 0.5rem;
+            border: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
         .player-table td {
             padding: 0.6rem 0.5rem;
             border-bottom: 1px solid #eee;
@@ -20572,6 +20590,7 @@
             
             // Calculate BPA rankings when keepers are hidden
             // BPA = ranking by projected points with keepers removed
+            // Use name + type as key to distinguish Ohtani batter from Ohtani pitcher
             let bpaRankings = {};
             if (!showKeptPlayers) {
                 // Get all players (not just filtered) excluding keepers, sorted by projected points
@@ -20579,10 +20598,12 @@
                     .filter(p => getPlayerKeeperInfo(p.name) === null)
                     .sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
                 
-                // Assign BPA rank to each player
+                // Assign BPA rank to each player using name + type as key
                 allNonKeepers.forEach((player, index) => {
                     const nameLower = (player.name || '').toLowerCase().trim();
-                    bpaRankings[nameLower] = index + 1;
+                    const playerType = player.type || 'unknown';
+                    const bpaKey = `${nameLower}|${playerType}`;
+                    bpaRankings[bpaKey] = index + 1;
                 });
             }
 
@@ -20636,7 +20657,32 @@
             // Base64 placeholder for headshots
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
 
+            // Calculate column count for round divider colspan
+            let colCount = 8; // Base columns: #, Player, Pos, Rank, Proj Pts, G, PPG + BPA when shown
+            if (!showKeptPlayers) colCount++; // BPA column
+            if (hasBatters && !hasPitchers) colCount += 6; // Batter stats
+            else if (hasPitchers && !hasBatters) colCount += 6; // Pitcher stats
+            else colCount += 1; // Mixed key stats
+
+            // Track player index for round dividers (only when keepers hidden and not filtering by position/search)
+            let playerCount = 0;
+            const showRoundDividers = !showKeptPlayers && 
+                                       projectionSortColumn === 'projected_points' && 
+                                       projectionSortDirection === 'desc' &&
+                                       document.getElementById('proj-position-filter').value === 'all' &&
+                                       !document.getElementById('proj-search').value.trim();
+
             filteredProjections.forEach((player, index) => {
+                // Insert round divider before every 12 players when keepers are hidden
+                if (showRoundDividers && playerCount % 12 === 0) {
+                    const roundNum = Math.floor(playerCount / 12) + 1;
+                    const roundRow = document.createElement('tr');
+                    roundRow.className = 'round-divider';
+                    roundRow.innerHTML = `<td colspan="${colCount}">Projected Round ${roundNum}</td>`;
+                    tbody.appendChild(roundRow);
+                }
+                playerCount++;
+
                 const row = document.createElement('tr');
                 const stats = player.stats || {};
 
@@ -20698,8 +20744,11 @@
                 const isKept = keeperInfo !== null;
                 
                 // Get BPA rank for this player (only when keepers hidden)
+                // Use name + type as key to distinguish Ohtani batter from Ohtani pitcher
                 const playerNameLower = (player.name || '').toLowerCase().trim();
-                const bpaRank = bpaRankings[playerNameLower] || '-';
+                const playerType = player.type || 'unknown';
+                const bpaKey = `${playerNameLower}|${playerType}`;
+                const bpaRank = bpaRankings[bpaKey] || '-';
 
                 // Escape player name for onclick
                 const escapedName = player.name.replace(/'/g, "\\'");
