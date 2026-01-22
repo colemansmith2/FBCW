@@ -379,7 +379,7 @@
             z-index: 150;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: visible;
             scrollbar-width: thin;
             scrollbar-color: rgba(255,255,255,0.3) transparent;
         }
@@ -11616,6 +11616,7 @@
                             <option value="thebatx">The BAT X</option>
                             <option value="steamer">Steamer</option>
                             <option value="zips">ZiPS</option>
+                            <option value="atc">ATC</option>
                             <option value="depthcharts">Depth Charts</option>
                             <option value="oopsy">OOPSY</option>
                         </select>
@@ -11738,6 +11739,7 @@
                                 <option value="thebatx">The BAT X</option>
                                 <option value="steamer">Steamer</option>
                                 <option value="zips">ZiPS</option>
+                                <option value="atc">ATC</option>
                                 <option value="depthcharts">Depth Charts</option>
                                 <option value="oopsy">OOPSY</option>
                             </select>
@@ -19945,7 +19947,7 @@
         async function loadAverageProjections() {
             if (averageProjectionsLoaded) return;
             
-            const projectionSystems = ['thebatx', 'thebat', 'steamer', 'zips', 'depthcharts', 'oopsy'];
+            const projectionSystems = ['thebatx', 'thebat', 'steamer', 'zips', 'atc', 'depthcharts', 'oopsy'];
             const playerProjections = {}; // { playerName: { points: [], headshot, position, type } }
             
             for (const system of projectionSystems) {
