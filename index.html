@@ -9828,6 +9828,67 @@
             font-size: 1rem;
         }
         
+        /* Green Monster Top Scoring Day Ticker */
+        .green-monster-ticker {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-left: auto;
+        }
+        
+        .green-monster-label {
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        .green-monster-display {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #1a1a1a;
+            border: 3px solid #2d5016;
+            border-radius: 6px;
+            padding: 0.35rem 0.6rem;
+            box-shadow: 
+                inset 0 0 10px rgba(0,0,0,0.5),
+                0 0 8px rgba(45, 80, 22, 0.5);
+        }
+        
+        .green-monster-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #2d5016;
+            background: #333;
+        }
+        
+        .green-monster-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.1rem;
+        }
+        
+        .green-monster-date {
+            font-family: 'Basis33', monospace;
+            font-size: 0.65rem;
+            color: #ffd54f;
+            text-shadow: 0 0 6px #ffd54f, 0 0 12px rgba(255, 213, 79, 0.5);
+            letter-spacing: 1px;
+        }
+        
+        .green-monster-score {
+            font-family: 'Basis33', monospace;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #ffd54f;
+            text-shadow: 0 0 8px #ffd54f, 0 0 16px rgba(255, 213, 79, 0.6);
+            letter-spacing: 2px;
+        }
+        
         /* Matchup Ticker */
         .matchup-ticker-container {
             background: var(--retro-blue);
@@ -9918,6 +9979,13 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
             min-width: 0;
             scroll-snap-align: start;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        
+        .matchup-ticker-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         
         .matchup-team {
@@ -9979,6 +10047,338 @@
         .matchup-vs {
             color: rgba(255,255,255,0.6);
             font-size: 0.65rem;
+        }
+        
+        /* Matchup Popup Modal */
+        .matchup-popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        
+        .matchup-popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .matchup-popup {
+            background: white;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: transform 0.2s ease;
+        }
+        
+        .matchup-popup-overlay.active .matchup-popup {
+            transform: scale(1);
+        }
+        
+        .matchup-popup-header {
+            background: var(--retro-blue);
+            color: white;
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .matchup-popup-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        
+        .matchup-popup-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            opacity: 0.8;
+        }
+        
+        .matchup-popup-close:hover {
+            opacity: 1;
+        }
+        
+        .matchup-popup-scoreboard {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1.25rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .matchup-popup-team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            max-width: 200px;
+        }
+        
+        .matchup-popup-team-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #e0e0e0;
+        }
+        
+        .matchup-popup-team.winner .matchup-popup-team-logo {
+            border-color: var(--retro-green);
+        }
+        
+        .matchup-popup-team-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-align: center;
+            color: #333;
+        }
+        
+        .matchup-popup-team-manager {
+            font-size: 0.75rem;
+            color: #666;
+        }
+        
+        .matchup-popup-team-score {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .matchup-popup-team.winner .matchup-popup-team-score {
+            color: var(--retro-green);
+        }
+        
+        .matchup-popup-vs {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #999;
+        }
+        
+        .matchup-popup-body {
+            padding: 1rem 1.25rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        
+        .matchup-popup-team-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .matchup-popup-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--retro-blue);
+        }
+        
+        .matchup-popup-section-title {
+            font-weight: 600;
+            color: var(--retro-blue);
+            font-size: 0.9rem;
+        }
+        
+        /* Add Tracker Dots */
+        .add-tracker {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .add-tracker-group {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .add-tracker-label {
+            font-size: 0.6rem;
+            color: #666;
+            margin-right: 0.15rem;
+        }
+        
+        .add-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid;
+            background: white;
+        }
+        
+        .add-dot.stream {
+            border-color: #9333ea;
+        }
+        
+        .add-dot.stream.used {
+            background: #9333ea;
+        }
+        
+        .add-dot.regular {
+            border-color: var(--retro-blue);
+        }
+        
+        .add-dot.regular.used {
+            background: var(--retro-blue);
+        }
+        
+        /* Top Players List */
+        .matchup-popup-players-section {
+            margin-bottom: 0.75rem;
+        }
+        
+        .matchup-popup-players-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .matchup-popup-player {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .matchup-popup-player:last-child {
+            border-bottom: none;
+        }
+        
+        .matchup-popup-player-headshot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e0e0e0;
+        }
+        
+        .matchup-popup-player-pos {
+            font-size: 0.6rem;
+            font-weight: 600;
+            padding: 0.15rem 0.35rem;
+            border-radius: 3px;
+            color: white;
+            min-width: 22px;
+            text-align: center;
+        }
+        
+        .matchup-popup-player-pos.C { background: #e74c3c; }
+        .matchup-popup-player-pos.1B { background: #3498db; }
+        .matchup-popup-player-pos.2B { background: #2ecc71; }
+        .matchup-popup-player-pos.3B { background: #9b59b6; }
+        .matchup-popup-player-pos.SS { background: #f39c12; }
+        .matchup-popup-player-pos.OF { background: #1abc9c; }
+        .matchup-popup-player-pos.Util { background: #7f8c8d; }
+        .matchup-popup-player-pos.SP { background: #9333ea; }
+        .matchup-popup-player-pos.RP { background: #e91e63; }
+        .matchup-popup-player-pos.P { background: #9333ea; }
+        
+        .matchup-popup-player-name {
+            flex: 1;
+            font-size: 0.75rem;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .matchup-popup-player-pts {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--retro-blue);
+            min-width: 35px;
+            text-align: right;
+        }
+        
+        /* Adds Section */
+        .matchup-popup-adds-section {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px dashed #ddd;
+        }
+        
+        .matchup-popup-adds-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+        
+        .matchup-popup-adds-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #888;
+        }
+        
+        .matchup-popup-adds-total {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--retro-green);
+        }
+        
+        .matchup-popup-add-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0;
+            font-size: 0.7rem;
+            color: #666;
+        }
+        
+        .matchup-popup-add-item .add-indicator {
+            color: var(--retro-green);
+            font-weight: 600;
+        }
+        
+        @media (max-width: 600px) {
+            .matchup-popup-body {
+                grid-template-columns: 1fr;
+            }
+            
+            .matchup-popup-scoreboard {
+                gap: 1rem;
+            }
+            
+            .matchup-popup-team-logo {
+                width: 50px;
+                height: 50px;
+            }
+            
+            .matchup-popup-team-score {
+                font-size: 1.4rem;
+            }
+            
+            .green-monster-ticker {
+                display: none;
+            }
         }
         
         /* Mini Standings Table */
@@ -10515,6 +10915,18 @@
                 <div class="matchup-ticker-header">
                     <div class="matchup-ticker-title">Current Matchups</div>
                     <div class="matchup-ticker-week" id="home-matchup-week">Week 1</div>
+                    
+                    <!-- Green Monster Top Scoring Day -->
+                    <div class="green-monster-ticker" id="green-monster-ticker" style="display: none;">
+                        <span class="green-monster-label">Top Scoring Day:</span>
+                        <div class="green-monster-display">
+                            <img class="green-monster-logo" id="green-monster-logo" src="league_logo.png" alt="">
+                            <div class="green-monster-info">
+                                <div class="green-monster-date" id="green-monster-date">--/--</div>
+                                <div class="green-monster-score" id="green-monster-score">---.-</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="matchup-ticker-wrapper">
                     <button class="matchup-ticker-arrow" onclick="scrollMatchupTicker(-1)" title="Previous">&#9664;</button>
@@ -10522,6 +10934,22 @@
                         <div class="homepage-placeholder">Loading matchups...</div>
                     </div>
                     <button class="matchup-ticker-arrow" onclick="scrollMatchupTicker(1)" title="Next">&#9654;</button>
+                </div>
+            </div>
+            
+            <!-- Matchup Popup Modal -->
+            <div class="matchup-popup-overlay" id="matchup-popup-overlay" onclick="closeMatchupPopup(event)">
+                <div class="matchup-popup" onclick="event.stopPropagation()">
+                    <div class="matchup-popup-header">
+                        <div class="matchup-popup-title">Week <span id="matchup-popup-week">1</span> Matchup</div>
+                        <button class="matchup-popup-close" onclick="closeMatchupPopup()">&times;</button>
+                    </div>
+                    <div class="matchup-popup-scoreboard" id="matchup-popup-scoreboard">
+                        <!-- Filled dynamically -->
+                    </div>
+                    <div class="matchup-popup-body" id="matchup-popup-body">
+                        <!-- Filled dynamically -->
+                    </div>
                 </div>
             </div>
             
@@ -27413,10 +27841,17 @@
                 renderHomeTopPlayers();
                 renderHomeTransactions();
                 
+                // Load top scoring day for Green Monster ticker
+                loadTopScoringDay();
+                
             } catch (e) {
                 console.log('Error loading homepage data:', e);
             }
         }
+        
+        // Store current matchups data for popup
+        let currentMatchupsData = [];
+        let currentMatchupWeek = 1;
         
         function renderMatchupTicker() {
             const container = document.getElementById('home-matchup-ticker');
@@ -27446,6 +27881,7 @@
                 currentWeek = Math.min(...weeks);
             }
             
+            currentMatchupWeek = currentWeek;
             weekLabel.textContent = `Week ${currentWeek}`;
             
             // Get matchups for current week (pair up team1 and team2 scores)
@@ -27476,28 +27912,34 @@
                         name: team1.team_name || score.team_name || 'Team 1',
                         manager: manager1,
                         logo: fixTeamLogo(team1.team_logo) || 'league_logo.png',
-                        score: team1Score
+                        score: team1Score,
+                        team_key: score.team_key
                     },
                     team2: {
                         name: team2.team_name || (opponentScore?.team_name) || 'Team 2',
                         manager: manager2,
                         logo: fixTeamLogo(team2.team_logo) || 'league_logo.png',
-                        score: team2Score
-                    }
+                        score: team2Score,
+                        team_key: score.opponent_key
+                    },
+                    week: currentWeek
                 });
             }
+            
+            // Store for popup use
+            currentMatchupsData = matchups;
             
             if (matchups.length === 0) {
                 container.innerHTML = '<div class="homepage-placeholder">No matchups available yet.</div>';
                 return;
             }
             
-            container.innerHTML = matchups.map(m => {
+            container.innerHTML = matchups.map((m, idx) => {
                 const team1Winner = m.team1.score > m.team2.score;
                 const team2Winner = m.team2.score > m.team1.score;
                 
                 return `
-                    <div class="matchup-ticker-item">
+                    <div class="matchup-ticker-item" onclick="openMatchupPopup(${idx})">
                         <div class="matchup-team">
                             <img src="${m.team1.logo}" class="matchup-team-logo" alt="${m.team1.name}" onerror="this.src='league_logo.png'">
                             <div class="matchup-team-name">${m.team1.name}</div>
@@ -27516,6 +27958,274 @@
                     </div>
                 `;
             }).join('');
+        }
+        
+        // Matchup Popup Functions
+        async function openMatchupPopup(matchupIdx) {
+            const matchup = currentMatchupsData[matchupIdx];
+            if (!matchup) return;
+            
+            const overlay = document.getElementById('matchup-popup-overlay');
+            const weekSpan = document.getElementById('matchup-popup-week');
+            const scoreboard = document.getElementById('matchup-popup-scoreboard');
+            const body = document.getElementById('matchup-popup-body');
+            
+            weekSpan.textContent = matchup.week;
+            
+            const team1Winner = matchup.team1.score > matchup.team2.score;
+            const team2Winner = matchup.team2.score > matchup.team1.score;
+            
+            // Render scoreboard
+            scoreboard.innerHTML = `
+                <div class="matchup-popup-team ${team1Winner ? 'winner' : ''}">
+                    <img src="${matchup.team1.logo}" class="matchup-popup-team-logo" alt="" onerror="this.src='league_logo.png'">
+                    <div class="matchup-popup-team-name">${matchup.team1.name}</div>
+                    <div class="matchup-popup-team-manager">${capitalizeManagerName(matchup.team1.manager)}</div>
+                    <div class="matchup-popup-team-score">${matchup.team1.score.toFixed(1)}</div>
+                </div>
+                <div class="matchup-popup-vs">VS</div>
+                <div class="matchup-popup-team ${team2Winner ? 'winner' : ''}">
+                    <img src="${matchup.team2.logo}" class="matchup-popup-team-logo" alt="" onerror="this.src='league_logo.png'">
+                    <div class="matchup-popup-team-name">${matchup.team2.name}</div>
+                    <div class="matchup-popup-team-manager">${capitalizeManagerName(matchup.team2.manager)}</div>
+                    <div class="matchup-popup-team-score">${matchup.team2.score.toFixed(1)}</div>
+                </div>
+            `;
+            
+            // Load player and transaction data for this week
+            body.innerHTML = '<div style="text-align: center; padding: 2rem; grid-column: 1/-1;">Loading player data...</div>';
+            overlay.classList.add('active');
+            
+            try {
+                // Load roster data for the week
+                const rosterData = await loadWeekRosterData(matchup.week);
+                const transactionData = await loadWeekTransactionData(matchup.week);
+                
+                // Render both team sections
+                body.innerHTML = `
+                    <div class="matchup-popup-team-section">
+                        ${renderTeamPopupSection(matchup.team1, rosterData, transactionData)}
+                    </div>
+                    <div class="matchup-popup-team-section">
+                        ${renderTeamPopupSection(matchup.team2, rosterData, transactionData)}
+                    </div>
+                `;
+            } catch (e) {
+                console.log('Error loading popup data:', e);
+                body.innerHTML = `
+                    <div class="matchup-popup-team-section">
+                        ${renderTeamPopupSectionBasic(matchup.team1)}
+                    </div>
+                    <div class="matchup-popup-team-section">
+                        ${renderTeamPopupSectionBasic(matchup.team2)}
+                    </div>
+                `;
+            }
+        }
+        
+        function closeMatchupPopup(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('matchup-popup-overlay').classList.remove('active');
+        }
+        
+        async function loadWeekRosterData(week) {
+            try {
+                const response = await fetch(`data/current_season/week_${week}_rosters.json`);
+                if (response.ok) {
+                    return await response.json();
+                }
+            } catch (e) {
+                console.log('Could not load roster data for week', week);
+            }
+            return null;
+        }
+        
+        async function loadWeekTransactionData(week) {
+            try {
+                // Use the transactions we already have loaded
+                if (homeTransactionsData && homeTransactionsData.length > 0) {
+                    // Filter to adds from the current week
+                    // Transactions have a timestamp, need to determine if it falls within the week
+                    return homeTransactionsData.filter(t => t.type === 'add' || t.type === 'add/drop');
+                }
+            } catch (e) {
+                console.log('Error processing transaction data');
+            }
+            return [];
+        }
+        
+        function renderTeamPopupSection(team, rosterData, transactionData) {
+            // Get roster for this team
+            let teamRoster = [];
+            if (rosterData) {
+                teamRoster = rosterData.filter(p => p.team_key === team.team_key);
+            }
+            
+            // Sort by fantasy points and split by position type
+            const batters = teamRoster.filter(p => !['SP', 'RP', 'P'].includes(p.selected_position)).sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+            const pitchers = teamRoster.filter(p => ['SP', 'RP', 'P'].includes(p.selected_position)).sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+            
+            // Get adds for this team this week
+            const teamAdds = transactionData ? transactionData.filter(t => {
+                // Check if this transaction involves this team
+                const players = t.players || [];
+                return players.some(p => p.destination_team_key === team.team_key && p.type === 'add');
+            }) : [];
+            
+            // Count streams (SP adds) and regular adds
+            let streamCount = 0;
+            let regularAddCount = 0;
+            const addedPlayers = [];
+            
+            teamAdds.forEach(t => {
+                const players = t.players || [];
+                players.forEach(p => {
+                    if (p.destination_team_key === team.team_key && p.type === 'add') {
+                        const pos = p.position || '';
+                        if (pos === 'SP') {
+                            streamCount++;
+                        } else {
+                            regularAddCount++;
+                        }
+                        addedPlayers.push({
+                            name: p.name,
+                            position: pos,
+                            points: 0 // Would need to look up from roster
+                        });
+                    }
+                });
+            });
+            
+            // Cap at max values
+            streamCount = Math.min(streamCount, 3);
+            regularAddCount = Math.min(regularAddCount, 2);
+            
+            // Calculate points from added players
+            let addedPoints = 0;
+            addedPlayers.forEach(ap => {
+                const rosterPlayer = teamRoster.find(r => r.name === ap.name);
+                if (rosterPlayer) {
+                    ap.points = rosterPlayer.fantasy_points || 0;
+                    addedPoints += ap.points;
+                }
+            });
+            
+            return `
+                <div class="matchup-popup-section-header">
+                    <span class="matchup-popup-section-title">${team.name}</span>
+                    <div class="add-tracker">
+                        <div class="add-tracker-group">
+                            <span class="add-tracker-label">Streams:</span>
+                            ${[0, 1, 2].map(i => `<div class="add-dot stream ${i < streamCount ? 'used' : ''}"></div>`).join('')}
+                        </div>
+                        <div class="add-tracker-group">
+                            <span class="add-tracker-label">Adds:</span>
+                            ${[0, 1].map(i => `<div class="add-dot regular ${i < regularAddCount ? 'used' : ''}"></div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="matchup-popup-players-section">
+                    <div class="matchup-popup-players-title">Top 5 Batters</div>
+                    ${batters.slice(0, 5).map(p => renderPopupPlayer(p)).join('') || '<div style="color:#999;font-size:0.75rem;">No data available</div>'}
+                </div>
+                
+                <div class="matchup-popup-players-section">
+                    <div class="matchup-popup-players-title">Top 5 Pitchers</div>
+                    ${pitchers.slice(0, 5).map(p => renderPopupPlayer(p)).join('') || '<div style="color:#999;font-size:0.75rem;">No data available</div>'}
+                </div>
+                
+                ${addedPlayers.length > 0 ? `
+                <div class="matchup-popup-adds-section">
+                    <div class="matchup-popup-adds-header">
+                        <span class="matchup-popup-adds-title">Weekly Adds</span>
+                        <span class="matchup-popup-adds-total">+${addedPoints.toFixed(1)} pts</span>
+                    </div>
+                    ${addedPlayers.map(p => `
+                        <div class="matchup-popup-add-item">
+                            <span class="add-indicator">+</span>
+                            <span class="matchup-popup-player-pos ${p.position}">${p.position}</span>
+                            <span>${p.name}</span>
+                            <span style="margin-left:auto;font-weight:600;">${p.points.toFixed(1)}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                ` : ''}
+            `;
+        }
+        
+        function renderTeamPopupSectionBasic(team) {
+            return `
+                <div class="matchup-popup-section-header">
+                    <span class="matchup-popup-section-title">${team.name}</span>
+                    <div class="add-tracker">
+                        <div class="add-tracker-group">
+                            <span class="add-tracker-label">Streams:</span>
+                            ${[0, 1, 2].map(() => `<div class="add-dot stream"></div>`).join('')}
+                        </div>
+                        <div class="add-tracker-group">
+                            <span class="add-tracker-label">Adds:</span>
+                            ${[0, 1].map(() => `<div class="add-dot regular"></div>`).join('')}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="matchup-popup-players-section">
+                    <div class="matchup-popup-players-title">Top 5 Batters</div>
+                    <div style="color:#999;font-size:0.75rem;padding:0.5rem 0;">Roster data not available</div>
+                </div>
+                
+                <div class="matchup-popup-players-section">
+                    <div class="matchup-popup-players-title">Top 5 Pitchers</div>
+                    <div style="color:#999;font-size:0.75rem;padding:0.5rem 0;">Roster data not available</div>
+                </div>
+            `;
+        }
+        
+        function renderPopupPlayer(player) {
+            const pos = player.selected_position || player.position || '?';
+            const headshot = player.headshot_url || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%23e0e0e0" width="100" height="100"/></svg>';
+            const points = player.fantasy_points || 0;
+            
+            return `
+                <div class="matchup-popup-player">
+                    <img src="${headshot}" class="matchup-popup-player-headshot" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e0e0e0%22 width=%22100%22 height=%22100%22/></svg>'">
+                    <span class="matchup-popup-player-pos ${pos}">${pos}</span>
+                    <span class="matchup-popup-player-name">${player.name}</span>
+                    <span class="matchup-popup-player-pts">${points.toFixed(1)}</span>
+                </div>
+            `;
+        }
+        
+        // Green Monster Top Scoring Day
+        async function loadTopScoringDay() {
+            try {
+                // Load the top scoring day record (single record, not daily history)
+                const response = await fetch('data/current_season/top_scoring_day.json');
+                if (!response.ok) return;
+                
+                const topDay = await response.json();
+                if (!topDay || !topDay.score || topDay.score === 0) return;
+                
+                // Find team logo
+                const team = homeTeamsData.find(t => t.team_key === topDay.team_key);
+                const logo = team ? fixTeamLogo(team.team_logo) : 'league_logo.png';
+                
+                // Format date (expecting format like "2026-04-15" or "4/15")
+                let formattedDate = topDay.date;
+                if (topDay.date && topDay.date.includes('-')) {
+                    const date = new Date(topDay.date);
+                    formattedDate = `${date.getMonth() + 1}/${date.getDate()}`;
+                }
+                
+                // Update display
+                document.getElementById('green-monster-logo').src = logo;
+                document.getElementById('green-monster-date').textContent = formattedDate;
+                document.getElementById('green-monster-score').textContent = topDay.score.toFixed(1);
+                document.getElementById('green-monster-ticker').style.display = 'flex';
+            } catch (e) {
+                console.log('Could not load top scoring day data');
+            }
         }
         
         function renderHomeStandings() {
