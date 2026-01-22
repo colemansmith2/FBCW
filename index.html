@@ -20667,10 +20667,10 @@
             // Track player index for round dividers (only when keepers hidden and not filtering by position/search)
             let playerCount = 0;
             const showRoundDividers = !showKeptPlayers && 
-                                       projectionSortColumn === 'projected_points' && 
-                                       projectionSortDirection === 'desc' &&
+                                       projectionSort.column === 'projected_points' && 
+                                       projectionSort.direction === 'desc' &&
                                        document.getElementById('proj-position-filter').value === 'all' &&
-                                       !document.getElementById('proj-search').value.trim();
+                                       !document.getElementById('proj-player-search').value.trim();
 
             filteredProjections.forEach((player, index) => {
                 // Insert round divider before every 12 players when keepers are hidden
