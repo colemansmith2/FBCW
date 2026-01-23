@@ -451,11 +451,11 @@
             opacity: 1;
         }
 
-        /* Tooltip on hover - using a span element instead of pseudo-elements */
+        /* Tooltip on hover - using fixed position to avoid overflow clipping */
         .side-nav-tooltip {
-            position: absolute;
-            left: 70px;
-            top: 50%;
+            position: fixed;
+            left: 85px;
+            top: auto;
             transform: translateY(-50%);
             background: var(--retro-blue);
             color: white;
@@ -28530,7 +28530,24 @@
             
             // Initialize bylaws scroll spy for TOC highlighting
             initBylawsScrollSpy();
+            
+            // Initialize side-nav tooltip positioning
+            initSideNavTooltips();
         });
+        
+        // Side-nav tooltip positioning (for fixed tooltips with scrollable nav)
+        function initSideNavTooltips() {
+            const navItems = document.querySelectorAll('.side-nav-item');
+            navItems.forEach(item => {
+                const tooltip = item.querySelector('.side-nav-tooltip');
+                if (!tooltip) return;
+                
+                item.addEventListener('mouseenter', () => {
+                    const rect = item.getBoundingClientRect();
+                    tooltip.style.top = (rect.top + rect.height / 2) + 'px';
+                });
+            });
+        }
         
         // Bylaws scroll spy - highlight active section in TOC
         function initBylawsScrollSpy() {
