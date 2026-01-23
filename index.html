@@ -16958,7 +16958,7 @@
                     
                     const playerStats = playerStatsByName[playerName.toLowerCase().trim()];
                     const actualPoints = playerStats?.fantasy_points || 0;
-                    const expectedPoints = expectedPointsByRound[round]?.avg || 0;
+                    const expectedPoints = getExpectedPointsForRound(round);
                     
                     teamPerformance[teamKey].expected += expectedPoints;
                     teamPerformance[teamKey].actual += actualPoints;
@@ -17470,7 +17470,7 @@
                         // Get actual fantasy points for this player
                         const playerStats = playerStatsByName[playerName.toLowerCase().trim()];
                         const actualPoints = playerStats?.fantasy_points || 0;
-                        const expectedPoints = expectedPointsByRound[round]?.avg || 0;
+                        const expectedPoints = getExpectedPointsForRound(round);
                         
                         managerPicks[manager].push({
                             playerName,
@@ -21633,7 +21633,7 @@
                     
                     // Calculate expected points for round and keeper value
                     // Value formula matches Value Suite: value = projectedPts + (projectedPts - expectedPts)
-                    const rdExpPts = isProspect ? 0 : (expectedPointsByRound[roundCost]?.avg || predictExpectedPoints(roundCost) || 0);
+                    const rdExpPts = isProspect ? 0 : getExpectedPointsForRound(roundCost);
                     const surplusValue = isProspect ? (projPts || 0) : ((projPts || 0) - rdExpPts);
                     const keeperValue = isProspect ? (projPts || 0) : ((projPts || 0) + surplusValue);
                     row.dataset.rdexp = rdExpPts;
@@ -23393,12 +23393,12 @@
 
                         // Find player stats
                         const playerStats = playerStatsByName[playerName.toLowerCase().trim()];
-                        const fantasyPoints = playerStats?.fantasy_points || 0;
+                        const rawFantasyPoints = playerStats?.fantasy_points || 0;
                         
-                        // Skip players with 0 points (injured, didn't play, etc.)
-                        if (fantasyPoints === 0) {
-                            return;
-                        }
+                        // Apply replacement-level floor (200 pts) to handle injured players
+                        // This prevents early-round injuries from suppressing expected values
+                        const MIN_REPLACEMENT_POINTS = 200;
+                        const fantasyPoints = Math.max(rawFantasyPoints, MIN_REPLACEMENT_POINTS);
 
                         // Initialize round if needed
                         if (!roundStats[round]) {
@@ -23500,6 +23500,18 @@
         function predictExpectedPoints(round) {
             const { a, b, c } = expectedPointsModel;
             return Math.round(a * Math.exp(-b * round) + c);
+        }
+        
+        // Get expected points for a round - always uses smoothed model for consistency
+        // This eliminates noise like round 7 having fewer expected points than round 8
+        function getExpectedPointsForRound(round) {
+            // Always use the smoothed exponential model
+            return predictExpectedPoints(round);
+        }
+        
+        // Get raw (unsmoothed) expected points - only for charts showing actual vs fitted
+        function getRawExpectedPointsForRound(round) {
+            return expectedPointsByRound[round]?.avg || predictExpectedPoints(round);
         }
 
         async function analyzeKeeperValues() {
@@ -23643,7 +23655,7 @@
                     const baseRoundCost = keeper.roundCost || 0;
                     const actualRoundCost = actualRoundMap[keeper.player_name.toLowerCase()] ?? baseRoundCost;
                     const roundCost = isProspect ? 0 : actualRoundCost;
-                    const expectedPts = isProspect ? 0 : (expectedPointsByRound[roundCost]?.avg || 0);
+                    const expectedPts = isProspect ? 0 : getExpectedPointsForRound(roundCost);
                     
                     // Keeper value = Projected Points + Surplus Value
                     // This captures their full contribution: what they'll produce PLUS the bonus of getting them at a discount
@@ -23725,7 +23737,7 @@
                         const used = usedRounds[roundNum] || 0;
                         const unused = available - used;
                         if (unused > 0) {
-                            const expectedPts = expectedPointsByRound[roundNum]?.avg || 0;
+                            const expectedPts = getExpectedPointsForRound(roundNum);
                             console.log(`  Round ${roundNum}: available=${available}, used=${used}, unused=${unused}, expectedPts=${expectedPts}`);
                             totalPickValue += expectedPts * unused;
                         }
@@ -24461,7 +24473,7 @@
                     for (let i = 0; i < unused; i++) {
                         unusedPicks.push({
                             round: roundNum,
-                            expectedPts: expectedPointsByRound[roundNum]?.avg || 0
+                            expectedPts: getExpectedPointsForRound(roundNum)
                         });
                     }
                 });
@@ -24688,12 +24700,12 @@
                 expected: 0
             }));
 
-            // Expected value line data
+            // Expected value line data (using smoothed model for clean curve)
             const expectedLine = [];
             for (let r = 1; r <= 23; r++) {
                 expectedLine.push({
                     x: r,
-                    y: expectedPointsByRound[r]?.avg || 0
+                    y: getExpectedPointsForRound(r)
                 });
             }
 
@@ -24830,9 +24842,10 @@
             }));
 
             // Expected value line - represents break-even (when projected = expected, value = expected)
+            // Using smoothed model for clean curve
             const expectedLine = [];
             for (let r = 1; r <= 23; r++) {
-                const exp = expectedPointsByRound[r]?.avg || 0;
+                const exp = getExpectedPointsForRound(r);
                 expectedLine.push({
                     x: r,
                     y: exp  // Break-even value when projected = expected
@@ -27291,7 +27304,7 @@
                             const actualRoundCost = actualRoundMap[playerName] ?? baseRoundCost;
                             const roundCost = actualRoundCost;
                             
-                            const expectedPts = expectedPointsByRound[roundCost]?.avg || predictExpectedPoints(roundCost) || 200;
+                            const expectedPts = getExpectedPointsForRound(roundCost);
                             
                             // Track used rounds (using actual round cost)
                             usedRounds[roundCost] = (usedRounds[roundCost] || 0) + 1;
@@ -27330,7 +27343,7 @@
                         const used = usedRounds[roundNum] || 0;
                         const unused = available - used;
                         for (let i = 0; i < unused; i++) {
-                            const expectedPts = expectedPointsByRound[roundNum]?.avg || predictExpectedPoints(roundNum) || 200;
+                            const expectedPts = getExpectedPointsForRound(roundNum);
                             unusedPicks.push({
                                 round: roundNum,
                                 expectedPts: expectedPts
