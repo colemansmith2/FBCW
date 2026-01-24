@@ -904,6 +904,141 @@ def get_rosters(oauth, year: int) -> Dict[str, List[Dict]]:
     
     return rosters
 
+
+def get_detailed_rosters(oauth, year: int, transactions: List[Dict] = None) -> Dict:
+    """
+    Get detailed roster data for all teams, including acquisition info.
+    Returns a dict keyed by team_key with full player details.
+    """
+    gm = Game(oauth, 'mlb')
+    league_id = get_league_id_by_name(oauth, year)
+    
+    if not league_id:
+        return {}
+    
+    lg = League(oauth, league_id)
+    teams_data = lg.teams()
+    
+    # Build acquisition lookup from transactions
+    # Maps player_name (lowercase) -> acquisition info
+    acquisition_map = {}
+    if transactions:
+        for trans in transactions:
+            trans_type = trans.get('type', '')
+            timestamp = trans.get('timestamp', '')
+            
+            for player in trans.get('players', []):
+                player_name = player.get('player_name', '').lower().strip()
+                player_trans_type = player.get('transaction_type', '')
+                
+                if not player_name:
+                    continue
+                
+                # Determine acquisition type
+                if trans_type == 'trade':
+                    acq_type = 'Trade'
+                elif player_trans_type == 'add' and player.get('source_type') == 'freeagents':
+                    acq_type = 'Free Agent'
+                elif player_trans_type == 'add' and player.get('source_type') == 'waivers':
+                    acq_type = 'Waivers'
+                elif player_trans_type == 'add':
+                    acq_type = 'Add'
+                else:
+                    continue  # Skip drops
+                
+                # Only store if this is an add to a team
+                dest_team = player.get('destination_team_key', '')
+                if dest_team:
+                    key = (player_name, dest_team)
+                    # Keep most recent acquisition
+                    if key not in acquisition_map or timestamp > acquisition_map[key].get('timestamp', ''):
+                        acquisition_map[key] = {
+                            'type': acq_type,
+                            'timestamp': timestamp,
+                            'from_team': player.get('source_team_name', '')
+                        }
+    
+    rosters_output = {
+        'generated_at': datetime.now().isoformat(),
+        'year': year,
+        'teams': {}
+    }
+    
+    for team_key, team_info in teams_data.items():
+        team_name = team_info.get('name', 'Unknown Team')
+        raw_manager = team_info['managers'][0]['manager'].get('nickname', 'Unknown Manager')
+        manager = normalize_manager_name(raw_manager, year, team_name)
+        team_logo = team_info.get('team_logos', [{}])[0].get('team_logo', {}).get('url', '')
+        
+        print(f"    Getting detailed roster for {team_name}...")
+        
+        try:
+            team_obj = lg.to_team(team_key)
+            roster = team_obj.roster(week=None)
+            
+            players = []
+            for player in roster:
+                player_id = player.get('player_id', '')
+                name = player.get('name', '')
+                if isinstance(name, dict):
+                    name = name.get('full', '')
+                
+                position_type = player.get('position_type', '')
+                eligible_positions = player.get('eligible_positions', [])
+                if isinstance(eligible_positions, str):
+                    eligible_positions = [eligible_positions]
+                
+                primary_position = eligible_positions[0] if eligible_positions else ''
+                selected_position = player.get('selected_position', '')
+                
+                # Get headshot URL
+                headshot = player.get('headshot', {})
+                headshot_url = ''
+                if isinstance(headshot, dict):
+                    headshot_url = headshot.get('url', '')
+                elif isinstance(headshot, str):
+                    headshot_url = headshot
+                
+                # Determine acquisition type
+                player_name_lower = name.lower().strip()
+                acq_key = (player_name_lower, team_key)
+                acq_info = acquisition_map.get(acq_key, {})
+                acquisition_type = acq_info.get('type', 'Draft')  # Default to Draft if no transaction found
+                
+                players.append({
+                    'player_id': player_id,
+                    'name': name,
+                    'position_type': position_type,
+                    'eligible_positions': eligible_positions,
+                    'primary_position': primary_position,
+                    'selected_position': selected_position,
+                    'status': player.get('status', ''),
+                    'headshot_url': headshot_url,
+                    'acquisition_type': acquisition_type,
+                    'fantasy_points': 0,  # Will be updated when season starts
+                    'position_rank': None  # Will be updated when season starts
+                })
+            
+            rosters_output['teams'][team_key] = {
+                'team_key': team_key,
+                'team_name': team_name,
+                'manager': manager,
+                'team_logo': team_logo,
+                'players': players
+            }
+            
+        except Exception as e:
+            print(f"    ⚠ Could not get roster for {team_name}: {e}")
+            rosters_output['teams'][team_key] = {
+                'team_key': team_key,
+                'team_name': team_name,
+                'manager': manager,
+                'team_logo': team_logo,
+                'players': []
+            }
+    
+    return rosters_output
+
 def get_league_settings(oauth, year: int) -> Dict:
     """Fetch league settings, categorizing points based on unique Stat ID."""
     gm = Game(oauth, 'mlb')
@@ -2221,7 +2356,29 @@ def quick_update():
     # 5. Update top scoring day tracker
     update_top_scoring_day(oauth, current_season_dir)
     
-    # 6. Update manager profiles if team info changed
+    # 6. Update rosters.json with detailed roster info
+    print("Updating rosters.json...")
+    try:
+        # Load all transactions for acquisition tracking
+        all_transactions = []
+        transactions_file = f"{current_season_dir}/transactions.json"
+        if os.path.exists(transactions_file):
+            try:
+                with open(transactions_file, 'r', encoding='utf-8') as f:
+                    all_transactions = json.load(f)
+            except:
+                pass
+        
+        rosters = get_detailed_rosters(oauth, CURRENT_SEASON, all_transactions)
+        if rosters:
+            with open(f"{current_season_dir}/rosters.json", 'w', encoding='utf-8') as f:
+                json.dump(rosters, f, indent=2, ensure_ascii=False)
+            team_count = len(rosters.get('teams', {}))
+            print(f"  ✓ rosters.json updated ({team_count} teams)")
+    except Exception as e:
+        print(f"  ⚠ Could not update rosters: {e}")
+    
+    # 7. Update manager profiles if team info changed
     if teams_changed:
         print("Updating manager profiles (team info changed)...")
         update_manager_stats(oauth)
@@ -2234,6 +2391,7 @@ def quick_update():
     print(f"  - standings.json: Current W-L records")
     print(f"  - week_X_scores.json: Matchup scores")
     print(f"  - transactions.json: Recent adds/drops/trades")
+    print(f"  - rosters.json: Team rosters with acquisition info")
     print(f"  - top_scoring_day.json: Season high single-day score")
     if teams_changed:
         print(f"  - Manager profiles: Updated")
