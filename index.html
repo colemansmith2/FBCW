@@ -10468,6 +10468,290 @@
             }
         }
         
+        /* Roster Modal */
+        .roster-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s ease, visibility 0.2s ease;
+        }
+        
+        .roster-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .roster-modal {
+            background: white;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: transform 0.2s ease;
+        }
+        
+        .roster-modal-overlay.active .roster-modal {
+            transform: scale(1);
+        }
+        
+        .roster-modal-header {
+            background: var(--retro-blue);
+            color: white;
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 12px 12px 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .roster-modal-team-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .roster-modal-team-logo {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        
+        .roster-modal-team-details h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .roster-modal-team-details .manager-name {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+        
+        .roster-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            opacity: 0.8;
+        }
+        
+        .roster-modal-close:hover {
+            opacity: 1;
+        }
+        
+        .roster-modal-body {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+        
+        .roster-section {
+            padding: 1rem;
+        }
+        
+        .roster-section:first-child {
+            border-right: 1px solid #e0e0e0;
+        }
+        
+        .roster-section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--retro-blue);
+        }
+        
+        .roster-section-header h4 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--retro-blue);
+            margin: 0;
+        }
+        
+        .roster-section-header .section-icon {
+            font-size: 1rem;
+        }
+        
+        .roster-position-group {
+            margin-bottom: 0.5rem;
+        }
+        
+        .roster-position-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+            padding-left: 2px;
+        }
+        
+        .roster-player-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.5rem;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 0.25rem;
+            transition: background 0.15s;
+        }
+        
+        .roster-player-row:hover {
+            background: #e9ecef;
+        }
+        
+        .roster-player-row.empty {
+            background: #f0f0f0;
+            border: 1px dashed #ccc;
+        }
+        
+        .roster-player-row.empty .roster-player-name {
+            color: #999;
+            font-style: italic;
+        }
+        
+        .roster-player-headshot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e0e0e0;
+            flex-shrink: 0;
+        }
+        
+        .roster-player-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .roster-player-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .roster-player-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-top: 2px;
+        }
+        
+        .roster-player-positions {
+            display: flex;
+            gap: 2px;
+        }
+        
+        .roster-player-acquisition {
+            font-size: 0.6rem;
+            color: #888;
+            padding: 1px 4px;
+            background: #e9ecef;
+            border-radius: 3px;
+        }
+        
+        .roster-player-acquisition.draft { background: #e3f2fd; color: #1565c0; }
+        .roster-player-acquisition.trade { background: #fff3e0; color: #e65100; }
+        .roster-player-acquisition.fa { background: #e8f5e9; color: #2e7d32; }
+        .roster-player-acquisition.waivers { background: #fce4ec; color: #c2185b; }
+        
+        .roster-player-stats {
+            text-align: right;
+            flex-shrink: 0;
+        }
+        
+        .roster-player-points {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--retro-blue);
+        }
+        
+        .roster-player-rank {
+            font-size: 0.6rem;
+            color: #888;
+        }
+        
+        /* Keepers badge */
+        .roster-keeper-badge {
+            font-size: 0.55rem;
+            font-weight: 700;
+            color: white;
+            background: var(--retro-gold);
+            padding: 1px 4px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        
+        /* Position badges for roster modal */
+        .roster-player-positions .pos-badge {
+            font-size: 0.55rem;
+            font-weight: 600;
+            padding: 2px 4px;
+            border-radius: 3px;
+            text-transform: uppercase;
+        }
+        
+        .roster-player-positions .pos-c { background: #fecaca; color: #991b1b; }
+        .roster-player-positions .pos-1b { background: #fed7aa; color: #9a3412; }
+        .roster-player-positions .pos-2b { background: #fef08a; color: #854d0e; }
+        .roster-player-positions .pos-3b { background: #bbf7d0; color: #166534; }
+        .roster-player-positions .pos-ss { background: #a5f3fc; color: #0e7490; }
+        .roster-player-positions .pos-of { background: #bfdbfe; color: #1e40af; }
+        .roster-player-positions .pos-util { background: #e5e7eb; color: #374151; }
+        .roster-player-positions .pos-sp { background: #ddd6fe; color: #5b21b6; }
+        .roster-player-positions .pos-rp { background: #fbcfe8; color: #9d174d; }
+        
+        @media (max-width: 700px) {
+            .roster-modal-body {
+                grid-template-columns: 1fr;
+            }
+            
+            .roster-section:first-child {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .roster-modal-team-logo {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .roster-modal-team-details h3 {
+                font-size: 0.95rem;
+            }
+            
+            .roster-player-headshot {
+                width: 28px;
+                height: 28px;
+            }
+        }
+        
         /* Mini Standings Table */
         .mini-standings-table {
             width: 100%;
@@ -11065,6 +11349,25 @@
                         <!-- Filled dynamically -->
                     </div>
                     <div class="matchup-popup-body" id="matchup-popup-body">
+                        <!-- Filled dynamically -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Roster Modal -->
+            <div class="roster-modal-overlay" id="roster-modal-overlay" onclick="closeRosterModal(event)">
+                <div class="roster-modal" onclick="event.stopPropagation()">
+                    <div class="roster-modal-header">
+                        <div class="roster-modal-team-info">
+                            <img id="roster-modal-logo" class="roster-modal-team-logo" src="" alt="">
+                            <div class="roster-modal-team-details">
+                                <h3 id="roster-modal-team-name">Team Name</h3>
+                                <div class="manager-name" id="roster-modal-manager">Manager</div>
+                            </div>
+                        </div>
+                        <button class="roster-modal-close" onclick="closeRosterModal()">&times;</button>
+                    </div>
+                    <div class="roster-modal-body" id="roster-modal-body">
                         <!-- Filled dynamically -->
                     </div>
                 </div>
@@ -27979,6 +28282,7 @@
         let homeStandingsData = [];
         let homeTransactionsData = [];
         let homeScoresData = [];
+        let homeRostersData = null;
         
         function scrollMatchupTicker(direction) {
             const container = document.getElementById('home-matchup-ticker');
@@ -28482,11 +28786,12 @@
                 const rank = team.rank || (idx + 1);
                 const record = `${team.wins || 0}-${team.losses || 0}`;
                 const rankClass = rank === 1 ? 'gold' : rank === 2 ? 'silver' : rank === 3 ? 'bronze' : '';
+                const teamKey = team.team_key || '';
                 
                 return `
                     <tr>
                         <td>
-                            <div class="mini-standings-team">
+                            <div class="mini-standings-team" style="cursor: pointer;" onclick="openRosterModal('${teamKey}')">
                                 <span class="mini-standings-rank ${rankClass}">${rank}</span>
                                 <img src="data/hats/${hatFilename}" class="mini-standings-hat" alt="${manager}" onerror="this.style.display='none'">
                                 <span class="mini-standings-manager">${capitalizeManagerName(manager)}</span>
@@ -28652,6 +28957,278 @@
             if (diffHours < 24) return `${diffHours}h ago`;
             if (diffDays < 7) return `${diffDays}d ago`;
             return date.toLocaleDateString();
+        }
+
+        // ===== ROSTER MODAL FUNCTIONS =====
+        
+        function getPositionBadgeClass(position) {
+            if (!position) return 'pos-util';
+            const pos = position.toUpperCase();
+            if (pos === 'C') return 'pos-c';
+            if (pos === '1B') return 'pos-1b';
+            if (pos === '2B') return 'pos-2b';
+            if (pos === '3B') return 'pos-3b';
+            if (pos === 'SS') return 'pos-ss';
+            if (pos === 'OF' || pos === 'LF' || pos === 'CF' || pos === 'RF') return 'pos-of';
+            if (pos === 'DH' || pos === 'UTIL') return 'pos-util';
+            if (pos === 'SP') return 'pos-sp';
+            if (pos === 'RP') return 'pos-rp';
+            if (pos === 'P') return 'pos-sp';
+            if (pos === 'BN') return 'pos-util';
+            return 'pos-util';
+        }
+        
+        // 2026 Roster positions (4 UTIL, 4 BN)
+        const ROSTER_BATTER_SLOTS = [
+            { pos: 'C', label: 'Catcher', count: 1 },
+            { pos: '1B', label: 'First Base', count: 1 },
+            { pos: '2B', label: 'Second Base', count: 1 },
+            { pos: '3B', label: 'Third Base', count: 1 },
+            { pos: 'SS', label: 'Shortstop', count: 1 },
+            { pos: 'OF', label: 'Outfield', count: 3 },
+            { pos: 'Util', label: 'Utility', count: 4 }
+        ];
+        
+        const ROSTER_PITCHER_SLOTS = [
+            { pos: 'SP', label: 'Starting Pitcher', count: 3 },
+            { pos: 'RP', label: 'Relief Pitcher', count: 1 },
+            { pos: 'P', label: 'Pitcher', count: 2 },
+            { pos: 'BN', label: 'Bench', count: 4 }
+        ];
+        
+        async function loadRostersData() {
+            if (homeRostersData) return homeRostersData;
+            
+            try {
+                const response = await fetch('data/current_season/rosters.json');
+                if (response.ok) {
+                    homeRostersData = await response.json();
+                    return homeRostersData;
+                }
+            } catch (e) {
+                console.log('Could not load rosters data');
+            }
+            return null;
+        }
+        
+        async function openRosterModal(teamKey) {
+            // Load rosters data if not already loaded
+            const rostersData = await loadRostersData();
+            
+            // Find team data from various sources
+            let teamRoster = rostersData?.teams?.[teamKey];
+            const teamData = homeTeamsData.find(t => t.team_key === teamKey) || {};
+            const standingsData = homeStandingsData.find(t => t.team_key === teamKey) || {};
+            
+            // Get team info
+            const rawManager = teamData.manager || standingsData.manager || '';
+            const manager = normalizeManagerName(rawManager, 2026, teamData.team_name || standingsData.team_name, teamKey);
+            const teamName = teamData.team_name || standingsData.team_name || 'Unknown Team';
+            const teamLogo = fixTeamLogo(teamData.team_logo) || '';
+            
+            // Update header
+            document.getElementById('roster-modal-logo').src = teamLogo;
+            document.getElementById('roster-modal-team-name').textContent = teamName;
+            document.getElementById('roster-modal-manager').textContent = capitalizeManagerName(manager);
+            
+            // Get players from roster or fall back to keepers
+            let players = teamRoster?.players || [];
+            
+            // If no roster data, try to show keepers as placeholders
+            if (players.length === 0) {
+                players = await getKeeperPlayersForTeam(teamKey, manager);
+            }
+            
+            // Build roster display
+            const bodyEl = document.getElementById('roster-modal-body');
+            bodyEl.innerHTML = buildRosterModalContent(players, teamKey);
+            
+            // Show modal
+            document.getElementById('roster-modal-overlay').classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+        
+        async function getKeeperPlayersForTeam(teamKey, manager) {
+            // Try to get keepers from keeperSelections or Firebase
+            const keeperPlayers = [];
+            
+            // Check if keeperSelections is available (from preseason tools)
+            if (typeof keeperSelections !== 'undefined' && keeperSelections) {
+                const teamKeepers = keeperSelections[teamKey] || [];
+                for (const keeper of teamKeepers) {
+                    // Find projection data for headshot and position
+                    const allProj = [...(allProjectionBatters || []), ...(allProjectionPitchers || [])];
+                    const projData = allProj.find(p => 
+                        p.name.toLowerCase().trim() === (keeper.player_name || '').toLowerCase().trim()
+                    );
+                    
+                    keeperPlayers.push({
+                        name: keeper.player_name || '',
+                        primary_position: keeper.position || projData?.position || '',
+                        position_type: keeper.position === 'SP' || keeper.position === 'RP' ? 'P' : 'B',
+                        eligible_positions: [keeper.position || projData?.position || ''],
+                        headshot_url: projData?.headshot_url || '',
+                        acquisition_type: 'Keeper',
+                        fantasy_points: 0,
+                        position_rank: null,
+                        isKeeper: true
+                    });
+                }
+            }
+            
+            return keeperPlayers;
+        }
+        
+        function buildRosterModalContent(players, teamKey) {
+            // Separate batters and pitchers
+            const batters = players.filter(p => p.position_type === 'B' || 
+                (!p.position_type && !['SP', 'RP', 'P'].includes(p.primary_position)));
+            const pitchers = players.filter(p => p.position_type === 'P' || 
+                ['SP', 'RP', 'P'].includes(p.primary_position));
+            
+            // Placeholder headshot
+            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+            
+            // Build batters section
+            let battersHtml = '<div class="roster-section"><div class="roster-section-header"><span class="section-icon">⚾</span><h4>Batters</h4></div>';
+            
+            for (const slot of ROSTER_BATTER_SLOTS) {
+                battersHtml += `<div class="roster-position-group"><div class="roster-position-label">${slot.label}</div>`;
+                
+                for (let i = 0; i < slot.count; i++) {
+                    // Find a player for this slot
+                    const player = findPlayerForSlot(batters, slot.pos, i);
+                    
+                    if (player) {
+                        // Mark player as used
+                        player._used = true;
+                        battersHtml += buildPlayerRow(player, placeholderImg);
+                    } else {
+                        battersHtml += buildEmptySlot(slot.pos);
+                    }
+                }
+                battersHtml += '</div>';
+            }
+            battersHtml += '</div>';
+            
+            // Build pitchers section (including bench)
+            let pitchersHtml = '<div class="roster-section"><div class="roster-section-header"><span class="section-icon">🔥</span><h4>Pitchers & Bench</h4></div>';
+            
+            for (const slot of ROSTER_PITCHER_SLOTS) {
+                pitchersHtml += `<div class="roster-position-group"><div class="roster-position-label">${slot.label}</div>`;
+                
+                for (let i = 0; i < slot.count; i++) {
+                    let player;
+                    if (slot.pos === 'BN') {
+                        // Bench slots - use remaining pitchers
+                        player = pitchers.find(p => !p._used);
+                    } else {
+                        player = findPlayerForSlot(pitchers, slot.pos, i);
+                    }
+                    
+                    if (player) {
+                        player._used = true;
+                        pitchersHtml += buildPlayerRow(player, placeholderImg);
+                    } else {
+                        pitchersHtml += buildEmptySlot(slot.pos);
+                    }
+                }
+                pitchersHtml += '</div>';
+            }
+            pitchersHtml += '</div>';
+            
+            return battersHtml + pitchersHtml;
+        }
+        
+        function findPlayerForSlot(players, position, index) {
+            // Find unused players that can fill this position
+            const eligible = players.filter(p => {
+                if (p._used) return false;
+                
+                const positions = p.eligible_positions || [p.primary_position];
+                const selectedPos = p.selected_position || '';
+                
+                // Util can be filled by any batter
+                if (position === 'Util') return true;
+                // P can be filled by SP or RP
+                if (position === 'P') return positions.some(pos => ['SP', 'RP', 'P'].includes(pos));
+                
+                return positions.includes(position) || selectedPos === position;
+            });
+            
+            // Sort by selected_position match first, then by fantasy points
+            eligible.sort((a, b) => {
+                const aSelected = a.selected_position === position ? 1 : 0;
+                const bSelected = b.selected_position === position ? 1 : 0;
+                if (bSelected !== aSelected) return bSelected - aSelected;
+                return (b.fantasy_points || 0) - (a.fantasy_points || 0);
+            });
+            
+            return eligible[0] || null;
+        }
+        
+        function buildPlayerRow(player, placeholderImg) {
+            const headshot = player.headshot_url || placeholderImg;
+            const positions = player.eligible_positions || [player.primary_position];
+            const points = player.fantasy_points || 0;
+            const rank = player.position_rank;
+            const isKeeper = player.isKeeper || player.acquisition_type === 'Keeper';
+            
+            // Determine acquisition type class
+            let acqClass = '';
+            let acqLabel = player.acquisition_type || 'Draft';
+            if (acqLabel === 'Free Agent') { acqClass = 'fa'; acqLabel = 'FA'; }
+            else if (acqLabel === 'Waivers') { acqClass = 'waivers'; acqLabel = 'WW'; }
+            else if (acqLabel === 'Trade') { acqClass = 'trade'; }
+            else if (acqLabel === 'Keeper') { acqClass = 'draft'; acqLabel = 'K'; }
+            else { acqClass = 'draft'; acqLabel = 'Draft'; }
+            
+            // Build position badges
+            const positionBadges = positions.slice(0, 3).map(pos => {
+                const posClass = getPositionBadgeClass(pos);
+                return `<span class="pos-badge ${posClass}">${pos}</span>`;
+            }).join('');
+            
+            return `
+                <div class="roster-player-row">
+                    <img src="${headshot}" class="roster-player-headshot" alt="" onerror="this.src='${placeholderImg}'">
+                    <div class="roster-player-info">
+                        <div class="roster-player-name">${player.name || 'Unknown'}</div>
+                        <div class="roster-player-meta">
+                            <div class="roster-player-positions">${positionBadges}</div>
+                            ${isKeeper ? '<span class="roster-keeper-badge">Keeper</span>' : 
+                              `<span class="roster-player-acquisition ${acqClass}">${acqLabel}</span>`}
+                        </div>
+                    </div>
+                    <div class="roster-player-stats">
+                        <div class="roster-player-points">${points > 0 ? points.toFixed(1) : '-'}</div>
+                        ${rank ? `<div class="roster-player-rank">#${rank}</div>` : ''}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function buildEmptySlot(position) {
+            return `
+                <div class="roster-player-row empty">
+                    <div class="roster-player-headshot" style="background: #e0e0e0;"></div>
+                    <div class="roster-player-info">
+                        <div class="roster-player-name">Empty Slot</div>
+                        <div class="roster-player-meta">
+                            <span class="pos-badge pos-${position.toLowerCase()}">${position}</span>
+                        </div>
+                    </div>
+                    <div class="roster-player-stats">
+                        <div class="roster-player-points">-</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function closeRosterModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('roster-modal-overlay').classList.remove('active');
+            document.body.classList.remove('modal-open');
         }
 
         // ===== INITIALIZE ON PAGE LOAD =====
