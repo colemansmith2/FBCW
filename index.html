@@ -245,11 +245,13 @@
                 right: -280px;
                 width: 280px;
                 height: 100vh;
+                height: 100dvh; /* Dynamic viewport height for mobile browsers */
                 background: var(--retro-blue);
                 z-index: 300;
                 transition: right 0.3s ease;
                 box-shadow: -4px 0 20px rgba(0, 0, 0, 0.3);
-                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
             }
 
             .mobile-menu.active {
@@ -263,6 +265,11 @@
                 padding: 1rem 1.25rem;
                 background: rgba(0, 0, 0, 0.2);
                 border-bottom: 2px solid #d4af37;
+                /* Sticky header - stays visible when scrolling menu items */
+                flex-shrink: 0;
+                position: sticky;
+                top: 0;
+                z-index: 10;
             }
 
             .mobile-menu-header span {
@@ -284,6 +291,12 @@
 
             .mobile-menu-items {
                 padding: 0.5rem 0;
+                /* Allow scrolling within the items container */
+                overflow-y: auto;
+                flex: 1;
+                /* Bottom padding to ensure last item clears Safari's address bar */
+                padding-bottom: 80px;
+                -webkit-overflow-scrolling: touch;
             }
 
             .mobile-menu-item {
@@ -329,9 +342,13 @@
                 padding-left: 0;
             }
 
-            /* Prevent body scroll when menu is open */
+            /* Prevent body scroll when menu is open - iOS Safari compatible */
             body.menu-open {
                 overflow: hidden;
+                position: fixed;
+                width: 100%;
+                height: 100%;
+                touch-action: none;
             }
 
             .header-league-link {
@@ -18976,6 +18993,8 @@
         }
 
         // ===== MOBILE MENU =====
+        let mobileMenuScrollPosition = 0;
+        
         function toggleMobileMenu() {
             const menu = document.querySelector('.mobile-menu');
             const overlay = document.querySelector('.mobile-menu-overlay');
@@ -18992,9 +19011,13 @@
             const menu = document.querySelector('.mobile-menu');
             const overlay = document.querySelector('.mobile-menu-overlay');
             
+            // Save current scroll position before locking body
+            mobileMenuScrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+            
             menu.classList.add('active');
             overlay.classList.add('active');
             document.body.classList.add('menu-open');
+            document.body.style.top = `-${mobileMenuScrollPosition}px`;
             
             // Update active state for current page
             updateMobileMenuActiveState();
@@ -19007,6 +19030,10 @@
             menu.classList.remove('active');
             overlay.classList.remove('active');
             document.body.classList.remove('menu-open');
+            document.body.style.top = '';
+            
+            // Restore scroll position
+            window.scrollTo(0, mobileMenuScrollPosition);
         }
         
         function updateMobileMenuActiveState() {
