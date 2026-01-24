@@ -14166,6 +14166,30 @@
             }
             return logoUrl;
         }
+        
+        // Cache for 2026 team logos by normalized manager name
+        let currentTeamLogosCache = null;
+        
+        async function getCurrentTeamLogo(managerName, teamKey = null) {
+            // Build cache if not already built
+            if (!currentTeamLogosCache) {
+                currentTeamLogosCache = {};
+                const currentTeams = await getTeamData(2026);
+                if (currentTeams) {
+                    currentTeams.forEach(team => {
+                        // Use normalized manager name for consistent matching
+                        const normalizedManager = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
+                        const managerLower = normalizedManager.toLowerCase();
+                        currentTeamLogosCache[managerLower] = fixTeamLogo(team.team_logo);
+                    });
+                }
+            }
+            
+            // Normalize the input manager name for lookup
+            const normalizedInput = normalizeManagerName(managerName, 2026, null, teamKey);
+            const managerLower = normalizedInput.toLowerCase();
+            return currentTeamLogosCache[managerLower] || null;
+        }
 
         function normalizeStandingsData(standings, year) {
             return standings.map(team => ({
@@ -22385,11 +22409,27 @@
                 console.log('Could not load average projections for league keepers:', e);
             }
 
+            // Load fresh 2026 team data for updated logos (using normalized manager names)
+            const currentTeams = await getTeamData(2026);
+            const currentTeamLogos = {};
+            if (currentTeams) {
+                currentTeams.forEach(team => {
+                    const normalizedManager = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
+                    const managerLower = normalizedManager.toLowerCase();
+                    currentTeamLogos[managerLower] = fixTeamLogo(team.team_logo);
+                });
+            }
+
             // Sort teams by manager name
             const sortedTeams = Object.entries(keeperConfig.teams)
                 .sort((a, b) => a[1].manager.localeCompare(b[1].manager));
 
             for (const [teamKey, teamInfo] of sortedTeams) {
+                // Get fresh logo from 2026 data if available (using normalized manager name)
+                const normalizedManager = normalizeManagerName(teamInfo.manager, 2026, teamInfo.team_name, teamKey);
+                const managerLower = normalizedManager.toLowerCase();
+                const freshLogo = currentTeamLogos[managerLower] || teamInfo.team_logo;
+                
                 const teamKeepers = keeperSelections[teamKey] || [];
 
                 // Filter out prospects if toggle is off
@@ -22445,8 +22485,8 @@
                 const card = document.createElement('div');
                 card.className = 'keeper-team-card';
 
-                const logoImg = teamInfo.team_logo
-                    ? `<img src="${fixTeamLogo(teamInfo.team_logo)}" class="keeper-team-card-logo" alt="">`
+                const logoImg = freshLogo
+                    ? `<img src="${fixTeamLogo(freshLogo)}" class="keeper-team-card-logo" alt="">`
                     : '';
 
                 let keepersHtml = '';
@@ -22559,7 +22599,7 @@
         let showLineupProspects = false;
         let lineupProjectionsData = { batters: [], pitchers: [] };
 
-        // Roster position slots in order
+        // Roster position slots in order (2026 settings: 4 UTIL, 4 BN)
         const LINEUP_POSITIONS = [
             // Batters
             { pos: 'C', count: 1, type: 'batter' },
@@ -22568,13 +22608,13 @@
             { pos: '3B', count: 1, type: 'batter' },
             { pos: 'SS', count: 1, type: 'batter' },
             { pos: 'OF', count: 3, type: 'batter' },
-            { pos: 'Util', count: 3, type: 'batter' },
+            { pos: 'Util', count: 4, type: 'batter' },
             // Pitchers
             { pos: 'SP', count: 3, type: 'pitcher' },
             { pos: 'RP', count: 1, type: 'pitcher' },
             { pos: 'P', count: 2, type: 'pitcher' },
             // Bench
-            { pos: 'BN', count: 5, type: 'bench' }
+            { pos: 'BN', count: 4, type: 'bench' }
         ];
 
         async function initProjectedLineups() {
@@ -22594,13 +22634,30 @@
             
             await loadLineupProjections(projType);
 
-            // Build the team data array sorted by manager name
+            // Load fresh 2026 team data for updated logos (using normalized manager names)
+            const currentTeams = await getTeamData(2026);
+            const currentTeamLogos = {};
+            if (currentTeams) {
+                currentTeams.forEach(team => {
+                    const normalizedManager = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
+                    const managerLower = normalizedManager.toLowerCase();
+                    currentTeamLogos[managerLower] = fixTeamLogo(team.team_logo);
+                });
+            }
+
+            // Build the team data array sorted by manager name, using fresh logos
             lineupTeamsData = Object.entries(keeperConfig.teams)
-                .map(([teamKey, teamInfo]) => ({
-                    teamKey,
-                    ...teamInfo,
-                    keepers: keeperSelections[teamKey] || []
-                }))
+                .map(([teamKey, teamInfo]) => {
+                    const normalizedManager = normalizeManagerName(teamInfo.manager, 2026, teamInfo.team_name, teamKey);
+                    const managerLower = normalizedManager.toLowerCase();
+                    return {
+                        teamKey,
+                        ...teamInfo,
+                        // Use 2026 logo if available, otherwise fall back to config logo
+                        team_logo: currentTeamLogos[managerLower] || teamInfo.team_logo,
+                        keepers: keeperSelections[teamKey] || []
+                    };
+                })
                 .sort((a, b) => a.manager.localeCompare(b.manager));
 
             renderLineupTicker();
@@ -25637,10 +25694,12 @@
             let keeperLogoHtml = '';
             if (keeperInfo && keeperConfig?.teams[keeperInfo.teamKey]) {
                 const keeperTeam = keeperConfig.teams[keeperInfo.teamKey];
-                if (keeperTeam.team_logo) {
+                // Get fresh 2026 logo by manager name (pass teamKey for proper normalization)
+                const freshLogo = await getCurrentTeamLogo(keeperTeam.manager, keeperInfo.teamKey) || keeperTeam.team_logo;
+                if (freshLogo) {
                     keeperLogoHtml = `
                         <div class="card-keeper-logo-wrapper">
-                            <img src="${fixTeamLogo(keeperTeam.team_logo)}" alt="" class="card-team-logo-corner" onerror="this.style.display='none'">
+                            <img src="${fixTeamLogo(freshLogo)}" alt="" class="card-team-logo-corner" onerror="this.style.display='none'">
                             <div class="card-keeper-badge">K</div>
                         </div>`;
                 }
