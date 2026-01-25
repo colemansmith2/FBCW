@@ -9956,10 +9956,11 @@
             text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
         }
         
+        /* Date digits - same size as score digits for alignment */
         .monster-digit.date-digit {
-            font-size: 0.5rem;
-            min-width: 12px;
-            padding: 2px 3px;
+            font-size: 0.9rem;
+            min-width: 16px;
+            padding: 3px 4px;
             line-height: 1;
         }
         
@@ -9968,7 +9969,9 @@
             box-shadow: none;
             min-width: auto;
             padding: 0 1px;
-            font-size: 0.5rem;
+            font-size: 0.9rem;
+            align-self: flex-end;
+            margin-bottom: 2px;
         }
         
         .monster-digit.score-digit {
@@ -10015,24 +10018,17 @@
                 height: 26px;
             }
             
-            .monster-digit.date-digit {
-                font-size: 0.4rem;
-                min-width: 10px;
-                padding: 1px 2px;
-            }
-            
-            .monster-digit.date-separator {
-                font-size: 0.4rem;
-            }
-            
+            /* Mobile: same size for date and score digits */
+            .monster-digit.date-digit,
             .monster-digit.score-digit {
-                font-size: 0.75rem;
-                min-width: 13px;
+                font-size: 0.85rem;
+                min-width: 14px;
                 padding: 2px 3px;
             }
             
+            .monster-digit.date-separator,
             .monster-digit.decimal {
-                font-size: 0.75rem;
+                font-size: 0.85rem;
                 margin-bottom: 1px;
             }
         }
@@ -29165,7 +29161,7 @@
             const keeperPlayers = [];
             
             try {
-                // First, try to load projection data if not already loaded
+                // First, try to load ATC projection data for headshots
                 let projBatters = [];
                 let projPitchers = [];
                 
@@ -29174,26 +29170,48 @@
                     projBatters = allProjectionBatters;
                     projPitchers = allProjectionPitchers || [];
                 } else {
-                    // Load projections for headshots
+                    // Load ATC projections for headshots
                     try {
-                        const projResponse = await fetch('data/projections/projections_steamer.json');
+                        const projResponse = await fetch('data/projections/projections_atc.json');
                         if (projResponse.ok) {
                             const projData = await projResponse.json();
                             projBatters = projData.batters || [];
                             projPitchers = projData.pitchers || [];
                         }
                     } catch (e) {
-                        console.log('Could not load projections for roster modal');
+                        console.log('Could not load ATC projections for roster modal');
                     }
                 }
                 
                 const allProj = [...projBatters, ...projPitchers];
                 
+                // Initialize Firebase if not already done
+                if (typeof firebase !== 'undefined' && !firebaseInitialized) {
+                    try {
+                        if (typeof firebaseConfig !== 'undefined') {
+                            firebaseApp = firebase.initializeApp(firebaseConfig);
+                            firebaseDb = firebase.database();
+                            firebaseInitialized = true;
+                            console.log('Firebase initialized for roster modal');
+                        }
+                    } catch (e) {
+                        // Firebase might already be initialized
+                        if (e.code === 'app/duplicate-app') {
+                            firebaseDb = firebase.database();
+                            firebaseInitialized = true;
+                        } else {
+                            console.log('Firebase init error:', e);
+                        }
+                    }
+                }
+                
                 // Try to get keepers from Firebase
                 if (typeof firebaseDb !== 'undefined' && firebaseDb) {
                     const sanitizedKey = sanitizeFirebaseKey(teamKey);
+                    console.log('Fetching keepers for team:', teamKey, 'sanitized:', sanitizedKey);
                     const snapshot = await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).once('value');
                     const keepersData = snapshot.val();
+                    console.log('Firebase keepers data:', keepersData);
                     
                     if (keepersData) {
                         // Convert to array if needed
@@ -29250,6 +29268,8 @@
                             isKeeper: true
                         });
                     }
+                } else {
+                    console.log('Firebase not available and no keeper selections in memory');
                 }
             } catch (e) {
                 console.log('Error loading keepers for roster modal:', e);
