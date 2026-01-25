@@ -10705,6 +10705,11 @@
             font-style: italic;
         }
         
+        .roster-player-row > .position-badge {
+            flex-shrink: 0;
+            min-width: 28px;
+        }
+        
         .roster-player-headshot {
             width: 32px;
             height: 32px;
@@ -10719,6 +10724,12 @@
             min-width: 0;
         }
         
+        .roster-player-name-row {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
         .roster-player-name {
             font-size: 0.8rem;
             font-weight: 600;
@@ -10728,30 +10739,24 @@
             text-overflow: ellipsis;
         }
         
-        .roster-player-meta {
+        .roster-player-name-row .keeper-badge {
+            margin-left: 0;
+        }
+        
+        .roster-player-mlb-team {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
-            margin-top: 2px;
-        }
-        
-        .roster-player-positions {
-            display: flex;
-            gap: 2px;
-        }
-        
-        .roster-player-acquisition {
-            font-size: 0.6rem;
+            gap: 0.2rem;
+            font-size: 0.65rem;
             color: #888;
-            padding: 1px 4px;
-            background: #e9ecef;
-            border-radius: 3px;
+            margin-top: 1px;
         }
         
-        .roster-player-acquisition.draft { background: #e3f2fd; color: #1565c0; }
-        .roster-player-acquisition.trade { background: #fff3e0; color: #e65100; }
-        .roster-player-acquisition.fa { background: #e8f5e9; color: #2e7d32; }
-        .roster-player-acquisition.waivers { background: #fce4ec; color: #c2185b; }
+        .roster-mlb-logo {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+        }
         
         .roster-player-stats {
             text-align: right;
@@ -10767,24 +10772,6 @@
         .roster-player-rank {
             font-size: 0.6rem;
             color: #888;
-        }
-        
-        /* Keepers badge */
-        .roster-keeper-badge {
-            font-size: 0.55rem;
-            font-weight: 700;
-            color: white;
-            background: var(--retro-gold);
-            padding: 1px 4px;
-            border-radius: 3px;
-            text-transform: uppercase;
-        }
-        
-        /* Position badges in roster modal - use standard position-badge class */
-        .roster-player-positions .position-badge {
-            font-size: 0.6rem;
-            min-width: 22px;
-            padding: 0.1rem 0.3rem;
         }
         
         /* Projected points indicator */
@@ -29294,6 +29281,7 @@
                                     position_type: isPitcher ? 'P' : 'B',
                                     eligible_positions: [position],
                                     headshot_url: projData?.headshot_url || '',
+                                    mlb_team: projData?.mlb_team || '',
                                     acquisition_type: 'Keeper',
                                     fantasy_points: 0,  // Actual points (0 until season starts)
                                     projected_points: projectedPoints,  // ATC projected points
@@ -29318,6 +29306,25 @@
                         );
                         
                         const position = keeper.position || projData?.position || '';
+                        const isPitcher = ['SP', 'RP', 'P'].includes(position);
+                        const projectedPoints = projData?.projected_points || 0;
+                        
+                        keeperPlayers.push({
+                            name: keeper.player_name,
+                            primary_position: position,
+                            position_type: isPitcher ? 'P' : 'B',
+                            eligible_positions: [position],
+                            headshot_url: projData?.headshot_url || '',
+                            mlb_team: projData?.mlb_team || '',
+                            acquisition_type: 'Keeper',
+                            fantasy_points: 0,
+                            projected_points: projectedPoints,
+                            position_rank: null,
+                            isKeeper: true,
+                            isProspect: projectedPoints === 0
+                        });
+                    }
+                } else {
                         const isPitcher = ['SP', 'RP', 'P'].includes(position);
                         const projectedPoints = projData?.projected_points || 0;
                         
@@ -29461,40 +29468,34 @@
         
         function buildPlayerRow(player, placeholderImg) {
             const headshot = player.headshot_url || placeholderImg;
-            const positions = player.eligible_positions || [player.primary_position];
+            const position = player.primary_position || '';
             const actualPoints = player.fantasy_points || 0;
             const projectedPoints = player.projected_points || 0;
             const rank = player.position_rank;
             const isKeeper = player.isKeeper || player.acquisition_type === 'Keeper';
+            const mlbTeam = player.mlb_team || '';
             
             // Use actual points if available, otherwise projected points
             const displayPoints = actualPoints > 0 ? actualPoints : projectedPoints;
             const isProjected = actualPoints === 0 && projectedPoints > 0;
             
-            // Determine acquisition type class
-            let acqClass = '';
-            let acqLabel = player.acquisition_type || 'Draft';
-            if (acqLabel === 'Free Agent') { acqClass = 'fa'; acqLabel = 'FA'; }
-            else if (acqLabel === 'Waivers') { acqClass = 'waivers'; acqLabel = 'WW'; }
-            else if (acqLabel === 'Trade') { acqClass = 'trade'; }
-            else if (acqLabel === 'Keeper') { acqClass = 'draft'; acqLabel = 'K'; }
-            else { acqClass = 'draft'; acqLabel = 'Draft'; }
-            
-            // Build position badges using standard position-badge class
-            const positionBadges = positions.slice(0, 3).map(pos => {
-                return `<span class="position-badge pos-${pos}">${pos}</span>`;
-            }).join('');
+            // MLB team logo path
+            const mlbLogoUrl = mlbTeam ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/mlb/500/${mlbTeam.toLowerCase()}.png&h=40&w=40` : '';
             
             return `
                 <div class="roster-player-row${player.isProspect ? ' prospect' : ''}">
+                    <span class="position-badge pos-${position}">${position}</span>
                     <img src="${headshot}" class="roster-player-headshot" alt="" onerror="this.src='${placeholderImg}'">
                     <div class="roster-player-info">
-                        <div class="roster-player-name">${player.name || 'Unknown'}</div>
-                        <div class="roster-player-meta">
-                            <div class="roster-player-positions">${positionBadges}</div>
-                            ${isKeeper ? '<span class="roster-keeper-badge">Keeper</span>' : 
-                              `<span class="roster-player-acquisition ${acqClass}">${acqLabel}</span>`}
+                        <div class="roster-player-name-row">
+                            <span class="roster-player-name">${player.name || 'Unknown'}</span>
+                            ${isKeeper ? '<span class="keeper-badge">K</span>' : ''}
                         </div>
+                        ${mlbTeam ? `
+                        <div class="roster-player-mlb-team">
+                            <img src="${mlbLogoUrl}" class="roster-mlb-logo" alt="${mlbTeam}" onerror="this.style.display='none'">
+                            <span>${mlbTeam}</span>
+                        </div>` : ''}
                     </div>
                     <div class="roster-player-stats">
                         <div class="roster-player-points${isProjected ? ' projected' : ''}">${displayPoints > 0 ? displayPoints.toFixed(1) : '-'}${isProjected ? '*' : ''}</div>
@@ -29507,11 +29508,11 @@
         function buildEmptySlot(position) {
             return `
                 <div class="roster-player-row empty">
+                    <span class="position-badge pos-${position}">${position}</span>
                     <div class="roster-player-headshot" style="background: #e0e0e0;"></div>
                     <div class="roster-player-info">
-                        <div class="roster-player-name">Empty Slot</div>
-                        <div class="roster-player-meta">
-                            <span class="position-badge pos-${position}">${position}</span>
+                        <div class="roster-player-name-row">
+                            <span class="roster-player-name">Empty Slot</span>
                         </div>
                     </div>
                     <div class="roster-player-stats">
