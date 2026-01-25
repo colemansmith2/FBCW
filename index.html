@@ -9892,22 +9892,24 @@
         }
         
         .green-monster-label {
-            color: #2d5016;
-            font-size: 0.8rem;
+            color: #3d6b2a;
+            font-size: 0.7rem;
             font-weight: 700;
-            white-space: nowrap;
+            line-height: 1.2;
+            text-align: right;
         }
         
         .green-monster-display {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            background: #2d5016;
-            border-radius: 8px;
+            /* Authentic Green Monster faded green - weathered look */
+            background: #4a7c3f;
+            border-radius: 6px;
             padding: 0.4rem 0.6rem;
             box-shadow: 
-                inset 0 2px 4px rgba(255,255,255,0.1),
-                0 2px 8px rgba(45, 80, 22, 0.4);
+                inset 0 1px 2px rgba(0,0,0,0.2),
+                0 2px 6px rgba(0, 0, 0, 0.25);
         }
         
         .green-monster-logo {
@@ -9915,49 +9917,101 @@
             height: 32px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid rgba(255,255,255,0.3);
-            background: #1a3d0c;
+            border: 2px solid rgba(255,255,255,0.4);
+            background: #3d6b2a;
         }
         
         .green-monster-scoreboard {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.15rem;
-            background: #0a0a0a;
-            border-radius: 4px;
-            padding: 0.25rem 0.5rem;
-            border: 1px solid #1a3d0c;
+            gap: 0.1rem;
         }
         
         .green-monster-date {
-            font-family: 'Basis33', monospace;
-            font-size: 0.6rem;
-            color: #ffd54f;
-            text-shadow: 0 0 6px #ffd54f, 0 0 12px rgba(255, 213, 79, 0.5);
-            letter-spacing: 1px;
+            display: flex;
+            gap: 2px;
         }
         
         .green-monster-score {
-            font-family: 'Basis33', monospace;
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #ffd54f;
-            text-shadow: 0 0 8px #ffd54f, 0 0 16px rgba(255, 213, 79, 0.6);
-            letter-spacing: 2px;
+            display: flex;
+            gap: 2px;
+        }
+        
+        /* Individual number tiles - like the interchangeable plates on the Monster */
+        .monster-digit {
+            font-family: 'Arial Black', 'Helvetica Neue', sans-serif;
+            font-weight: 900;
+            color: #f5f5f0;
+            text-align: center;
+            /* Recessed plate effect */
+            background: linear-gradient(180deg, #3d6b2a 0%, #4a7c3f 50%, #3d6b2a 100%);
+            border-radius: 2px;
+            box-shadow: 
+                inset 1px 1px 2px rgba(0,0,0,0.4),
+                inset -1px -1px 1px rgba(255,255,255,0.1);
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+        }
+        
+        .monster-digit.date-digit {
+            font-size: 0.55rem;
+            min-width: 12px;
+            padding: 2px 3px;
             line-height: 1;
+        }
+        
+        .monster-digit.score-digit {
+            font-size: 0.9rem;
+            min-width: 16px;
+            padding: 3px 4px;
+            line-height: 1;
+        }
+        
+        .monster-digit.separator {
+            background: transparent;
+            box-shadow: none;
+            color: #f5f5f0;
+            min-width: auto;
+            padding: 0 1px;
         }
         
         @media (max-width: 600px) {
             .home-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 0.75rem;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
             }
             
             .green-monster-ticker {
-                width: 100%;
-                justify-content: flex-start;
+                position: static;
+                gap: 0.4rem;
+            }
+            
+            .green-monster-label {
+                font-size: 0.55rem;
+                line-height: 1.1;
+            }
+            
+            .green-monster-display {
+                padding: 0.3rem 0.4rem;
+                gap: 0.35rem;
+            }
+            
+            .green-monster-logo {
+                width: 26px;
+                height: 26px;
+            }
+            
+            .monster-digit.date-digit {
+                font-size: 0.5rem;
+                min-width: 10px;
+                padding: 2px 2px;
+            }
+            
+            .monster-digit.score-digit {
+                font-size: 0.75rem;
+                min-width: 13px;
+                padding: 2px 3px;
             }
         }
         
@@ -11312,12 +11366,12 @@
                 <h2>Home</h2>
                 <!-- Green Monster Top Scoring Day -->
                 <div class="green-monster-ticker" id="green-monster-ticker" style="display: none;">
-                    <span class="green-monster-label">Top Scoring Day:</span>
+                    <span class="green-monster-label">2026 Top<br>Scoring Day</span>
                     <div class="green-monster-display">
                         <img class="green-monster-logo" id="green-monster-logo" src="league_logo.png" alt="">
                         <div class="green-monster-scoreboard">
-                            <div class="green-monster-date" id="green-monster-date">--/--</div>
-                            <div class="green-monster-score" id="green-monster-score">---.-</div>
+                            <div class="green-monster-date" id="green-monster-date"></div>
+                            <div class="green-monster-score" id="green-monster-score"></div>
                         </div>
                     </div>
                 </div>
@@ -28751,20 +28805,49 @@
                 const logo = team ? fixTeamLogo(team.team_logo) : 'league_logo.png';
                 
                 // Format date (expecting format like "2026-04-15" or "4/15")
-                let formattedDate = topDay.date;
-                if (topDay.date && topDay.date.includes('-')) {
-                    const date = new Date(topDay.date);
-                    formattedDate = `${date.getMonth() + 1}/${date.getDate()}`;
+                let month = '--';
+                let day = '--';
+                if (topDay.date) {
+                    if (topDay.date.includes('-')) {
+                        const date = new Date(topDay.date);
+                        month = String(date.getMonth() + 1).padStart(2, ' ');
+                        day = String(date.getDate()).padStart(2, ' ');
+                    } else if (topDay.date.includes('/')) {
+                        const parts = topDay.date.split('/');
+                        month = parts[0].padStart(2, ' ');
+                        day = parts[1].padStart(2, ' ');
+                    }
                 }
+                
+                // Format score into individual digits
+                const scoreStr = topDay.score.toFixed(1);
+                
+                // Build date digits HTML
+                const dateHtml = renderMonsterDigits(month, 'date') + 
+                    '<span class="monster-digit date-digit separator">/</span>' + 
+                    renderMonsterDigits(day, 'date');
+                
+                // Build score digits HTML
+                const scoreHtml = renderMonsterDigits(scoreStr, 'score');
                 
                 // Update display
                 document.getElementById('green-monster-logo').src = logo;
-                document.getElementById('green-monster-date').textContent = formattedDate;
-                document.getElementById('green-monster-score').textContent = topDay.score.toFixed(1);
+                document.getElementById('green-monster-date').innerHTML = dateHtml;
+                document.getElementById('green-monster-score').innerHTML = scoreHtml;
                 document.getElementById('green-monster-ticker').style.display = 'flex';
             } catch (e) {
                 console.log('Could not load top scoring day data');
             }
+        }
+        
+        function renderMonsterDigits(text, type) {
+            const digitClass = type === 'date' ? 'date-digit' : 'score-digit';
+            return text.split('').map(char => {
+                if (char === '.' || char === '/') {
+                    return `<span class="monster-digit ${digitClass} separator">${char}</span>`;
+                }
+                return `<span class="monster-digit ${digitClass}">${char}</span>`;
+            }).join('');
         }
         
         function renderHomeStandings() {
