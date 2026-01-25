@@ -9924,25 +9924,15 @@
         .green-monster-scoreboard {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 0.15rem;
+            align-items: flex-end;
+            gap: 0.1rem;
         }
         
-        /* Date in single recessed plate */
+        /* Date as individual digits - aligned right to match score */
         .green-monster-date {
-            font-family: 'Arial Black', 'Helvetica Neue', sans-serif;
-            font-weight: 900;
-            font-size: 0.55rem;
-            color: #f5f5f0;
-            text-align: center;
-            background: linear-gradient(180deg, #3d6b2a 0%, #4a7c3f 50%, #3d6b2a 100%);
-            border-radius: 2px;
-            box-shadow: 
-                inset 1px 1px 2px rgba(0,0,0,0.4),
-                inset -1px -1px 1px rgba(255,255,255,0.1);
-            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
-            padding: 2px 6px;
-            letter-spacing: 1px;
+            display: flex;
+            gap: 2px;
+            justify-content: flex-end;
         }
         
         .green-monster-score {
@@ -9964,6 +9954,21 @@
                 inset 1px 1px 2px rgba(0,0,0,0.4),
                 inset -1px -1px 1px rgba(255,255,255,0.1);
             text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+        }
+        
+        .monster-digit.date-digit {
+            font-size: 0.5rem;
+            min-width: 12px;
+            padding: 2px 3px;
+            line-height: 1;
+        }
+        
+        .monster-digit.date-separator {
+            background: transparent;
+            box-shadow: none;
+            min-width: auto;
+            padding: 0 1px;
+            font-size: 0.5rem;
         }
         
         .monster-digit.score-digit {
@@ -10010,9 +10015,14 @@
                 height: 26px;
             }
             
-            .green-monster-date {
-                font-size: 0.5rem;
-                padding: 2px 4px;
+            .monster-digit.date-digit {
+                font-size: 0.4rem;
+                min-width: 10px;
+                padding: 1px 2px;
+            }
+            
+            .monster-digit.date-separator {
+                font-size: 0.4rem;
             }
             
             .monster-digit.score-digit {
@@ -28816,26 +28826,33 @@
                 const team = homeTeamsData.find(t => t.team_key === topDay.team_key);
                 const logo = team ? fixTeamLogo(team.team_logo) : 'league_logo.png';
                 
-                // Format date as simple string (M/D or MM/DD)
-                let formattedDate = '--/--';
+                // Format date with leading zeros (MM/DD)
+                let month = '00';
+                let day = '00';
                 if (topDay.date) {
                     if (topDay.date.includes('-')) {
                         const date = new Date(topDay.date);
-                        formattedDate = `${date.getMonth() + 1}/${date.getDate()}`;
+                        month = String(date.getMonth() + 1).padStart(2, '0');
+                        day = String(date.getDate()).padStart(2, '0');
                     } else if (topDay.date.includes('/')) {
-                        formattedDate = topDay.date;
+                        const parts = topDay.date.split('/');
+                        month = parts[0].padStart(2, '0');
+                        day = parts[1].padStart(2, '0');
                     }
                 }
                 
-                // Format score with 2 decimal places, padded to XXX.XX format
-                const scoreStr = topDay.score.toFixed(2).padStart(6, ' ');
+                // Format score with 2 decimal places and leading zeros (XXX.XX format)
+                const scoreStr = topDay.score.toFixed(2).padStart(6, '0');
+                
+                // Build date digits HTML - MM/DD aligned with score
+                const dateHtml = renderMonsterDate(month, day);
                 
                 // Build score digits HTML - each digit gets its own tile
                 const scoreHtml = renderMonsterScore(scoreStr);
                 
                 // Update display
                 document.getElementById('green-monster-logo').src = logo;
-                document.getElementById('green-monster-date').textContent = formattedDate;
+                document.getElementById('green-monster-date').innerHTML = dateHtml;
                 document.getElementById('green-monster-score').innerHTML = scoreHtml;
                 document.getElementById('green-monster-ticker').style.display = 'flex';
             } catch (e) {
@@ -28843,13 +28860,21 @@
             }
         }
         
+        function renderMonsterDate(month, day) {
+            // Format: [M][M] [/] [D][D] - aligns with score XXX.XX
+            return month.split('').map(char => 
+                `<span class="monster-digit date-digit">${char}</span>`
+            ).join('') +
+            `<span class="monster-digit date-separator">/</span>` +
+            day.split('').map(char => 
+                `<span class="monster-digit date-digit">${char}</span>`
+            ).join('');
+        }
+        
         function renderMonsterScore(scoreStr) {
             return scoreStr.split('').map(char => {
                 if (char === '.') {
                     return `<span class="monster-digit decimal">.</span>`;
-                } else if (char === ' ') {
-                    // Empty placeholder for padding
-                    return `<span class="monster-digit score-digit" style="visibility:hidden;">0</span>`;
                 }
                 return `<span class="monster-digit score-digit">${char}</span>`;
             }).join('');
