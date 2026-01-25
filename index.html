@@ -10780,24 +10780,34 @@
             text-transform: uppercase;
         }
         
-        /* Position badges for roster modal */
-        .roster-player-positions .pos-badge {
-            font-size: 0.55rem;
-            font-weight: 600;
-            padding: 2px 4px;
-            border-radius: 3px;
-            text-transform: uppercase;
+        /* Position badges in roster modal - use standard position-badge class */
+        .roster-player-positions .position-badge {
+            font-size: 0.6rem;
+            min-width: 22px;
+            padding: 0.1rem 0.3rem;
         }
         
-        .roster-player-positions .pos-c { background: #fecaca; color: #991b1b; }
-        .roster-player-positions .pos-1b { background: #fed7aa; color: #9a3412; }
-        .roster-player-positions .pos-2b { background: #fef08a; color: #854d0e; }
-        .roster-player-positions .pos-3b { background: #bbf7d0; color: #166534; }
-        .roster-player-positions .pos-ss { background: #a5f3fc; color: #0e7490; }
-        .roster-player-positions .pos-of { background: #bfdbfe; color: #1e40af; }
-        .roster-player-positions .pos-util { background: #e5e7eb; color: #374151; }
-        .roster-player-positions .pos-sp { background: #ddd6fe; color: #5b21b6; }
-        .roster-player-positions .pos-rp { background: #fbcfe8; color: #9d174d; }
+        /* Projected points indicator */
+        .roster-player-points.projected {
+            color: #666;
+            font-style: italic;
+        }
+        
+        /* Prospects section */
+        .roster-prospects-group {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed #ccc;
+        }
+        
+        .roster-prospects-group .roster-position-label {
+            color: #888;
+            font-style: italic;
+        }
+        
+        .roster-player-row.prospect {
+            opacity: 0.8;
+        }
         
         @media (max-width: 700px) {
             .roster-modal-body {
@@ -29276,6 +29286,7 @@
                                 
                                 const position = keeper.position || projData?.position || '';
                                 const isPitcher = ['SP', 'RP', 'P'].includes(position);
+                                const projectedPoints = projData?.projected_points || 0;
                                 
                                 keeperPlayers.push({
                                     name: keeper.player_name,
@@ -29284,9 +29295,11 @@
                                     eligible_positions: [position],
                                     headshot_url: projData?.headshot_url || '',
                                     acquisition_type: 'Keeper',
-                                    fantasy_points: 0,
+                                    fantasy_points: 0,  // Actual points (0 until season starts)
+                                    projected_points: projectedPoints,  // ATC projected points
                                     position_rank: null,
-                                    isKeeper: true
+                                    isKeeper: true,
+                                    isProspect: projectedPoints === 0  // Flag prospects
                                 });
                             }
                         } else {
@@ -29306,6 +29319,7 @@
                         
                         const position = keeper.position || projData?.position || '';
                         const isPitcher = ['SP', 'RP', 'P'].includes(position);
+                        const projectedPoints = projData?.projected_points || 0;
                         
                         keeperPlayers.push({
                             name: keeper.player_name,
@@ -29315,8 +29329,10 @@
                             headshot_url: projData?.headshot_url || '',
                             acquisition_type: 'Keeper',
                             fantasy_points: 0,
+                            projected_points: projectedPoints,
                             position_rank: null,
-                            isKeeper: true
+                            isKeeper: true,
+                            isProspect: projectedPoints === 0
                         });
                     }
                 } else {
@@ -29330,17 +29346,23 @@
         }
         
         function buildRosterModalContent(players, teamKey) {
-            // Separate batters and pitchers
-            const batters = players.filter(p => p.position_type === 'B' || 
-                (!p.position_type && !['SP', 'RP', 'P'].includes(p.primary_position)));
-            const pitchers = players.filter(p => p.position_type === 'P' || 
-                ['SP', 'RP', 'P'].includes(p.primary_position));
+            // Separate batters and pitchers, excluding prospects
+            const batters = players.filter(p => (p.position_type === 'B' || 
+                (!p.position_type && !['SP', 'RP', 'P'].includes(p.primary_position))) && !p.isProspect);
+            const pitchers = players.filter(p => (p.position_type === 'P' || 
+                ['SP', 'RP', 'P'].includes(p.primary_position)) && !p.isProspect);
+            
+            // Get prospects separately
+            const batterProspects = players.filter(p => (p.position_type === 'B' || 
+                (!p.position_type && !['SP', 'RP', 'P'].includes(p.primary_position))) && p.isProspect);
+            const pitcherProspects = players.filter(p => (p.position_type === 'P' || 
+                ['SP', 'RP', 'P'].includes(p.primary_position)) && p.isProspect);
             
             // Placeholder headshot
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
             
             // Build batters section
-            let battersHtml = '<div class="roster-section"><div class="roster-section-header"><span class="section-icon">⚾</span><h4>Batters</h4></div>';
+            let battersHtml = '<div class="roster-section"><div class="roster-section-header"><h4>Batters</h4></div>';
             
             for (const slot of ROSTER_BATTER_SLOTS) {
                 battersHtml += `<div class="roster-position-group"><div class="roster-position-label">${slot.label}</div>`;
@@ -29359,10 +29381,20 @@
                 }
                 battersHtml += '</div>';
             }
+            
+            // Add batter prospects section if any
+            if (batterProspects.length > 0) {
+                battersHtml += '<div class="roster-position-group roster-prospects-group"><div class="roster-position-label">Prospects</div>';
+                for (const prospect of batterProspects) {
+                    battersHtml += buildPlayerRow(prospect, placeholderImg);
+                }
+                battersHtml += '</div>';
+            }
+            
             battersHtml += '</div>';
             
             // Build pitchers section (including bench)
-            let pitchersHtml = '<div class="roster-section"><div class="roster-section-header"><span class="section-icon">🔥</span><h4>Pitchers & Bench</h4></div>';
+            let pitchersHtml = '<div class="roster-section"><div class="roster-section-header"><h4>Pitchers & Bench</h4></div>';
             
             for (const slot of ROSTER_PITCHER_SLOTS) {
                 pitchersHtml += `<div class="roster-position-group"><div class="roster-position-label">${slot.label}</div>`;
@@ -29385,6 +29417,16 @@
                 }
                 pitchersHtml += '</div>';
             }
+            
+            // Add pitcher prospects section if any
+            if (pitcherProspects.length > 0) {
+                pitchersHtml += '<div class="roster-position-group roster-prospects-group"><div class="roster-position-label">Prospects</div>';
+                for (const prospect of pitcherProspects) {
+                    pitchersHtml += buildPlayerRow(prospect, placeholderImg);
+                }
+                pitchersHtml += '</div>';
+            }
+            
             pitchersHtml += '</div>';
             
             return battersHtml + pitchersHtml;
@@ -29420,9 +29462,14 @@
         function buildPlayerRow(player, placeholderImg) {
             const headshot = player.headshot_url || placeholderImg;
             const positions = player.eligible_positions || [player.primary_position];
-            const points = player.fantasy_points || 0;
+            const actualPoints = player.fantasy_points || 0;
+            const projectedPoints = player.projected_points || 0;
             const rank = player.position_rank;
             const isKeeper = player.isKeeper || player.acquisition_type === 'Keeper';
+            
+            // Use actual points if available, otherwise projected points
+            const displayPoints = actualPoints > 0 ? actualPoints : projectedPoints;
+            const isProjected = actualPoints === 0 && projectedPoints > 0;
             
             // Determine acquisition type class
             let acqClass = '';
@@ -29433,14 +29480,13 @@
             else if (acqLabel === 'Keeper') { acqClass = 'draft'; acqLabel = 'K'; }
             else { acqClass = 'draft'; acqLabel = 'Draft'; }
             
-            // Build position badges
+            // Build position badges using standard position-badge class
             const positionBadges = positions.slice(0, 3).map(pos => {
-                const posClass = getPositionBadgeClass(pos);
-                return `<span class="pos-badge ${posClass}">${pos}</span>`;
+                return `<span class="position-badge pos-${pos}">${pos}</span>`;
             }).join('');
             
             return `
-                <div class="roster-player-row">
+                <div class="roster-player-row${player.isProspect ? ' prospect' : ''}">
                     <img src="${headshot}" class="roster-player-headshot" alt="" onerror="this.src='${placeholderImg}'">
                     <div class="roster-player-info">
                         <div class="roster-player-name">${player.name || 'Unknown'}</div>
@@ -29451,7 +29497,7 @@
                         </div>
                     </div>
                     <div class="roster-player-stats">
-                        <div class="roster-player-points">${points > 0 ? points.toFixed(1) : '-'}</div>
+                        <div class="roster-player-points${isProjected ? ' projected' : ''}">${displayPoints > 0 ? displayPoints.toFixed(1) : '-'}${isProjected ? '*' : ''}</div>
                         ${rank ? `<div class="roster-player-rank">#${rank}</div>` : ''}
                     </div>
                 </div>
@@ -29465,7 +29511,7 @@
                     <div class="roster-player-info">
                         <div class="roster-player-name">Empty Slot</div>
                         <div class="roster-player-meta">
-                            <span class="pos-badge pos-${position.toLowerCase()}">${position}</span>
+                            <span class="position-badge pos-${position}">${position}</span>
                         </div>
                     </div>
                     <div class="roster-player-stats">
