@@ -29205,41 +29205,92 @@
                     }
                 }
                 
-                // Try to get keepers from Firebase
+                // Try to get keepers from Firebase - match by manager name since team_keys changed between seasons
                 if (typeof firebaseDb !== 'undefined' && firebaseDb) {
-                    const sanitizedKey = sanitizeFirebaseKey(teamKey);
-                    console.log('Fetching keepers for team:', teamKey, 'sanitized:', sanitizedKey);
-                    const snapshot = await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).once('value');
-                    const keepersData = snapshot.val();
-                    console.log('Firebase keepers data:', keepersData);
+                    console.log('Fetching all keepers from Firebase for manager:', manager);
+                    const snapshot = await firebaseDb.ref('keepers_2026').once('value');
+                    const allKeepersData = snapshot.val();
+                    console.log('Firebase all keepers data:', allKeepersData);
                     
-                    if (keepersData) {
-                        // Convert to array if needed
-                        const teamKeepers = Array.isArray(keepersData) ? keepersData : Object.values(keepersData);
+                    if (allKeepersData) {
+                        // Find the team's keepers by matching manager name
+                        // The keys are sanitized 2025 team_keys, but we need to find by manager
+                        let teamKeepers = null;
                         
-                        for (const keeper of teamKeepers) {
-                            if (!keeper || !keeper.player_name) continue;
+                        // First, try to load keeper_config to map team_keys to managers
+                        let keeperConfigData = null;
+                        try {
+                            const configResponse = await fetch('data/keepers/keeper_config.json');
+                            if (configResponse.ok) {
+                                keeperConfigData = await configResponse.json();
+                            }
+                        } catch (e) {
+                            console.log('Could not load keeper_config.json');
+                        }
+                        
+                        // Normalize the manager name for comparison
+                        const normalizedManager = manager.toLowerCase().trim();
+                        
+                        // Search through all keepers entries
+                        for (const [sanitizedKey, keepers] of Object.entries(allKeepersData)) {
+                            // Convert sanitized key back to original format
+                            const originalKey = unsanitizeFirebaseKey(sanitizedKey);
                             
-                            // Find projection data for headshot and position
-                            const projData = allProj.find(p => 
-                                p.name && keeper.player_name &&
-                                p.name.toLowerCase().trim() === keeper.player_name.toLowerCase().trim()
-                            );
+                            // Try to find manager name from keeper_config
+                            let entryManager = null;
+                            if (keeperConfigData?.teams?.[originalKey]) {
+                                entryManager = keeperConfigData.teams[originalKey].manager;
+                            }
                             
-                            const position = keeper.position || projData?.position || '';
-                            const isPitcher = ['SP', 'RP', 'P'].includes(position);
+                            // Also check if the keepers array has manager info
+                            if (!entryManager && keepers && keepers.length > 0 && keepers[0]?.manager) {
+                                entryManager = keepers[0].manager;
+                            }
                             
-                            keeperPlayers.push({
-                                name: keeper.player_name,
-                                primary_position: position,
-                                position_type: isPitcher ? 'P' : 'B',
-                                eligible_positions: [position],
-                                headshot_url: projData?.headshot_url || '',
-                                acquisition_type: 'Keeper',
-                                fantasy_points: 0,
-                                position_rank: null,
-                                isKeeper: true
-                            });
+                            // Match by manager name (handles Josh/Josh B, Logan/Logan S etc)
+                            if (entryManager) {
+                                const normalizedEntryManager = entryManager.toLowerCase().trim();
+                                // Check for exact match or partial match (e.g., "josh" matches "josh b")
+                                if (normalizedEntryManager === normalizedManager ||
+                                    normalizedEntryManager.startsWith(normalizedManager.split(' ')[0]) && 
+                                    normalizedManager.startsWith(normalizedEntryManager.split(' ')[0])) {
+                                    teamKeepers = keepers;
+                                    console.log('Found keepers for manager:', manager, 'via config key:', originalKey);
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if (teamKeepers) {
+                            // Convert to array if needed
+                            const keepersArray = Array.isArray(teamKeepers) ? teamKeepers : Object.values(teamKeepers);
+                            
+                            for (const keeper of keepersArray) {
+                                if (!keeper || !keeper.player_name) continue;
+                                
+                                // Find projection data for headshot and position
+                                const projData = allProj.find(p => 
+                                    p.name && keeper.player_name &&
+                                    p.name.toLowerCase().trim() === keeper.player_name.toLowerCase().trim()
+                                );
+                                
+                                const position = keeper.position || projData?.position || '';
+                                const isPitcher = ['SP', 'RP', 'P'].includes(position);
+                                
+                                keeperPlayers.push({
+                                    name: keeper.player_name,
+                                    primary_position: position,
+                                    position_type: isPitcher ? 'P' : 'B',
+                                    eligible_positions: [position],
+                                    headshot_url: projData?.headshot_url || '',
+                                    acquisition_type: 'Keeper',
+                                    fantasy_points: 0,
+                                    position_rank: null,
+                                    isKeeper: true
+                                });
+                            }
+                        } else {
+                            console.log('No keepers found for manager:', manager);
                         }
                     }
                 } else if (typeof keeperSelections !== 'undefined' && keeperSelections && keeperSelections[teamKey]) {
