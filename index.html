@@ -9943,7 +9943,7 @@
         
         /* Individual number tiles - like the interchangeable plates on the Monster */
         .monster-digit {
-            font-family: 'Arial Black', 'Helvetica Neue', sans-serif;
+            font-family: 'Basis33', 'Arial Black', sans-serif;
             font-weight: 900;
             color: #f5f5f0;
             text-align: center;
@@ -29162,31 +29162,97 @@
         }
         
         async function getKeeperPlayersForTeam(teamKey, manager) {
-            // Try to get keepers from keeperSelections or Firebase
             const keeperPlayers = [];
             
-            // Check if keeperSelections is available (from preseason tools)
-            if (typeof keeperSelections !== 'undefined' && keeperSelections) {
-                const teamKeepers = keeperSelections[teamKey] || [];
-                for (const keeper of teamKeepers) {
-                    // Find projection data for headshot and position
-                    const allProj = [...(allProjectionBatters || []), ...(allProjectionPitchers || [])];
-                    const projData = allProj.find(p => 
-                        p.name.toLowerCase().trim() === (keeper.player_name || '').toLowerCase().trim()
-                    );
-                    
-                    keeperPlayers.push({
-                        name: keeper.player_name || '',
-                        primary_position: keeper.position || projData?.position || '',
-                        position_type: keeper.position === 'SP' || keeper.position === 'RP' ? 'P' : 'B',
-                        eligible_positions: [keeper.position || projData?.position || ''],
-                        headshot_url: projData?.headshot_url || '',
-                        acquisition_type: 'Keeper',
-                        fantasy_points: 0,
-                        position_rank: null,
-                        isKeeper: true
-                    });
+            try {
+                // First, try to load projection data if not already loaded
+                let projBatters = [];
+                let projPitchers = [];
+                
+                // Check if projections are already loaded (from preseason tools)
+                if (typeof allProjectionBatters !== 'undefined' && allProjectionBatters.length > 0) {
+                    projBatters = allProjectionBatters;
+                    projPitchers = allProjectionPitchers || [];
+                } else {
+                    // Load projections for headshots
+                    try {
+                        const projResponse = await fetch('data/projections/projections_steamer.json');
+                        if (projResponse.ok) {
+                            const projData = await projResponse.json();
+                            projBatters = projData.batters || [];
+                            projPitchers = projData.pitchers || [];
+                        }
+                    } catch (e) {
+                        console.log('Could not load projections for roster modal');
+                    }
                 }
+                
+                const allProj = [...projBatters, ...projPitchers];
+                
+                // Try to get keepers from Firebase
+                if (typeof firebaseDb !== 'undefined' && firebaseDb) {
+                    const sanitizedKey = sanitizeFirebaseKey(teamKey);
+                    const snapshot = await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).once('value');
+                    const keepersData = snapshot.val();
+                    
+                    if (keepersData) {
+                        // Convert to array if needed
+                        const teamKeepers = Array.isArray(keepersData) ? keepersData : Object.values(keepersData);
+                        
+                        for (const keeper of teamKeepers) {
+                            if (!keeper || !keeper.player_name) continue;
+                            
+                            // Find projection data for headshot and position
+                            const projData = allProj.find(p => 
+                                p.name && keeper.player_name &&
+                                p.name.toLowerCase().trim() === keeper.player_name.toLowerCase().trim()
+                            );
+                            
+                            const position = keeper.position || projData?.position || '';
+                            const isPitcher = ['SP', 'RP', 'P'].includes(position);
+                            
+                            keeperPlayers.push({
+                                name: keeper.player_name,
+                                primary_position: position,
+                                position_type: isPitcher ? 'P' : 'B',
+                                eligible_positions: [position],
+                                headshot_url: projData?.headshot_url || '',
+                                acquisition_type: 'Keeper',
+                                fantasy_points: 0,
+                                position_rank: null,
+                                isKeeper: true
+                            });
+                        }
+                    }
+                } else if (typeof keeperSelections !== 'undefined' && keeperSelections && keeperSelections[teamKey]) {
+                    // Fall back to in-memory keeperSelections if Firebase isn't available
+                    const teamKeepers = keeperSelections[teamKey] || [];
+                    for (const keeper of teamKeepers) {
+                        if (!keeper || !keeper.player_name) continue;
+                        
+                        const projData = allProj.find(p => 
+                            p.name && keeper.player_name &&
+                            p.name.toLowerCase().trim() === keeper.player_name.toLowerCase().trim()
+                        );
+                        
+                        const position = keeper.position || projData?.position || '';
+                        const isPitcher = ['SP', 'RP', 'P'].includes(position);
+                        
+                        keeperPlayers.push({
+                            name: keeper.player_name,
+                            primary_position: position,
+                            position_type: isPitcher ? 'P' : 'B',
+                            eligible_positions: [position],
+                            headshot_url: projData?.headshot_url || '',
+                            acquisition_type: 'Keeper',
+                            fantasy_points: 0,
+                            position_rank: null,
+                            isKeeper: true
+                        });
+                    }
+                }
+            } catch (e) {
+                console.log('Error loading keepers for roster modal:', e);
             }
             
             return keeperPlayers;
