@@ -29419,24 +29419,6 @@
                         });
                     }
                 } else {
-                        const isPitcher = ['SP', 'RP', 'P'].includes(position);
-                        const projectedPoints = projData?.projected_points || 0;
-                        
-                        keeperPlayers.push({
-                            name: keeper.player_name,
-                            primary_position: position,
-                            position_type: isPitcher ? 'P' : 'B',
-                            eligible_positions: [position],
-                            headshot_url: projData?.headshot_url || '',
-                            acquisition_type: 'Keeper',
-                            fantasy_points: 0,
-                            projected_points: projectedPoints,
-                            position_rank: null,
-                            isKeeper: true,
-                            isProspect: projectedPoints === 0
-                        });
-                    }
-                } else {
                     console.log('Firebase not available and no keeper selections in memory');
                 }
             } catch (e) {
