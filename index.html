@@ -11050,6 +11050,32 @@
             color: #666;
         }
         
+        /* Projected top players (preseason) */
+        .top-players-player > .position-badge {
+            flex-shrink: 0;
+            min-width: 24px;
+            font-size: 0.6rem;
+        }
+        
+        .top-players-mlb-team {
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 0.6rem;
+            color: #888;
+        }
+        
+        .top-players-mlb-logo {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+        }
+        
+        .top-players-table td.projected-pts {
+            color: #666;
+            font-style: italic;
+        }
+        
         /* Transactions Ticker - Vertical */
         .transactions-ticker {
             background: #f8f9fa;
@@ -28957,38 +28983,106 @@
         function renderHomeTopPlayers() {
             const tbody = document.getElementById('home-top-players-body');
             
-            if (!homePlayersData || homePlayersData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="2" class="homepage-placeholder">Top players will appear once the season starts.</td></tr>';
+            // If we have actual player data (season has started), show top scorers
+            if (homePlayersData && homePlayersData.length > 0) {
+                // Sort by total points and take top 12
+                const sorted = [...homePlayersData].sort((a, b) => (b.total_points || 0) - (a.total_points || 0)).slice(0, 12);
+                
+                const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+                
+                tbody.innerHTML = sorted.map((player, idx) => {
+                    const headshot = player.headshot_url || placeholderImg;
+                    const rankClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
+                    const teamName = player.team_name || 'FA';
+                    const manager = player.manager ? capitalizeManagerName(player.manager) : '';
+                    
+                    return `
+                        <tr>
+                            <td>
+                                <div class="top-players-player">
+                                    <span class="top-players-rank ${rankClass}">${idx + 1}</span>
+                                    <img src="${headshot}" class="top-players-headshot" alt="" onerror="this.src='${placeholderImg}'">
+                                    <div class="top-players-info">
+                                        <div class="top-players-name">${player.name || 'Unknown'}</div>
+                                        <div class="top-players-team">${teamName}${manager ? ` - ${manager}` : ''}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${(player.total_points || 0).toFixed(0)}</td>
+                        </tr>
+                    `;
+                }).join('');
                 return;
             }
             
-            // Sort by total points and take top 12
-            const sorted = [...homePlayersData].sort((a, b) => (b.total_points || 0) - (a.total_points || 0)).slice(0, 12);
+            // Preseason: Load and show top projected player at each position from ATC
+            loadProjectedTopPlayers(tbody);
+        }
+        
+        async function loadProjectedTopPlayers(tbody) {
+            tbody.innerHTML = '<tr><td colspan="2" class="homepage-placeholder">Loading projections...</td></tr>';
             
-            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
-            
-            tbody.innerHTML = sorted.map((player, idx) => {
-                const headshot = player.headshot_url || placeholderImg;
-                const rankClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
-                const teamName = player.team_name || 'FA';
-                const manager = player.manager ? capitalizeManagerName(player.manager) : '';
+            try {
+                const response = await fetch('data/projections/projections_atc.json');
+                if (!response.ok) throw new Error('Could not load projections');
                 
-                return `
-                    <tr>
-                        <td>
-                            <div class="top-players-player">
-                                <span class="top-players-rank ${rankClass}">${idx + 1}</span>
-                                <img src="${headshot}" class="top-players-headshot" alt="" onerror="this.src='${placeholderImg}'">
-                                <div class="top-players-info">
-                                    <div class="top-players-name">${player.name || 'Unknown'}</div>
-                                    <div class="top-players-team">${teamName}${manager ? ` - ${manager}` : ''}</div>
+                const data = await response.json();
+                const batters = data.batters || [];
+                const pitchers = data.pitchers || [];
+                
+                // Positions to show (one player each)
+                const positions = ['C', '1B', '2B', '3B', 'SS', 'OF', 'SP', 'RP'];
+                const topByPosition = [];
+                
+                for (const pos of positions) {
+                    let candidates;
+                    if (pos === 'SP' || pos === 'RP') {
+                        candidates = pitchers.filter(p => p.position === pos);
+                    } else if (pos === 'OF') {
+                        candidates = batters.filter(p => ['OF', 'LF', 'CF', 'RF'].includes(p.position));
+                    } else {
+                        candidates = batters.filter(p => p.position === pos);
+                    }
+                    
+                    // Sort by projected points and take the top one
+                    candidates.sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
+                    if (candidates.length > 0) {
+                        topByPosition.push({ ...candidates[0], display_position: pos });
+                    }
+                }
+                
+                const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+                
+                tbody.innerHTML = topByPosition.map(player => {
+                    const headshot = player.headshot_url || placeholderImg;
+                    const pos = player.display_position;
+                    const mlbTeam = player.mlb_team || '';
+                    const mlbLogoUrl = mlbTeam ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/mlb/500/${mlbTeam.toLowerCase()}.png&h=40&w=40` : '';
+                    
+                    return `
+                        <tr>
+                            <td>
+                                <div class="top-players-player">
+                                    <span class="position-badge pos-${pos}">${pos}</span>
+                                    <img src="${headshot}" class="top-players-headshot" alt="" onerror="this.src='${placeholderImg}'">
+                                    <div class="top-players-info">
+                                        <div class="top-players-name">${player.name || 'Unknown'}</div>
+                                        <div class="top-players-mlb-team">
+                                            ${mlbTeam ? `<img src="${mlbLogoUrl}" class="top-players-mlb-logo" alt="${mlbTeam}" onerror="this.style.display='none'">` : ''}
+                                            <span>${mlbTeam || ''}</span>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>${(player.total_points || 0).toFixed(0)}</td>
-                    </tr>
-                `;
-            }).join('');
+                            </td>
+                            <td class="projected-pts">${(player.projected_points || 0).toFixed(0)}*</td>
+                        </tr>
+                    `;
+                }).join('');
+                
+            } catch (e) {
+                console.log('Error loading projected top players:', e);
+                tbody.innerHTML = '<tr><td colspan="2" class="homepage-placeholder">Top players will appear once the season starts.</td></tr>';
+            }
         }
         
         function renderHomeTransactions() {
