@@ -29359,15 +29359,24 @@
                             for (const keeper of keepersArray) {
                                 if (!keeper || !keeper.player_name) continue;
                                 
-                                // Find projection data for headshot and position
+                                // Find projection data for headshot, position, and MLB team
                                 const projData = allProj.find(p => 
                                     p.name && keeper.player_name &&
                                     p.name.toLowerCase().trim() === keeper.player_name.toLowerCase().trim()
                                 );
                                 
+                                // Debug logging
+                                if (projData) {
+                                    console.log('Found projection for', keeper.player_name, '- mlb_team:', projData.mlb_team, '- team:', projData.team, '- Team:', projData.Team);
+                                } else {
+                                    console.log('No projection found for', keeper.player_name);
+                                }
+                                
                                 const position = keeper.position || projData?.position || '';
                                 const isPitcher = ['SP', 'RP', 'P'].includes(position);
                                 const projectedPoints = projData?.projected_points || 0;
+                                // Try multiple possible field names for MLB team
+                                const mlbTeam = projData?.mlb_team || projData?.team || projData?.Team || '';
                                 
                                 keeperPlayers.push({
                                     name: keeper.player_name,
@@ -29375,7 +29384,7 @@
                                     position_type: isPitcher ? 'P' : 'B',
                                     eligible_positions: [position],
                                     headshot_url: projData?.headshot_url || '',
-                                    mlb_team: projData?.mlb_team || '',
+                                    mlb_team: mlbTeam,
                                     acquisition_type: 'Keeper',
                                     fantasy_points: 0,  // Actual points (0 until season starts)
                                     projected_points: projectedPoints,  // ATC projected points
@@ -29402,6 +29411,8 @@
                         const position = keeper.position || projData?.position || '';
                         const isPitcher = ['SP', 'RP', 'P'].includes(position);
                         const projectedPoints = projData?.projected_points || 0;
+                        // Try multiple possible field names for MLB team
+                        const mlbTeam = projData?.mlb_team || projData?.team || projData?.Team || '';
                         
                         keeperPlayers.push({
                             name: keeper.player_name,
@@ -29409,7 +29420,7 @@
                             position_type: isPitcher ? 'P' : 'B',
                             eligible_positions: [position],
                             headshot_url: projData?.headshot_url || '',
-                            mlb_team: projData?.mlb_team || '',
+                            mlb_team: mlbTeam,
                             acquisition_type: 'Keeper',
                             fantasy_points: 0,
                             projected_points: projectedPoints,
@@ -29555,8 +29566,9 @@
             const displayPoints = actualPoints > 0 ? actualPoints : projectedPoints;
             const isProjected = actualPoints === 0 && projectedPoints > 0;
             
-            // MLB team logo path
-            const mlbLogoUrl = mlbTeam ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/mlb/500/${mlbTeam.toLowerCase()}.png&h=40&w=40` : '';
+            // MLB team logo - use helper function for proper abbreviation handling
+            const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
+            const mlbTeamDisplay = mlbTeam ? formatMLBTeamDisplay(mlbTeam) : '';
             
             return `
                 <div class="roster-player-row${player.isProspect ? ' prospect' : ''}">
@@ -29567,10 +29579,10 @@
                             <span class="roster-player-name">${player.name || 'Unknown'}</span>
                             ${isKeeper ? '<span class="keeper-badge">K</span>' : ''}
                         </div>
-                        ${mlbTeam ? `
+                        ${mlbTeamDisplay ? `
                         <div class="roster-player-mlb-team">
-                            <img src="${mlbLogoUrl}" class="roster-mlb-logo" alt="${mlbTeam}" onerror="this.style.display='none'">
-                            <span>${mlbTeam}</span>
+                            ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="roster-mlb-logo" alt="${mlbTeamDisplay}" onerror="this.style.display='none'">` : ''}
+                            <span>${mlbTeamDisplay}</span>
                         </div>` : ''}
                     </div>
                     <div class="roster-player-stats">
