@@ -29030,6 +29030,11 @@
                 const batters = data.batters || [];
                 const pitchers = data.pitchers || [];
                 
+                console.log('Loaded projections - batters:', batters.length, 'pitchers:', pitchers.length);
+                if (batters.length > 0) {
+                    console.log('Sample batter positions:', batters.slice(0, 10).map(b => b.position));
+                }
+                
                 // Positions to show (one player each)
                 const positions = ['C', '1B', '2B', '3B', 'SS', 'OF', 'SP', 'RP'];
                 const topByPosition = [];
@@ -29039,10 +29044,20 @@
                     if (pos === 'SP' || pos === 'RP') {
                         candidates = pitchers.filter(p => p.position === pos);
                     } else if (pos === 'OF') {
-                        candidates = batters.filter(p => ['OF', 'LF', 'CF', 'RF'].includes(p.position));
+                        // OF can be OF, LF, CF, RF, or contain OF
+                        candidates = batters.filter(p => {
+                            const playerPos = (p.position || '').toUpperCase();
+                            return playerPos === 'OF' || playerPos === 'LF' || playerPos === 'CF' || playerPos === 'RF' || playerPos.includes('OF');
+                        });
                     } else {
-                        candidates = batters.filter(p => p.position === pos);
+                        // Match position exactly or check if it's included (e.g., "1B/DH" contains "1B")
+                        candidates = batters.filter(p => {
+                            const playerPos = (p.position || '').toUpperCase();
+                            return playerPos === pos || playerPos.includes(pos);
+                        });
                     }
+                    
+                    console.log(`Position ${pos}: found ${candidates.length} candidates`);
                     
                     // Sort by projected points and take the top one
                     candidates.sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
@@ -29056,8 +29071,9 @@
                 tbody.innerHTML = topByPosition.map(player => {
                     const headshot = player.headshot_url || placeholderImg;
                     const pos = player.display_position;
-                    const mlbTeam = player.mlb_team || '';
-                    const mlbLogoUrl = mlbTeam ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/mlb/500/${mlbTeam.toLowerCase()}.png&h=40&w=40` : '';
+                    const mlbTeam = player.mlb_team || player.team || player.Team || '';
+                    const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
+                    const mlbTeamDisplay = mlbTeam ? formatMLBTeamDisplay(mlbTeam) : '';
                     
                     return `
                         <tr>
@@ -29068,8 +29084,8 @@
                                     <div class="top-players-info">
                                         <div class="top-players-name">${player.name || 'Unknown'}</div>
                                         <div class="top-players-mlb-team">
-                                            ${mlbTeam ? `<img src="${mlbLogoUrl}" class="top-players-mlb-logo" alt="${mlbTeam}" onerror="this.style.display='none'">` : ''}
-                                            <span>${mlbTeam || ''}</span>
+                                            ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="top-players-mlb-logo" alt="${mlbTeamDisplay}" onerror="this.style.display='none'">` : ''}
+                                            <span>${mlbTeamDisplay}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -29452,6 +29468,17 @@
             const pitcherProspects = players.filter(p => (p.position_type === 'P' || 
                 ['SP', 'RP', 'P'].includes(p.primary_position)) && p.isProspect);
             
+            // Sort all groups by projected points (or actual points if available) descending
+            const sortByPoints = (a, b) => {
+                const aPoints = (a.fantasy_points || 0) > 0 ? a.fantasy_points : (a.projected_points || 0);
+                const bPoints = (b.fantasy_points || 0) > 0 ? b.fantasy_points : (b.projected_points || 0);
+                return bPoints - aPoints;
+            };
+            batters.sort(sortByPoints);
+            pitchers.sort(sortByPoints);
+            batterProspects.sort(sortByPoints);
+            pitcherProspects.sort(sortByPoints);
+            
             // Placeholder headshot
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
             
@@ -29462,7 +29489,7 @@
                 battersHtml += `<div class="roster-position-group"><div class="roster-position-label">${slot.label}</div>`;
                 
                 for (let i = 0; i < slot.count; i++) {
-                    // Find a player for this slot
+                    // Find a player for this slot (already sorted by points, so will pick best available)
                     const player = findPlayerForSlot(batters, slot.pos, i);
                     
                     if (player) {
@@ -29496,7 +29523,7 @@
                 for (let i = 0; i < slot.count; i++) {
                     let player;
                     if (slot.pos === 'BN') {
-                        // Bench slots - use remaining pitchers
+                        // Bench slots - use remaining pitchers (already sorted)
                         player = pitchers.find(p => !p._used);
                     } else {
                         player = findPlayerForSlot(pitchers, slot.pos, i);
