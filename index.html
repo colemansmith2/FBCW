@@ -9795,8 +9795,9 @@
         .prospect-owner-logo {
             width: 24px;
             height: 24px;
-            border-radius: 4px;
+            border-radius: 50%;
             object-fit: cover;
+            background: #f0f0f0;
         }
         
         .prospect-owner-name {
@@ -30057,7 +30058,47 @@
             }
         }
         
+        // Name aliases for matching prospects to keepers (prospect name -> keeper name variations)
+        const prospectNameAliases = {
+            'leo de vries': ['leodalis de vries', 'leo devries', 'leodalis devries'],
+            'jj wetherholt': ['j.j. wetherholt', 'jj wetherholt'],
+            'aj ewing': ['a.j. ewing', 'aj ewing'],
+            'jr ritchie': ['j.r. ritchie', 'jr ritchie'],
+            'george jr. lombard': ['george lombard jr', 'george lombard', 'george lombard jr.'],
+            // Add more aliases as needed
+        };
+        
+        // Build reverse lookup: keeper name -> prospect name
+        const keeperToProspectName = {};
+        for (const [prospectName, aliases] of Object.entries(prospectNameAliases)) {
+            for (const alias of aliases) {
+                keeperToProspectName[alias] = prospectName;
+            }
+            keeperToProspectName[prospectName] = prospectName;
+        }
+        
+        function normalizeProspectName(name) {
+            const lower = name.toLowerCase().trim();
+            return keeperToProspectName[lower] || lower;
+        }
+        
         async function loadProspectOwnership() {
+            // Load 2026 team data for current logos
+            let team2026Logos = {};
+            try {
+                const teamResponse = await fetch('data/2026/teams.json');
+                if (teamResponse.ok) {
+                    const teamData = await teamResponse.json();
+                    teamData.forEach(team => {
+                        const managerLower = (team.manager || '').toLowerCase().trim();
+                        team2026Logos[managerLower] = fixTeamLogo(team.team_logo);
+                    });
+                    console.log('Loaded 2026 team logos for', Object.keys(team2026Logos).length, 'teams');
+                }
+            } catch (e) {
+                console.log('Could not load 2026 team data:', e);
+            }
+            
             try {
                 // Load from keeper selections in Firebase or local data
                 // First try to get 2026 rosters/keepers
@@ -30077,14 +30118,24 @@
                             
                             if (teamInfo && keepers) {
                                 const keepersArray = Array.isArray(keepers) ? keepers : Object.values(keepers);
+                                const managerLower = (teamInfo.manager || '').toLowerCase().trim();
+                                // Use 2026 logo if available, otherwise fall back to keeper config logo
+                                const teamLogo = team2026Logos[managerLower] || fixTeamLogo(teamInfo.team_logo);
+                                
                                 for (const keeper of keepersArray) {
                                     if (keeper && keeper.player_name) {
-                                        const normalizedName = keeper.player_name.toLowerCase().trim();
+                                        // Store under normalized name for matching
+                                        const normalizedName = normalizeProspectName(keeper.player_name);
                                         prospectOwnershipData[normalizedName] = {
                                             manager: teamInfo.manager,
                                             team_name: teamInfo.team_name,
-                                            team_logo: teamInfo.team_logo
+                                            team_logo: teamLogo
                                         };
+                                        // Also store under original name in case of exact match
+                                        const originalName = keeper.player_name.toLowerCase().trim();
+                                        if (originalName !== normalizedName) {
+                                            prospectOwnershipData[originalName] = prospectOwnershipData[normalizedName];
+                                        }
                                     }
                                 }
                             }
@@ -30100,14 +30151,17 @@
                     for (const [teamKey, keepers] of Object.entries(keeperSelections)) {
                         const teamInfo = keeperConfig?.teams?.[teamKey];
                         if (teamInfo && keepers) {
+                            const managerLower = (teamInfo.manager || '').toLowerCase().trim();
+                            const teamLogo = team2026Logos[managerLower] || fixTeamLogo(teamInfo.team_logo);
+                            
                             for (const keeper of keepers) {
                                 if (keeper && keeper.player_name) {
-                                    const normalizedName = keeper.player_name.toLowerCase().trim();
+                                    const normalizedName = normalizeProspectName(keeper.player_name);
                                     if (!prospectOwnershipData[normalizedName]) {
                                         prospectOwnershipData[normalizedName] = {
                                             manager: teamInfo.manager,
                                             team_name: teamInfo.team_name,
-                                            team_logo: teamInfo.team_logo
+                                            team_logo: teamLogo
                                         };
                                     }
                                 }
@@ -30131,10 +30185,16 @@
             
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
             
+            // Helper to find owner using normalized name matching
+            function findOwner(prospectName) {
+                const normalized = normalizeProspectName(prospectName);
+                return prospectOwnershipData[normalized] || prospectOwnershipData[prospectName.toLowerCase().trim()];
+            }
+            
             // Filter prospects
             let filtered = prospectsData.filter(prospect => {
-                const normalizedName = prospect.name.toLowerCase().trim();
-                const isOwned = !!prospectOwnershipData[normalizedName];
+                const owner = findOwner(prospect.name);
+                const isOwned = !!owner;
                 
                 // Hide owned filter
                 if (hideOwned && isOwned) return false;
@@ -30153,7 +30213,7 @@
             });
             
             // Update stats bar
-            const totalOwned = prospectsData.filter(p => prospectOwnershipData[p.name.toLowerCase().trim()]).length;
+            const totalOwned = prospectsData.filter(p => findOwner(p.name)).length;
             document.getElementById('prospect-count').textContent = `Showing ${filtered.length} of ${prospectsData.length} prospects`;
             document.getElementById('prospect-owned-count').textContent = `${totalOwned} owned`;
             
@@ -30163,8 +30223,8 @@
             }
             
             tbody.innerHTML = filtered.map(prospect => {
-                const normalizedName = prospect.name.toLowerCase().trim();
-                const owner = prospectOwnershipData[normalizedName];
+                const owner = findOwner(prospect.name);
+                const isOwned = !!owner;
                 const isOwned = !!owner;
                 
                 const headshot = prospect.headshot_url || placeholderImg;
