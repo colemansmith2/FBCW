@@ -9922,7 +9922,7 @@
             font-size: 1.1rem;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
             line-height: 1;
-            z-index: 1;
+            z-index: 0;
         }
         
         /* Top-left star - aligns with top-left corner of headshot */
@@ -9933,8 +9933,9 @@
         
         /* Top-right star - peeks behind X button */
         .prospect-detail-star.top-right {
-            top: 8px;
-            right: 8px;
+            top: 6px;
+            right: 6px;
+            z-index: 5;
         }
         
         /* Bottom-left star - aligns with bottom-left corner of headshot */
@@ -9945,8 +9946,8 @@
         
         .prospect-detail-close {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 10px;
+            right: 10px;
             background: #8b0000;
             border: 2px solid #f4e4c8;
             border-radius: 50%;
@@ -9965,6 +9966,9 @@
         
         .prospect-detail-header-left {
             flex-shrink: 0;
+            position: relative;
+            z-index: 1;
+        }
         }
         
         .prospect-detail-headshot-container {
@@ -10044,19 +10048,18 @@
         }
         
         .prospect-detail-position {
-            display: inline-block;
+            display: inline-flex;
             background: white;
             border-radius: 4px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            line-height: 0;
+            overflow: hidden;
         }
         
         .prospect-detail-position .position-badge {
             font-size: 0.85rem;
             padding: 0.25rem 0.6rem;
-            border-radius: 4px;
+            border-radius: 0;
             font-weight: 700;
-            display: block;
         }
         
         .prospect-detail-body {
