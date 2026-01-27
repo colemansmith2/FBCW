@@ -9883,28 +9883,75 @@
             background: none;
             border: none;
             font-size: 1.75rem;
-            color: #666;
+            color: rgba(255,255,255,0.8);
             cursor: pointer;
             z-index: 10;
             line-height: 1;
         }
         
         .prospect-detail-header {
-            background: linear-gradient(135deg, var(--retro-blue), #1a3a5c);
+            background: var(--retro-blue);
             padding: 1.25rem;
-            text-align: center;
             border-radius: 16px 16px 0 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        
+        .prospect-detail-header-left {
+            flex-shrink: 0;
+        }
+        
+        .prospect-detail-headshot-container {
+            position: relative;
+            width: 80px;
+            height: 80px;
+        }
+        
+        .prospect-detail-headshot {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            background: #e0e0e0;
+        }
+        
+        .prospect-detail-mlb-badge {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: white;
+            padding: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .prospect-detail-header-right {
+            flex: 1;
+            min-width: 0;
+            padding-top: 0.25rem;
+        }
+        
+        .prospect-detail-name {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.35rem;
+            line-height: 1.2;
         }
         
         .prospect-detail-rank {
             display: inline-block;
             background: rgba(255,255,255,0.2);
             color: white;
-            font-weight: 700;
-            font-size: 0.75rem;
-            padding: 0.25rem 0.6rem;
-            border-radius: 12px;
-            margin-bottom: 0.75rem;
+            font-weight: 600;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
         }
         
         .prospect-detail-rank.top-10 {
@@ -9915,50 +9962,49 @@
             background: rgba(34, 197, 94, 0.9);
         }
         
-        .prospect-detail-headshot {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid white;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            background: #e0e0e0;
-        }
-        
-        .prospect-detail-name {
-            color: white;
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin: 0.75rem 0 0.25rem;
-        }
-        
-        .prospect-detail-team {
+        .prospect-detail-position {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.35rem;
-            color: rgba(255,255,255,0.85);
-            font-size: 0.85rem;
         }
         
-        .prospect-detail-team img {
-            width: 18px;
-            height: 18px;
+        .prospect-detail-position .position-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
         }
         
         .prospect-detail-body {
             padding: 1rem 1.25rem 1.25rem;
         }
         
-        .prospect-detail-position {
+        .prospect-detail-owner-row {
             display: flex;
-            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
             margin-bottom: 1rem;
         }
         
-        .prospect-detail-position .position-badge {
-            font-size: 0.8rem;
-            padding: 0.3rem 0.75rem;
+        .prospect-detail-owner-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e0e0e0;
+        }
+        
+        .prospect-detail-owner-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .prospect-detail-owner-name.owned {
+            color: #22c55e;
+        }
+        
+        .prospect-detail-owner-name.free-agent {
+            color: #999;
+            font-style: italic;
         }
         
         .prospect-detail-stats {
@@ -9989,45 +10035,6 @@
         
         .prospect-detail-stat.full-width {
             grid-column: 1 / -1;
-        }
-        
-        .prospect-detail-owner {
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid #eee;
-        }
-        
-        .prospect-detail-owner-label {
-            font-size: 0.7rem;
-            color: #888;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-        }
-        
-        .prospect-detail-owner-info {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .prospect-detail-owner-logo {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        
-        .prospect-detail-owner-name {
-            font-weight: 600;
-            color: #22c55e;
-            font-size: 0.95rem;
-        }
-        
-        .prospect-detail-available {
-            color: #999;
-            font-style: italic;
-            font-size: 0.9rem;
         }
         
         /* Mobile responsive */
@@ -30639,6 +30646,10 @@
                                         <span class="prospect-detail-label">Level:</span>
                                         <span class="prospect-detail-value">${prospect.highest_level || '-'}</span>
                                     </span>
+                                    <span class="prospect-detail-item">
+                                        <span class="prospect-detail-label">Ht:</span>
+                                        <span class="prospect-detail-value">${height}</span>
+                                    </span>
                                 </div>
                                 <div class="prospect-details-row">
                                     <span class="prospect-detail-item">
@@ -30648,12 +30659,6 @@
                                     <span class="prospect-detail-item">
                                         <span class="prospect-detail-label">Draft:</span>
                                         <span class="prospect-detail-value">${prospect.draft || '-'}</span>
-                                    </span>
-                                </div>
-                                <div class="prospect-details-row">
-                                    <span class="prospect-detail-item">
-                                        <span class="prospect-detail-label">Ht:</span>
-                                        <span class="prospect-detail-value">${height}</span>
                                     </span>
                                     <span class="prospect-detail-item">
                                         <span class="prospect-detail-label">Wt:</span>
@@ -30686,6 +30691,7 @@
             if (!prospect) return;
             
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+            const emptyOwnerImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjwvc3ZnPg==';
             
             // Find owner
             const normalized = normalizeProspectName(prospect.name);
@@ -30709,31 +30715,31 @@
             // Avg rank
             const avgRank = prospect.avg_rank ? prospect.avg_rank.toFixed(1) : '-';
             
-            // Owner section
-            let ownerHtml = '<span class="prospect-detail-available">Available</span>';
-            if (owner) {
-                const ownerLogo = owner.team_logo ? fixTeamLogo(owner.team_logo) : '';
-                ownerHtml = `
-                    <div class="prospect-detail-owner-info">
-                        ${ownerLogo ? `<img src="${ownerLogo}" class="prospect-detail-owner-logo" alt="" onerror="this.style.display='none'">` : ''}
-                        <span class="prospect-detail-owner-name">${owner.manager}</span>
-                    </div>
-                `;
-            }
+            // Owner section - always show with image
+            const ownerLogo = owner ? (owner.team_logo ? fixTeamLogo(owner.team_logo) : emptyOwnerImg) : emptyOwnerImg;
+            const ownerName = owner ? owner.manager : 'Free Agent';
+            const ownerNameClass = owner ? 'prospect-detail-owner-name owned' : 'prospect-detail-owner-name free-agent';
             
             const content = `
                 <div class="prospect-detail-header">
-                    <div class="prospect-detail-rank ${rankClass}">#${prospect.rank} Overall</div>
-                    <img src="${headshot}" class="prospect-detail-headshot" alt="" onerror="this.src='${placeholderImg}'">
-                    <div class="prospect-detail-name">${prospect.name}</div>
-                    <div class="prospect-detail-team">
-                        ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="${mlbTeam}" onerror="this.style.display='none'">` : ''}
-                        <span>${mlbTeam}</span>
+                    <div class="prospect-detail-header-left">
+                        <div class="prospect-detail-headshot-container">
+                            <img src="${headshot}" class="prospect-detail-headshot" alt="" onerror="this.src='${placeholderImg}'">
+                            ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="prospect-detail-mlb-badge" alt="${mlbTeam}" onerror="this.style.display='none'">` : ''}
+                        </div>
+                    </div>
+                    <div class="prospect-detail-header-right">
+                        <div class="prospect-detail-name">${prospect.name}</div>
+                        <div class="prospect-detail-rank ${rankClass}">#${prospect.rank} Overall</div>
+                        <div class="prospect-detail-position">
+                            <span class="position-badge pos-${prospect.position}">${prospect.position}</span>
+                        </div>
                     </div>
                 </div>
                 <div class="prospect-detail-body">
-                    <div class="prospect-detail-position">
-                        <span class="position-badge pos-${prospect.position}">${prospect.position}</span>
+                    <div class="prospect-detail-owner-row">
+                        <img src="${ownerLogo}" class="prospect-detail-owner-logo" alt="" onerror="this.src='${emptyOwnerImg}'">
+                        <span class="${ownerNameClass}">${ownerName}</span>
                     </div>
                     <div class="prospect-detail-stats">
                         <div class="prospect-detail-stat">
@@ -30764,10 +30770,6 @@
                             <div class="prospect-detail-stat-label">Avg Rank</div>
                             <div class="prospect-detail-stat-value">${avgRank}</div>
                         </div>
-                    </div>
-                    <div class="prospect-detail-owner">
-                        <div class="prospect-detail-owner-label">Owned By</div>
-                        ${ownerHtml}
                     </div>
                 </div>
             `;
