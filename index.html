@@ -9904,8 +9904,8 @@
         
         .prospect-detail-close {
             position: absolute;
-            top: 6px;
-            right: 10px;
+            top: 10px;
+            right: 14px;
             background: #8b0000;
             border: 2px solid #f4e4c8;
             border-radius: 50%;
@@ -9935,24 +9935,33 @@
             position: relative;
         }
         
-        /* Corner decorations */
-        .prospect-detail-header::before,
-        .prospect-detail-header::after {
-            content: '★';
+        /* Corner star decorations */
+        .prospect-detail-star {
             position: absolute;
             color: #ffd700;
-            font-size: 0.9rem;
+            font-size: 1rem;
             text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            line-height: 1;
         }
         
-        .prospect-detail-header::before {
+        .prospect-detail-star.top-left {
             top: 6px;
             left: 8px;
         }
         
-        .prospect-detail-header::after {
+        .prospect-detail-star.top-right {
             top: 6px;
-            right: 32px;
+            right: 8px;
+        }
+        
+        .prospect-detail-star.bottom-left {
+            bottom: 6px;
+            left: 8px;
+        }
+        
+        .prospect-detail-star.bottom-right {
+            bottom: 6px;
+            right: 8px;
         }
         
         .prospect-detail-header-left {
@@ -30846,6 +30855,12 @@
             // Avg rank
             const avgRank = prospect.avg_rank ? prospect.avg_rank.toFixed(1) : '-';
             
+            // Draft/Acquired logic - check if international free agent
+            const draftValue = prospect.draft || '-';
+            const isIntlFA = draftValue.match(/^\d{4}\s*FA$/i);
+            const acquisitionLabel = isIntlFA ? 'Acquired' : 'Draft';
+            const acquisitionValue = isIntlFA ? draftValue.replace(/FA$/i, 'INT FA') : draftValue;
+            
             // Owner section - always show with image
             const ownerLogo = owner ? (owner.team_logo ? fixTeamLogo(owner.team_logo) : emptyOwnerImg) : emptyOwnerImg;
             const ownerName = owner ? owner.manager : 'Free Agent';
@@ -30853,6 +30868,10 @@
             
             const content = `
                 <div class="prospect-detail-header">
+                    <span class="prospect-detail-star top-left">★</span>
+                    <span class="prospect-detail-star top-right">★</span>
+                    <span class="prospect-detail-star bottom-left">★</span>
+                    <span class="prospect-detail-star bottom-right">★</span>
                     <div class="prospect-detail-header-left">
                         <div class="prospect-detail-headshot-container">
                             <img src="${headshot}" class="prospect-detail-headshot" alt="" onerror="this.src='${placeholderImg}'">
@@ -30886,8 +30905,8 @@
                             <div class="prospect-detail-stat-value">${prospect.bats_throws || '-'}</div>
                         </div>
                         <div class="prospect-detail-stat">
-                            <div class="prospect-detail-stat-label">Draft</div>
-                            <div class="prospect-detail-stat-value">${prospect.draft || '-'}</div>
+                            <div class="prospect-detail-stat-label">${acquisitionLabel}</div>
+                            <div class="prospect-detail-stat-value">${acquisitionValue}</div>
                         </div>
                         <div class="prospect-detail-stat">
                             <div class="prospect-detail-stat-label">Height</div>
