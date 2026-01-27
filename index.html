@@ -10115,7 +10115,7 @@
 
         /* Top-left star - peeks out from top-left corner of headshot */
         .prospect-detail-star.top-left {
-            top: 4px;
+            top: 7px;
             left: 4px;
         }
 
@@ -10236,14 +10236,28 @@
 
         .prospect-detail-position {
             display: inline-flex;
+            position: relative;
+        }
+
+        .prospect-detail-position::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: white;
+            border-radius: 4px;
+            z-index: 0;
         }
 
         .prospect-detail-position .position-badge {
+            position: relative;
+            z-index: 1;
             font-size: 0.85rem;
             padding: 0.25rem 0.6rem;
             border-radius: 4px;
             font-weight: 700;
-            box-shadow: 0 0 0 3px white, 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .prospect-detail-body {
