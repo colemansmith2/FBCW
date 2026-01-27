@@ -10119,11 +10119,10 @@
             left: 4px;
         }
 
-        /* Top-right star - peeks behind X button */
+        /* Top-right star - peeks behind top-right corner of headshot */
         .prospect-detail-star.top-right {
-            top: 0px;
-            right: 0px;
-            z-index: 5;
+            top: 7px;
+            left: 95px;
         }
 
         /* Bottom-left star - peeks out from bottom-left corner of headshot */
@@ -10235,29 +10234,19 @@
         }
 
         .prospect-detail-position {
-            display: inline-flex;
-            position: relative;
-        }
-
-        .prospect-detail-position::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            display: inline-block;
             background: white;
             border-radius: 4px;
-            z-index: 0;
+            line-height: 0;
         }
 
         .prospect-detail-position .position-badge {
-            position: relative;
-            z-index: 1;
+            display: inline-block;
             font-size: 0.85rem;
             padding: 0.25rem 0.6rem;
             border-radius: 4px;
             font-weight: 700;
+            line-height: normal;
         }
 
         .prospect-detail-body {
