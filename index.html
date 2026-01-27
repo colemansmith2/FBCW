@@ -9937,7 +9937,7 @@
         
         .prospect-detail-name {
             color: white;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             font-weight: 700;
             margin-bottom: 0.35rem;
             line-height: 1.2;
@@ -9948,8 +9948,8 @@
             background: rgba(255,255,255,0.2);
             color: white;
             font-weight: 600;
-            font-size: 0.7rem;
-            padding: 0.2rem 0.5rem;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.6rem;
             border-radius: 10px;
             margin-bottom: 0.5rem;
         }
@@ -9967,8 +9967,8 @@
         }
         
         .prospect-detail-position .position-badge {
-            font-size: 0.7rem;
-            padding: 0.2rem 0.5rem;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.6rem;
         }
         
         .prospect-detail-body {
@@ -9996,10 +9996,11 @@
         .prospect-detail-owner-name {
             font-weight: 600;
             font-size: 0.9rem;
+            color: #333;
         }
         
         .prospect-detail-owner-name.owned {
-            color: #22c55e;
+            color: #333;
         }
         
         .prospect-detail-owner-name.free-agent {
@@ -30577,9 +30578,19 @@
             });
             
             // Update stats bar
-            const totalOwned = prospectsData.filter(p => findOwner(p.name)).length;
+            let ownedCount, ownedLabel;
+            if (positionFilter) {
+                // Count owned for this specific position
+                const positionProspects = prospectsData.filter(p => p.position === positionFilter);
+                ownedCount = positionProspects.filter(p => findOwner(p.name)).length;
+                ownedLabel = `${ownedCount} ${positionFilter} owned`;
+            } else {
+                // Count all owned
+                ownedCount = prospectsData.filter(p => findOwner(p.name)).length;
+                ownedLabel = `${ownedCount} owned`;
+            }
             document.getElementById('prospect-count').textContent = `Showing ${filtered.length} of ${prospectsData.length} prospects`;
-            document.getElementById('prospect-owned-count').textContent = `${totalOwned} owned`;
+            document.getElementById('prospect-owned-count').textContent = ownedLabel;
             
             if (filtered.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="6" class="prospect-loading">No prospects match your filters.</td></tr>';
