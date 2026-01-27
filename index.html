@@ -9830,6 +9830,8 @@
             .prospect-controls {
                 flex-direction: column;
                 align-items: stretch;
+                padding: 0.5rem 0.75rem;
+                gap: 0.5rem;
             }
             
             .prospect-controls-left,
@@ -9838,17 +9840,52 @@
                 justify-content: space-between;
             }
             
-            .prospect-search-container input {
-                width: 100%;
+            .prospect-controls-right {
+                flex-wrap: wrap;
+                gap: 0.5rem;
             }
             
+            .prospect-search-container {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .prospect-search-container input {
+                width: 100%;
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            .prospect-controls-right select {
+                font-size: 16px; /* Prevent zoom on iOS */
+                flex-shrink: 0;
+            }
+            
+            .prospect-stats-bar {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                font-size: 0.75rem;
+            }
+            
+            /* Hide details column on mobile */
             .prospect-col-details {
                 display: none;
             }
             
+            .prospect-table {
+                font-size: 0.8rem;
+            }
+            
             .prospect-table th,
             .prospect-table td {
-                padding: 0.5rem 0.35rem;
+                padding: 0.5rem 0.25rem;
+            }
+            
+            .prospect-col-rank {
+                width: 35px;
+            }
+            
+            .prospect-rank {
+                font-size: 0.8rem;
             }
             
             .prospect-headshot {
@@ -9856,8 +9893,97 @@
                 height: 32px;
             }
             
+            .prospect-player-cell {
+                gap: 0.4rem;
+            }
+            
             .prospect-player-name {
-                font-size: 0.8rem;
+                font-size: 0.75rem;
+                max-width: 100px;
+            }
+            
+            .prospect-mlb-team {
+                font-size: 0.65rem;
+            }
+            
+            .prospect-mlb-logo {
+                width: 12px;
+                height: 12px;
+            }
+            
+            .prospect-col-pos {
+                width: 40px;
+            }
+            
+            .prospect-col-pos .position-badge {
+                font-size: 0.6rem;
+                padding: 2px 4px;
+                min-width: 22px;
+            }
+            
+            .prospect-owner-cell {
+                gap: 0.25rem;
+            }
+            
+            .prospect-owner-logo {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .prospect-owner-name {
+                font-size: 0.7rem;
+                max-width: 60px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            
+            .prospect-available {
+                font-size: 0.65rem;
+            }
+            
+            .prospect-footer {
+                font-size: 0.65rem;
+                padding: 0 0.5rem;
+            }
+        }
+        
+        /* Extra small screens */
+        @media (max-width: 480px) {
+            .prospect-player-name {
+                max-width: 80px;
+            }
+            
+            .prospect-owner-name {
+                max-width: 50px;
+            }
+            
+            .prospect-table th,
+            .prospect-table td {
+                padding: 0.4rem 0.15rem;
+            }
+            
+            .prospect-headshot {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .prospect-toggle {
+                font-size: 0.75rem;
+            }
+            
+            .toggle-slider {
+                width: 36px;
+                height: 20px;
+            }
+            
+            .toggle-slider::before {
+                width: 16px;
+                height: 16px;
+            }
+            
+            .prospect-toggle input:checked + .toggle-slider::before {
+                transform: translateX(16px);
             }
         }
 
@@ -11650,6 +11776,10 @@
             <div class="mobile-menu-item" onclick="showSection('valuesuite'); closeMobileMenu();">
                 <img src="data/page_logos/value_suite_logo.png" alt="Value Suite">
                 <span>Value Suite</span>
+            </div>
+            <div class="mobile-menu-item" onclick="showSection('prospects'); closeMobileMenu();">
+                <img src="data/page_logos/prospect_pavilion_logo.png" alt="Prospect Pavilion">
+                <span>Prospect Pavilion</span>
             </div>
             <div class="mobile-menu-item" onclick="showSection('sportsbook'); closeMobileMenu();">
                 <img src="data/page_logos/sportsbook_logo.png" alt="Sportsbook">
@@ -30083,20 +30213,20 @@
         }
         
         async function loadProspectOwnership() {
-            // Load 2026 team data for current logos
-            let team2026Logos = {};
+            // Load current season team data for logos (same source as home page)
+            let currentTeamLogos = {};
             try {
-                const teamResponse = await fetch('data/2026/teams.json');
+                const teamResponse = await fetch('data/current_season/teams.json');
                 if (teamResponse.ok) {
                     const teamData = await teamResponse.json();
                     teamData.forEach(team => {
                         const managerLower = (team.manager || '').toLowerCase().trim();
-                        team2026Logos[managerLower] = fixTeamLogo(team.team_logo);
+                        currentTeamLogos[managerLower] = fixTeamLogo(team.team_logo);
                     });
-                    console.log('Loaded 2026 team logos for', Object.keys(team2026Logos).length, 'teams');
+                    console.log('Loaded current season team logos for', Object.keys(currentTeamLogos).length, 'teams');
                 }
             } catch (e) {
-                console.log('Could not load 2026 team data:', e);
+                console.log('Could not load current season team data:', e);
             }
             
             try {
@@ -30119,8 +30249,8 @@
                             if (teamInfo && keepers) {
                                 const keepersArray = Array.isArray(keepers) ? keepers : Object.values(keepers);
                                 const managerLower = (teamInfo.manager || '').toLowerCase().trim();
-                                // Use 2026 logo if available, otherwise fall back to keeper config logo
-                                const teamLogo = team2026Logos[managerLower] || fixTeamLogo(teamInfo.team_logo);
+                                // Use current season logo if available, otherwise fall back to keeper config logo
+                                const teamLogo = currentTeamLogos[managerLower] || fixTeamLogo(teamInfo.team_logo);
                                 
                                 for (const keeper of keepersArray) {
                                     if (keeper && keeper.player_name) {
@@ -30152,7 +30282,7 @@
                         const teamInfo = keeperConfig?.teams?.[teamKey];
                         if (teamInfo && keepers) {
                             const managerLower = (teamInfo.manager || '').toLowerCase().trim();
-                            const teamLogo = team2026Logos[managerLower] || fixTeamLogo(teamInfo.team_logo);
+                            const teamLogo = currentTeamLogos[managerLower] || fixTeamLogo(teamInfo.team_logo);
                             
                             for (const keeper of keepers) {
                                 if (keeper && keeper.player_name) {
