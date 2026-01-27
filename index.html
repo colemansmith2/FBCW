@@ -31184,6 +31184,40 @@
                     }
                 }
 
+                // Also load NA draft data for prospect ownership
+                try {
+                    const naResponse = await fetch('data/historical/2025/na_draft.json');
+                    if (naResponse.ok) {
+                        const naData = await naResponse.json();
+                        const configResponse = await fetch('data/keepers/keeper_config.json');
+                        const keeperConfig = configResponse.ok ? await configResponse.json() : null;
+
+                        for (const pick of naData.picks) {
+                            const normalizedName = normalizeProspectName(pick.player_name);
+                            // Only add if not already owned (Firebase/keeper data takes precedence)
+                            if (!prospectOwnershipData[normalizedName]) {
+                                const teamInfo = keeperConfig?.teams?.[pick.team_key];
+                                const managerLower = (pick.manager || '').toLowerCase().trim();
+                                const teamLogo = currentTeamLogos[managerLower] || (teamInfo ? fixTeamLogo(teamInfo.team_logo) : '');
+
+                                prospectOwnershipData[normalizedName] = {
+                                    manager: pick.manager,
+                                    team_name: teamInfo?.team_name || pick.manager + "'s Team",
+                                    team_logo: teamLogo
+                                };
+                                // Also store under original name
+                                const originalName = pick.player_name.toLowerCase().trim();
+                                if (originalName !== normalizedName) {
+                                    prospectOwnershipData[originalName] = prospectOwnershipData[normalizedName];
+                                }
+                            }
+                        }
+                        console.log('Loaded NA draft ownership data');
+                    }
+                } catch (e) {
+                    console.log('Could not load NA draft data:', e);
+                }
+
                 console.log('Loaded ownership for', Object.keys(prospectOwnershipData).length, 'players');
 
             } catch (e) {
