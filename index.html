@@ -23429,6 +23429,50 @@
                 // Filter to just this team's players
                 keeperRosterData = allPlayers.filter(p => p.team_key === teamKey);
 
+                // Also load NA draft players and add them to the roster
+                try {
+                    const [naResponse, prospectsResponse] = await Promise.all([
+                        fetch('data/historical/2025/na_draft.json'),
+                        fetch('data/prospects/prospects.json')
+                    ]);
+
+                    if (naResponse.ok) {
+                        const naData = await naResponse.json();
+                        const prospectsData = prospectsResponse.ok ? await prospectsResponse.json() : { prospects: [] };
+                        const prospectsMap = {};
+                        prospectsData.prospects.forEach(p => {
+                            prospectsMap[p.name.toLowerCase().trim()] = p;
+                        });
+
+                        // Add NA draft players for this team
+                        const naPlayersForTeam = naData.picks.filter(p => p.team_key === teamKey);
+                        for (const naPick of naPlayersForTeam) {
+                            // Check if player is already in roster (avoid duplicates)
+                            const alreadyInRoster = keeperRosterData.some(
+                                p => p.name.toLowerCase().trim() === naPick.player_name.toLowerCase().trim()
+                            );
+
+                            if (!alreadyInRoster) {
+                                // Get prospect data if available
+                                const prospectInfo = prospectsMap[naPick.player_name.toLowerCase().trim()];
+
+                                keeperRosterData.push({
+                                    name: naPick.player_name,
+                                    team_key: teamKey,
+                                    primary_position: prospectInfo?.position || 'UT',
+                                    fantasy_points: 0,
+                                    headshot_url: prospectInfo?.headshot_url || '',
+                                    mlb_team: prospectInfo?.mlb_team || '',
+                                    isNADraftPick: true
+                                });
+                            }
+                        }
+                        console.log(`Added ${naPlayersForTeam.length} NA draft players to roster`);
+                    }
+                } catch (e) {
+                    console.log('Could not load NA draft data:', e);
+                }
+
                 // Load projections if not already loaded - use same format as main projections
                 if (Object.keys(keeperProjectionsMap).length === 0) {
                     try {
