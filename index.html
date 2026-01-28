@@ -26232,11 +26232,13 @@
         }
 
         async function loadTeamPlayers(side, teamKey) {
+            console.log(`Trade Analyzer loadTeamPlayers called for ${teamKey}`);
             const players = [];
             const keepersForSelections = []; // To populate keeperSelections for calculateTeamKeeperRoundCosts
 
             // Load from Firebase keepers
             try {
+                console.log('Firebase check:', typeof firebaseDb !== 'undefined', firebaseDb ? 'exists' : 'null');
                 if (typeof firebaseDb !== 'undefined' && firebaseDb) {
                     const sanitizedKey = teamKey.replace(/\./g, '_');
                     const snapshot = await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).once('value');
