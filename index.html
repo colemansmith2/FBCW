@@ -26397,10 +26397,10 @@
             const activeTab = document.querySelector(`.trade-side-${side === 1 ? 'left' : 'right'} .trade-tab:nth-child(${tab === 'players' ? 1 : tab === 'picks' ? 2 : 3})`);
             if (activeTab) activeTab.classList.add('active');
 
-            renderTradeAssets(side);
+            renderTradeAnalyzerAssets(side);
         }
 
-        function renderTradeAssets(side) {
+        function renderTradeAnalyzerAssets(side) {
             const assetsDiv = document.getElementById(`trade-assets-${side}`);
             if (!assetsDiv) return;
 
@@ -26482,7 +26482,7 @@
                 }
             }
 
-            renderTradeAssets(side);
+            renderTradeAnalyzerAssets(side);
             updateTradeOffer(side);
             updateTradeBalance();
         }
@@ -26507,7 +26507,7 @@
                     amount: amount,
                     value: amount * 10 // $1 = 10 value points
                 });
-                renderTradeAssets(side);
+                renderTradeAnalyzerAssets(side);
                 updateTradeOffer(side);
                 updateTradeBalance();
             }
@@ -26516,7 +26516,7 @@
         function removeFromTrade(side, index) {
             const offer = tradeAnalyzerData[`team${side}Offer`];
             offer.splice(index, 1);
-            renderTradeAssets(side);
+            renderTradeAnalyzerAssets(side);
             updateTradeOffer(side);
             updateTradeBalance();
         }
