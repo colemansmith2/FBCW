@@ -2957,6 +2957,41 @@
         .trade-asset-item .player-meta {
             font-size: 0.75rem;
             color: #666;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .trade-asset-item .player-name {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .trade-asset-item .player-name .prospect-badge {
+            font-size: 0.6rem;
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .trade-mlb-logo {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .trade-mlb-abbrev {
+            font-size: 0.7rem;
+            color: #666;
+            margin-right: 0.25rem;
+        }
+
+        .trade-asset-item .player-meta .position-badge {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.25rem;
         }
 
         .trade-asset-item .asset-value {
@@ -3068,55 +3103,64 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 1rem 0.5rem;
-            min-width: 120px;
+            margin-bottom: 1rem;
         }
 
         .trade-balance-bar {
-            width: 20px;
-            height: 200px;
-            background: #e9ecef;
-            border-radius: 10px;
+            width: 100%;
+            max-width: 500px;
+            height: 24px;
             position: relative;
-            overflow: hidden;
-        }
-
-        .trade-balance-fill {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 50%;
-            background: linear-gradient(to top, #28a745, #ffc107, #dc3545);
-            transition: height 0.3s;
+            border: 2px solid #333;
+            border-radius: 4px;
+            /* Pixelated gradient: red -> yellow -> green -> yellow -> red */
+            background:
+                linear-gradient(to right,
+                    #dc3545 0%, #dc3545 10%,
+                    #e85d04 10%, #e85d04 20%,
+                    #f48c06 20%, #f48c06 30%,
+                    #ffc107 30%, #ffc107 40%,
+                    #90be6d 40%, #90be6d 45%,
+                    #28a745 45%, #28a745 55%,
+                    #90be6d 55%, #90be6d 60%,
+                    #ffc107 60%, #ffc107 70%,
+                    #f48c06 70%, #f48c06 80%,
+                    #e85d04 80%, #e85d04 90%,
+                    #dc3545 90%, #dc3545 100%
+                );
+            image-rendering: pixelated;
         }
 
         .trade-balance-marker {
             position: absolute;
-            left: -5px;
-            right: -5px;
-            height: 4px;
+            top: -4px;
+            bottom: -4px;
+            width: 6px;
             background: #333;
+            border: 2px solid #fff;
             border-radius: 2px;
-            top: 50%;
-            transform: translateY(-50%);
-            transition: top 0.3s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            left: 50%;
+            transform: translateX(-50%);
+            transition: left 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .trade-balance-labels {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.5rem;
         }
 
         .trade-balance-label {
-            margin-top: 0.75rem;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #666;
-            text-align: center;
         }
 
         .trade-balance-verdict {
-            margin-top: 0.5rem;
             font-weight: 700;
             font-size: 0.9rem;
-            text-align: center;
         }
 
         .trade-balance-verdict.fair {
@@ -3124,7 +3168,7 @@
         }
 
         .trade-balance-verdict.slight {
-            color: #ffc107;
+            color: #f48c06;
         }
 
         .trade-balance-verdict.unfair {
@@ -3215,37 +3259,9 @@
                 flex-direction: column;
             }
 
-            .trade-balance-indicator {
-                flex-direction: row;
-                min-width: auto;
-                padding: 0.75rem 1rem;
-            }
-
             .trade-balance-bar {
-                width: 200px;
+                max-width: 100%;
                 height: 20px;
-            }
-
-            .trade-balance-fill {
-                height: 100%;
-                width: 50%;
-                bottom: auto;
-                left: 0;
-                background: linear-gradient(to right, #dc3545, #ffc107, #28a745);
-            }
-
-            .trade-balance-marker {
-                top: -5px;
-                bottom: -5px;
-                left: 50%;
-                width: 4px;
-                height: auto;
-                transform: translateX(-50%);
-            }
-
-            .trade-balance-label {
-                margin-top: 0;
-                margin-left: 1rem;
             }
 
             .trade-columns {
@@ -13902,6 +13918,17 @@
                     Select two teams and build a trade to see how the deal balances out. Values factor in multi-year projections (2026-2028).
                 </div>
 
+                <!-- Trade Balance Indicator - Horizontal above teams -->
+                <div class="trade-balance-indicator">
+                    <div class="trade-balance-bar">
+                        <div class="trade-balance-marker" id="trade-balance-marker"></div>
+                    </div>
+                    <div class="trade-balance-labels">
+                        <span class="trade-balance-label" id="trade-balance-label">Add assets to analyze</span>
+                        <span class="trade-balance-verdict" id="trade-balance-verdict"></span>
+                    </div>
+                </div>
+
                 <div class="trade-analyzer-container">
                     <!-- Team 1 Side -->
                     <div class="trade-side trade-side-left">
@@ -13934,16 +13961,6 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Trade Balance Indicator -->
-                    <div class="trade-balance-indicator">
-                        <div class="trade-balance-bar">
-                            <div class="trade-balance-fill" id="trade-balance-fill"></div>
-                            <div class="trade-balance-marker" id="trade-balance-marker"></div>
-                        </div>
-                        <div class="trade-balance-label" id="trade-balance-label">Add assets to analyze</div>
-                        <div class="trade-balance-verdict" id="trade-balance-verdict"></div>
                     </div>
 
                     <!-- Team 2 Side -->
@@ -26407,6 +26424,7 @@
             const tab = tradeAnalyzerData.activeTab[side];
             const assets = tradeAnalyzerData[`team${side}Assets`];
             const offer = tradeAnalyzerData[`team${side}Offer`];
+            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
 
             if (tab === 'players') {
                 if (!assets.players || assets.players.length === 0) {
@@ -26417,12 +26435,57 @@
                 assetsDiv.innerHTML = assets.players.map((player, idx) => {
                     const inTrade = offer.some(o => o.type === 'player' && o.name === player.name);
                     const valueClass = player.value > 0 ? 'positive' : player.value < 0 ? 'negative' : '';
+
+                    // Get headshot from averageProjectionsMap or projection data
+                    const playerNameLower = player.name.toLowerCase().trim();
+                    const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                    let headshot = player.headshot || '';
+                    let mlbTeam = '';
+
+                    // Try averageProjectionsMap first
+                    if (averageProjectionsMap[playerNameLower]) {
+                        headshot = headshot || averageProjectionsMap[playerNameLower].headshot || '';
+                        mlbTeam = averageProjectionsMap[playerNameLower].mlb_team || '';
+                    } else if (averageProjectionsMap[baseNameLower]) {
+                        headshot = headshot || averageProjectionsMap[baseNameLower].headshot || '';
+                        mlbTeam = averageProjectionsMap[baseNameLower].mlb_team || '';
+                    }
+
+                    // Fallback to projection batters/pitchers
+                    if (!headshot || !mlbTeam) {
+                        const projPlayer = [...allProjectionBatters, ...allProjectionPitchers].find(p =>
+                            p.name && (p.name.toLowerCase().trim() === playerNameLower ||
+                                       p.name.toLowerCase().trim().replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '') === baseNameLower)
+                        );
+                        if (projPlayer) {
+                            headshot = headshot || projPlayer.headshot_url || '';
+                            mlbTeam = mlbTeam || projPlayer.mlb_team || '';
+                        }
+                    }
+
+                    headshot = headshot || placeholderImg;
+
+                    // Get MLB logo and formatted team text
+                    const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
+                    const mlbTeamText = mlbTeam ? formatMLBTeamDisplay(mlbTeam) : 'FA';
+                    const hasMlbLogo = mlbTeamText !== 'FA' && mlbLogoUrl;
+
+                    // Get position badges
+                    const positionBadges = getPositionBadge(player.position, player.name);
+
+                    // Prospect badge
+                    const prospectBadge = player.isProspect ? '<span class="prospect-badge">P</span>' : '';
+
                     return `
                         <div class="trade-asset-item ${inTrade ? 'in-trade' : ''}" onclick="addToTrade(${side}, 'player', ${idx})">
-                            <img src="${player.headshot}" class="headshot" alt="" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+'">
+                            <img src="${headshot}" class="headshot" alt="" onerror="this.src='${placeholderImg}'">
                             <div class="player-info">
-                                <div class="player-name">${player.name}</div>
-                                <div class="player-meta">${player.position}${player.isProspect ? ' • Prospect' : ''}</div>
+                                <div class="player-name">${prospectBadge}${player.name}</div>
+                                <div class="player-meta">
+                                    ${hasMlbLogo ? `<img src="${mlbLogoUrl}" class="trade-mlb-logo" alt="">` : ''}
+                                    <span class="trade-mlb-abbrev">${mlbTeamText}</span>
+                                    ${positionBadges}
+                                </div>
                             </div>
                             <div class="asset-value ${valueClass}">${player.value > 0 ? '+' : ''}${player.value}</div>
                         </div>
@@ -26591,7 +26654,7 @@
                 labelEl.textContent = 'Add assets to analyze';
                 verdictEl.textContent = '';
                 verdictEl.className = 'trade-balance-verdict';
-                markerEl.style.top = '50%';
+                markerEl.style.left = '50%';
                 return;
             }
 
@@ -26630,9 +26693,10 @@
             const diff = adjusted1 - adjusted2;
             const percentDiff = total > 0 ? Math.abs(diff) / total * 100 : 0;
 
-            // Position marker (50% = balanced, 0% = all value to team 2, 100% = all value to team 1)
+            // Position marker (50% = balanced, 0% = all value to team 1, 100% = all value to team 2)
+            // When team1 has more value, marker moves left; when team2 has more, marker moves right
             const markerPosition = total > 0 ? (adjusted1 / total) * 100 : 50;
-            markerEl.style.top = `${100 - markerPosition}%`;
+            markerEl.style.left = `${markerPosition}%`;
 
             // Determine verdict
             let verdict = '';
