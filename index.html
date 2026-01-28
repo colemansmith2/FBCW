@@ -26320,47 +26320,58 @@
         async function loadTeamPicks(side, teamKey) {
             const picks = [];
 
-            // Load draft picks from trades or default
-            try {
-                const picksResponse = await fetch('data/keepers/draft_pick_trades.json');
-                let pickTrades = {};
-                if (picksResponse.ok) {
-                    pickTrades = await picksResponse.json();
-                }
+            // Use existing getTeamPicks() which accounts for trades
+            const teamPicks = getTeamPicks(teamKey) || [];
 
-                // For each round 1-23, check if team owns the pick
-                for (let round = 1; round <= 23; round++) {
-                    // Check if pick was traded away
-                    const tradedAway = pickTrades[teamKey]?.traded_away?.includes(round);
-                    // Check if pick was acquired
-                    const acquired = Object.entries(pickTrades).some(([otherTeam, trades]) =>
-                        otherTeam !== teamKey && trades.traded_to?.[teamKey]?.includes(round)
-                    );
+            // Get rounds used by keepers
+            const roundCosts = calculateTeamKeeperRoundCosts(teamKey);
+            const usedRounds = {};
+            roundCosts.forEach(rc => {
+                usedRounds[rc.actualRoundCost] = (usedRounds[rc.actualRoundCost] || 0) + 1;
+            });
 
-                    if (!tradedAway || acquired) {
-                        const expectedPts = getExpectedPointsForRound(round);
-                        picks.push({
-                            type: 'pick',
-                            round: round,
-                            year: 2026,
-                            value: expectedPts,
-                            originalTeam: teamKey
-                        });
-                    }
-                }
-            } catch (e) {
-                // Default: team owns all their picks
-                for (let round = 1; round <= 23; round++) {
-                    const expectedPts = getExpectedPointsForRound(round);
+            // Count available picks at each round
+            const pickCounts = {};
+            teamPicks.forEach(pick => {
+                pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
+            });
+
+            // 2026 Picks: Available picks minus keeper-used picks
+            Object.keys(pickCounts).forEach(round => {
+                const roundNum = parseInt(round);
+                const available = pickCounts[roundNum] || 0;
+                const used = usedRounds[roundNum] || 0;
+                const unused = available - used;
+
+                for (let i = 0; i < unused; i++) {
+                    const expectedPts = getExpectedPointsForRound(roundNum);
                     picks.push({
                         type: 'pick',
-                        round: round,
+                        round: roundNum,
                         year: 2026,
                         value: expectedPts,
                         originalTeam: teamKey
                     });
                 }
+            });
+
+            // 2027 Picks: Rounds 1-22 for all teams (no trades yet)
+            for (let round = 1; round <= 22; round++) {
+                const expectedPts = getExpectedPointsForRound(round);
+                picks.push({
+                    type: 'pick',
+                    round: round,
+                    year: 2027,
+                    value: expectedPts,
+                    originalTeam: teamKey
+                });
             }
+
+            // Sort picks by year then round
+            picks.sort((a, b) => {
+                if (a.year !== b.year) return a.year - b.year;
+                return a.round - b.round;
+            });
 
             tradeAnalyzerData[`team${side}Assets`].picks = picks;
         }
@@ -26373,9 +26384,9 @@
             const proj2027 = tradeAnalyzerData.zips2027[name] || 0;
             const proj2028 = tradeAnalyzerData.zips2028[name] || 0;
 
-            // If no projections at all, use a minimal value
+            // If no projections at all, return 0
             if (proj2026 === 0 && proj2027 === 0 && proj2028 === 0) {
-                return keeper.isProspect ? 50 : 0; // Prospects have some speculative value
+                return 0;
             }
 
             // Calculate keeper round cost progression
