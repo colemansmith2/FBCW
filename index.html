@@ -26233,6 +26233,7 @@
 
         async function loadTeamPlayers(side, teamKey) {
             const players = [];
+            const keepersForSelections = []; // To populate keeperSelections for calculateTeamKeeperRoundCosts
 
             // Load from Firebase keepers
             try {
@@ -26256,6 +26257,15 @@
                                     headshot: keeper.headshot_url || '',
                                     value: value,
                                     rawData: keeper
+                                });
+                                // Add to keeperSelections format for round cost calculation
+                                keepersForSelections.push({
+                                    player_name: keeper.player_name,
+                                    position: keeper.position || 'UT',
+                                    isProspect: keeper.isProspect || false,
+                                    roundCost: keeper.roundCost || 20,
+                                    dollarCost: keeper.dollarCost || 1,
+                                    isUndrafted: keeper.isUndrafted || false
                                 });
                             }
                         }
@@ -26305,6 +26315,14 @@
                                 value: value,
                                 rawData: keeper
                             });
+                            // Add prospect to keeperSelections (prospects don't use picks)
+                            keepersForSelections.push({
+                                player_name: naPick.player_name,
+                                position: keeper.position,
+                                isProspect: true,
+                                roundCost: 0,
+                                dollarCost: 0
+                            });
                         }
                     }
                 }
@@ -26312,18 +26330,34 @@
                 console.log('Error loading NA draft players:', e);
             }
 
+            // Populate keeperSelections so calculateTeamKeeperRoundCosts works
+            keeperSelections[teamKey] = keepersForSelections;
+
             // Sort by value descending
             players.sort((a, b) => b.value - a.value);
+            console.log(`Trade Analyzer loadTeamPlayers for ${teamKey}: ${players.length} players loaded`);
             tradeAnalyzerData[`team${side}Assets`].players = players;
         }
 
         async function loadTeamPicks(side, teamKey) {
             const picks = [];
 
+            // Ensure teamPicksOwned is initialized for this team if not already
+            if (!teamPicksOwned[teamKey]) {
+                const totalRounds = getTotalDraftRounds();
+                teamPicksOwned[teamKey] = [];
+                for (let round = 1; round <= totalRounds; round++) {
+                    teamPicksOwned[teamKey].push({
+                        round: round,
+                        originalOwner: teamKey
+                    });
+                }
+            }
+
             // Use existing getTeamPicks() which accounts for trades
             const teamPicks = getTeamPicks(teamKey) || [];
 
-            // Get rounds used by keepers
+            // Get rounds used by keepers (keeperSelections should be populated by loadTeamPlayers)
             const roundCosts = calculateTeamKeeperRoundCosts(teamKey);
             const usedRounds = {};
             roundCosts.forEach(rc => {
@@ -26373,6 +26407,7 @@
                 return a.round - b.round;
             });
 
+            console.log(`Trade Analyzer loadTeamPicks for ${teamKey}: ${picks.length} picks loaded`);
             tradeAnalyzerData[`team${side}Assets`].picks = picks;
         }
 
