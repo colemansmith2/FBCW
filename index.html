@@ -2954,7 +2954,8 @@
             text-overflow: ellipsis;
         }
 
-        .trade-asset-item .player-meta {
+        .trade-asset-item .player-meta,
+        .trade-offer-item .player-meta {
             font-size: 0.75rem;
             color: #666;
             display: flex;
@@ -2963,16 +2964,12 @@
             flex-wrap: wrap;
         }
 
-        .trade-asset-item .player-name {
-            display: flex;
-            align-items: center;
-            gap: 0.25rem;
-        }
-
-        .trade-asset-item .player-name .prospect-badge {
-            font-size: 0.6rem;
-            width: 16px;
-            height: 16px;
+        .trade-headshot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #e0e0e0;
             flex-shrink: 0;
         }
 
@@ -2989,9 +2986,19 @@
             margin-right: 0.25rem;
         }
 
-        .trade-asset-item .player-meta .position-badge {
+        .trade-asset-item .player-meta .position-badge,
+        .trade-offer-item .player-meta .position-badge {
             font-size: 0.6rem;
             padding: 0.1rem 0.25rem;
+        }
+
+        .trade-asset-item .player-meta .prospect-badge,
+        .trade-offer-item .player-meta .prospect-badge {
+            font-size: 0.55rem;
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+            margin-left: 0.15rem;
         }
 
         .trade-asset-item .asset-value {
@@ -3172,7 +3179,12 @@
         }
 
         .trade-balance-verdict.unfair {
+            color: #e85d04;
+        }
+
+        .trade-balance-verdict.very-unfair {
             color: #dc3545;
+            font-weight: 800;
         }
 
         .trade-reset-container {
@@ -26436,30 +26448,34 @@
                     const inTrade = offer.some(o => o.type === 'player' && o.name === player.name);
                     const valueClass = player.value > 0 ? 'positive' : player.value < 0 ? 'negative' : '';
 
-                    // Get headshot from averageProjectionsMap or projection data
+                    // Get player data from projection data (mlb_team, headshot)
                     const playerNameLower = player.name.toLowerCase().trim();
                     const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
                     let headshot = player.headshot || '';
                     let mlbTeam = '';
 
-                    // Try averageProjectionsMap first
-                    if (averageProjectionsMap[playerNameLower]) {
-                        headshot = headshot || averageProjectionsMap[playerNameLower].headshot || '';
-                        mlbTeam = averageProjectionsMap[playerNameLower].mlb_team || '';
-                    } else if (averageProjectionsMap[baseNameLower]) {
-                        headshot = headshot || averageProjectionsMap[baseNameLower].headshot || '';
-                        mlbTeam = averageProjectionsMap[baseNameLower].mlb_team || '';
+                    // Search through projection data for this player
+                    const projPlayer = [...allProjectionBatters, ...allProjectionPitchers].find(p => {
+                        if (!p.name) return false;
+                        const projNameLower = p.name.toLowerCase().trim();
+                        const projBaseNameLower = projNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                        return projNameLower === playerNameLower ||
+                               projBaseNameLower === baseNameLower ||
+                               projNameLower === baseNameLower ||
+                               projBaseNameLower === playerNameLower;
+                    });
+
+                    if (projPlayer) {
+                        headshot = headshot || projPlayer.headshot_url || '';
+                        mlbTeam = projPlayer.mlb_team || '';
                     }
 
-                    // Fallback to projection batters/pitchers
-                    if (!headshot || !mlbTeam) {
-                        const projPlayer = [...allProjectionBatters, ...allProjectionPitchers].find(p =>
-                            p.name && (p.name.toLowerCase().trim() === playerNameLower ||
-                                       p.name.toLowerCase().trim().replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '') === baseNameLower)
-                        );
-                        if (projPlayer) {
-                            headshot = headshot || projPlayer.headshot_url || '';
-                            mlbTeam = mlbTeam || projPlayer.mlb_team || '';
+                    // Also check averageProjectionsMap for headshot
+                    if (!headshot) {
+                        if (averageProjectionsMap[playerNameLower]?.headshot) {
+                            headshot = averageProjectionsMap[playerNameLower].headshot;
+                        } else if (averageProjectionsMap[baseNameLower]?.headshot) {
+                            headshot = averageProjectionsMap[baseNameLower].headshot;
                         }
                     }
 
@@ -26473,18 +26489,19 @@
                     // Get position badges
                     const positionBadges = getPositionBadge(player.position, player.name);
 
-                    // Prospect badge
+                    // Prospect badge (after position badges)
                     const prospectBadge = player.isProspect ? '<span class="prospect-badge">P</span>' : '';
 
                     return `
                         <div class="trade-asset-item ${inTrade ? 'in-trade' : ''}" onclick="addToTrade(${side}, 'player', ${idx})">
-                            <img src="${headshot}" class="headshot" alt="" onerror="this.src='${placeholderImg}'">
+                            <img src="${headshot}" class="trade-headshot" alt="" onerror="this.src='${placeholderImg}'">
                             <div class="player-info">
-                                <div class="player-name">${prospectBadge}${player.name}</div>
+                                <div class="player-name">${player.name}</div>
                                 <div class="player-meta">
                                     ${hasMlbLogo ? `<img src="${mlbLogoUrl}" class="trade-mlb-logo" alt="">` : ''}
                                     <span class="trade-mlb-abbrev">${mlbTeamText}</span>
                                     ${positionBadges}
+                                    ${prospectBadge}
                                 </div>
                             </div>
                             <div class="asset-value ${valueClass}">${player.value > 0 ? '+' : ''}${player.value}</div>
@@ -26597,16 +26614,69 @@
                 return;
             }
 
+            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+
             offerDiv.innerHTML = offer.map((item, idx) => {
                 if (item.type === 'player') {
+                    // Get player data from projection data (mlb_team, headshot)
+                    const playerNameLower = item.name.toLowerCase().trim();
+                    const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                    let headshot = item.headshot || '';
+                    let mlbTeam = '';
+
+                    // Search through projection data for this player
+                    const projPlayer = [...allProjectionBatters, ...allProjectionPitchers].find(p => {
+                        if (!p.name) return false;
+                        const projNameLower = p.name.toLowerCase().trim();
+                        const projBaseNameLower = projNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                        return projNameLower === playerNameLower ||
+                               projBaseNameLower === baseNameLower ||
+                               projNameLower === baseNameLower ||
+                               projBaseNameLower === playerNameLower;
+                    });
+
+                    if (projPlayer) {
+                        headshot = headshot || projPlayer.headshot_url || '';
+                        mlbTeam = projPlayer.mlb_team || '';
+                    }
+
+                    // Also check averageProjectionsMap for headshot
+                    if (!headshot) {
+                        if (averageProjectionsMap[playerNameLower]?.headshot) {
+                            headshot = averageProjectionsMap[playerNameLower].headshot;
+                        } else if (averageProjectionsMap[baseNameLower]?.headshot) {
+                            headshot = averageProjectionsMap[baseNameLower].headshot;
+                        }
+                    }
+
+                    headshot = headshot || placeholderImg;
+
+                    // Get MLB logo and formatted team text
+                    const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
+                    const mlbTeamText = mlbTeam ? formatMLBTeamDisplay(mlbTeam) : 'FA';
+                    const hasMlbLogo = mlbTeamText !== 'FA' && mlbLogoUrl;
+
+                    // Get position badges
+                    const positionBadges = getPositionBadge(item.position, item.name);
+
+                    // Prospect badge
+                    const prospectBadge = item.isProspect ? '<span class="prospect-badge">P</span>' : '';
+
+                    const valueClass = item.value > 0 ? 'positive' : item.value < 0 ? 'negative' : '';
+
                     return `
                         <div class="trade-offer-item">
-                            <img src="${item.headshot}" class="headshot" alt="" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+'">
+                            <img src="${headshot}" class="trade-headshot" alt="" onerror="this.src='${placeholderImg}'">
                             <div class="player-info">
                                 <div class="player-name">${item.name}</div>
-                                <div class="player-meta">${item.position}</div>
+                                <div class="player-meta">
+                                    ${hasMlbLogo ? `<img src="${mlbLogoUrl}" class="trade-mlb-logo" alt="">` : ''}
+                                    <span class="trade-mlb-abbrev">${mlbTeamText}</span>
+                                    ${positionBadges}
+                                    ${prospectBadge}
+                                </div>
                             </div>
-                            <div class="asset-value">${item.value}</div>
+                            <div class="asset-value ${valueClass}">${item.value > 0 ? '+' : ''}${item.value}</div>
                             <button class="remove-btn" onclick="removeFromTrade(${side}, ${idx})">×</button>
                         </div>
                     `;
@@ -26698,36 +26768,36 @@
             const markerPosition = total > 0 ? (adjusted1 / total) * 100 : 50;
             markerEl.style.left = `${markerPosition}%`;
 
-            // Determine verdict
-            let verdict = '';
-            let verdictClass = '';
-
-            if (percentDiff < 5) {
-                verdict = '✓ Fair Trade';
-                verdictClass = 'fair';
-            } else if (percentDiff < 15) {
-                const favored = diff > 0 ? 'Team 2' : 'Team 1';
-                verdict = `Slightly favors ${favored}`;
-                verdictClass = 'slight';
-            } else {
-                const favored = diff > 0 ? 'Team 2' : 'Team 1';
-                verdict = `Favors ${favored}`;
-                verdictClass = 'unfair';
-            }
-
             // Get team names for display
             const team1Info = tradeAnalyzerData.teams[tradeAnalyzerData.team1];
             const team2Info = tradeAnalyzerData.teams[tradeAnalyzerData.team2];
             const team1Name = team1Info?.manager || 'Team 1';
             const team2Name = team2Info?.manager || 'Team 2';
 
-            if (percentDiff >= 5) {
+            // Determine verdict based on percentage difference
+            // Colors match bar regions: green (center), yellow/orange (middle), red (edges)
+            let verdict = '';
+            let verdictClass = '';
+
+            if (percentDiff < 5) {
+                // Green zone - center of bar
+                verdict = '✓ Fair Trade';
+                verdictClass = 'fair';
+            } else if (percentDiff < 15) {
+                // Yellow/orange zone
                 const favored = diff > 0 ? team2Name : team1Name;
-                if (percentDiff < 15) {
-                    verdict = `Slightly favors ${favored}`;
-                } else {
-                    verdict = `Favors ${favored}`;
-                }
+                verdict = `Slightly favors ${favored}`;
+                verdictClass = 'slight';
+            } else if (percentDiff < 30) {
+                // Orange/red zone
+                const favored = diff > 0 ? team2Name : team1Name;
+                verdict = `Favors ${favored}`;
+                verdictClass = 'unfair';
+            } else {
+                // Deep red zone - lopsided deal
+                const favored = diff > 0 ? team2Name : team1Name;
+                verdict = `Strongly favors ${favored}`;
+                verdictClass = 'very-unfair';
             }
 
             labelEl.textContent = `Diff: ${Math.round(Math.abs(diff))} pts`;
