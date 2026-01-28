@@ -26236,39 +26236,76 @@
             const players = [];
             const keepersForSelections = []; // To populate keeperSelections for calculateTeamKeeperRoundCosts
 
-            // Load from Firebase keepers
-            try {
-                console.log('Firebase check:', typeof firebaseDb !== 'undefined', firebaseDb ? 'exists' : 'null');
-                if (typeof firebaseDb !== 'undefined' && firebaseDb) {
-                    const sanitizedKey = teamKey.replace(/\./g, '_');
-                    const snapshot = await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).once('value');
-                    const keepers = snapshot.val();
+            // Get manager name for this team (2026 key)
+            const team = tradeAnalyzerData.teams[teamKey];
+            const managerName = team?.manager?.toLowerCase().trim() || '';
+            console.log(`Looking for keepers for manager: ${managerName}`);
 
-                    if (keepers) {
-                        const keepersArray = Array.isArray(keepers) ? keepers : Object.values(keepers);
-                        for (const keeper of keepersArray) {
-                            if (keeper && keeper.player_name) {
-                                const value = calculatePlayerTradeValue(keeper);
-                                players.push({
-                                    type: 'player',
-                                    name: keeper.player_name,
-                                    position: keeper.position || 'UT',
-                                    isProspect: keeper.isProspect || false,
-                                    roundCost: keeper.roundCost || 20,
-                                    dollarCost: keeper.dollarCost || 1,
-                                    headshot: keeper.headshot_url || '',
-                                    value: value,
-                                    rawData: keeper
-                                });
-                                // Add to keeperSelections format for round cost calculation
-                                keepersForSelections.push({
-                                    player_name: keeper.player_name,
-                                    position: keeper.position || 'UT',
-                                    isProspect: keeper.isProspect || false,
-                                    roundCost: keeper.roundCost || 20,
-                                    dollarCost: keeper.dollarCost || 1,
-                                    isUndrafted: keeper.isUndrafted || false
-                                });
+            // Load from Firebase keepers - search by manager name since keys changed from 2025 to 2026
+            try {
+                if (typeof firebaseDb !== 'undefined' && firebaseDb) {
+                    const snapshot = await firebaseDb.ref('keepers_2026').once('value');
+                    const allKeepersData = snapshot.val();
+
+                    if (allKeepersData) {
+                        // Load keeper_config to map 2025 team_keys to managers
+                        let keeperConfigData = null;
+                        try {
+                            const configResponse = await fetch('data/keepers/keeper_config.json');
+                            if (configResponse.ok) {
+                                keeperConfigData = await configResponse.json();
+                            }
+                        } catch (e) {
+                            console.log('Could not load keeper_config.json');
+                        }
+
+                        // Search through all keepers entries to find by manager name
+                        for (const [sanitizedKey, keepers] of Object.entries(allKeepersData)) {
+                            // Convert sanitized key back to original format
+                            const originalKey = sanitizedKey.replace(/_/g, '.');
+
+                            // Try to find manager name from keeper_config
+                            let entryManager = null;
+                            if (keeperConfigData?.teams?.[originalKey]) {
+                                entryManager = keeperConfigData.teams[originalKey].manager;
+                            }
+
+                            // Match by manager name
+                            if (entryManager) {
+                                const normalizedEntryManager = entryManager.toLowerCase().trim();
+                                // Check for match (handle variations like "Josh" vs "Josh B")
+                                const managerFirst = managerName.split(' ')[0];
+                                const entryFirst = normalizedEntryManager.split(' ')[0];
+                                if (normalizedEntryManager === managerName || managerFirst === entryFirst) {
+                                    console.log(`Found keepers for ${managerName} via config key: ${originalKey}`);
+                                    const keepersArray = Array.isArray(keepers) ? keepers : Object.values(keepers);
+                                    for (const keeper of keepersArray) {
+                                        if (keeper && keeper.player_name) {
+                                            const value = calculatePlayerTradeValue(keeper);
+                                            players.push({
+                                                type: 'player',
+                                                name: keeper.player_name,
+                                                position: keeper.position || 'UT',
+                                                isProspect: keeper.isProspect || false,
+                                                roundCost: keeper.roundCost || 20,
+                                                dollarCost: keeper.dollarCost || 1,
+                                                headshot: keeper.headshot_url || '',
+                                                value: value,
+                                                rawData: keeper
+                                            });
+                                            // Add to keeperSelections format for round cost calculation
+                                            keepersForSelections.push({
+                                                player_name: keeper.player_name,
+                                                position: keeper.position || 'UT',
+                                                isProspect: keeper.isProspect || false,
+                                                roundCost: keeper.roundCost || 20,
+                                                dollarCost: keeper.dollarCost || 1,
+                                                isUndrafted: keeper.isUndrafted || false
+                                            });
+                                        }
+                                    }
+                                    break;
+                                }
                             }
                         }
                     }
@@ -26277,7 +26314,7 @@
                 console.log('Error loading team keepers:', e);
             }
 
-            // Also load NA draft players for this team
+            // Also load NA draft players for this team - need to match by manager name too
             try {
                 const naResponse = await fetch('data/historical/2025/na_draft.json');
                 if (naResponse.ok) {
@@ -26289,7 +26326,14 @@
                         prospectsMap[p.name.toLowerCase().trim()] = p;
                     });
 
-                    const naPlayersForTeam = naData.picks.filter(p => p.team_key === teamKey);
+                    // NA draft uses manager names, not team keys
+                    const naPlayersForTeam = naData.picks.filter(p => {
+                        const pickManager = p.manager?.toLowerCase().trim() || '';
+                        const managerFirst = managerName.split(' ')[0];
+                        const pickFirst = pickManager.split(' ')[0];
+                        return pickManager === managerName || managerFirst === pickFirst;
+                    });
+
                     for (const naPick of naPlayersForTeam) {
                         // Check if already in players list
                         const alreadyAdded = players.some(p =>
@@ -26344,22 +26388,42 @@
         async function loadTeamPicks(side, teamKey) {
             const picks = [];
 
-            // Ensure teamPicksOwned is initialized for this team if not already
-            if (!teamPicksOwned[teamKey]) {
+            // Get manager name for this team (2026 key)
+            const team = tradeAnalyzerData.teams[teamKey];
+            const managerName = team?.manager?.toLowerCase().trim() || '';
+
+            // Find the keeper_config key (2025 key) for this manager - needed for teamPicksOwned lookup
+            let configKey = teamKey;
+            if (keeperConfig?.teams) {
+                for (const [key, configTeam] of Object.entries(keeperConfig.teams)) {
+                    const configManager = configTeam.manager?.toLowerCase().trim() || '';
+                    const managerFirst = managerName.split(' ')[0];
+                    const configFirst = configManager.split(' ')[0];
+                    if (configManager === managerName || managerFirst === configFirst) {
+                        configKey = key;
+                        break;
+                    }
+                }
+            }
+            console.log(`Trade Analyzer loadTeamPicks: teamKey=${teamKey}, configKey=${configKey}`);
+
+            // Ensure teamPicksOwned is initialized for this config key if not already
+            if (!teamPicksOwned[configKey]) {
                 const totalRounds = getTotalDraftRounds();
-                teamPicksOwned[teamKey] = [];
+                teamPicksOwned[configKey] = [];
                 for (let round = 1; round <= totalRounds; round++) {
-                    teamPicksOwned[teamKey].push({
+                    teamPicksOwned[configKey].push({
                         round: round,
-                        originalOwner: teamKey
+                        originalOwner: configKey
                     });
                 }
             }
 
-            // Use existing getTeamPicks() which accounts for trades
-            const teamPicks = getTeamPicks(teamKey) || [];
+            // Use existing getTeamPicks() which accounts for trades (using config key)
+            const teamPicks = getTeamPicks(configKey) || [];
 
             // Get rounds used by keepers (keeperSelections should be populated by loadTeamPlayers)
+            // Use the 2026 teamKey since that's where we stored keeperSelections
             const roundCosts = calculateTeamKeeperRoundCosts(teamKey);
             const usedRounds = {};
             roundCosts.forEach(rc => {
