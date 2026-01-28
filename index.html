@@ -2757,6 +2757,502 @@
             position: relative;
         }
 
+        /* Trade Analyzer Styles */
+        .trade-analyzer-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .trade-analyzer-section h3 {
+            margin: 0 0 0.5rem 0;
+            color: var(--retro-blue);
+            font-size: 1.25rem;
+        }
+
+        .trade-analyzer-container {
+            display: flex;
+            gap: 1rem;
+            align-items: stretch;
+        }
+
+        .trade-side {
+            flex: 1;
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .trade-team-selector select {
+            width: 100%;
+            padding: 0.6rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            background: white;
+            cursor: pointer;
+        }
+
+        .trade-team-selector select:focus {
+            border-color: var(--retro-blue);
+            outline: none;
+        }
+
+        .trade-team-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 6px;
+            margin-top: 0.5rem;
+            min-height: 50px;
+        }
+
+        .trade-team-info .team-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .trade-team-info .team-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .trade-team-info .team-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #333;
+        }
+
+        .trade-team-info .manager-name {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .trade-columns {
+            display: flex;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .trade-assets-column,
+        .trade-offer-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .trade-assets-column h5,
+        .trade-offer-column h5 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.85rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .trade-asset-tabs {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .trade-tab {
+            flex: 1;
+            padding: 0.4rem 0.5rem;
+            border: none;
+            background: #e9ecef;
+            color: #666;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .trade-tab:hover {
+            background: #dee2e6;
+        }
+
+        .trade-tab.active {
+            background: var(--retro-blue);
+            color: white;
+        }
+
+        .trade-assets-list,
+        .trade-offer-list {
+            flex: 1;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 0.5rem;
+            min-height: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .trade-empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .trade-asset-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 0.35rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.85rem;
+        }
+
+        .trade-asset-item:hover {
+            background: #e9ecef;
+        }
+
+        .trade-asset-item.in-trade {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        .trade-asset-item .headshot {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            object-fit: cover;
+            background: #e0e0e0;
+        }
+
+        .trade-asset-item .player-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .trade-asset-item .player-name {
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .trade-asset-item .player-meta {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .trade-asset-item .asset-value {
+            font-weight: 700;
+            color: var(--retro-blue);
+            font-size: 0.85rem;
+        }
+
+        .trade-asset-item .asset-value.positive {
+            color: #28a745;
+        }
+
+        .trade-asset-item .asset-value.negative {
+            color: #dc3545;
+        }
+
+        .trade-offer-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            border-radius: 4px;
+            margin-bottom: 0.35rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.85rem;
+        }
+
+        .trade-offer-item:hover {
+            background: #bbdefb;
+        }
+
+        .trade-offer-item .headshot {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            object-fit: cover;
+            background: #e0e0e0;
+        }
+
+        .trade-offer-item .player-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .trade-offer-item .player-name {
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .trade-offer-item .player-meta {
+            font-size: 0.75rem;
+            color: #666;
+        }
+
+        .trade-offer-item .asset-value {
+            font-weight: 700;
+            color: var(--retro-blue);
+            font-size: 0.85rem;
+        }
+
+        .trade-offer-item .remove-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: none;
+            background: #ef5350;
+            color: white;
+            font-size: 0.75rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .trade-offer-item .remove-btn:hover {
+            background: #d32f2f;
+        }
+
+        .trade-side-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 6px;
+            border: 2px solid var(--retro-blue);
+            margin-top: 0.5rem;
+        }
+
+        .trade-side-total .total-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .trade-side-total .total-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--retro-blue);
+        }
+
+        .trade-balance-indicator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 0.5rem;
+            min-width: 120px;
+        }
+
+        .trade-balance-bar {
+            width: 20px;
+            height: 200px;
+            background: #e9ecef;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .trade-balance-fill {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            background: linear-gradient(to top, #28a745, #ffc107, #dc3545);
+            transition: height 0.3s;
+        }
+
+        .trade-balance-marker {
+            position: absolute;
+            left: -5px;
+            right: -5px;
+            height: 4px;
+            background: #333;
+            border-radius: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: top 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .trade-balance-label {
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: #666;
+            text-align: center;
+        }
+
+        .trade-balance-verdict {
+            margin-top: 0.5rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .trade-balance-verdict.fair {
+            color: #28a745;
+        }
+
+        .trade-balance-verdict.slight {
+            color: #ffc107;
+        }
+
+        .trade-balance-verdict.unfair {
+            color: #dc3545;
+        }
+
+        .trade-reset-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+
+        .trade-reset-btn {
+            padding: 0.6rem 1.5rem;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .trade-reset-btn:hover {
+            background: #5a6268;
+        }
+
+        /* Budget input in trade */
+        .trade-budget-input {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding: 1rem;
+        }
+
+        .trade-budget-input label {
+            font-size: 0.85rem;
+            color: #555;
+        }
+
+        .trade-budget-input input {
+            padding: 0.5rem;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        .trade-budget-input button {
+            padding: 0.5rem 1rem;
+            background: var(--retro-blue);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .trade-budget-input button:hover {
+            opacity: 0.9;
+        }
+
+        /* Pick item styling */
+        .trade-asset-item.pick-item,
+        .trade-offer-item.pick-item {
+            background: #fff3e0;
+            border-color: #ffcc80;
+        }
+
+        .trade-asset-item.pick-item:hover {
+            background: #ffe0b2;
+        }
+
+        .trade-offer-item.pick-item {
+            background: #fff8e1;
+            border-color: #ffcc80;
+        }
+
+        .trade-asset-item.budget-item,
+        .trade-offer-item.budget-item {
+            background: #e8f5e9;
+            border-color: #a5d6a7;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 900px) {
+            .trade-analyzer-container {
+                flex-direction: column;
+            }
+
+            .trade-balance-indicator {
+                flex-direction: row;
+                min-width: auto;
+                padding: 0.75rem 1rem;
+            }
+
+            .trade-balance-bar {
+                width: 200px;
+                height: 20px;
+            }
+
+            .trade-balance-fill {
+                height: 100%;
+                width: 50%;
+                bottom: auto;
+                left: 0;
+                background: linear-gradient(to right, #dc3545, #ffc107, #28a745);
+            }
+
+            .trade-balance-marker {
+                top: -5px;
+                bottom: -5px;
+                left: 50%;
+                width: 4px;
+                height: auto;
+                transform: translateX(-50%);
+            }
+
+            .trade-balance-label {
+                margin-top: 0;
+                margin-left: 1rem;
+            }
+
+            .trade-columns {
+                flex-direction: column;
+            }
+        }
+
         /* Loading state */
         .keeper-value-loading {
             text-align: center;
@@ -13399,6 +13895,96 @@
         <div id="valuesuite" class="section">
             <h2>Value Suite</h2>
 
+            <!-- Trade Analyzer Section -->
+            <div class="trade-analyzer-section" id="trade-analyzer-section">
+                <h3>Trade Analyzer</h3>
+                <div style="font-size: 0.85rem; color: #666; margin-bottom: 1rem;">
+                    Select two teams and build a trade to see how the deal balances out. Values factor in multi-year projections (2026-2028).
+                </div>
+
+                <div class="trade-analyzer-container">
+                    <!-- Team 1 Side -->
+                    <div class="trade-side trade-side-left">
+                        <div class="trade-team-selector">
+                            <select id="trade-team-1" onchange="loadTradeTeamAssets(1)">
+                                <option value="">Select Team...</option>
+                            </select>
+                            <div class="trade-team-info" id="trade-team-1-info"></div>
+                        </div>
+                        <div class="trade-columns">
+                            <div class="trade-assets-column">
+                                <h5>Available Assets</h5>
+                                <div class="trade-asset-tabs">
+                                    <button class="trade-tab active" onclick="showTradeAssetTab(1, 'players')">Players</button>
+                                    <button class="trade-tab" onclick="showTradeAssetTab(1, 'picks')">Picks</button>
+                                    <button class="trade-tab" onclick="showTradeAssetTab(1, 'budget')">Budget</button>
+                                </div>
+                                <div class="trade-assets-list" id="trade-assets-1">
+                                    <div class="trade-empty-state">Select a team to view assets</div>
+                                </div>
+                            </div>
+                            <div class="trade-offer-column">
+                                <h5>Offering</h5>
+                                <div class="trade-offer-list" id="trade-offer-1">
+                                    <div class="trade-empty-state">Add assets to offer</div>
+                                </div>
+                                <div class="trade-side-total" id="trade-total-1">
+                                    <span class="total-label">Total Value:</span>
+                                    <span class="total-value">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Trade Balance Indicator -->
+                    <div class="trade-balance-indicator">
+                        <div class="trade-balance-bar">
+                            <div class="trade-balance-fill" id="trade-balance-fill"></div>
+                            <div class="trade-balance-marker" id="trade-balance-marker"></div>
+                        </div>
+                        <div class="trade-balance-label" id="trade-balance-label">Add assets to analyze</div>
+                        <div class="trade-balance-verdict" id="trade-balance-verdict"></div>
+                    </div>
+
+                    <!-- Team 2 Side -->
+                    <div class="trade-side trade-side-right">
+                        <div class="trade-team-selector">
+                            <select id="trade-team-2" onchange="loadTradeTeamAssets(2)">
+                                <option value="">Select Team...</option>
+                            </select>
+                            <div class="trade-team-info" id="trade-team-2-info"></div>
+                        </div>
+                        <div class="trade-columns">
+                            <div class="trade-offer-column">
+                                <h5>Offering</h5>
+                                <div class="trade-offer-list" id="trade-offer-2">
+                                    <div class="trade-empty-state">Add assets to offer</div>
+                                </div>
+                                <div class="trade-side-total" id="trade-total-2">
+                                    <span class="total-label">Total Value:</span>
+                                    <span class="total-value">0</span>
+                                </div>
+                            </div>
+                            <div class="trade-assets-column">
+                                <h5>Available Assets</h5>
+                                <div class="trade-asset-tabs">
+                                    <button class="trade-tab active" onclick="showTradeAssetTab(2, 'players')">Players</button>
+                                    <button class="trade-tab" onclick="showTradeAssetTab(2, 'picks')">Picks</button>
+                                    <button class="trade-tab" onclick="showTradeAssetTab(2, 'budget')">Budget</button>
+                                </div>
+                                <div class="trade-assets-list" id="trade-assets-2">
+                                    <div class="trade-empty-state">Select a team to view assets</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trade-reset-container">
+                    <button class="trade-reset-btn" onclick="resetTradeAnalyzer()">Reset Trade</button>
+                </div>
+            </div>
+
             <div class="keeper-value-section" id="keeper-value-section">
                 <div class="keeper-value-header">
                     <h3>Keeper Value Analysis</h3>
@@ -20970,6 +21556,9 @@
                     await loadProjections();
                 }
 
+                // Initialize Trade Analyzer
+                await initTradeAnalyzer();
+
                 // Trigger the keeper value analysis
                 if (keeperConfig) {
                     displayLeagueKeepers(); // This triggers the value analysis rendering
@@ -25479,6 +26068,646 @@
         // Get raw (unsmoothed) expected points - only for charts showing actual vs fitted
         function getRawExpectedPointsForRound(round) {
             return expectedPointsByRound[round]?.avg || predictExpectedPoints(round);
+        }
+
+        // ==========================================
+        // TRADE ANALYZER
+        // ==========================================
+
+        // Trade Analyzer state
+        let tradeAnalyzerData = {
+            teams: {},           // team_key -> team info
+            team1: null,         // selected team key
+            team2: null,
+            team1Assets: { players: [], picks: [], budget: 50 },
+            team2Assets: { players: [], picks: [], budget: 50 },
+            team1Offer: [],      // assets in the trade
+            team2Offer: [],
+            zips2026: {},        // player projections by year
+            zips2027: {},
+            zips2028: {},
+            activeTab: { 1: 'players', 2: 'players' }
+        };
+
+        const MAX_ASSETS_PER_SIDE = 8;
+        const ASSET_COUNT_PENALTY = 0.05; // 5% penalty per extra asset
+
+        // Initialize Trade Analyzer when Value Suite loads
+        async function initTradeAnalyzer() {
+            console.log('Initializing Trade Analyzer...');
+
+            // Load team data from keeper config
+            try {
+                const configResponse = await fetch('data/keepers/keeper_config.json');
+                if (configResponse.ok) {
+                    const config = await configResponse.json();
+                    tradeAnalyzerData.teams = config.teams || {};
+                }
+            } catch (e) {
+                console.log('Error loading keeper config for trade analyzer:', e);
+            }
+
+            // Load current season teams for logos
+            try {
+                const teamsResponse = await fetch('data/current_season/teams.json');
+                if (teamsResponse.ok) {
+                    const teamsData = await teamsResponse.json();
+                    teamsData.forEach(team => {
+                        const managerLower = (team.manager || '').toLowerCase();
+                        // Match by manager name and update logo
+                        for (const [key, info] of Object.entries(tradeAnalyzerData.teams)) {
+                            if (info.manager && info.manager.toLowerCase() === managerLower) {
+                                tradeAnalyzerData.teams[key].team_logo = team.team_logo;
+                                tradeAnalyzerData.teams[key].team_name = team.team_name || info.team_name;
+                            }
+                        }
+                    });
+                }
+            } catch (e) {
+                console.log('Error loading current season teams:', e);
+            }
+
+            // Load ZiPS projections for multi-year value
+            await loadZiPSProjections();
+
+            // Populate team dropdowns
+            populateTradeTeamDropdowns();
+        }
+
+        async function loadZiPSProjections() {
+            const years = ['zips', 'zips2027', 'zips2028'];
+            const targets = ['zips2026', 'zips2027', 'zips2028'];
+
+            for (let i = 0; i < years.length; i++) {
+                try {
+                    const response = await fetch(`data/projections/projections_${years[i]}.json`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const projMap = {};
+                        [...(data.batters || []), ...(data.pitchers || [])].forEach(p => {
+                            const name = p.name.toLowerCase().trim();
+                            projMap[name] = p.projected_points || 0;
+                        });
+                        tradeAnalyzerData[targets[i]] = projMap;
+                        console.log(`Loaded ${Object.keys(projMap).length} ${targets[i]} projections`);
+                    }
+                } catch (e) {
+                    console.log(`Error loading ${years[i]} projections:`, e);
+                }
+            }
+        }
+
+        function populateTradeTeamDropdowns() {
+            const select1 = document.getElementById('trade-team-1');
+            const select2 = document.getElementById('trade-team-2');
+            if (!select1 || !select2) return;
+
+            // Sort teams by manager name
+            const sortedTeams = Object.entries(tradeAnalyzerData.teams)
+                .sort((a, b) => (a[1].manager || '').localeCompare(b[1].manager || ''));
+
+            const optionsHtml = sortedTeams.map(([key, team]) =>
+                `<option value="${key}">${team.manager} - ${team.team_name}</option>`
+            ).join('');
+
+            select1.innerHTML = '<option value="">Select Team...</option>' + optionsHtml;
+            select2.innerHTML = '<option value="">Select Team...</option>' + optionsHtml;
+        }
+
+        async function loadTradeTeamAssets(side) {
+            const select = document.getElementById(`trade-team-${side}`);
+            const teamKey = select.value;
+            const infoDiv = document.getElementById(`trade-team-${side}-info`);
+            const assetsDiv = document.getElementById(`trade-assets-${side}`);
+
+            if (!teamKey) {
+                infoDiv.innerHTML = '';
+                assetsDiv.innerHTML = '<div class="trade-empty-state">Select a team to view assets</div>';
+                tradeAnalyzerData[`team${side}`] = null;
+                tradeAnalyzerData[`team${side}Assets`] = { players: [], picks: [], budget: 50 };
+                tradeAnalyzerData[`team${side}Offer`] = [];
+                updateTradeOffer(side);
+                updateTradeBalance();
+                return;
+            }
+
+            // Check if same team selected on both sides
+            const otherSide = side === 1 ? 2 : 1;
+            const otherTeamKey = document.getElementById(`trade-team-${otherSide}`).value;
+            if (teamKey === otherTeamKey && otherTeamKey) {
+                alert('Cannot select the same team on both sides');
+                select.value = '';
+                return;
+            }
+
+            tradeAnalyzerData[`team${side}`] = teamKey;
+            tradeAnalyzerData[`team${side}Offer`] = [];
+
+            const team = tradeAnalyzerData.teams[teamKey];
+            if (!team) return;
+
+            // Show team info
+            const logoUrl = team.team_logo || '';
+            infoDiv.innerHTML = `
+                <img src="${logoUrl}" class="team-logo" alt="" onerror="this.style.display='none'">
+                <div class="team-details">
+                    <div class="team-name">${team.team_name || 'Unknown'}</div>
+                    <div class="manager-name">${team.manager || 'Unknown'}</div>
+                </div>
+            `;
+
+            // Load team's players (keepers)
+            await loadTeamPlayers(side, teamKey);
+
+            // Load team's picks
+            await loadTeamPicks(side, teamKey);
+
+            // Set budget
+            tradeAnalyzerData[`team${side}Assets`].budget = 50;
+
+            // Show players tab by default
+            showTradeAssetTab(side, 'players');
+            updateTradeOffer(side);
+            updateTradeBalance();
+        }
+
+        async function loadTeamPlayers(side, teamKey) {
+            const players = [];
+
+            // Load from Firebase keepers
+            try {
+                if (typeof firebaseDb !== 'undefined' && firebaseDb) {
+                    const sanitizedKey = teamKey.replace(/\./g, '_');
+                    const snapshot = await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).once('value');
+                    const keepers = snapshot.val();
+
+                    if (keepers) {
+                        const keepersArray = Array.isArray(keepers) ? keepers : Object.values(keepers);
+                        for (const keeper of keepersArray) {
+                            if (keeper && keeper.player_name) {
+                                const value = calculatePlayerTradeValue(keeper);
+                                players.push({
+                                    type: 'player',
+                                    name: keeper.player_name,
+                                    position: keeper.position || 'UT',
+                                    isProspect: keeper.isProspect || false,
+                                    roundCost: keeper.roundCost || 20,
+                                    dollarCost: keeper.dollarCost || 1,
+                                    headshot: keeper.headshot_url || '',
+                                    value: value,
+                                    rawData: keeper
+                                });
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Error loading team keepers:', e);
+            }
+
+            // Also load NA draft players for this team
+            try {
+                const naResponse = await fetch('data/historical/2025/na_draft.json');
+                if (naResponse.ok) {
+                    const naData = await naResponse.json();
+                    const prospectsResponse = await fetch('data/prospects/prospects.json');
+                    const prospectsData = prospectsResponse.ok ? await prospectsResponse.json() : { prospects: [] };
+                    const prospectsMap = {};
+                    prospectsData.prospects.forEach(p => {
+                        prospectsMap[p.name.toLowerCase().trim()] = p;
+                    });
+
+                    const naPlayersForTeam = naData.picks.filter(p => p.team_key === teamKey);
+                    for (const naPick of naPlayersForTeam) {
+                        // Check if already in players list
+                        const alreadyAdded = players.some(p =>
+                            p.name.toLowerCase().trim() === naPick.player_name.toLowerCase().trim()
+                        );
+                        if (!alreadyAdded) {
+                            const prospectInfo = prospectsMap[naPick.player_name.toLowerCase().trim()];
+                            const keeper = {
+                                player_name: naPick.player_name,
+                                position: prospectInfo?.position || 'UT',
+                                isProspect: true,
+                                roundCost: 0,
+                                dollarCost: 0,
+                                headshot_url: prospectInfo?.headshot_url || ''
+                            };
+                            const value = calculatePlayerTradeValue(keeper);
+                            players.push({
+                                type: 'player',
+                                name: naPick.player_name,
+                                position: keeper.position,
+                                isProspect: true,
+                                roundCost: 0,
+                                dollarCost: 0,
+                                headshot: keeper.headshot_url,
+                                value: value,
+                                rawData: keeper
+                            });
+                        }
+                    }
+                }
+            } catch (e) {
+                console.log('Error loading NA draft players:', e);
+            }
+
+            // Sort by value descending
+            players.sort((a, b) => b.value - a.value);
+            tradeAnalyzerData[`team${side}Assets`].players = players;
+        }
+
+        async function loadTeamPicks(side, teamKey) {
+            const picks = [];
+
+            // Load draft picks from trades or default
+            try {
+                const picksResponse = await fetch('data/keepers/draft_pick_trades.json');
+                let pickTrades = {};
+                if (picksResponse.ok) {
+                    pickTrades = await picksResponse.json();
+                }
+
+                // For each round 1-23, check if team owns the pick
+                for (let round = 1; round <= 23; round++) {
+                    // Check if pick was traded away
+                    const tradedAway = pickTrades[teamKey]?.traded_away?.includes(round);
+                    // Check if pick was acquired
+                    const acquired = Object.entries(pickTrades).some(([otherTeam, trades]) =>
+                        otherTeam !== teamKey && trades.traded_to?.[teamKey]?.includes(round)
+                    );
+
+                    if (!tradedAway || acquired) {
+                        const expectedPts = getExpectedPointsForRound(round);
+                        picks.push({
+                            type: 'pick',
+                            round: round,
+                            year: 2026,
+                            value: expectedPts,
+                            originalTeam: teamKey
+                        });
+                    }
+                }
+            } catch (e) {
+                // Default: team owns all their picks
+                for (let round = 1; round <= 23; round++) {
+                    const expectedPts = getExpectedPointsForRound(round);
+                    picks.push({
+                        type: 'pick',
+                        round: round,
+                        year: 2026,
+                        value: expectedPts,
+                        originalTeam: teamKey
+                    });
+                }
+            }
+
+            tradeAnalyzerData[`team${side}Assets`].picks = picks;
+        }
+
+        function calculatePlayerTradeValue(keeper) {
+            const name = keeper.player_name.toLowerCase().trim();
+
+            // Get projections for each year
+            const proj2026 = tradeAnalyzerData.zips2026[name] || 0;
+            const proj2027 = tradeAnalyzerData.zips2027[name] || 0;
+            const proj2028 = tradeAnalyzerData.zips2028[name] || 0;
+
+            // If no projections at all, use a minimal value
+            if (proj2026 === 0 && proj2027 === 0 && proj2028 === 0) {
+                return keeper.isProspect ? 50 : 0; // Prospects have some speculative value
+            }
+
+            // Calculate keeper round cost progression
+            // Year 1 (2026): current round cost
+            // Year 2 (2027): 3 rounds earlier if R4-10, 4 rounds earlier if R11+
+            // Year 3 (2028): another step up
+            const round2026 = keeper.isProspect ? 0 : (keeper.roundCost || 20);
+            const round2027 = keeper.isProspect ? 0 : getKeeperRoundCost(round2026, 20);
+            const round2028 = keeper.isProspect ? 0 : getKeeperRoundCost(round2027, 20);
+
+            // Get expected points for each round
+            const expected2026 = round2026 > 0 ? getExpectedPointsForRound(round2026) : 0;
+            const expected2027 = round2027 > 0 ? getExpectedPointsForRound(round2027) : 0;
+            const expected2028 = round2028 > 0 ? getExpectedPointsForRound(round2028) : 0;
+
+            // Calculate surplus value for each year
+            // Value = Projected + (Projected - Expected)
+            const value2026 = proj2026 > 0 ? proj2026 + (proj2026 - expected2026) : 0;
+            const value2027 = proj2027 > 0 ? proj2027 + (proj2027 - expected2027) : 0;
+            const value2028 = proj2028 > 0 ? proj2028 + (proj2028 - expected2028) : 0;
+
+            // Weight years: 2026 = 50%, 2027 = 30%, 2028 = 20%
+            const totalValue = (value2026 * 0.50) + (value2027 * 0.30) + (value2028 * 0.20);
+
+            return Math.round(totalValue);
+        }
+
+        function showTradeAssetTab(side, tab) {
+            tradeAnalyzerData.activeTab[side] = tab;
+
+            // Update tab buttons
+            const tabs = document.querySelectorAll(`.trade-side-${side === 1 ? 'left' : 'right'} .trade-tab`);
+            tabs.forEach(t => t.classList.remove('active'));
+            const activeTab = document.querySelector(`.trade-side-${side === 1 ? 'left' : 'right'} .trade-tab:nth-child(${tab === 'players' ? 1 : tab === 'picks' ? 2 : 3})`);
+            if (activeTab) activeTab.classList.add('active');
+
+            renderTradeAssets(side);
+        }
+
+        function renderTradeAssets(side) {
+            const assetsDiv = document.getElementById(`trade-assets-${side}`);
+            if (!assetsDiv) return;
+
+            const tab = tradeAnalyzerData.activeTab[side];
+            const assets = tradeAnalyzerData[`team${side}Assets`];
+            const offer = tradeAnalyzerData[`team${side}Offer`];
+
+            if (tab === 'players') {
+                if (!assets.players || assets.players.length === 0) {
+                    assetsDiv.innerHTML = '<div class="trade-empty-state">No players available</div>';
+                    return;
+                }
+
+                assetsDiv.innerHTML = assets.players.map((player, idx) => {
+                    const inTrade = offer.some(o => o.type === 'player' && o.name === player.name);
+                    const valueClass = player.value > 0 ? 'positive' : player.value < 0 ? 'negative' : '';
+                    return `
+                        <div class="trade-asset-item ${inTrade ? 'in-trade' : ''}" onclick="addToTrade(${side}, 'player', ${idx})">
+                            <img src="${player.headshot}" class="headshot" alt="" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+'">
+                            <div class="player-info">
+                                <div class="player-name">${player.name}</div>
+                                <div class="player-meta">${player.position}${player.isProspect ? ' • Prospect' : ''}</div>
+                            </div>
+                            <div class="asset-value ${valueClass}">${player.value > 0 ? '+' : ''}${player.value}</div>
+                        </div>
+                    `;
+                }).join('');
+            } else if (tab === 'picks') {
+                if (!assets.picks || assets.picks.length === 0) {
+                    assetsDiv.innerHTML = '<div class="trade-empty-state">No picks available</div>';
+                    return;
+                }
+
+                assetsDiv.innerHTML = assets.picks.map((pick, idx) => {
+                    const inTrade = offer.some(o => o.type === 'pick' && o.round === pick.round);
+                    return `
+                        <div class="trade-asset-item pick-item ${inTrade ? 'in-trade' : ''}" onclick="addToTrade(${side}, 'pick', ${idx})">
+                            <div class="player-info">
+                                <div class="player-name">Round ${pick.round}</div>
+                                <div class="player-meta">${pick.year} Draft</div>
+                            </div>
+                            <div class="asset-value">${pick.value}</div>
+                        </div>
+                    `;
+                }).join('');
+            } else if (tab === 'budget') {
+                const currentBudgetInTrade = offer.filter(o => o.type === 'budget').reduce((sum, o) => sum + o.amount, 0);
+                const availableBudget = assets.budget - currentBudgetInTrade;
+
+                assetsDiv.innerHTML = `
+                    <div class="trade-budget-input">
+                        <label>Available Budget: $${availableBudget}</label>
+                        <input type="number" id="trade-budget-amount-${side}" min="1" max="${availableBudget}" value="5" placeholder="Amount">
+                        <button onclick="addBudgetToTrade(${side})">Add Budget to Trade</button>
+                    </div>
+                `;
+            }
+        }
+
+        function addToTrade(side, type, index) {
+            const offer = tradeAnalyzerData[`team${side}Offer`];
+
+            // Check asset limit
+            if (offer.length >= MAX_ASSETS_PER_SIDE) {
+                return; // Silently prevent adding more
+            }
+
+            const assets = tradeAnalyzerData[`team${side}Assets`];
+
+            if (type === 'player') {
+                const player = assets.players[index];
+                if (!offer.some(o => o.type === 'player' && o.name === player.name)) {
+                    offer.push({ ...player });
+                }
+            } else if (type === 'pick') {
+                const pick = assets.picks[index];
+                if (!offer.some(o => o.type === 'pick' && o.round === pick.round)) {
+                    offer.push({ ...pick });
+                }
+            }
+
+            renderTradeAssets(side);
+            updateTradeOffer(side);
+            updateTradeBalance();
+        }
+
+        function addBudgetToTrade(side) {
+            const input = document.getElementById(`trade-budget-amount-${side}`);
+            const amount = parseInt(input.value) || 0;
+            const offer = tradeAnalyzerData[`team${side}Offer`];
+            const assets = tradeAnalyzerData[`team${side}Assets`];
+
+            // Check asset limit
+            if (offer.length >= MAX_ASSETS_PER_SIDE) {
+                return;
+            }
+
+            const currentBudgetInTrade = offer.filter(o => o.type === 'budget').reduce((sum, o) => sum + o.amount, 0);
+            const availableBudget = assets.budget - currentBudgetInTrade;
+
+            if (amount > 0 && amount <= availableBudget) {
+                offer.push({
+                    type: 'budget',
+                    amount: amount,
+                    value: amount * 10 // $1 = 10 value points
+                });
+                renderTradeAssets(side);
+                updateTradeOffer(side);
+                updateTradeBalance();
+            }
+        }
+
+        function removeFromTrade(side, index) {
+            const offer = tradeAnalyzerData[`team${side}Offer`];
+            offer.splice(index, 1);
+            renderTradeAssets(side);
+            updateTradeOffer(side);
+            updateTradeBalance();
+        }
+
+        function updateTradeOffer(side) {
+            const offerDiv = document.getElementById(`trade-offer-${side}`);
+            const totalDiv = document.getElementById(`trade-total-${side}`);
+            const offer = tradeAnalyzerData[`team${side}Offer`];
+
+            if (!offerDiv) return;
+
+            if (offer.length === 0) {
+                offerDiv.innerHTML = '<div class="trade-empty-state">Add assets to offer</div>';
+                if (totalDiv) totalDiv.querySelector('.total-value').textContent = '0';
+                return;
+            }
+
+            offerDiv.innerHTML = offer.map((item, idx) => {
+                if (item.type === 'player') {
+                    return `
+                        <div class="trade-offer-item">
+                            <img src="${item.headshot}" class="headshot" alt="" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+'">
+                            <div class="player-info">
+                                <div class="player-name">${item.name}</div>
+                                <div class="player-meta">${item.position}</div>
+                            </div>
+                            <div class="asset-value">${item.value}</div>
+                            <button class="remove-btn" onclick="removeFromTrade(${side}, ${idx})">×</button>
+                        </div>
+                    `;
+                } else if (item.type === 'pick') {
+                    return `
+                        <div class="trade-offer-item pick-item">
+                            <div class="player-info">
+                                <div class="player-name">Round ${item.round}</div>
+                                <div class="player-meta">${item.year} Draft</div>
+                            </div>
+                            <div class="asset-value">${item.value}</div>
+                            <button class="remove-btn" onclick="removeFromTrade(${side}, ${idx})">×</button>
+                        </div>
+                    `;
+                } else if (item.type === 'budget') {
+                    return `
+                        <div class="trade-offer-item budget-item">
+                            <div class="player-info">
+                                <div class="player-name">$${item.amount} Budget</div>
+                                <div class="player-meta">Keeper Budget</div>
+                            </div>
+                            <div class="asset-value">${item.value}</div>
+                            <button class="remove-btn" onclick="removeFromTrade(${side}, ${idx})">×</button>
+                        </div>
+                    `;
+                }
+            }).join('');
+
+            // Calculate total with asset count penalty
+            const rawTotal = offer.reduce((sum, item) => sum + (item.value || 0), 0);
+            if (totalDiv) totalDiv.querySelector('.total-value').textContent = rawTotal;
+        }
+
+        function updateTradeBalance() {
+            const offer1 = tradeAnalyzerData.team1Offer;
+            const offer2 = tradeAnalyzerData.team2Offer;
+
+            const labelEl = document.getElementById('trade-balance-label');
+            const verdictEl = document.getElementById('trade-balance-verdict');
+            const markerEl = document.getElementById('trade-balance-marker');
+
+            if (!labelEl || !verdictEl || !markerEl) return;
+
+            if (offer1.length === 0 && offer2.length === 0) {
+                labelEl.textContent = 'Add assets to analyze';
+                verdictEl.textContent = '';
+                verdictEl.className = 'trade-balance-verdict';
+                markerEl.style.top = '50%';
+                return;
+            }
+
+            // Calculate raw values
+            const raw1 = offer1.reduce((sum, item) => sum + (item.value || 0), 0);
+            const raw2 = offer2.reduce((sum, item) => sum + (item.value || 0), 0);
+
+            // Count players on each side
+            const players1 = offer1.filter(o => o.type === 'player').length;
+            const players2 = offer2.filter(o => o.type === 'player').length;
+
+            // Apply penalty for having more assets (especially players)
+            const count1 = offer1.length;
+            const count2 = offer2.length;
+
+            let adjusted1 = raw1;
+            let adjusted2 = raw2;
+
+            // Penalty for having more total assets
+            if (count1 > count2) {
+                const penalty = (count1 - count2) * ASSET_COUNT_PENALTY;
+                adjusted1 = raw1 * (1 - penalty);
+            } else if (count2 > count1) {
+                const penalty = (count2 - count1) * ASSET_COUNT_PENALTY;
+                adjusted2 = raw2 * (1 - penalty);
+            }
+
+            // Extra penalty for having more players (roster spots matter)
+            if (players1 > players2 + 1) {
+                adjusted1 = adjusted1 * (1 - (players1 - players2 - 1) * 0.03);
+            } else if (players2 > players1 + 1) {
+                adjusted2 = adjusted2 * (1 - (players2 - players1 - 1) * 0.03);
+            }
+
+            const total = adjusted1 + adjusted2;
+            const diff = adjusted1 - adjusted2;
+            const percentDiff = total > 0 ? Math.abs(diff) / total * 100 : 0;
+
+            // Position marker (50% = balanced, 0% = all value to team 2, 100% = all value to team 1)
+            const markerPosition = total > 0 ? (adjusted1 / total) * 100 : 50;
+            markerEl.style.top = `${100 - markerPosition}%`;
+
+            // Determine verdict
+            let verdict = '';
+            let verdictClass = '';
+
+            if (percentDiff < 5) {
+                verdict = '✓ Fair Trade';
+                verdictClass = 'fair';
+            } else if (percentDiff < 15) {
+                const favored = diff > 0 ? 'Team 2' : 'Team 1';
+                verdict = `Slightly favors ${favored}`;
+                verdictClass = 'slight';
+            } else {
+                const favored = diff > 0 ? 'Team 2' : 'Team 1';
+                verdict = `Favors ${favored}`;
+                verdictClass = 'unfair';
+            }
+
+            // Get team names for display
+            const team1Info = tradeAnalyzerData.teams[tradeAnalyzerData.team1];
+            const team2Info = tradeAnalyzerData.teams[tradeAnalyzerData.team2];
+            const team1Name = team1Info?.manager || 'Team 1';
+            const team2Name = team2Info?.manager || 'Team 2';
+
+            if (percentDiff >= 5) {
+                const favored = diff > 0 ? team2Name : team1Name;
+                if (percentDiff < 15) {
+                    verdict = `Slightly favors ${favored}`;
+                } else {
+                    verdict = `Favors ${favored}`;
+                }
+            }
+
+            labelEl.textContent = `Diff: ${Math.round(Math.abs(diff))} pts`;
+            verdictEl.textContent = verdict;
+            verdictEl.className = `trade-balance-verdict ${verdictClass}`;
+        }
+
+        function resetTradeAnalyzer() {
+            document.getElementById('trade-team-1').value = '';
+            document.getElementById('trade-team-2').value = '';
+
+            tradeAnalyzerData.team1 = null;
+            tradeAnalyzerData.team2 = null;
+            tradeAnalyzerData.team1Assets = { players: [], picks: [], budget: 50 };
+            tradeAnalyzerData.team2Assets = { players: [], picks: [], budget: 50 };
+            tradeAnalyzerData.team1Offer = [];
+            tradeAnalyzerData.team2Offer = [];
+            tradeAnalyzerData.activeTab = { 1: 'players', 2: 'players' };
+
+            document.getElementById('trade-team-1-info').innerHTML = '';
+            document.getElementById('trade-team-2-info').innerHTML = '';
+            document.getElementById('trade-assets-1').innerHTML = '<div class="trade-empty-state">Select a team to view assets</div>';
+            document.getElementById('trade-assets-2').innerHTML = '<div class="trade-empty-state">Select a team to view assets</div>';
+            document.getElementById('trade-offer-1').innerHTML = '<div class="trade-empty-state">Add assets to offer</div>';
+            document.getElementById('trade-offer-2').innerHTML = '<div class="trade-empty-state">Add assets to offer</div>';
+            document.getElementById('trade-total-1').querySelector('.total-value').textContent = '0';
+            document.getElementById('trade-total-2').querySelector('.total-value').textContent = '0';
+
+            updateTradeBalance();
         }
 
         async function analyzeKeeperValues() {
