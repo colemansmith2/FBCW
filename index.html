@@ -2841,6 +2841,19 @@
             display: flex;
             gap: 0.75rem;
             flex: 1;
+            position: relative;
+        }
+
+        /* Vertical separator between Available Assets and Offering columns */
+        .trade-columns::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, #ccc 10%, #ccc 90%, transparent);
         }
 
         .trade-assets-column,
@@ -3383,15 +3396,33 @@
             flex-wrap: wrap;
         }
 
-        /* Position badges in modal header need higher contrast against blue background */
+        /* Position badges in modal header - white container wrapper like Prospect Pavilion */
+        .trade-player-modal-positions .position-badge-wrapper {
+            display: inline-block;
+            background: white;
+            border-radius: 4px;
+            line-height: 0;
+        }
+
         .trade-player-modal-positions .position-badge {
-            border: 2px solid white;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            display: inline-block;
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 700;
+            line-height: normal;
+        }
+
+        .trade-player-modal-positions .prospect-badge-wrapper {
+            display: inline-block;
+            background: white;
+            border-radius: 4px;
+            line-height: 0;
         }
 
         .trade-player-modal-positions .prospect-badge {
-            border: 2px solid white;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            display: inline-block;
+            line-height: normal;
         }
 
         .trade-player-modal-value {
@@ -3506,20 +3537,26 @@
             opacity: 0.9;
         }
 
-        /* Pick item styling */
-        .trade-asset-item.pick-item,
-        .trade-offer-item.pick-item {
+        /* Pick item styling - 2026 picks (orange) */
+        .trade-asset-item.pick-item.pick-2026,
+        .trade-offer-item.pick-item.pick-2026 {
             background: #fff3e0;
             border-color: #ffcc80;
         }
 
-        .trade-asset-item.pick-item:hover {
+        .trade-asset-item.pick-item.pick-2026:hover {
             background: #ffe0b2;
         }
 
-        .trade-offer-item.pick-item {
-            background: #fff8e1;
-            border-color: #ffcc80;
+        /* Pick item styling - 2027 picks (purple) */
+        .trade-asset-item.pick-item.pick-2027,
+        .trade-offer-item.pick-item.pick-2027 {
+            background: #f3e5f5;
+            border-color: #ce93d8;
+        }
+
+        .trade-asset-item.pick-item.pick-2027:hover {
+            background: #e1bee7;
         }
 
         .trade-asset-item.budget-item,
@@ -26586,6 +26623,13 @@
             for (const keeper of keepers) {
                 if (keeper && keeper.player_name) {
                     const value = calculatePlayerTradeValue(keeper);
+
+                    // Look up MLB team from averageProjectionsMap
+                    const playerNameLower = keeper.player_name.toLowerCase().trim();
+                    const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                    const avgProjData = averageProjectionsMap[playerNameLower] || averageProjectionsMap[baseNameLower];
+                    const mlbTeam = avgProjData?.mlb_team || '';
+
                     players.push({
                         type: 'player',
                         name: keeper.player_name,
@@ -26593,7 +26637,8 @@
                         isProspect: keeper.isProspect || false,
                         roundCost: keeper.roundCost || 20,
                         dollarCost: keeper.dollarCost || 1,
-                        headshot: keeper.headshot_url || '',
+                        headshot: keeper.headshot_url || avgProjData?.headshot || '',
+                        mlbTeam: mlbTeam,
                         value: value,
                         rawData: keeper
                     });
@@ -26743,38 +26788,9 @@
                     const inTrade = offer.some(o => o.type === 'player' && o.name === player.name);
                     const valueClass = player.value > 0 ? 'positive' : player.value < 0 ? 'negative' : '';
 
-                    // Get player data from projection data (mlb_team, headshot)
-                    const playerNameLower = player.name.toLowerCase().trim();
-                    const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
-                    let headshot = player.headshot || '';
-                    let mlbTeam = '';
-
-                    // Search through projection data for this player
-                    const projPlayer = [...allProjectionBatters, ...allProjectionPitchers].find(p => {
-                        if (!p.name) return false;
-                        const projNameLower = p.name.toLowerCase().trim();
-                        const projBaseNameLower = projNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
-                        return projNameLower === playerNameLower ||
-                               projBaseNameLower === baseNameLower ||
-                               projNameLower === baseNameLower ||
-                               projBaseNameLower === playerNameLower;
-                    });
-
-                    if (projPlayer) {
-                        headshot = headshot || projPlayer.headshot_url || '';
-                        mlbTeam = projPlayer.mlb_team || '';
-                    }
-
-                    // Also check averageProjectionsMap for headshot
-                    if (!headshot) {
-                        if (averageProjectionsMap[playerNameLower]?.headshot) {
-                            headshot = averageProjectionsMap[playerNameLower].headshot;
-                        } else if (averageProjectionsMap[baseNameLower]?.headshot) {
-                            headshot = averageProjectionsMap[baseNameLower].headshot;
-                        }
-                    }
-
-                    headshot = headshot || placeholderImg;
+                    // Use player data (mlbTeam, headshot) stored when loading the team
+                    let headshot = player.headshot || placeholderImg;
+                    let mlbTeam = player.mlbTeam || '';
 
                     // Get MLB logo and formatted team text
                     const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
@@ -26819,9 +26835,10 @@
                 }
 
                 assetsDiv.innerHTML = assets.picks.map((pick, idx) => {
-                    const inTrade = offer.some(o => o.type === 'pick' && o.round === pick.round);
+                    const inTrade = offer.some(o => o.type === 'pick' && o.round === pick.round && o.year === pick.year);
+                    const yearClass = pick.year === 2026 ? 'pick-2026' : 'pick-2027';
                     return `
-                        <div class="trade-asset-item pick-item ${inTrade ? 'in-trade' : ''}" onclick="addToTrade(${side}, 'pick', ${idx})">
+                        <div class="trade-asset-item pick-item ${yearClass} ${inTrade ? 'in-trade' : ''}" onclick="addToTrade(${side}, 'pick', ${idx})">
                             <div class="player-info">
                                 <div class="player-name">Round ${pick.round}</div>
                                 <div class="player-meta">${pick.year} Draft</div>
@@ -26985,8 +27002,9 @@
                         </div>
                     `;
                 } else if (item.type === 'pick') {
+                    const yearClass = item.year === 2026 ? 'pick-2026' : 'pick-2027';
                     return `
-                        <div class="trade-offer-item pick-item">
+                        <div class="trade-offer-item pick-item ${yearClass}">
                             <div class="player-info">
                                 <div class="player-name">Round ${item.round}</div>
                                 <div class="player-meta">${item.year} Draft</div>
@@ -27171,7 +27189,7 @@
             const playerNameLower = player.name.toLowerCase().trim();
             const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
             let headshot = player.headshot || '';
-            let mlbTeam = '';
+            let mlbTeam = player.mlbTeam || '';
 
             const projPlayer = [...allProjectionBatters, ...allProjectionPitchers].find(p => {
                 if (!p.name) return false;
@@ -27204,6 +27222,9 @@
             const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
             const mlbTeamText = mlbTeam ? formatMLBTeamDisplay(mlbTeam) : 'FA';
             const positionBadges = getPositionBadge(player.position, player.name);
+            // Wrap each position badge in a white container for visibility on blue background
+            const wrappedBadges = positionBadges.replace(/<span class="position-badge ([^"]+)">([^<]+)<\/span>/g,
+                '<span class="position-badge-wrapper"><span class="position-badge $1">$2</span></span>');
 
             // Calculate 3-year forecast
             const forecast = calculatePlayerForecast(player);
@@ -27221,8 +27242,8 @@
                             ${mlbTeamText}
                         </div>
                         <div class="trade-player-modal-positions">
-                            ${positionBadges}
-                            ${player.isProspect ? '<span class="prospect-badge">P</span>' : ''}
+                            ${wrappedBadges}
+                            ${player.isProspect ? '<span class="prospect-badge-wrapper"><span class="prospect-badge">P</span></span>' : ''}
                         </div>
                         <div class="trade-player-modal-value ${valueClass}">
                             Total Value: ${player.value > 0 ? '+' : ''}${Math.round(player.value)}
