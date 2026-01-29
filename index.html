@@ -3383,6 +3383,17 @@
             flex-wrap: wrap;
         }
 
+        /* Position badges in modal header need higher contrast against blue background */
+        .trade-player-modal-positions .position-badge {
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .trade-player-modal-positions .prospect-badge {
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
         .trade-player-modal-value {
             background: white;
             color: var(--retro-blue);
@@ -22817,6 +22828,7 @@
                                 points: [],
                                 headshot: player.headshot_url || '',
                                 position: player.position || '',
+                                mlb_team: player.mlb_team || '',
                                 type: 'batter'
                             };
                         }
@@ -22832,6 +22844,11 @@
                         if (player.position && !playerProjections[nameLower].position) {
                             playerProjections[nameLower].position = player.position;
                         }
+
+                        // Update mlb_team if we have one
+                        if (player.mlb_team && !playerProjections[nameLower].mlb_team) {
+                            playerProjections[nameLower].mlb_team = player.mlb_team;
+                        }
                     });
 
                     // Process pitchers
@@ -22845,6 +22862,7 @@
                                 points: [],
                                 headshot: player.headshot_url || '',
                                 position: player.position || '',
+                                mlb_team: player.mlb_team || '',
                                 type: 'pitcher'
                             };
                         }
@@ -22859,6 +22877,11 @@
                         // Update position if we have one
                         if (player.position && !playerProjections[nameLower].position) {
                             playerProjections[nameLower].position = player.position;
+                        }
+
+                        // Update mlb_team if we have one
+                        if (player.mlb_team && !playerProjections[nameLower].mlb_team) {
+                            playerProjections[nameLower].mlb_team = player.mlb_team;
                         }
                     });
 
@@ -22877,6 +22900,7 @@
                         systems: data.points.length,
                         headshot: data.headshot,
                         position: data.position,
+                        mlb_team: data.mlb_team,
                         type: data.type
                     };
 
@@ -27164,8 +27188,15 @@
                 mlbTeam = projPlayer.mlb_team || '';
             }
 
-            if (!headshot && averageProjectionsMap[playerNameLower]?.headshot) {
-                headshot = averageProjectionsMap[playerNameLower].headshot;
+            // Fallback to averageProjectionsMap for headshot and mlb_team
+            const avgProjData = averageProjectionsMap[playerNameLower] || averageProjectionsMap[baseNameLower];
+            if (avgProjData) {
+                if (!headshot && avgProjData.headshot) {
+                    headshot = avgProjData.headshot;
+                }
+                if (!mlbTeam && avgProjData.mlb_team) {
+                    mlbTeam = avgProjData.mlb_team;
+                }
             }
 
             headshot = headshot || placeholderImg;
@@ -27243,10 +27274,32 @@
             const proj2027 = tradeAnalyzerData.zips2027[name] || tradeAnalyzerData.zips2027[baseName] || 0;
             const proj2028 = tradeAnalyzerData.zips2028[name] || tradeAnalyzerData.zips2028[baseName] || 0;
 
-            // Calculate keeper round cost progression
-            const round2026 = player.isProspect ? 0 : (player.roundCost || 20);
-            const round2027 = player.isProspect ? 0 : getKeeperRoundCost(round2026, 20);
-            const round2028 = player.isProspect ? 0 : getKeeperRoundCost(round2027, 20);
+            let round2026, round2027, round2028;
+
+            if (player.isProspect) {
+                // NA players (prospects) - check if they'll lose rookie eligibility
+                // If projected >80 pts in 2026, they become a normal keeper after that season
+                const losesRookieEligibility = proj2026 > 80;
+
+                // 2026: Still free as NA player
+                round2026 = 0;
+
+                if (losesRookieEligibility) {
+                    // 2027: Must be kept in last round (R22) after losing NA status
+                    round2027 = 22;
+                    // 2028: Normal keeper progression from R22 (+4 rounds = R18)
+                    round2028 = getKeeperRoundCost(round2027, 22);
+                } else {
+                    // Still NA - free in future years
+                    round2027 = 0;
+                    round2028 = 0;
+                }
+            } else {
+                // Normal keeper progression
+                round2026 = player.roundCost || 20;
+                round2027 = getKeeperRoundCost(round2026, 20);
+                round2028 = getKeeperRoundCost(round2027, 20);
+            }
 
             // Get budget cost for each round
             const cost2026 = round2026 > 0 ? getDollarCostForRound(round2026) : 0;
