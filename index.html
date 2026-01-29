@@ -3567,6 +3567,31 @@
             border-color: #a5d6a7;
         }
 
+        /* Imbalance penalty display */
+        .trade-imbalance-penalty {
+            font-size: 0.7rem;
+            color: #dc3545;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        /* Draft pick warning */
+        .trade-pick-warning {
+            display: none;
+            background: #ffebee;
+            border: 1px solid #ef9a9a;
+            border-radius: 4px;
+            padding: 0.4rem 0.6rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
+            color: #c62828;
+            font-weight: 600;
+        }
+
+        .trade-pick-warning.visible {
+            display: block;
+        }
+
         /* Mobile responsive */
         @media (max-width: 900px) {
             .trade-analyzer-container {
@@ -14261,6 +14286,7 @@
                         <div class="trade-columns">
                             <div class="trade-assets-column">
                                 <h5>Available Assets</h5>
+                                <div class="trade-pick-warning" id="trade-pick-warning-1"></div>
                                 <div class="trade-asset-tabs">
                                     <button class="trade-tab active" onclick="showTradeAssetTab(1, 'players')">Players</button>
                                     <button class="trade-tab" onclick="showTradeAssetTab(1, 'picks')">Picks</button>
@@ -14271,7 +14297,7 @@
                                 </div>
                             </div>
                             <div class="trade-offer-column">
-                                <h5>Offering</h5>
+                                <h5>Offering <span class="trade-imbalance-penalty" id="trade-penalty-1"></span></h5>
                                 <div class="trade-offer-list" id="trade-offer-1">
                                     <div class="trade-empty-state">Add assets to offer</div>
                                 </div>
@@ -14293,7 +14319,7 @@
                         </div>
                         <div class="trade-columns">
                             <div class="trade-offer-column">
-                                <h5>Offering</h5>
+                                <h5>Offering <span class="trade-imbalance-penalty" id="trade-penalty-2"></span></h5>
                                 <div class="trade-offer-list" id="trade-offer-2">
                                     <div class="trade-empty-state">Add assets to offer</div>
                                 </div>
@@ -14304,6 +14330,7 @@
                             </div>
                             <div class="trade-assets-column">
                                 <h5>Available Assets</h5>
+                                <div class="trade-pick-warning" id="trade-pick-warning-2"></div>
                                 <div class="trade-asset-tabs">
                                     <button class="trade-tab active" onclick="showTradeAssetTab(2, 'players')">Players</button>
                                     <button class="trade-tab" onclick="showTradeAssetTab(2, 'picks')">Picks</button>
@@ -27045,6 +27072,18 @@
                 }
             }
 
+            // Get penalty display elements
+            const penalty1El = document.getElementById('trade-penalty-1');
+            const penalty2El = document.getElementById('trade-penalty-2');
+            const pickWarning1El = document.getElementById('trade-pick-warning-1');
+            const pickWarning2El = document.getElementById('trade-pick-warning-2');
+
+            // Clear penalties and warnings initially
+            if (penalty1El) penalty1El.textContent = '';
+            if (penalty2El) penalty2El.textContent = '';
+            if (pickWarning1El) pickWarning1El.classList.remove('visible');
+            if (pickWarning2El) pickWarning2El.classList.remove('visible');
+
             if (offer1.length === 0 && offer2.length === 0) {
                 labelEl.textContent = 'Add assets to analyze';
                 verdictEl.textContent = '';
@@ -27053,35 +27092,74 @@
                 return;
             }
 
+            // Check draft pick balance
+            const picks1 = offer1.filter(o => o.type === 'pick');
+            const picks2 = offer2.filter(o => o.type === 'pick');
+            const pickImbalance = picks1.length !== picks2.length && (picks1.length > 0 || picks2.length > 0);
+
+            if (pickImbalance) {
+                const warningText = `⚠ Picks must be balanced (${picks1.length} vs ${picks2.length})`;
+                if (pickWarning1El) {
+                    pickWarning1El.textContent = warningText;
+                    pickWarning1El.classList.add('visible');
+                }
+                if (pickWarning2El) {
+                    pickWarning2El.textContent = warningText;
+                    pickWarning2El.classList.add('visible');
+                }
+            }
+
             // Calculate raw values
             const raw1 = offer1.reduce((sum, item) => sum + (item.value || 0), 0);
             const raw2 = offer2.reduce((sum, item) => sum + (item.value || 0), 0);
 
-            // Count players on each side
-            const players1 = offer1.filter(o => o.type === 'player').length;
-            const players2 = offer2.filter(o => o.type === 'player').length;
-
-            // Apply penalty for having more assets (especially players)
-            const count1 = offer1.length;
-            const count2 = offer2.length;
+            // Count non-pick assets on each side (picks must be balanced, so only penalize player/budget imbalance)
+            const nonPickAssets1 = offer1.filter(o => o.type !== 'pick');
+            const nonPickAssets2 = offer2.filter(o => o.type !== 'pick');
+            const count1 = nonPickAssets1.length;
+            const count2 = nonPickAssets2.length;
 
             let adjusted1 = raw1;
             let adjusted2 = raw2;
+            let penaltyAmount1 = 0;
+            let penaltyAmount2 = 0;
 
-            // Penalty for having more total assets
-            if (count1 > count2) {
-                const penalty = (count1 - count2) * ASSET_COUNT_PENALTY;
-                adjusted1 = raw1 * (1 - penalty);
-            } else if (count2 > count1) {
-                const penalty = (count2 - count1) * ASSET_COUNT_PENALTY;
-                adjusted2 = raw2 * (1 - penalty);
+            // Hybrid imbalance penalty: penalize the side with more assets
+            // Progressive penalty: 20%, 35%, 50%, 65%, 80%... (capped at 50% of asset value)
+            const getProgressivePenaltyRate = (index) => Math.min(0.20 + (index * 0.15), 0.50);
+
+            if (count1 > count2 && count2 > 0) {
+                const extraCount = count1 - count2;
+                // Sort by value ascending (lowest first)
+                const sortedAssets = [...nonPickAssets1].sort((a, b) => (a.value || 0) - (b.value || 0));
+                // Apply progressive penalty to the extra assets
+                for (let i = 0; i < extraCount && i < sortedAssets.length; i++) {
+                    const assetValue = sortedAssets[i].value || 0;
+                    const penaltyRate = getProgressivePenaltyRate(i);
+                    const penalty = assetValue * penaltyRate;
+                    penaltyAmount1 += penalty;
+                }
+                adjusted1 = raw1 - penaltyAmount1;
+            } else if (count2 > count1 && count1 > 0) {
+                const extraCount = count2 - count1;
+                // Sort by value ascending (lowest first)
+                const sortedAssets = [...nonPickAssets2].sort((a, b) => (a.value || 0) - (b.value || 0));
+                // Apply progressive penalty to the extra assets
+                for (let i = 0; i < extraCount && i < sortedAssets.length; i++) {
+                    const assetValue = sortedAssets[i].value || 0;
+                    const penaltyRate = getProgressivePenaltyRate(i);
+                    const penalty = assetValue * penaltyRate;
+                    penaltyAmount2 += penalty;
+                }
+                adjusted2 = raw2 - penaltyAmount2;
             }
 
-            // Extra penalty for having more players (roster spots matter)
-            if (players1 > players2 + 1) {
-                adjusted1 = adjusted1 * (1 - (players1 - players2 - 1) * 0.03);
-            } else if (players2 > players1 + 1) {
-                adjusted2 = adjusted2 * (1 - (players2 - players1 - 1) * 0.03);
+            // Display penalty amounts
+            if (penalty1El && penaltyAmount1 > 0) {
+                penalty1El.textContent = `(-${Math.round(penaltyAmount1)} imbalance)`;
+            }
+            if (penalty2El && penaltyAmount2 > 0) {
+                penalty2El.textContent = `(-${Math.round(penaltyAmount2)} imbalance)`;
             }
 
             const total = adjusted1 + adjusted2;
