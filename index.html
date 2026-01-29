@@ -3001,6 +3001,43 @@
             margin-left: 0.15rem;
         }
 
+        .trade-round-tag {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.3rem;
+            background: var(--retro-blue);
+            color: white;
+            border-radius: 3px;
+            font-weight: 600;
+            margin-left: 0.25rem;
+        }
+
+        .trade-round-tag.prospect {
+            background: #2196f3;
+        }
+
+        .trade-asset-value-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.15rem;
+        }
+
+        .trade-player-detail-btn {
+            font-size: 0.7rem;
+            padding: 0.1rem 0.4rem;
+            background: #f0f0f0;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            cursor: pointer;
+            color: #666;
+            line-height: 1;
+        }
+
+        .trade-player-detail-btn:hover {
+            background: #e0e0e0;
+            color: #333;
+        }
+
         .trade-asset-item .asset-value {
             font-weight: 700;
             color: var(--retro-blue);
@@ -3113,9 +3150,40 @@
             margin-bottom: 1rem;
         }
 
-        .trade-balance-bar {
+        .trade-balance-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
+        }
+
+        .trade-balance-team-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #333;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .trade-balance-team-logo img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+        }
+
+        .trade-balance-team-logo.empty {
+            border-style: dashed;
+            border-color: #ccc;
+        }
+
+        .trade-balance-bar {
+            flex: 1;
             height: 24px;
             position: relative;
             border: 2px solid #333;
@@ -3206,6 +3274,190 @@
 
         .trade-reset-btn:hover {
             background: #5a6268;
+        }
+
+        /* Trade Player Detail Modal */
+        .trade-player-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+
+        .trade-player-modal-overlay.active {
+            display: flex;
+        }
+
+        .trade-player-modal {
+            background: #f4e4c8;
+            border-radius: 12px;
+            max-width: 380px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow:
+                0 0 0 4px var(--retro-blue),
+                0 0 0 8px #f4e4c8,
+                0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .trade-player-modal-close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+
+        .trade-player-modal-close:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .trade-player-modal-header {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--retro-blue);
+            border-radius: 8px 8px 0 0;
+            color: white;
+        }
+
+        .trade-player-modal-headshot {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid white;
+            flex-shrink: 0;
+        }
+
+        .trade-player-modal-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .trade-player-modal-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .trade-player-modal-team {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 0.25rem;
+        }
+
+        .trade-player-modal-team img {
+            width: 18px;
+            height: 18px;
+        }
+
+        .trade-player-modal-positions {
+            display: flex;
+            gap: 0.25rem;
+            flex-wrap: wrap;
+        }
+
+        .trade-player-modal-value {
+            background: white;
+            color: var(--retro-blue);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            align-self: flex-start;
+            margin-top: 0.5rem;
+        }
+
+        .trade-player-modal-body {
+            padding: 1rem;
+        }
+
+        .trade-player-forecast-title {
+            font-weight: 700;
+            color: var(--retro-blue);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            border-bottom: 2px solid var(--retro-blue);
+            padding-bottom: 0.35rem;
+        }
+
+        .trade-player-forecast-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .trade-player-forecast-table th {
+            background: var(--retro-blue);
+            color: white;
+            padding: 0.5rem 0.4rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .trade-player-forecast-table th:first-child {
+            text-align: left;
+            border-radius: 4px 0 0 0;
+        }
+
+        .trade-player-forecast-table th:last-child {
+            border-radius: 0 4px 0 0;
+        }
+
+        .trade-player-forecast-table td {
+            padding: 0.5rem 0.4rem;
+            text-align: center;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .trade-player-forecast-table td:first-child {
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .trade-player-forecast-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .trade-player-forecast-table .value-positive {
+            color: #28a745;
+            font-weight: 700;
+        }
+
+        .trade-player-forecast-table .value-negative {
+            color: #dc3545;
+            font-weight: 700;
+        }
+
+        .trade-player-forecast-table .value-neutral {
+            color: #666;
         }
 
         /* Budget input in trade */
@@ -13934,8 +14186,12 @@
 
                 <!-- Trade Balance Indicator - Horizontal above teams -->
                 <div class="trade-balance-indicator">
-                    <div class="trade-balance-bar">
-                        <div class="trade-balance-marker" id="trade-balance-marker"></div>
+                    <div class="trade-balance-bar-container">
+                        <div class="trade-balance-team-logo" id="trade-balance-logo-1"></div>
+                        <div class="trade-balance-bar">
+                            <div class="trade-balance-marker" id="trade-balance-marker"></div>
+                        </div>
+                        <div class="trade-balance-team-logo" id="trade-balance-logo-2"></div>
                     </div>
                     <div class="trade-balance-labels">
                         <span class="trade-balance-label" id="trade-balance-label">Add assets to analyze</span>
@@ -14013,6 +14269,16 @@
 
                 <div class="trade-reset-container">
                     <button class="trade-reset-btn" onclick="resetTradeAnalyzer()">Reset Trade</button>
+                </div>
+            </div>
+
+            <!-- Trade Player Detail Modal -->
+            <div id="trade-player-detail-modal" class="trade-player-modal-overlay" onclick="closeTradePlayerModal(event)">
+                <div class="trade-player-modal">
+                    <button class="trade-player-modal-close" onclick="closeTradePlayerModal()">&times;</button>
+                    <div id="trade-player-modal-content">
+                        <!-- Content loaded dynamically -->
+                    </div>
                 </div>
             </div>
 
@@ -26497,6 +26763,11 @@
                     // Prospect badge (after position badges)
                     const prospectBadge = player.isProspect ? '<span class="prospect-badge">P</span>' : '';
 
+                    // Keeper round tag
+                    const roundTag = player.isProspect
+                        ? '<span class="trade-round-tag prospect">NA</span>'
+                        : `<span class="trade-round-tag">R${player.roundCost}</span>`;
+
                     return `
                         <div class="trade-asset-item ${inTrade ? 'in-trade' : ''}" onclick="addToTrade(${side}, 'player', ${idx})">
                             <img src="${headshot}" class="trade-headshot" alt="" onerror="this.src='${placeholderImg}'">
@@ -26507,9 +26778,13 @@
                                     <span class="trade-mlb-abbrev">${mlbTeamText}</span>
                                     ${positionBadges}
                                     ${prospectBadge}
+                                    ${roundTag}
                                 </div>
                             </div>
-                            <div class="asset-value ${valueClass}">${player.value > 0 ? '+' : ''}${player.value}</div>
+                            <div class="trade-asset-value-container">
+                                <div class="asset-value ${valueClass}">${player.value > 0 ? '+' : ''}${Math.round(player.value)}</div>
+                                <button class="trade-player-detail-btn" onclick="event.stopPropagation(); showTradePlayerDetail(${side}, ${idx})" title="View player details">...</button>
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -26722,8 +26997,33 @@
             const labelEl = document.getElementById('trade-balance-label');
             const verdictEl = document.getElementById('trade-balance-verdict');
             const markerEl = document.getElementById('trade-balance-marker');
+            const logo1El = document.getElementById('trade-balance-logo-1');
+            const logo2El = document.getElementById('trade-balance-logo-2');
 
             if (!labelEl || !verdictEl || !markerEl) return;
+
+            // Update team logos on the balance bar
+            const team1Info = tradeAnalyzerData.teams[tradeAnalyzerData.team1];
+            const team2Info = tradeAnalyzerData.teams[tradeAnalyzerData.team2];
+
+            if (logo1El) {
+                if (team1Info?.team_logo) {
+                    logo1El.innerHTML = `<img src="${team1Info.team_logo}" alt="${team1Info.manager || ''}" onerror="this.parentElement.innerHTML=''">`;
+                    logo1El.classList.remove('empty');
+                } else {
+                    logo1El.innerHTML = '';
+                    logo1El.classList.add('empty');
+                }
+            }
+            if (logo2El) {
+                if (team2Info?.team_logo) {
+                    logo2El.innerHTML = `<img src="${team2Info.team_logo}" alt="${team2Info.manager || ''}" onerror="this.parentElement.innerHTML=''">`;
+                    logo2El.classList.remove('empty');
+                } else {
+                    logo2El.innerHTML = '';
+                    logo2El.classList.add('empty');
+                }
+            }
 
             if (offer1.length === 0 && offer2.length === 0) {
                 labelEl.textContent = 'Add assets to analyze';
@@ -26773,9 +27073,7 @@
             const markerPosition = total > 0 ? (adjusted1 / total) * 100 : 50;
             markerEl.style.left = `${markerPosition}%`;
 
-            // Get team names for display
-            const team1Info = tradeAnalyzerData.teams[tradeAnalyzerData.team1];
-            const team2Info = tradeAnalyzerData.teams[tradeAnalyzerData.team2];
+            // Get team names for display (team1Info and team2Info already defined above)
             const team1Name = team1Info?.manager || 'Team 1';
             const team2Name = team2Info?.manager || 'Team 2';
 
@@ -26832,6 +27130,165 @@
             document.getElementById('trade-total-2').querySelector('.total-value').textContent = '0';
 
             updateTradeBalance();
+        }
+
+        function showTradePlayerDetail(side, playerIndex) {
+            const assets = tradeAnalyzerData[`team${side}Assets`];
+            const player = assets?.players?.[playerIndex];
+            if (!player) return;
+
+            const modal = document.getElementById('trade-player-detail-modal');
+            const contentEl = document.getElementById('trade-player-modal-content');
+            if (!modal || !contentEl) return;
+
+            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+
+            // Get player data from projections
+            const playerNameLower = player.name.toLowerCase().trim();
+            const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+            let headshot = player.headshot || '';
+            let mlbTeam = '';
+
+            const projPlayer = [...allProjectionBatters, ...allProjectionPitchers].find(p => {
+                if (!p.name) return false;
+                const projNameLower = p.name.toLowerCase().trim();
+                const projBaseNameLower = projNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                return projNameLower === playerNameLower ||
+                       projBaseNameLower === baseNameLower ||
+                       projNameLower === baseNameLower ||
+                       projBaseNameLower === playerNameLower;
+            });
+
+            if (projPlayer) {
+                headshot = headshot || projPlayer.headshot_url || '';
+                mlbTeam = projPlayer.mlb_team || '';
+            }
+
+            if (!headshot && averageProjectionsMap[playerNameLower]?.headshot) {
+                headshot = averageProjectionsMap[playerNameLower].headshot;
+            }
+
+            headshot = headshot || placeholderImg;
+
+            const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
+            const mlbTeamText = mlbTeam ? formatMLBTeamDisplay(mlbTeam) : 'FA';
+            const positionBadges = getPositionBadge(player.position, player.name);
+
+            // Calculate 3-year forecast
+            const forecast = calculatePlayerForecast(player);
+
+            // Build modal content
+            const valueClass = player.value > 0 ? 'value-positive' : player.value < 0 ? 'value-negative' : 'value-neutral';
+
+            contentEl.innerHTML = `
+                <div class="trade-player-modal-header">
+                    <img src="${headshot}" class="trade-player-modal-headshot" alt="" onerror="this.src='${placeholderImg}'">
+                    <div class="trade-player-modal-info">
+                        <div class="trade-player-modal-name">${player.name}</div>
+                        <div class="trade-player-modal-team">
+                            ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="">` : ''}
+                            ${mlbTeamText}
+                        </div>
+                        <div class="trade-player-modal-positions">
+                            ${positionBadges}
+                            ${player.isProspect ? '<span class="prospect-badge">P</span>' : ''}
+                        </div>
+                        <div class="trade-player-modal-value ${valueClass}">
+                            Total Value: ${player.value > 0 ? '+' : ''}${Math.round(player.value)}
+                        </div>
+                    </div>
+                </div>
+                <div class="trade-player-modal-body">
+                    <div class="trade-player-forecast-title">3-Year Keeper Forecast</div>
+                    <table class="trade-player-forecast-table">
+                        <thead>
+                            <tr>
+                                <th>Year</th>
+                                <th>Round</th>
+                                <th>Cost</th>
+                                <th>Exp Pts</th>
+                                <th>Proj Pts</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${forecast.map(year => {
+                                const valueClass = year.value > 0 ? 'value-positive' : year.value < 0 ? 'value-negative' : 'value-neutral';
+                                return `
+                                    <tr>
+                                        <td>${year.year}</td>
+                                        <td>${year.round > 0 ? 'R' + year.round : 'NA'}</td>
+                                        <td>${year.cost > 0 ? '$' + year.cost : 'Free'}</td>
+                                        <td>${year.expectedPts}</td>
+                                        <td>${year.projectedPts}</td>
+                                        <td class="${valueClass}">${year.value > 0 ? '+' : ''}${Math.round(year.value)}</td>
+                                    </tr>
+                                `;
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function calculatePlayerForecast(player) {
+            const name = (player.name || '').toLowerCase().trim();
+            const baseName = name.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+
+            // Get projections for each year
+            const proj2026 = tradeAnalyzerData.zips2026[name] || tradeAnalyzerData.zips2026[baseName] || 0;
+            const proj2027 = tradeAnalyzerData.zips2027[name] || tradeAnalyzerData.zips2027[baseName] || 0;
+            const proj2028 = tradeAnalyzerData.zips2028[name] || tradeAnalyzerData.zips2028[baseName] || 0;
+
+            // Calculate keeper round cost progression
+            const round2026 = player.isProspect ? 0 : (player.roundCost || 20);
+            const round2027 = player.isProspect ? 0 : getKeeperRoundCost(round2026, 20);
+            const round2028 = player.isProspect ? 0 : getKeeperRoundCost(round2027, 20);
+
+            // Get budget cost for each round
+            const cost2026 = round2026 > 0 ? getDollarCostForRound(round2026) : 0;
+            const cost2027 = round2027 > 0 ? getDollarCostForRound(round2027) : 0;
+            const cost2028 = round2028 > 0 ? getDollarCostForRound(round2028) : 0;
+
+            // Get expected points for each round
+            const expected2026 = round2026 > 0 ? getExpectedPointsForRound(round2026) : 0;
+            const expected2027 = round2027 > 0 ? getExpectedPointsForRound(round2027) : 0;
+            const expected2028 = round2028 > 0 ? getExpectedPointsForRound(round2028) : 0;
+
+            // Calculate value for each year: Projected + (Projected - Expected)
+            const value2026 = proj2026 > 0 ? proj2026 + (proj2026 - expected2026) : 0;
+            const value2027 = proj2027 > 0 ? proj2027 + (proj2027 - expected2027) : 0;
+            const value2028 = proj2028 > 0 ? proj2028 + (proj2028 - expected2028) : 0;
+
+            return [
+                { year: 2026, round: round2026, cost: cost2026, expectedPts: Math.round(expected2026), projectedPts: Math.round(proj2026), value: value2026 },
+                { year: 2027, round: round2027, cost: cost2027, expectedPts: Math.round(expected2027), projectedPts: Math.round(proj2027), value: value2027 },
+                { year: 2028, round: round2028, cost: cost2028, expectedPts: Math.round(expected2028), projectedPts: Math.round(proj2028), value: value2028 }
+            ];
+        }
+
+        function getDollarCostForRound(round) {
+            // Budget cost mapping by round
+            const budgetByRound = {
+                1: 50, 2: 45, 3: 40, 4: 35, 5: 30,
+                6: 25, 7: 22, 8: 19, 9: 16, 10: 13,
+                11: 11, 12: 9, 13: 7, 14: 6, 15: 5,
+                16: 4, 17: 3, 18: 2, 19: 2, 20: 1,
+                21: 1, 22: 1, 23: 1
+            };
+            return budgetByRound[round] || 1;
+        }
+
+        function closeTradePlayerModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('trade-player-detail-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
         }
 
         async function analyzeKeeperValues() {
