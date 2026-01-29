@@ -26381,36 +26381,41 @@
             if (points.length < 3) return;
 
             // Use iterative least squares to fit y = a * e^(-b * x) + c
-            // Start with reasonable initial guesses
-            let a = points[0].y - points[points.length - 1].y;
-            let b = 0.12;
-            let c = points[points.length - 1].y * 0.8;
+            // Weight early rounds more heavily to capture the steep initial drop
+            const weights = points.map(p => p.x <= 5 ? 2.0 : 1.0); // Double weight for rounds 1-5
+
+            // Start with reasonable initial guesses based on data
+            let a = (points[0].y - points[points.length - 1].y) * 1.2; // Start higher for steeper curve
+            let b = 0.18; // Start with steeper decay
+            let c = points[points.length - 1].y * 0.9;
 
             // Simple gradient descent optimization
             const learningRate = 0.0001;
-            const iterations = 1000;
+            const iterations = 2000; // More iterations for better fit
 
             for (let iter = 0; iter < iterations; iter++) {
                 let gradA = 0, gradB = 0, gradC = 0;
 
-                for (const p of points) {
+                for (let i = 0; i < points.length; i++) {
+                    const p = points[i];
+                    const w = weights[i];
                     const predicted = a * Math.exp(-b * p.x) + c;
                     const error = predicted - p.y;
                     const expTerm = Math.exp(-b * p.x);
 
-                    gradA += error * expTerm;
-                    gradB += error * a * (-p.x) * expTerm;
-                    gradC += error;
+                    gradA += w * error * expTerm;
+                    gradB += w * error * a * (-p.x) * expTerm;
+                    gradC += w * error;
                 }
 
                 a -= learningRate * gradA;
                 b -= learningRate * 0.01 * gradB; // Smaller learning rate for b
                 c -= learningRate * gradC;
 
-                // Keep parameters in reasonable bounds
-                a = Math.max(100, Math.min(800, a));
-                b = Math.max(0.05, Math.min(0.3, b));
-                c = Math.max(0, Math.min(200, c));
+                // Keep parameters in reasonable bounds - allow steeper decay
+                a = Math.max(100, Math.min(1000, a));
+                b = Math.max(0.08, Math.min(0.5, b)); // Allow steeper decay (higher b)
+                c = Math.max(150, Math.min(250, c)); // Floor should be around late-round averages
             }
 
             expectedPointsModel = { a, b, c };
@@ -26939,38 +26944,9 @@
 
             offerDiv.innerHTML = offer.map((item, idx) => {
                 if (item.type === 'player') {
-                    // Get player data from projection data (mlb_team, headshot)
-                    const playerNameLower = item.name.toLowerCase().trim();
-                    const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
-                    let headshot = item.headshot || '';
-                    let mlbTeam = '';
-
-                    // Search through projection data for this player
-                    const projPlayer = [...allProjectionBatters, ...allProjectionPitchers].find(p => {
-                        if (!p.name) return false;
-                        const projNameLower = p.name.toLowerCase().trim();
-                        const projBaseNameLower = projNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
-                        return projNameLower === playerNameLower ||
-                               projBaseNameLower === baseNameLower ||
-                               projNameLower === baseNameLower ||
-                               projBaseNameLower === playerNameLower;
-                    });
-
-                    if (projPlayer) {
-                        headshot = headshot || projPlayer.headshot_url || '';
-                        mlbTeam = projPlayer.mlb_team || '';
-                    }
-
-                    // Also check averageProjectionsMap for headshot
-                    if (!headshot) {
-                        if (averageProjectionsMap[playerNameLower]?.headshot) {
-                            headshot = averageProjectionsMap[playerNameLower].headshot;
-                        } else if (averageProjectionsMap[baseNameLower]?.headshot) {
-                            headshot = averageProjectionsMap[baseNameLower].headshot;
-                        }
-                    }
-
-                    headshot = headshot || placeholderImg;
+                    // Use stored player data (mlbTeam, headshot already loaded when player was added)
+                    let headshot = item.headshot || placeholderImg;
+                    let mlbTeam = item.mlbTeam || '';
 
                     // Get MLB logo and formatted team text
                     const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
