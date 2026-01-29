@@ -13738,6 +13738,7 @@
                             <option value="thebat">The BAT</option>
                             <option value="thebatx">The BAT X</option>
                             <option value="steamer">Steamer</option>
+                            <option value="zipsdc">ZiPS DC (Recommended)</option>
                             <option value="zips">ZiPS</option>
                             <option value="atc">ATC</option>
                             <option value="depthcharts">Depth Charts</option>
@@ -13863,6 +13864,7 @@
                                 <option value="thebat">The BAT</option>
                                 <option value="thebatx">The BAT X</option>
                                 <option value="steamer">Steamer</option>
+                                <option value="zipsdc">ZiPS DC (Recommended)</option>
                                 <option value="zips">ZiPS</option>
                                 <option value="atc">ATC</option>
                                 <option value="depthcharts">Depth Charts</option>
@@ -22514,10 +22516,12 @@
         let averageProjectionsLoaded = false;
 
         // Load all projection systems and calculate averages
+        // NOTE: Use 'zipsdc' instead of 'zips' - base ZiPS has no playing time projections
+        // and would skew averages by projecting full-season stats for all players
         async function loadAverageProjections() {
             if (averageProjectionsLoaded) return;
 
-            const projectionSystems = ['thebatx', 'thebat', 'steamer', 'zips', 'atc', 'depthcharts', 'oopsy'];
+            const projectionSystems = ['thebatx', 'thebat', 'steamer', 'zipsdc', 'atc', 'depthcharts', 'oopsy'];
             const playerProjections = {}; // { playerName: { points: [], headshot, position, type } }
 
             for (const system of projectionSystems) {
@@ -26164,12 +26168,13 @@
         }
 
         async function loadZiPSProjections() {
-            const years = ['zips', 'zips2027', 'zips2028'];
+            // Use ZiPS DC (with playing time) for 2026, regular ZiPS for 2027/2028
+            const systems = ['zipsdc', 'zips2027', 'zips2028'];
             const targets = ['zips2026', 'zips2027', 'zips2028'];
 
-            for (let i = 0; i < years.length; i++) {
+            for (let i = 0; i < systems.length; i++) {
                 try {
-                    const response = await fetch(`data/projections/projections_${years[i]}.json`);
+                    const response = await fetch(`data/projections/projections_${systems[i]}.json`);
                     if (response.ok) {
                         const data = await response.json();
                         const projMap = {};
@@ -26178,10 +26183,10 @@
                             projMap[name] = p.projected_points || 0;
                         });
                         tradeAnalyzerData[targets[i]] = projMap;
-                        console.log(`Loaded ${Object.keys(projMap).length} ${targets[i]} projections`);
+                        console.log(`Loaded ${Object.keys(projMap).length} ${targets[i]} projections from ${systems[i]}`);
                     }
                 } catch (e) {
-                    console.log(`Error loading ${years[i]} projections:`, e);
+                    console.log(`Error loading ${systems[i]} projections:`, e);
                 }
             }
         }
