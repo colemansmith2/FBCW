@@ -3569,10 +3569,10 @@
 
         /* Imbalance penalty display */
         .trade-imbalance-penalty {
-            font-size: 0.7rem;
+            font-size: 0.55rem;
             color: #dc3545;
             font-weight: 600;
-            margin-left: 0.5rem;
+            margin-left: 0.35rem;
         }
 
         /* Draft pick warning */
@@ -26969,7 +26969,29 @@
 
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
 
-            offerDiv.innerHTML = offer.map((item, idx) => {
+            // Sort offer for display: Players (by value desc), Picks (by year, then value desc), Budget last
+            const sortedOffer = offer.map((item, idx) => ({ ...item, originalIndex: idx })).sort((a, b) => {
+                // Type priority: player (0) > pick (1) > budget (2)
+                const typeOrder = { player: 0, pick: 1, budget: 2 };
+                const typeA = typeOrder[a.type] ?? 3;
+                const typeB = typeOrder[b.type] ?? 3;
+                if (typeA !== typeB) return typeA - typeB;
+
+                // Within same type
+                if (a.type === 'player') {
+                    // Players: sort by value descending
+                    return (b.value || 0) - (a.value || 0);
+                } else if (a.type === 'pick') {
+                    // Picks: sort by year first, then by value descending
+                    if (a.year !== b.year) return (a.year || 0) - (b.year || 0);
+                    return (b.value || 0) - (a.value || 0);
+                }
+                // Budget: sort by value descending
+                return (b.value || 0) - (a.value || 0);
+            });
+
+            offerDiv.innerHTML = sortedOffer.map((item) => {
+                const idx = item.originalIndex; // Use original index for remove button
                 if (item.type === 'player') {
                     // Use stored player data (mlbTeam, headshot already loaded when player was added)
                     let headshot = item.headshot || placeholderImg;
@@ -27125,18 +27147,19 @@
             let penaltyAmount2 = 0;
 
             // Hybrid imbalance penalty: penalize the side with more assets
-            // Progressive penalty: 20%, 35%, 50%, 65%, 80%... (capped at 50% of asset value)
-            const getProgressivePenaltyRate = (index) => Math.min(0.20 + (index * 0.15), 0.50);
+            // Compounding 50% reduction: 1st extra keeps 50%, 2nd keeps 25%, 3rd keeps 12.5%...
+            // Penalty = value lost = originalValue - remainingValue
+            const getCompoundedRemainingRate = (index) => Math.pow(0.5, index + 1);
 
             if (count1 > count2 && count2 > 0) {
                 const extraCount = count1 - count2;
                 // Sort by value ascending (lowest first)
                 const sortedAssets = [...nonPickAssets1].sort((a, b) => (a.value || 0) - (b.value || 0));
-                // Apply progressive penalty to the extra assets
+                // Apply compounding penalty to the extra assets
                 for (let i = 0; i < extraCount && i < sortedAssets.length; i++) {
                     const assetValue = sortedAssets[i].value || 0;
-                    const penaltyRate = getProgressivePenaltyRate(i);
-                    const penalty = assetValue * penaltyRate;
+                    const remainingRate = getCompoundedRemainingRate(i);
+                    const penalty = assetValue * (1 - remainingRate); // What's lost
                     penaltyAmount1 += penalty;
                 }
                 adjusted1 = raw1 - penaltyAmount1;
@@ -27144,11 +27167,11 @@
                 const extraCount = count2 - count1;
                 // Sort by value ascending (lowest first)
                 const sortedAssets = [...nonPickAssets2].sort((a, b) => (a.value || 0) - (b.value || 0));
-                // Apply progressive penalty to the extra assets
+                // Apply compounding penalty to the extra assets
                 for (let i = 0; i < extraCount && i < sortedAssets.length; i++) {
                     const assetValue = sortedAssets[i].value || 0;
-                    const penaltyRate = getProgressivePenaltyRate(i);
-                    const penalty = assetValue * penaltyRate;
+                    const remainingRate = getCompoundedRemainingRate(i);
+                    const penalty = assetValue * (1 - remainingRate); // What's lost
                     penaltyAmount2 += penalty;
                 }
                 adjusted2 = raw2 - penaltyAmount2;
