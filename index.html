@@ -22867,7 +22867,7 @@
                                 points: [],
                                 headshot: player.headshot_url || '',
                                 position: player.position || '',
-                                mlb_team: player.mlb_team || '',
+                                mlb_team: player.mlb_team || player.team || '',
                                 type: 'batter'
                             };
                         }
@@ -22884,9 +22884,10 @@
                             playerProjections[nameLower].position = player.position;
                         }
 
-                        // Update mlb_team if we have one
-                        if (player.mlb_team && !playerProjections[nameLower].mlb_team) {
-                            playerProjections[nameLower].mlb_team = player.mlb_team;
+                        // Update mlb_team if we have one (check both mlb_team and team fields)
+                        const playerMlbTeam = player.mlb_team || player.team || '';
+                        if (playerMlbTeam && !playerProjections[nameLower].mlb_team) {
+                            playerProjections[nameLower].mlb_team = playerMlbTeam;
                         }
                     });
 
@@ -22901,7 +22902,7 @@
                                 points: [],
                                 headshot: player.headshot_url || '',
                                 position: player.position || '',
-                                mlb_team: player.mlb_team || '',
+                                mlb_team: player.mlb_team || player.team || '',
                                 type: 'pitcher'
                             };
                         }
@@ -22918,9 +22919,10 @@
                             playerProjections[nameLower].position = player.position;
                         }
 
-                        // Update mlb_team if we have one
-                        if (player.mlb_team && !playerProjections[nameLower].mlb_team) {
-                            playerProjections[nameLower].mlb_team = player.mlb_team;
+                        // Update mlb_team if we have one (check both mlb_team and team fields)
+                        const playerMlbTeam = player.mlb_team || player.team || '';
+                        if (playerMlbTeam && !playerProjections[nameLower].mlb_team) {
+                            playerProjections[nameLower].mlb_team = playerMlbTeam;
                         }
                     });
 
@@ -26802,10 +26804,7 @@
                     // Get position badges
                     const positionBadges = getPositionBadge(player.position, player.name);
 
-                    // Prospect badge (after position badges)
-                    const prospectBadge = player.isProspect ? '<span class="prospect-badge">P</span>' : '';
-
-                    // Keeper round tag
+                    // Keeper round tag (NA for prospects, R# for normal keepers)
                     const roundTag = player.isProspect
                         ? '<span class="trade-round-tag prospect">NA</span>'
                         : `<span class="trade-round-tag">R${player.roundCost}</span>`;
@@ -26819,7 +26818,6 @@
                                     ${hasMlbLogo ? `<img src="${mlbLogoUrl}" class="trade-mlb-logo" alt="">` : ''}
                                     <span class="trade-mlb-abbrev">${mlbTeamText}</span>
                                     ${positionBadges}
-                                    ${prospectBadge}
                                     ${roundTag}
                                 </div>
                             </div>
@@ -26982,8 +26980,10 @@
                     // Get position badges
                     const positionBadges = getPositionBadge(item.position, item.name);
 
-                    // Prospect badge
-                    const prospectBadge = item.isProspect ? '<span class="prospect-badge">P</span>' : '';
+                    // Round tag (NA for prospects, R# for normal keepers)
+                    const roundTag = item.isProspect
+                        ? '<span class="trade-round-tag prospect">NA</span>'
+                        : `<span class="trade-round-tag">R${item.roundCost}</span>`;
 
                     const valueClass = item.value > 0 ? 'positive' : item.value < 0 ? 'negative' : '';
 
@@ -26996,7 +26996,7 @@
                                     ${hasMlbLogo ? `<img src="${mlbLogoUrl}" class="trade-mlb-logo" alt="">` : ''}
                                     <span class="trade-mlb-abbrev">${mlbTeamText}</span>
                                     ${positionBadges}
-                                    ${prospectBadge}
+                                    ${roundTag}
                                 </div>
                             </div>
                             <div class="asset-value ${valueClass}">${item.value > 0 ? '+' : ''}${item.value}</div>
@@ -27245,7 +27245,6 @@
                         </div>
                         <div class="trade-player-modal-positions">
                             ${wrappedBadges}
-                            ${player.isProspect ? '<span class="prospect-badge-wrapper"><span class="prospect-badge">P</span></span>' : ''}
                         </div>
                         <div class="trade-player-modal-value ${valueClass}">
                             Total Value: ${player.value > 0 ? '+' : ''}${Math.round(player.value)}
