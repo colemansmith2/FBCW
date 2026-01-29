@@ -3421,8 +3421,10 @@
         }
 
         .trade-player-modal-positions .prospect-badge {
-            display: inline-block;
-            line-height: normal;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
         }
 
         .trade-player-modal-value {
@@ -27299,19 +27301,24 @@
 
             if (player.isProspect) {
                 // NA players (prospects) - check if they'll lose rookie eligibility
-                // If projected >80 pts in 2026, they become a normal keeper after that season
-                const losesRookieEligibility = proj2026 > 80;
+                // If projected >80 pts, they become a normal keeper after that season
+                const losesEligibility2026 = proj2026 > 80;
+                const losesEligibility2027 = proj2027 > 80;
 
                 // 2026: Still free as NA player
                 round2026 = 0;
 
-                if (losesRookieEligibility) {
-                    // 2027: Must be kept in last round (R22) after losing NA status
+                if (losesEligibility2026) {
+                    // Lost eligibility in 2026 - becomes R22 keeper in 2027
                     round2027 = 22;
                     // 2028: Normal keeper progression from R22 (+4 rounds = R18)
                     round2028 = getKeeperRoundCost(round2027, 22);
+                } else if (losesEligibility2027) {
+                    // Still NA in 2027, but loses eligibility - becomes R22 in 2028
+                    round2027 = 0;
+                    round2028 = 22;
                 } else {
-                    // Still NA - free in future years
+                    // Still NA - free in all years
                     round2027 = 0;
                     round2028 = 0;
                 }
@@ -27332,10 +27339,12 @@
             const expected2027 = round2027 > 0 ? getExpectedPointsForRound(round2027) : 0;
             const expected2028 = round2028 > 0 ? getExpectedPointsForRound(round2028) : 0;
 
-            // Calculate value for each year: Projected + (Projected - Expected)
-            const value2026 = proj2026 > 0 ? proj2026 + (proj2026 - expected2026) : 0;
-            const value2027 = proj2027 > 0 ? proj2027 + (proj2027 - expected2027) : 0;
-            const value2028 = proj2028 > 0 ? proj2028 + (proj2028 - expected2028) : 0;
+            // Calculate value for each year
+            // For free NA players (round = 0), value = just projected points
+            // For keepers with a cost, value = Projected + (Projected - Expected)
+            const value2026 = proj2026 > 0 ? (round2026 === 0 ? proj2026 : proj2026 + (proj2026 - expected2026)) : 0;
+            const value2027 = proj2027 > 0 ? (round2027 === 0 ? proj2027 : proj2027 + (proj2027 - expected2027)) : 0;
+            const value2028 = proj2028 > 0 ? (round2028 === 0 ? proj2028 : proj2028 + (proj2028 - expected2028)) : 0;
 
             return [
                 { year: 2026, round: round2026, cost: cost2026, expectedPts: Math.round(expected2026), projectedPts: Math.round(proj2026), value: value2026 },
@@ -27345,15 +27354,10 @@
         }
 
         function getDollarCostForRound(round) {
-            // Budget cost mapping by round
-            const budgetByRound = {
-                1: 50, 2: 45, 3: 40, 4: 35, 5: 30,
-                6: 25, 7: 22, 8: 19, 9: 16, 10: 13,
-                11: 11, 12: 9, 13: 7, 14: 6, 15: 5,
-                16: 4, 17: 3, 18: 2, 19: 2, 20: 1,
-                21: 1, 22: 1, 23: 1
-            };
-            return budgetByRound[round] || 1;
+            // Budget cost: R1=$20, R2=$19, R3=$18... R20=$1, R21+=$1
+            if (round <= 0) return 0;
+            if (round >= 20) return 1;
+            return 21 - round; // R1=20, R2=19, R3=18, etc.
         }
 
         function closeTradePlayerModal(event) {
