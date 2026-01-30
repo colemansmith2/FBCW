@@ -3594,6 +3594,78 @@
             display: block;
         }
 
+        /* Trade goal buttons */
+        .trade-team-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .trade-team-header select {
+            flex: 1;
+        }
+
+        .trade-goal-buttons {
+            display: flex;
+            gap: 2px;
+            flex-shrink: 0;
+        }
+
+        .trade-goal-btn {
+            padding: 0.3rem 0.5rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            border: 1px solid #ccc;
+            background: #f5f5f5;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .trade-goal-btn:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+
+        .trade-goal-btn:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+
+        .trade-goal-btn.active {
+            background: var(--retro-blue);
+            color: white;
+            border-color: var(--retro-blue);
+        }
+
+        .trade-goal-btn:hover:not(.active) {
+            background: #e0e0e0;
+        }
+
+        /* Trade goal legend */
+        .trade-goal-legend {
+            font-size: 0.6rem;
+            color: #888;
+            margin-top: 0.25rem;
+            display: none;
+        }
+
+        .trade-goal-legend.visible {
+            display: block;
+        }
+
+        /* Value color indicators */
+        .trade-value-neutral {
+            color: var(--retro-blue) !important;
+        }
+
+        .trade-value-up {
+            color: #28a745 !important;
+        }
+
+        .trade-value-down {
+            color: #dc3545 !important;
+        }
+
         /* Mobile responsive */
         @media (max-width: 900px) {
             .trade-analyzer-container {
@@ -3607,6 +3679,16 @@
 
             .trade-columns {
                 flex-direction: column;
+            }
+
+            .trade-team-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .trade-goal-buttons {
+                justify-content: center;
+                margin-top: 0.5rem;
             }
         }
 
@@ -14280,10 +14362,18 @@
                     <!-- Team 1 Side -->
                     <div class="trade-side trade-side-left">
                         <div class="trade-team-selector">
-                            <select id="trade-team-1" onchange="loadTradeTeamAssets(1)">
-                                <option value="">Select Team...</option>
-                            </select>
+                            <div class="trade-team-header">
+                                <select id="trade-team-1" onchange="loadTradeTeamAssets(1)">
+                                    <option value="">Select Team...</option>
+                                </select>
+                                <div class="trade-goal-buttons" id="trade-goal-buttons-1">
+                                    <button class="trade-goal-btn" data-goal="buy" onclick="setTradeGoal(1, 'buy')">Buy</button>
+                                    <button class="trade-goal-btn active" data-goal="default" onclick="setTradeGoal(1, 'default')">Default</button>
+                                    <button class="trade-goal-btn" data-goal="sell" onclick="setTradeGoal(1, 'sell')">Sell</button>
+                                </div>
+                            </div>
                             <div class="trade-team-info" id="trade-team-1-info"></div>
+                            <div class="trade-goal-legend" id="trade-goal-legend-1"></div>
                         </div>
                         <div class="trade-columns">
                             <div class="trade-assets-column">
@@ -14314,10 +14404,18 @@
                     <!-- Team 2 Side -->
                     <div class="trade-side trade-side-right">
                         <div class="trade-team-selector">
-                            <select id="trade-team-2" onchange="loadTradeTeamAssets(2)">
-                                <option value="">Select Team...</option>
-                            </select>
+                            <div class="trade-team-header">
+                                <select id="trade-team-2" onchange="loadTradeTeamAssets(2)">
+                                    <option value="">Select Team...</option>
+                                </select>
+                                <div class="trade-goal-buttons" id="trade-goal-buttons-2">
+                                    <button class="trade-goal-btn" data-goal="buy" onclick="setTradeGoal(2, 'buy')">Buy</button>
+                                    <button class="trade-goal-btn active" data-goal="default" onclick="setTradeGoal(2, 'default')">Default</button>
+                                    <button class="trade-goal-btn" data-goal="sell" onclick="setTradeGoal(2, 'sell')">Sell</button>
+                                </div>
+                            </div>
                             <div class="trade-team-info" id="trade-team-2-info"></div>
+                            <div class="trade-goal-legend" id="trade-goal-legend-2"></div>
                         </div>
                         <div class="trade-columns">
                             <div class="trade-offer-column">
@@ -26484,7 +26582,16 @@
             zips2026: {},        // player projections by year
             zips2027: {},
             zips2028: {},
-            activeTab: { 1: 'players', 2: 'players' }
+            activeTab: { 1: 'players', 2: 'players' },
+            team1Goal: 'default', // 'buy', 'default', 'sell'
+            team2Goal: 'default'
+        };
+
+        // Trade goal weight configurations
+        const TRADE_GOAL_WEIGHTS = {
+            default: { w2026: 0.50, w2027: 0.30, w2028: 0.20, pickMultiplier: 1.00 },
+            buy:     { w2026: 0.70, w2027: 0.20, w2028: 0.10, pickMultiplier: 0.85 },
+            sell:    { w2026: 0.30, w2027: 0.35, w2028: 0.35, pickMultiplier: 1.15 }
         };
 
         const MAX_ASSETS_PER_SIDE = 8;
@@ -26660,7 +26767,7 @@
 
             for (const keeper of keepers) {
                 if (keeper && keeper.player_name) {
-                    const value = calculatePlayerTradeValue(keeper);
+                    const valueResult = calculatePlayerTradeValue(keeper, 'default');
 
                     // Look up MLB team from averageProjectionsMap
                     const playerNameLower = keeper.player_name.toLowerCase().trim();
@@ -26677,7 +26784,8 @@
                         dollarCost: keeper.dollarCost || 1,
                         headshot: keeper.headshot_url || avgProjData?.headshot || '',
                         mlbTeam: mlbTeam,
-                        value: value,
+                        value: valueResult.value,
+                        baseValue: valueResult.baseValue,
                         rawData: keeper
                     });
                 }
@@ -26730,6 +26838,7 @@
                         round: roundNum,
                         year: 2026,
                         value: expectedPts,
+                        baseValue: expectedPts,
                         originalTeam: teamKey
                     });
                 }
@@ -26743,6 +26852,7 @@
                     round: round,
                     year: 2027,
                     value: expectedPts,
+                    baseValue: expectedPts,
                     originalTeam: teamKey
                 });
             }
@@ -26757,7 +26867,7 @@
             tradeAnalyzerData[`team${side}Assets`].picks = picks;
         }
 
-        function calculatePlayerTradeValue(keeper) {
+        function calculatePlayerTradeValue(keeper, goal = 'default') {
             const name = keeper.player_name.toLowerCase().trim();
 
             // Get projections for each year
@@ -26767,7 +26877,7 @@
 
             // If no projections at all, return 0
             if (proj2026 === 0 && proj2027 === 0 && proj2028 === 0) {
-                return 0;
+                return { value: 0, baseValue: 0 };
             }
 
             // Calculate keeper round cost progression
@@ -26784,15 +26894,116 @@
             const expected2028 = round2028 > 0 ? getExpectedPointsForRound(round2028) : 0;
 
             // Calculate surplus value for each year
-            // Value = Projected + (Projected - Expected)
-            const value2026 = proj2026 > 0 ? proj2026 + (proj2026 - expected2026) : 0;
-            const value2027 = proj2027 > 0 ? proj2027 + (proj2027 - expected2027) : 0;
-            const value2028 = proj2028 > 0 ? proj2028 + (proj2028 - expected2028) : 0;
+            // For free NA players (round = 0), value = just projected points
+            // For keepers with a cost, value = Projected + (Projected - Expected)
+            const value2026 = proj2026 > 0 ? (round2026 === 0 ? proj2026 : proj2026 + (proj2026 - expected2026)) : 0;
+            const value2027 = proj2027 > 0 ? (round2027 === 0 ? proj2027 : proj2027 + (proj2027 - expected2027)) : 0;
+            const value2028 = proj2028 > 0 ? (round2028 === 0 ? proj2028 : proj2028 + (proj2028 - expected2028)) : 0;
 
-            // Weight years: 2026 = 50%, 2027 = 30%, 2028 = 20%
-            const totalValue = (value2026 * 0.50) + (value2027 * 0.30) + (value2028 * 0.20);
+            // Get weights based on goal
+            const weights = TRADE_GOAL_WEIGHTS[goal] || TRADE_GOAL_WEIGHTS.default;
+            const baseWeights = TRADE_GOAL_WEIGHTS.default;
 
-            return Math.round(totalValue);
+            // Calculate goal-adjusted value
+            const totalValue = (value2026 * weights.w2026) + (value2027 * weights.w2027) + (value2028 * weights.w2028);
+
+            // Calculate base value (default weights) for comparison
+            const baseValue = (value2026 * baseWeights.w2026) + (value2027 * baseWeights.w2027) + (value2028 * baseWeights.w2028);
+
+            return { value: Math.round(totalValue), baseValue: Math.round(baseValue) };
+        }
+
+        function calculatePickTradeValue(pick, goal = 'default') {
+            const weights = TRADE_GOAL_WEIGHTS[goal] || TRADE_GOAL_WEIGHTS.default;
+            const baseValue = pick.baseValue || pick.value || 0;
+            const adjustedValue = Math.round(baseValue * weights.pickMultiplier);
+            return { value: adjustedValue, baseValue: baseValue };
+        }
+
+        function setTradeGoal(side, goal) {
+            tradeAnalyzerData[`team${side}Goal`] = goal;
+
+            // Update button states
+            const buttons = document.querySelectorAll(`#trade-goal-buttons-${side} .trade-goal-btn`);
+            buttons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.goal === goal);
+            });
+
+            // Update legend
+            updateTradeGoalLegend(side);
+
+            // Recalculate and re-render
+            recalculateTeamValues(side);
+            renderTradeAnalyzerAssets(side);
+            updateTradeOffer(side);
+            updateTradeBalance();
+        }
+
+        function updateTradeGoalLegend(side) {
+            const legendEl = document.getElementById(`trade-goal-legend-${side}`);
+            const goal = tradeAnalyzerData[`team${side}Goal`];
+
+            if (!legendEl) return;
+
+            if (goal === 'default') {
+                legendEl.classList.remove('visible');
+                legendEl.innerHTML = '';
+            } else {
+                legendEl.classList.add('visible');
+                legendEl.innerHTML = '<span style="color:var(--retro-blue)">●</span> Neutral <span style="color:#28a745">●</span> Value up <span style="color:#dc3545">●</span> Value down';
+            }
+        }
+
+        function recalculateTeamValues(side) {
+            const goal = tradeAnalyzerData[`team${side}Goal`];
+            const assets = tradeAnalyzerData[`team${side}Assets`];
+
+            // Recalculate player values
+            if (assets.players) {
+                assets.players.forEach(player => {
+                    if (player.rawData) {
+                        const result = calculatePlayerTradeValue(player.rawData, goal);
+                        player.adjustedValue = result.value;
+                        player.baseValue = result.baseValue;
+                        player.value = result.value;
+                    }
+                });
+                // Re-sort by value
+                assets.players.sort((a, b) => b.value - a.value);
+            }
+
+            // Recalculate pick values
+            if (assets.picks) {
+                assets.picks.forEach(pick => {
+                    const result = calculatePickTradeValue(pick, goal);
+                    pick.adjustedValue = result.value;
+                    pick.value = result.value;
+                });
+            }
+
+            // Update offer values too
+            const offer = tradeAnalyzerData[`team${side}Offer`];
+            offer.forEach(item => {
+                if (item.type === 'player' && item.rawData) {
+                    const result = calculatePlayerTradeValue(item.rawData, goal);
+                    item.adjustedValue = result.value;
+                    item.baseValue = result.baseValue;
+                    item.value = result.value;
+                } else if (item.type === 'pick') {
+                    const result = calculatePickTradeValue(item, goal);
+                    item.adjustedValue = result.value;
+                    item.baseValue = result.baseValue;
+                    item.value = result.value;
+                }
+            });
+        }
+
+        function getValueColorClass(value, baseValue) {
+            if (baseValue === 0) return 'trade-value-neutral';
+            const percentChange = ((value - baseValue) / Math.abs(baseValue)) * 100;
+            if (percentChange > 3) return 'trade-value-up';
+            if (percentChange < -3) return 'trade-value-down';
+            return 'trade-value-neutral';
         }
 
         function showTradeAssetTab(side, tab) {
@@ -26822,9 +27033,15 @@
                     return;
                 }
 
+                const goal = tradeAnalyzerData[`team${side}Goal`];
+
                 assetsDiv.innerHTML = assets.players.map((player, idx) => {
                     const inTrade = offer.some(o => o.type === 'player' && o.name === player.name);
-                    const valueClass = player.value > 0 ? 'positive' : player.value < 0 ? 'negative' : '';
+
+                    // Get value color based on goal adjustment
+                    const valueColorClass = goal !== 'default'
+                        ? getValueColorClass(player.value, player.baseValue)
+                        : (player.value > 0 ? 'positive' : player.value < 0 ? 'negative' : '');
 
                     // Use player data (mlbTeam, headshot) stored when loading the team
                     let headshot = player.headshot || placeholderImg;
@@ -26856,7 +27073,7 @@
                                 </div>
                             </div>
                             <div class="trade-asset-value-container">
-                                <div class="asset-value ${valueClass}">${player.value > 0 ? '+' : ''}${Math.round(player.value)}</div>
+                                <div class="asset-value ${valueColorClass}">${player.value > 0 ? '+' : ''}${Math.round(player.value)}</div>
                                 <button class="trade-player-detail-btn" onclick="event.stopPropagation(); showTradePlayerDetail(${side}, ${idx})" title="View player details">...</button>
                             </div>
                         </div>
@@ -26868,16 +27085,24 @@
                     return;
                 }
 
+                const goal = tradeAnalyzerData[`team${side}Goal`];
+
                 assetsDiv.innerHTML = assets.picks.map((pick, idx) => {
                     const inTrade = offer.some(o => o.type === 'pick' && o.round === pick.round && o.year === pick.year);
                     const yearClass = pick.year === 2026 ? 'pick-2026' : 'pick-2027';
+
+                    // Get value color based on goal adjustment
+                    const valueColorClass = goal !== 'default'
+                        ? getValueColorClass(pick.value, pick.baseValue)
+                        : '';
+
                     return `
                         <div class="trade-asset-item pick-item ${yearClass} ${inTrade ? 'in-trade' : ''}" onclick="addToTrade(${side}, 'pick', ${idx})">
                             <div class="player-info">
                                 <div class="player-name">Round ${pick.round}</div>
                                 <div class="player-meta">${pick.year} Draft</div>
                             </div>
-                            <div class="asset-value">${pick.value}</div>
+                            <div class="asset-value ${valueColorClass}">${pick.value}</div>
                         </div>
                     `;
                 }).join('');
@@ -26992,6 +27217,9 @@
                 return (b.value || 0) - (a.value || 0);
             });
 
+            // Get current trade goal for color coding
+            const currentGoal = tradeAnalyzerData[`team${side}Goal`] || 'default';
+
             offerDiv.innerHTML = sortedOffer.map((item) => {
                 const idx = item.originalIndex; // Use original index for remove button
                 if (item.type === 'player') {
@@ -27012,7 +27240,10 @@
                         ? '<span class="trade-round-tag prospect">NA</span>'
                         : `<span class="trade-round-tag">R${item.roundCost}</span>`;
 
-                    const valueClass = item.value > 0 ? 'positive' : item.value < 0 ? 'negative' : '';
+                    // Get value color class based on trade goal adjustment
+                    const valueColorClass = currentGoal !== 'default'
+                        ? getValueColorClass(item.value, item.baseValue)
+                        : 'trade-value-neutral';
 
                     return `
                         <div class="trade-offer-item">
@@ -27026,19 +27257,23 @@
                                     ${roundTag}
                                 </div>
                             </div>
-                            <div class="asset-value ${valueClass}">${item.value > 0 ? '+' : ''}${item.value}</div>
+                            <div class="asset-value ${valueColorClass}">${item.value}</div>
                             <button class="remove-btn" onclick="removeFromTrade(${side}, ${idx})">×</button>
                         </div>
                     `;
                 } else if (item.type === 'pick') {
                     const yearClass = item.year === 2026 ? 'pick-2026' : 'pick-2027';
+                    // Get value color class based on trade goal adjustment
+                    const valueColorClass = currentGoal !== 'default'
+                        ? getValueColorClass(item.value, item.baseValue)
+                        : 'trade-value-neutral';
                     return `
                         <div class="trade-offer-item pick-item ${yearClass}">
                             <div class="player-info">
                                 <div class="player-name">Round ${item.round}</div>
                                 <div class="player-meta">${item.year} Draft</div>
                             </div>
-                            <div class="asset-value">${item.value}</div>
+                            <div class="asset-value ${valueColorClass}">${item.value}</div>
                             <button class="remove-btn" onclick="removeFromTrade(${side}, ${idx})">×</button>
                         </div>
                     `;
@@ -27049,7 +27284,7 @@
                                 <div class="player-name">$${item.amount} Budget</div>
                                 <div class="player-meta">Keeper Budget</div>
                             </div>
-                            <div class="asset-value">${item.value}</div>
+                            <div class="asset-value trade-value-neutral">${item.value}</div>
                             <button class="remove-btn" onclick="removeFromTrade(${side}, ${idx})">×</button>
                         </div>
                     `;
