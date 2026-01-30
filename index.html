@@ -7436,7 +7436,37 @@
         .projection-card-container .card-inner {
             background: #1a1a1a;
             border-radius: 6px;
-            overflow: visible;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            max-height: 680px;
+        }
+
+        .projection-card-container .card-front {
+            flex-shrink: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .projection-card-container .card-back {
+            flex: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #1e3c72 #e8d9b8;
+            background: linear-gradient(135deg, #f5e6c8 0%, #e8d9b8 100%);
+        }
+
+        .projection-card-container .card-back::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .projection-card-container .card-back::-webkit-scrollbar-track {
+            background: #e8d9b8;
+        }
+
+        .projection-card-container .card-back::-webkit-scrollbar-thumb {
+            background: var(--retro-blue);
+            border-radius: 3px;
         }
 
         .projection-card-container .card-photo-wrapper {
@@ -7598,10 +7628,6 @@
             text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
         }
 
-        .projection-card-container .card-back {
-            background: linear-gradient(135deg, #f5e6c8 0%, #e8d9b8 100%);
-        }
-
         .projection-card-container .card-back-header {
             background: var(--retro-blue);
             padding: 0.5rem 0.75rem;
@@ -7723,56 +7749,36 @@
             max-height: none;
         }
 
-        /* Draft info row for projection card - now inside history scroll */
+        /* Draft info row for projection card - standalone row above history */
         .projection-card-container .card-draft-row {
-            background: #f5e6c8;
-            padding: 0.35rem 0.6rem;
+            background: var(--retro-blue);
+            padding: 0.4rem 0.75rem;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            border-bottom: 1px solid #d4c4a4;
+            border-top: 2px solid #d4af37;
         }
 
         .projection-card-container .card-draft-label {
-            color: var(--retro-blue);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 0.75rem;
             text-transform: uppercase;
-            font-weight: bold;
         }
 
         .projection-card-container .card-draft-value {
-            color: var(--retro-blue);
-            font-size: 0.8rem;
+            color: #d4af37;
+            font-size: 0.85rem;
             font-weight: bold;
         }
 
-        /* History section for projection card */
+        /* History section for projection card - no longer has its own scroll */
         .projection-card-container .card-history-wrapper {
-            max-height: 130px;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            /* No max-height or overflow - parent card-back handles scrolling */
         }
 
         .projection-card-container .card-history-scroll {
-            flex: 1;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #1e3c72 #e8d9b8;
-        }
-
-        .projection-card-container .card-history-scroll::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .projection-card-container .card-history-scroll::-webkit-scrollbar-track {
-            background: #e8d9b8;
-        }
-
-        .projection-card-container .card-history-scroll::-webkit-scrollbar-thumb {
-            background: var(--retro-blue);
-            border-radius: 3px;
+            /* No longer scrolls on its own */
         }
 
         .projection-card-container .card-history-title {
@@ -7785,9 +7791,6 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            position: sticky;
-            top: 0;
-            z-index: 1;
         }
 
         .projection-card-container .card-history-header-col {
@@ -7882,7 +7885,7 @@
         }
 
         .projection-card-container .card-history-rank.rank-1 {
-            background: transparent;
+            background: var(--retro-blue);
             color: #d4af37;
             border: 2px solid #d4af37;
             padding: 0 0.2rem;
@@ -30103,6 +30106,13 @@
                     }
                 }
 
+                // Draft row comes before League History
+                cardHTML += `
+                        <div class="card-draft-row">
+                            <span class="card-draft-label">2026 Draft:</span>
+                            <span class="card-draft-value">${draftText}</span>
+                        </div>`;
+
                 const typeLabel = isBatter ? 'Batter' : 'Pitcher';
                 cardHTML += `
                         <div class="card-history-wrapper">
@@ -30113,43 +30123,31 @@
                                 <span class="card-history-header-col type">${typeLabel}</span>
                                 <span class="card-history-header-col pos">Position</span>
                                 <span class="card-history-header-col pts">Points</span>
-                            </div>
-                            <div class="card-history-scroll">
-                                <div class="card-draft-row">
-                                    <span class="card-draft-label">2026 Draft:</span>
-                                    <span class="card-draft-value">${draftText}</span>
-                                </div>`;
+                            </div>`;
 
                 playerHistory.seasons.sort((a, b) => b.year - a.year).forEach(season => {
                     const logo = historyLogos[`${season.year}_${season.team_name}`] || '';
                     const ranks = historyRanks[season.year] || { overall: '-', type: '-', position: '-', posRankNum: 0 };
                     const posRankClass = ranks.posRankNum === 1 ? 'card-history-rank rank-1' : 'card-history-rank';
                     cardHTML += `
-                                <div class="card-history-row">
-                                    <span class="card-history-year">${season.year}</span>
-                                    ${logo ? `<img src="${logo}" class="card-history-logo" alt="">` : ''}
-                                    <span class="card-history-manager">${season.manager || ''}</span>
-                                    <span class="card-history-ovr-rank">${ranks.overall}</span>
-                                    <span class="card-history-type-rank">${ranks.type}</span>
-                                    <span class="${posRankClass}">${ranks.position}</span>
-                                    <span class="card-history-pts">${(season.fantasy_points || 0).toFixed(0)}</span>
-                                </div>`;
+                            <div class="card-history-row">
+                                <span class="card-history-year">${season.year}</span>
+                                ${logo ? `<img src="${logo}" class="card-history-logo" alt="">` : ''}
+                                <span class="card-history-manager">${season.manager || ''}</span>
+                                <span class="card-history-ovr-rank">${ranks.overall}</span>
+                                <span class="card-history-type-rank">${ranks.type}</span>
+                                <span class="${posRankClass}">${ranks.position}</span>
+                                <span class="card-history-pts">${(season.fantasy_points || 0).toFixed(0)}</span>
+                            </div>`;
                 });
 
-                cardHTML += `</div></div>`;
+                cardHTML += `</div>`;
             } else {
                 // No history - still show draft row
                 cardHTML += `
-                        <div class="card-history-wrapper">
-                            <div class="card-history-title">
-                                <span>2026 Season</span>
-                            </div>
-                            <div class="card-history-scroll">
-                                <div class="card-draft-row">
-                                    <span class="card-draft-label">2026 Draft:</span>
-                                    <span class="card-draft-value">${draftText}</span>
-                                </div>
-                            </div>
+                        <div class="card-draft-row">
+                            <span class="card-draft-label">2026 Draft:</span>
+                            <span class="card-draft-value">${draftText}</span>
                         </div>`;
             }
 
