@@ -7589,12 +7589,13 @@
 
         .projection-card-container .card-position-badge {
             background: #d4af37;
-            color: var(--retro-blue);
+            color: white;
             font-size: 0.75rem;
             font-weight: bold;
             padding: 0.2rem 0.5rem;
             border-radius: 4px;
             margin-left: auto;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
         }
 
         .projection-card-container .card-back {
@@ -7611,12 +7612,13 @@
 
         .projection-card-container .card-back-number {
             background: #d4af37;
-            color: var(--retro-blue);
+            color: white;
             font-weight: 900;
             font-size: 0.75rem;
             padding: 0.2rem 0.5rem;
             clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
             padding-right: 0.8rem;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
         }
 
         .projection-card-container .card-back-info {
@@ -7656,10 +7658,11 @@
         }
 
         .projection-card-container .card-stats-title {
-            color: #d4af37;
+            color: white;
             font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
+            text-shadow: 1px 1px 0 #d4af37, -1px -1px 0 #d4af37, 1px -1px 0 #d4af37, -1px 1px 0 #d4af37;
         }
 
         .projection-card-container .card-stats-table {
@@ -7708,9 +7711,10 @@
         }
 
         .projection-card-container .card-points-rank {
-            color: #d4af37;
+            color: white;
             font-size: 0.85rem;
             font-weight: bold;
+            text-shadow: 1px 1px 0 #d4af37, -1px -1px 0 #d4af37, 1px -1px 0 #d4af37, -1px 1px 0 #d4af37;
         }
 
         .projection-card-container .card-info-strip {
@@ -7752,12 +7756,31 @@
 
         .projection-card-container .card-history-title {
             background: var(--retro-blue);
-            color: #d4af37;
+            color: white;
             font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
             padding: 0.35rem 0.75rem;
+            text-shadow: 1px 1px 0 #d4af37, -1px -1px 0 #d4af37, 1px -1px 0 #d4af37, -1px 1px 0 #d4af37;
+            display: flex;
+            align-items: flex-end;
+            gap: 0.5rem;
         }
+
+        .projection-card-container .card-history-header-col {
+            color: white;
+            font-size: 0.55rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-shadow: 1px 1px 0 #d4af37, -1px -1px 0 #d4af37, 1px -1px 0 #d4af37, -1px 1px 0 #d4af37;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .projection-card-container .card-history-header-col.ovr { min-width: 32px; }
+        .projection-card-container .card-history-header-col.type { min-width: 38px; }
+        .projection-card-container .card-history-header-col.pos { min-width: 32px; }
+        .projection-card-container .card-history-header-col.pts { min-width: 45px; text-align: right; }
 
         .projection-card-container .card-history-row {
             display: flex;
@@ -7803,13 +7826,37 @@
 
         .projection-card-container .card-history-rank {
             background: var(--retro-blue);
-            color: #d4af37;
+            color: white;
             font-size: 0.65rem;
             font-weight: bold;
             padding: 0.1rem 0.25rem;
             border-radius: 3px;
             margin-left: 0.3rem;
             min-width: 28px;
+            text-align: center;
+        }
+
+        .projection-card-container .card-history-ovr-rank {
+            background: var(--retro-blue);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 0.1rem 0.25rem;
+            border-radius: 3px;
+            margin-left: auto;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .projection-card-container .card-history-type-rank {
+            background: var(--retro-blue);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 0.1rem 0.25rem;
+            border-radius: 3px;
+            margin-left: 0.3rem;
+            min-width: 32px;
             text-align: center;
         }
 
@@ -29877,7 +29924,7 @@
                             <div class="card-back-number">${positionRank}</div>
                             <div class="card-back-info">
                                 <div class="card-back-name">${player.name}</div>
-                                <div class="card-back-team">${mlbTeamText} • ${positionDisplay}</div>
+                                <div class="card-back-team">${mlbTeamText} | ${positionDisplay}</div>
                             </div>
                             <img src="${headshot}" alt="" class="card-back-headshot" onerror="this.src='${placeholderHeadshot}';">
                         </div>
@@ -29957,23 +30004,35 @@
                             <span class="card-points-rank">${positionRank}</span>
                         </div>`;
 
-            // Get draft info from 2025 data
-            let draftText = 'Undrafted';
+            // Get 2026 draft info - check if kept or get projected round
+            let draftText = 'Available';
             const normalizedName = playerName.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             const playerHistory = playerHistoryData[normalizedName];
 
-            // Check if drafted in 2025
-            if (playerHistory && playerHistory.seasons) {
-                const season2025 = playerHistory.seasons.find(s => s.year === 2025);
-                if (season2025 && season2025.draft_round && season2025.draft_pick) {
-                    draftText = `Round ${season2025.draft_round}, Pick #${season2025.draft_pick}`;
+            // Check if player is being kept in 2026
+            if (keeperInfo) {
+                // Player is being kept - show their keeper round
+                const roundCost = keeperInfo.roundCost || keeperInfo.round || '?';
+                draftText = `Kept Round ${roundCost}`;
+            } else {
+                // Not kept - calculate projected round based on BPA
+                // Get all non-kept players sorted by projected points
+                const allPlayers = [...allProjectionBatters, ...allProjectionPitchers];
+                const nonKeptPlayers = allPlayers
+                    .filter(p => !getPlayerKeeperInfo(p.name))
+                    .sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
+
+                const playerIndex = nonKeptPlayers.findIndex(p => p.name === playerName);
+                if (playerIndex >= 0) {
+                    const projectedRound = Math.floor(playerIndex / 12) + 1;
+                    draftText = `Projected Round ${projectedRound}`;
                 }
             }
 
             // Draft info row
             cardHTML += `
                         <div class="card-draft-row">
-                            <span class="card-draft-label">2025 Draft:</span>
+                            <span class="card-draft-label">2026 Draft:</span>
                             <span class="card-draft-value">${draftText}</span>
                         </div>`;
 
@@ -29993,40 +30052,58 @@
 
                     const yearPlayers = await getPlayerStatsData(season.year);
                     if (yearPlayers) {
+                        // Overall rank (all players)
+                        const allPlayersSorted = yearPlayers
+                            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+                        const ovrRank = allPlayersSorted.findIndex(p => p.name === playerName) + 1;
+
+                        // Type rank (batters or pitchers)
                         const posType = isBatter ? 'B' : 'P';
                         const sameType = yearPlayers
                             .filter(p => p.position_type === posType)
                             .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
-                        const overallRank = sameType.findIndex(p => p.name === playerName) + 1;
+                        const typeRank = sameType.findIndex(p => p.name === playerName) + 1;
 
+                        // Position rank
                         const samePos = yearPlayers
                             .filter(p => p.eligible_positions && p.eligible_positions.includes(primaryPos))
                             .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
                         const posRank = samePos.findIndex(p => p.name === playerName) + 1;
 
                         historyRanks[season.year] = {
-                            overall: overallRank > 0 ? overallRank : '-',
+                            overall: ovrRank > 0 ? ovrRank : '-',
+                            type: typeRank > 0 ? typeRank : '-',
                             position: posRank > 0 ? `${primaryPos}${posRank}` : '-'
                         };
                     } else {
-                        historyRanks[season.year] = { overall: '-', position: '-' };
+                        historyRanks[season.year] = { overall: '-', type: '-', position: '-' };
                     }
                 }
 
+                const typeLabel = isBatter ? 'Batter' : 'Pitcher';
                 cardHTML += `
                         <div class="card-history-wrapper">
-                            <div class="card-history-title">League History</div>`;
+                            <div class="card-history-title">
+                                <span>League History</span>
+                                <span style="flex:1"></span>
+                                <span class="card-history-header-col ovr">Ovr<br>Rank</span>
+                                <span class="card-history-header-col type">${typeLabel}<br>Rank</span>
+                                <span class="card-history-header-col pos">Position<br>Rank</span>
+                                <span class="card-history-header-col pts">Points</span>
+                            </div>`;
 
                 playerHistory.seasons.sort((a, b) => b.year - a.year).forEach(season => {
                     const logo = historyLogos[`${season.year}_${season.team_name}`] || '';
-                    const ranks = historyRanks[season.year] || { overall: '-', position: '-' };
+                    const ranks = historyRanks[season.year] || { overall: '-', type: '-', position: '-' };
                     cardHTML += `
                             <div class="card-history-row">
                                 <span class="card-history-year">${season.year}</span>
                                 ${logo ? `<img src="${logo}" class="card-history-logo" alt="">` : ''}
                                 <span class="card-history-manager">${season.manager || ''}</span>
-                                <span class="card-history-pts">${(season.fantasy_points || 0).toFixed(0)} pts</span>
+                                <span class="card-history-ovr-rank">${ranks.overall}</span>
+                                <span class="card-history-type-rank">${ranks.type}</span>
                                 <span class="card-history-rank">${ranks.position}</span>
+                                <span class="card-history-pts">${(season.fantasy_points || 0).toFixed(0)} pts</span>
                             </div>`;
                 });
 
