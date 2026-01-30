@@ -7658,11 +7658,10 @@
         }
 
         .projection-card-container .card-stats-title {
-            color: #d4af37;
+            color: white;
             font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
-            text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white;
         }
 
         .projection-card-container .card-stats-table {
@@ -7711,10 +7710,9 @@
         }
 
         .projection-card-container .card-points-rank {
-            color: #d4af37;
+            color: white;
             font-size: 0.85rem;
             font-weight: bold;
-            text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white;
         }
 
         .projection-card-container .card-info-strip {
@@ -7779,14 +7777,13 @@
 
         .projection-card-container .card-history-title {
             background: var(--retro-blue);
-            color: #d4af37;
+            color: white;
             font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
             padding: 0.35rem 0.75rem;
-            text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white;
             display: flex;
-            align-items: flex-end;
+            align-items: center;
             gap: 0.5rem;
             position: sticky;
             top: 0;
@@ -7794,19 +7791,17 @@
         }
 
         .projection-card-container .card-history-header-col {
-            color: #d4af37;
-            font-size: 0.55rem;
+            color: white;
+            font-size: 0.65rem;
             font-weight: bold;
             text-transform: uppercase;
-            text-shadow: 1px 1px 0 white, -1px -1px 0 white, 1px -1px 0 white, -1px 1px 0 white;
             text-align: center;
-            line-height: 1.1;
         }
 
-        .projection-card-container .card-history-header-col.ovr { min-width: 36px; }
+        .projection-card-container .card-history-header-col.ovr { min-width: 32px; }
         .projection-card-container .card-history-header-col.type { min-width: 42px; }
-        .projection-card-container .card-history-header-col.pos { min-width: 50px; }
-        .projection-card-container .card-history-header-col.pts { min-width: 50px; text-align: right; }
+        .projection-card-container .card-history-header-col.pos { min-width: 42px; }
+        .projection-card-container .card-history-header-col.pts { min-width: 45px; text-align: right; }
 
         .projection-card-container .card-history-row {
             display: flex;
@@ -7870,7 +7865,7 @@
             padding: 0.1rem 0.3rem;
             border-radius: 3px;
             margin-left: 0.4rem;
-            min-width: 36px;
+            min-width: 42px;
             text-align: center;
         }
 
@@ -7884,6 +7879,13 @@
             margin-left: 0.4rem;
             min-width: 42px;
             text-align: center;
+        }
+
+        .projection-card-container .card-history-rank.rank-1 {
+            background: transparent;
+            color: #d4af37;
+            border: 2px solid #d4af37;
+            padding: 0 0.2rem;
         }
 
         .projection-charts-container {
@@ -30093,10 +30095,11 @@
                         historyRanks[season.year] = {
                             overall: ovrRank > 0 ? ovrRank : '-',
                             type: typeRank > 0 ? typeRank : '-',
-                            position: posRank > 0 ? `${primaryPos}${posRank}` : '-'
+                            position: posRank > 0 ? `${primaryPos}${posRank}` : '-',
+                            posRankNum: posRank
                         };
                     } else {
-                        historyRanks[season.year] = { overall: '-', type: '-', position: '-' };
+                        historyRanks[season.year] = { overall: '-', type: '-', position: '-', posRankNum: 0 };
                     }
                 }
 
@@ -30106,9 +30109,9 @@
                             <div class="card-history-title">
                                 <span>League History</span>
                                 <span style="flex:1"></span>
-                                <span class="card-history-header-col ovr">Ovr<br>Rank</span>
-                                <span class="card-history-header-col type">${typeLabel}<br>Rank</span>
-                                <span class="card-history-header-col pos">Position<br>Rank</span>
+                                <span class="card-history-header-col ovr">Ovr</span>
+                                <span class="card-history-header-col type">${typeLabel}</span>
+                                <span class="card-history-header-col pos">Position</span>
                                 <span class="card-history-header-col pts">Points</span>
                             </div>
                             <div class="card-history-scroll">
@@ -30119,7 +30122,8 @@
 
                 playerHistory.seasons.sort((a, b) => b.year - a.year).forEach(season => {
                     const logo = historyLogos[`${season.year}_${season.team_name}`] || '';
-                    const ranks = historyRanks[season.year] || { overall: '-', type: '-', position: '-' };
+                    const ranks = historyRanks[season.year] || { overall: '-', type: '-', position: '-', posRankNum: 0 };
+                    const posRankClass = ranks.posRankNum === 1 ? 'card-history-rank rank-1' : 'card-history-rank';
                     cardHTML += `
                                 <div class="card-history-row">
                                     <span class="card-history-year">${season.year}</span>
@@ -30127,7 +30131,7 @@
                                     <span class="card-history-manager">${season.manager || ''}</span>
                                     <span class="card-history-ovr-rank">${ranks.overall}</span>
                                     <span class="card-history-type-rank">${ranks.type}</span>
-                                    <span class="card-history-rank">${ranks.position}</span>
+                                    <span class="${posRankClass}">${ranks.position}</span>
                                     <span class="card-history-pts">${(season.fantasy_points || 0).toFixed(0)}</span>
                                 </div>`;
                 });
