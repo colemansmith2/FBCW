@@ -3353,25 +3353,28 @@
 
         /* Card top section with photo and logos */
         .trade-card-photo-section {
-            position: relative;
             background: linear-gradient(180deg, #1a3c6e 0%, #2a4c7e 100%);
             padding: 0.5rem;
         }
 
+        .trade-card-top-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
         .trade-card-mlb-logo {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            width: 42px;
-            height: 42px;
+            width: 36px;
+            height: 36px;
             background: white;
             border-radius: 50%;
             padding: 3px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-            z-index: 5;
             display: flex;
             align-items: center;
             justify-content: center;
+            flex-shrink: 0;
         }
 
         .trade-card-mlb-logo img {
@@ -3381,40 +3384,65 @@
         }
 
         .trade-card-mlb-logo.fa-logo {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: bold;
             color: var(--retro-blue);
         }
 
         .trade-card-number {
-            position: absolute;
-            top: 8px;
-            right: 8px;
             background: #f5d442;
             color: #1a3c6e;
             font-weight: 900;
-            font-size: 1.1rem;
-            padding: 0.2rem 0.5rem;
+            font-size: 0.85rem;
+            padding: 0.15rem 0.4rem;
             border-radius: 4px;
-            z-index: 5;
+            margin-left: auto;
+        }
+
+        .trade-card-headshot-wrapper {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            padding: 0.5rem 0;
         }
 
         .trade-card-headshot-container {
-            width: 100%;
-            aspect-ratio: 4/3;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
             overflow: hidden;
-            border-radius: 4px;
+            border: 4px solid #f5d442;
             background: linear-gradient(180deg, #3a5c8e 0%, #1a3c6e 100%);
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         .trade-card-headshot {
-            width: 75%;
-            height: auto;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .trade-card-fantasy-logo {
+            position: absolute;
+            bottom: 0;
+            right: calc(50% - 75px);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #f5d442;
+            background: white;
+            padding: 2px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .trade-card-fantasy-logo img {
+            width: 100%;
+            height: 100%;
             object-fit: contain;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+            border-radius: 50%;
         }
 
         /* Player name banner */
@@ -27781,17 +27809,34 @@
             const isProspect = player.isProspect;
             const roundCost = player.roundCost || 0;
 
+            // Get the dollar cost from the forecast (2026 year)
+            const dollarCost2026 = forecast.length > 0 ? forecast[0].cost : 0;
+
+            // Get fantasy team logo for this side
+            const teamKey = tradeAnalyzerData[`team${side}`];
+            const fantasyTeam = tradeAnalyzerData.teams[teamKey];
+            const fantasyTeamLogo = fantasyTeam?.team_logo ? fixTeamLogo(fantasyTeam.team_logo) : '';
+
             // Build baseball card HTML
             contentEl.innerHTML = `
                 <div class="trade-player-card-inner">
                     <!-- Photo Section -->
                     <div class="trade-card-photo-section">
-                        <div class="trade-card-mlb-logo ${!mlbLogoUrl ? 'fa-logo' : ''}">
-                            ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}">` : 'FA'}
+                        <div class="trade-card-top-row">
+                            <div class="trade-card-mlb-logo ${!mlbLogoUrl ? 'fa-logo' : ''}">
+                                ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}">` : 'FA'}
+                            </div>
+                            <div class="trade-card-number">${positionRank || primaryPos}</div>
                         </div>
-                        <div class="trade-card-number">${positionRank || primaryPos}</div>
-                        <div class="trade-card-headshot-container">
-                            <img src="${headshot}" class="trade-card-headshot" alt="${player.name}" onerror="this.src='${placeholderImg}'">
+                        <div class="trade-card-headshot-wrapper">
+                            <div class="trade-card-headshot-container">
+                                <img src="${headshot}" class="trade-card-headshot" alt="${player.name}" onerror="this.src='${placeholderImg}'">
+                            </div>
+                            ${fantasyTeamLogo ? `
+                            <div class="trade-card-fantasy-logo">
+                                <img src="${fantasyTeamLogo}" alt="">
+                            </div>
+                            ` : ''}
                         </div>
                     </div>
 
@@ -27868,7 +27913,7 @@
                                 ${!isProspect && roundCost === 0 ? '<span style="color: #888;">Free Agent</span>' : ''}
                             </div>
                             <div style="color: #1a3c6e; font-weight: 600;">
-                                ${isProspect ? 'NA Status' : roundCost > 0 ? `$${getKeeperRoundCost ? getKeeperRoundCost(roundCost) : roundCost} Cost` : 'Undrafted'}
+                                ${isProspect ? 'NA Status' : dollarCost2026 > 0 ? `$${dollarCost2026} Cost` : 'Free'}
                             </div>
                         </div>
                     </div>
