@@ -2871,6 +2871,10 @@
             color: #555;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: flex;
+            align-items: baseline;
+            gap: 0.3rem;
+            flex-wrap: nowrap;
         }
 
         .trade-asset-tabs {
@@ -3819,11 +3823,11 @@
 
         /* Imbalance penalty display */
         .trade-imbalance-penalty {
-            font-size: 0.45rem;
+            font-size: 0.65rem;
             color: #dc3545;
             font-weight: 600;
-            margin-left: 0.1rem;
             white-space: nowrap;
+            display: inline;
         }
 
         /* Draft pick warning */
@@ -27951,10 +27955,11 @@
                 perspectiveEl.querySelector('.perspective-header').appendChild(verdictEl);
             }
 
-            if (perspective.net > 0) {
+            // Verdict thresholds: Even if within +/- 30 points
+            if (perspective.net > 30) {
                 verdictEl.textContent = '✓ Good';
                 verdictEl.className = 'perspective-verdict good';
-            } else if (perspective.net < -20) {
+            } else if (perspective.net < -30) {
                 verdictEl.textContent = '✗ Bad';
                 verdictEl.className = 'perspective-verdict bad';
             } else {
