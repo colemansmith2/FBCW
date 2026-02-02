@@ -3157,6 +3157,99 @@
             color: var(--retro-blue);
         }
 
+        /* Perspective Summary Box */
+        .trade-perspective-box {
+            margin-top: 0.5rem;
+            padding: 0.6rem;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            font-size: 0.85rem;
+        }
+
+        .perspective-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.4rem;
+            padding-bottom: 0.3rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .perspective-label {
+            font-weight: 600;
+            color: #1a3c6e;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        .perspective-rows {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .perspective-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #555;
+        }
+
+        .perspective-row.perspective-net {
+            margin-top: 0.25rem;
+            padding-top: 0.3rem;
+            border-top: 1px dashed #ccc;
+            font-weight: 700;
+            color: #1a3c6e;
+        }
+
+        .perspective-giving {
+            color: #dc3545;
+        }
+
+        .perspective-getting {
+            color: #28a745;
+        }
+
+        .perspective-net-value {
+            font-size: 0.95rem;
+        }
+
+        .perspective-net-value.positive {
+            color: #28a745;
+        }
+
+        .perspective-net-value.negative {
+            color: #dc3545;
+        }
+
+        .perspective-net-value.neutral {
+            color: #6c757d;
+        }
+
+        .perspective-verdict {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-weight: 600;
+        }
+
+        .perspective-verdict.good {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .perspective-verdict.bad {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .perspective-verdict.neutral {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
         .trade-balance-indicator {
             display: flex;
             flex-direction: column;
@@ -14653,6 +14746,26 @@
                                     <span class="total-label">Total Value:</span>
                                     <span class="total-value">0</span>
                                 </div>
+                                <!-- Perspective Summary Box -->
+                                <div class="trade-perspective-box" id="trade-perspective-1">
+                                    <div class="perspective-header">
+                                        <span class="perspective-label">From Their View:</span>
+                                    </div>
+                                    <div class="perspective-rows">
+                                        <div class="perspective-row">
+                                            <span>Giving:</span>
+                                            <span class="perspective-giving">0</span>
+                                        </div>
+                                        <div class="perspective-row">
+                                            <span>Getting:</span>
+                                            <span class="perspective-getting">0</span>
+                                        </div>
+                                        <div class="perspective-row perspective-net">
+                                            <span>Net:</span>
+                                            <span class="perspective-net-value">0</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -14685,6 +14798,26 @@
                                 <div class="trade-side-total" id="trade-total-2">
                                     <span class="total-label">Total Value:</span>
                                     <span class="total-value">0</span>
+                                </div>
+                                <!-- Perspective Summary Box -->
+                                <div class="trade-perspective-box" id="trade-perspective-2">
+                                    <div class="perspective-header">
+                                        <span class="perspective-label">From Their View:</span>
+                                    </div>
+                                    <div class="perspective-rows">
+                                        <div class="perspective-row">
+                                            <span>Giving:</span>
+                                            <span class="perspective-giving">0</span>
+                                        </div>
+                                        <div class="perspective-row">
+                                            <span>Getting:</span>
+                                            <span class="perspective-getting">0</span>
+                                        </div>
+                                        <div class="perspective-row perspective-net">
+                                            <span>Net:</span>
+                                            <span class="perspective-net-value">0</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="trade-assets-column">
@@ -27181,6 +27314,48 @@
             return { value: adjustedValue, baseValue: baseValue };
         }
 
+        // Calculate how a team views the entire trade from their perspective
+        // Their goal affects how they value ALL assets (both giving and getting)
+        function calculatePerspectiveValue(teamSide) {
+            const myGoal = tradeAnalyzerData[`team${teamSide}Goal`];
+            const otherSide = teamSide === 1 ? 2 : 1;
+
+            const myOffer = tradeAnalyzerData[`team${teamSide}Offer`];
+            const theirOffer = tradeAnalyzerData[`team${otherSide}Offer`];
+
+            // Helper to calculate asset value with a given goal
+            const getAssetValue = (item, goal) => {
+                if (item.type === 'player' && item.rawData) {
+                    return calculatePlayerTradeValue(item.rawData, goal).value;
+                } else if (item.type === 'pick') {
+                    return calculatePickTradeValue(item, goal).value;
+                } else {
+                    // Budget uses base value (not affected by goal)
+                    return item.baseValue || item.value || 0;
+                }
+            };
+
+            // What I'm GIVING - valued through MY goal lens
+            let givingValue = 0;
+            myOffer.forEach(item => {
+                givingValue += getAssetValue(item, myGoal);
+            });
+
+            // What I'm GETTING - valued through MY goal lens
+            let gettingValue = 0;
+            theirOffer.forEach(item => {
+                gettingValue += getAssetValue(item, myGoal);
+            });
+
+            const netValue = gettingValue - givingValue;
+
+            return {
+                giving: Math.round(givingValue),
+                getting: Math.round(gettingValue),
+                net: Math.round(netValue)
+            };
+        }
+
         function setTradeGoal(side, goal) {
             tradeAnalyzerData[`team${side}Goal`] = goal;
 
@@ -27725,6 +27900,67 @@
             labelEl.textContent = `Diff: ${Math.round(Math.abs(diff))} pts`;
             verdictEl.textContent = verdict;
             verdictEl.className = `trade-balance-verdict ${verdictClass}`;
+
+            // Update perspective boxes for each side
+            updatePerspectiveBox(1, team1Name);
+            updatePerspectiveBox(2, team2Name);
+        }
+
+        function updatePerspectiveBox(side, teamName) {
+            const perspectiveEl = document.getElementById(`trade-perspective-${side}`);
+            if (!perspectiveEl) return;
+
+            const perspective = calculatePerspectiveValue(side);
+            const goal = tradeAnalyzerData[`team${side}Goal`];
+
+            // Update header label with team name and goal
+            const labelEl = perspectiveEl.querySelector('.perspective-label');
+            if (labelEl) {
+                const goalLabel = goal === 'default' ? '' : ` (${goal.charAt(0).toUpperCase() + goal.slice(1)}ing)`;
+                labelEl.textContent = `${teamName}'s View${goalLabel}:`;
+            }
+
+            // Update values
+            const givingEl = perspectiveEl.querySelector('.perspective-giving');
+            const gettingEl = perspectiveEl.querySelector('.perspective-getting');
+            const netEl = perspectiveEl.querySelector('.perspective-net-value');
+
+            if (givingEl) givingEl.textContent = perspective.giving;
+            if (gettingEl) gettingEl.textContent = perspective.getting;
+
+            if (netEl) {
+                const prefix = perspective.net > 0 ? '+' : '';
+                netEl.textContent = `${prefix}${perspective.net}`;
+
+                // Apply color class
+                netEl.classList.remove('positive', 'negative', 'neutral');
+                if (perspective.net > 0) {
+                    netEl.classList.add('positive');
+                } else if (perspective.net < 0) {
+                    netEl.classList.add('negative');
+                } else {
+                    netEl.classList.add('neutral');
+                }
+            }
+
+            // Add/update verdict badge
+            let verdictEl = perspectiveEl.querySelector('.perspective-verdict');
+            if (!verdictEl) {
+                verdictEl = document.createElement('span');
+                verdictEl.className = 'perspective-verdict';
+                perspectiveEl.querySelector('.perspective-header').appendChild(verdictEl);
+            }
+
+            if (perspective.net > 0) {
+                verdictEl.textContent = '✓ Good';
+                verdictEl.className = 'perspective-verdict good';
+            } else if (perspective.net < -20) {
+                verdictEl.textContent = '✗ Bad';
+                verdictEl.className = 'perspective-verdict bad';
+            } else {
+                verdictEl.textContent = '~ Even';
+                verdictEl.className = 'perspective-verdict neutral';
+            }
         }
 
         function resetTradeAnalyzer() {
