@@ -500,7 +500,7 @@ def collect_weekly_stats():
         return False
     
     lg = League(oauth, league_ids[0])
-    print(f"League: {lg.metadata().get('name', 'Unknown')}")
+    print(f"League: {lg.settings().get('name', 'Unknown')}")
     
     completed_week = get_completed_week(lg)
     print(f"Collecting data for Week {completed_week}")
