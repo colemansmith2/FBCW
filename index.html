@@ -27279,12 +27279,37 @@
             }
 
             // Calculate keeper round cost progression
-            // Year 1 (2026): current round cost
-            // Year 2 (2027): 3 rounds earlier if R4-10, 4 rounds earlier if R11+
-            // Year 3 (2028): another step up
-            const round2026 = keeper.isProspect ? 0 : (keeper.roundCost || 20);
-            const round2027 = keeper.isProspect ? 0 : getKeeperRoundCost(round2026, 20);
-            const round2028 = keeper.isProspect ? 0 : getKeeperRoundCost(round2027, 20);
+            let round2026, round2027, round2028;
+
+            if (keeper.isProspect) {
+                // NA players (prospects) - check if they'll lose rookie eligibility
+                // If projected >80 pts, they become a normal keeper after that season
+                const losesEligibility2026 = proj2026 > 80;
+                const losesEligibility2027 = proj2027 > 80;
+
+                // 2026: Still free as NA player
+                round2026 = 0;
+
+                if (losesEligibility2026) {
+                    // Lost eligibility in 2026 - becomes R22 keeper in 2027
+                    round2027 = 22;
+                    // 2028: Normal keeper progression from R22
+                    round2028 = getKeeperRoundCost(round2027, 22);
+                } else if (losesEligibility2027) {
+                    // Still NA in 2027, but loses eligibility - becomes R22 in 2028
+                    round2027 = 0;
+                    round2028 = 22;
+                } else {
+                    // Still NA - free in all years
+                    round2027 = 0;
+                    round2028 = 0;
+                }
+            } else {
+                // Normal keeper progression
+                round2026 = keeper.roundCost || 20;
+                round2027 = getKeeperRoundCost(round2026, 20);
+                round2028 = getKeeperRoundCost(round2027, 20);
+            }
 
             // Get expected points for each round
             const expected2026 = round2026 > 0 ? getExpectedPointsForRound(round2026) : 0;
