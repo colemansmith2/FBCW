@@ -2873,7 +2873,7 @@
             letter-spacing: 0.5px;
             display: flex;
             align-items: baseline;
-            gap: 0.3rem;
+            gap: 0.15rem;
             flex-wrap: nowrap;
         }
 
@@ -27345,6 +27345,7 @@
 
         // Calculate how a team views the entire trade from their perspective
         // Their goal affects how they value ALL assets (both giving and getting)
+        // Also applies imbalance penalty for receiving more players than giving
         function calculatePerspectiveValue(teamSide) {
             const myGoal = tradeAnalyzerData[`team${teamSide}Goal`];
             const otherSide = teamSide === 1 ? 2 : 1;
@@ -27371,10 +27372,39 @@
             });
 
             // What I'm GETTING - valued through MY goal lens
-            let gettingValue = 0;
-            theirOffer.forEach(item => {
-                gettingValue += getAssetValue(item, myGoal);
-            });
+            // Build array with values for potential imbalance penalty
+            const gettingAssets = theirOffer.map(item => ({
+                value: getAssetValue(item, myGoal),
+                type: item.type
+            }));
+
+            let gettingValue = gettingAssets.reduce((sum, a) => sum + a.value, 0);
+
+            // Apply imbalance penalty if receiving more non-pick assets than giving
+            // (same logic as updateTradeBalance - compounding 50% reduction)
+            const myNonPickCount = myOffer.filter(o => o.type !== 'pick').length;
+            const theirNonPickCount = theirOffer.filter(o => o.type !== 'pick').length;
+
+            if (theirNonPickCount > myNonPickCount && myNonPickCount > 0) {
+                const extraCount = theirNonPickCount - myNonPickCount;
+                // Get non-pick assets sorted by value (lowest first)
+                const nonPickAssets = gettingAssets
+                    .filter(a => a.type !== 'pick')
+                    .sort((a, b) => a.value - b.value);
+
+                // Apply compounding penalty to the extra assets
+                const getCompoundedRemainingRate = (index) => Math.pow(0.5, index + 1);
+                let penaltyAmount = 0;
+
+                for (let i = 0; i < extraCount && i < nonPickAssets.length; i++) {
+                    const assetValue = nonPickAssets[i].value;
+                    const remainingRate = getCompoundedRemainingRate(i);
+                    const penalty = assetValue * (1 - remainingRate);
+                    penaltyAmount += penalty;
+                }
+
+                gettingValue -= penaltyAmount;
+            }
 
             const netValue = gettingValue - givingValue;
 
