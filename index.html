@@ -3351,72 +3351,33 @@
             background: rgba(0, 0, 0, 0.9);
         }
 
-        /* Card top section with photo and logos */
-        .trade-card-photo-section {
-            background: linear-gradient(180deg, #1a3c6e 0%, #2a4c7e 100%);
-            padding: 0.5rem;
-        }
-
-        .trade-card-top-row {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .trade-card-mlb-logo {
-            width: 36px;
-            height: 36px;
-            background: white;
-            border-radius: 50%;
-            padding: 3px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .trade-card-mlb-logo img {
-            width: 85%;
-            height: 85%;
-            object-fit: contain;
-        }
-
-        .trade-card-mlb-logo.fa-logo {
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: var(--retro-blue);
-        }
-
-        .trade-card-number {
+        /* Card header section - Fleer style with headshot on left and name bars */
+        .trade-card-header-section {
             background: #f5d442;
-            color: #1a3c6e;
-            font-weight: 900;
-            font-size: 0.85rem;
-            padding: 0.15rem 0.4rem;
-            border-radius: 4px;
-            margin-left: auto;
+            padding: 0.6rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0;
+            position: relative;
         }
 
         .trade-card-headshot-wrapper {
             position: relative;
-            display: flex;
-            justify-content: center;
-            padding: 0.5rem 0;
+            flex-shrink: 0;
+            z-index: 2;
         }
 
         .trade-card-headshot-container {
-            width: 120px;
-            height: 120px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
             overflow: hidden;
-            border: 4px solid #f5d442;
-            background: linear-gradient(180deg, #3a5c8e 0%, #1a3c6e 100%);
+            border: 3px solid #1a3c6e;
+            background: #1a3c6e;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
         }
 
         .trade-card-headshot {
@@ -3427,15 +3388,16 @@
 
         .trade-card-fantasy-logo {
             position: absolute;
-            bottom: 0;
-            right: calc(50% - 75px);
-            width: 36px;
-            height: 36px;
+            bottom: -4px;
+            right: -4px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            border: 2px solid #f5d442;
+            border: 2px solid #1a3c6e;
             background: white;
             padding: 2px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            z-index: 3;
         }
 
         .trade-card-fantasy-logo img {
@@ -3445,30 +3407,76 @@
             border-radius: 50%;
         }
 
-        /* Player name banner */
-        .trade-card-name-banner {
-            background: #f5d442;
-            padding: 0.4rem 0.75rem;
+        /* Name bars extending from headshot */
+        .trade-card-name-section {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            justify-content: center;
+            margin-left: -10px;
+            padding-top: 8px;
+            flex: 1;
         }
 
-        .trade-card-name {
-            font-size: 1rem;
-            font-weight: 900;
-            color: #1a3c6e;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .trade-card-position-badge {
+        .trade-card-name-bar {
             background: #1a3c6e;
             color: white;
-            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 0.2rem 0.5rem 0.2rem 1rem;
+            margin-bottom: 2px;
+            clip-path: polygon(0 0, 100% 0, 95% 100%, 0 100%);
+        }
+
+        .trade-card-name-bar.first-name {
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+        }
+
+        .trade-card-name-bar.last-name {
+            font-size: 0.95rem;
+            letter-spacing: 1.5px;
+        }
+
+        /* MLB logo below name */
+        .trade-card-mlb-logo {
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            padding: 2px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 4px;
+            margin-left: 0.5rem;
+            border: 2px solid #1a3c6e;
+        }
+
+        .trade-card-mlb-logo img {
+            width: 85%;
+            height: 85%;
+            object-fit: contain;
+        }
+
+        .trade-card-mlb-logo.fa-logo {
+            font-size: 0.65rem;
             font-weight: bold;
-            padding: 0.15rem 0.4rem;
-            border-radius: 3px;
+            color: #1a3c6e;
+        }
+
+        /* Position rank in bottom right of header */
+        .trade-card-position-rank {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: #1a3c6e;
+            color: #f5d442;
+            font-weight: 900;
+            font-size: 0.9rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            border: 2px solid #1a3c6e;
         }
 
         /* Stats section */
@@ -27817,17 +27825,17 @@
             const fantasyTeam = tradeAnalyzerData.teams[teamKey];
             const fantasyTeamLogo = fantasyTeam?.team_logo ? fixTeamLogo(fantasyTeam.team_logo) : '';
 
-            // Build baseball card HTML
+            // Split player name into first and last
+            const nameParts = player.name.split(' ');
+            const firstName = nameParts[0] || '';
+            const lastName = nameParts.slice(1).join(' ') || '';
+
+            // Build baseball card HTML - Fleer style
             contentEl.innerHTML = `
                 <div class="trade-player-card-inner">
-                    <!-- Photo Section -->
-                    <div class="trade-card-photo-section">
-                        <div class="trade-card-top-row">
-                            <div class="trade-card-mlb-logo ${!mlbLogoUrl ? 'fa-logo' : ''}">
-                                ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}">` : 'FA'}
-                            </div>
-                            <div class="trade-card-number">${positionRank || primaryPos}</div>
-                        </div>
+                    <!-- Header Section - Fleer style -->
+                    <div class="trade-card-header-section">
+                        <!-- Headshot on left -->
                         <div class="trade-card-headshot-wrapper">
                             <div class="trade-card-headshot-container">
                                 <img src="${headshot}" class="trade-card-headshot" alt="${player.name}" onerror="this.src='${placeholderImg}'">
@@ -27838,26 +27846,23 @@
                             </div>
                             ` : ''}
                         </div>
-                    </div>
 
-                    <!-- Name Banner -->
-                    <div class="trade-card-name-banner">
-                        <span class="trade-card-name">${player.name}</span>
-                        <span class="trade-card-position-badge">${primaryPos}</span>
+                        <!-- Name bars extending from headshot -->
+                        <div class="trade-card-name-section">
+                            <div class="trade-card-name-bar first-name">${firstName}</div>
+                            <div class="trade-card-name-bar last-name">${lastName}</div>
+                            <!-- MLB logo below name -->
+                            <div class="trade-card-mlb-logo ${!mlbLogoUrl ? 'fa-logo' : ''}">
+                                ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}">` : 'FA'}
+                            </div>
+                        </div>
+
+                        <!-- Position rank in bottom right -->
+                        ${positionRank ? `<div class="trade-card-position-rank">${positionRank}</div>` : ''}
                     </div>
 
                     <!-- Stats Section -->
                     <div class="trade-card-stats-section">
-                        <!-- Team and positions row -->
-                        <div class="trade-card-team-row">
-                            <div class="trade-card-team-info">
-                                ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="">` : ''}
-                                <span>${mlbTeamText}</span>
-                            </div>
-                            <div class="trade-card-positions">
-                                ${positionBadges}
-                            </div>
-                        </div>
 
                         <!-- Value boxes -->
                         <div class="trade-card-values-row">
