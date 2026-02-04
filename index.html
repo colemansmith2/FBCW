@@ -12612,18 +12612,19 @@
             color: var(--retro-cream);
             text-align: center;
             padding: 0.5rem 0.25rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
             letter-spacing: 0.5px;
         }
 
         .scoreboard-innings-table tbody tr:first-child td {
-            border-top: 2px solid rgba(255, 255, 255, 0.12);
+            border-top: 2px solid rgba(255, 255, 255, 0.25);
         }
 
-        /* Team info cell (logo + name + manager) */
+        /* Team info cell (logo + name + manager) - no grid lines on this cell */
         .scoreboard-innings-table td.team-cell {
             text-align: left;
             padding: 0.4rem 0.75rem;
+            border-left: none;
         }
 
         .scoreboard-team-info {
@@ -12661,9 +12662,9 @@
         }
 
         .scoreboard-team-manager {
-            font-size: 0.65rem;
+            font-size: 0.55rem;
             font-family: inherit;
-            color: rgba(255, 255, 255, 0.45);
+            color: var(--retro-gold);
         }
 
         .scoreboard-innings-table tbody tr.winner .scoreboard-team-logo {
@@ -12684,7 +12685,7 @@
             color: var(--retro-gold);
             font-size: 0.55rem;
             font-weight: 700;
-            border-left: 2px solid rgba(255, 255, 255, 0.12);
+            border-left: 2px solid rgba(255, 255, 255, 0.3);
             min-width: 50px;
         }
 
@@ -33155,14 +33156,14 @@
             // Team 1 daily scores
             const team1DayCells = days.map(d => {
                 const score = team1Scores[d.date];
-                if (score === undefined || score === null) return '<td class="day-score no-games">-</td>';
+                if (score === undefined || score === null) return '<td class="day-score no-games">0</td>';
                 return `<td class="day-score">${score.toFixed(1)}</td>`;
             }).join('');
 
             // Team 2 daily scores
             const team2DayCells = days.map(d => {
                 const score = team2Scores[d.date];
-                if (score === undefined || score === null) return '<td class="day-score no-games">-</td>';
+                if (score === undefined || score === null) return '<td class="day-score no-games">0</td>';
                 return `<td class="day-score">${score.toFixed(1)}</td>`;
             }).join('');
 
