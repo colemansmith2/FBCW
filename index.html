@@ -12556,74 +12556,175 @@
             color: #fff;
         }
 
-        /* Main scoreboard area - team logos, names, scores */
+        /* Innings-style scoreboard area */
         .matchup-popup-scoreboard {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0;
-            padding: 1.25rem 1.5rem;
             background: #234a31;
             border-bottom: 2px solid #1a3a25;
-            position: relative;
+            padding: 0;
+            overflow-x: auto;
         }
 
-        .matchup-popup-team {
+        .scoreboard-innings-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        /* Header row with day labels */
+        .scoreboard-innings-table thead th {
+            font-family: 'Arcade Gamer', monospace;
+            font-size: 0.4rem;
+            font-weight: 600;
+            color: var(--retro-cream);
+            text-align: center;
+            padding: 0.4rem 0.25rem 0;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-bottom: none;
+            line-height: 1.1;
+        }
+
+        .scoreboard-innings-table thead th .day-date {
+            display: block;
+            font-family: inherit;
+            font-size: 0.35rem;
+            color: rgba(255, 255, 255, 0.45);
+            margin-top: 1px;
+        }
+
+        .scoreboard-innings-table thead th.team-col {
+            text-align: left;
+            padding-left: 0.75rem;
+            width: 160px;
+            min-width: 140px;
+        }
+
+        .scoreboard-innings-table thead th.total-col {
+            color: var(--retro-gold);
+            min-width: 50px;
+        }
+
+        /* Team rows */
+        .scoreboard-innings-table tbody td {
+            font-family: 'Arcade Gamer', monospace;
+            font-size: 0.5rem;
+            font-weight: 600;
+            color: var(--retro-cream);
+            text-align: center;
+            padding: 0.5rem 0.25rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            letter-spacing: 0.5px;
+        }
+
+        .scoreboard-innings-table tbody tr:first-child td {
+            border-top: 2px solid rgba(255, 255, 255, 0.12);
+        }
+
+        /* Team info cell (logo + name + manager) */
+        .scoreboard-innings-table td.team-cell {
+            text-align: left;
+            padding: 0.4rem 0.75rem;
+        }
+
+        .scoreboard-team-info {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 0.4rem;
-            flex: 1;
-            max-width: 220px;
+            gap: 0.5rem;
         }
 
-        .matchup-popup-team-logo {
-            width: 56px;
-            height: 56px;
+        .scoreboard-team-logo {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid rgba(255, 255, 255, 0.25);
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
             background: #1a3a25;
+            flex-shrink: 0;
         }
 
-        .matchup-popup-team.winner .matchup-popup-team-logo {
+        .scoreboard-team-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .scoreboard-team-name {
+            font-family: 'Arcade Gamer', monospace;
+            font-size: 0.45rem;
+            font-weight: 600;
+            color: #fff;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .scoreboard-team-manager {
+            font-size: 0.65rem;
+            font-family: inherit;
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .scoreboard-innings-table tbody tr.winner .scoreboard-team-logo {
             border-color: var(--retro-gold);
         }
 
-        .matchup-popup-team-name {
-            font-family: 'Arcade Gamer', monospace;
-            font-weight: 600;
-            font-size: 0.6rem;
-            text-align: center;
-            color: #fff;
-            letter-spacing: 1px;
-            text-transform: uppercase;
+        /* Daily score cells */
+        .scoreboard-innings-table td.day-score {
+            min-width: 36px;
         }
 
-        .matchup-popup-team-manager {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.5);
+        .scoreboard-innings-table td.day-score.no-games {
+            color: rgba(255, 255, 255, 0.2);
         }
 
-        .matchup-popup-team-score {
-            font-family: 'Arcade Gamer', monospace;
-            font-size: 1.6rem;
+        /* Total column */
+        .scoreboard-innings-table td.total-cell {
+            color: var(--retro-gold);
+            font-size: 0.55rem;
             font-weight: 700;
-            color: #fff;
-            letter-spacing: 2px;
+            border-left: 2px solid rgba(255, 255, 255, 0.12);
+            min-width: 50px;
         }
 
-        .matchup-popup-team.winner .matchup-popup-team-score {
+        .scoreboard-innings-table tbody tr.winner td.total-cell {
             color: var(--retro-gold);
         }
 
-        .matchup-popup-vs {
+        .scoreboard-innings-table tbody tr.loser td.total-cell {
+            color: var(--retro-cream);
+        }
+
+        /* Preseason fallback (no daily data) */
+        .scoreboard-preseason-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            padding: 1rem 1.5rem;
+        }
+
+        .scoreboard-preseason-team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            flex: 1;
+        }
+
+        .scoreboard-preseason-score {
+            font-family: 'Arcade Gamer', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .scoreboard-preseason-vs {
             font-family: 'Arcade Gamer', monospace;
             font-size: 0.7rem;
-            font-weight: 600;
             color: rgba(255, 255, 255, 0.35);
             letter-spacing: 2px;
-            padding: 0 0.75rem;
         }
 
         /* Scoreboard body - two team columns */
@@ -12804,20 +12905,20 @@
             margin-bottom: 0.15rem;
         }
 
-        .player-card-pos-badge.pos-C { color: var(--pos-c-dark); background-color: var(--pos-c-light); }
-        .player-card-pos-badge.pos-1B { color: var(--pos-1b-dark); background-color: var(--pos-1b-light); }
-        .player-card-pos-badge.pos-2B { color: var(--pos-2b-dark); background-color: var(--pos-2b-light); }
-        .player-card-pos-badge.pos-3B { color: var(--pos-3b-dark); background-color: var(--pos-3b-light); }
-        .player-card-pos-badge.pos-SS { color: var(--pos-ss-dark); background-color: var(--pos-ss-light); }
+        .player-card-pos-badge.pos-C { color: var(--pos-c-dark); background-color: #fff; }
+        .player-card-pos-badge.pos-1B { color: var(--pos-1b-dark); background-color: #fff; }
+        .player-card-pos-badge.pos-2B { color: var(--pos-2b-dark); background-color: #fff; }
+        .player-card-pos-badge.pos-3B { color: var(--pos-3b-dark); background-color: #fff; }
+        .player-card-pos-badge.pos-SS { color: var(--pos-ss-dark); background-color: #fff; }
         .player-card-pos-badge.pos-OF,
         .player-card-pos-badge.pos-LF,
         .player-card-pos-badge.pos-CF,
-        .player-card-pos-badge.pos-RF { color: var(--pos-of-dark); background-color: var(--pos-of-light); }
+        .player-card-pos-badge.pos-RF { color: var(--pos-of-dark); background-color: #fff; }
         .player-card-pos-badge.pos-DH,
-        .player-card-pos-badge.pos-Util { color: var(--pos-dh-dark); background-color: var(--pos-dh-light); }
-        .player-card-pos-badge.pos-SP { color: var(--pos-sp-dark); background-color: var(--pos-sp-light); }
-        .player-card-pos-badge.pos-RP { color: var(--pos-rp-dark); background-color: var(--pos-rp-light); }
-        .player-card-pos-badge.pos-P { color: var(--pos-p-dark); background-color: var(--pos-p-light); }
+        .player-card-pos-badge.pos-Util { color: var(--pos-dh-dark); background-color: #fff; }
+        .player-card-pos-badge.pos-SP { color: var(--pos-sp-dark); background-color: #fff; }
+        .player-card-pos-badge.pos-RP { color: var(--pos-rp-dark); background-color: #fff; }
+        .player-card-pos-badge.pos-P { color: var(--pos-p-dark); background-color: #fff; }
 
         /* Player name on card */
         .player-card-name {
@@ -12894,18 +12995,37 @@
                 grid-template-columns: 1fr;
             }
 
-            .matchup-popup-scoreboard {
-                gap: 0;
-                padding: 1rem;
+            .scoreboard-innings-table thead th {
+                font-size: 0.35rem;
+                padding: 0.3rem 0.15rem 0;
             }
 
-            .matchup-popup-team-logo {
-                width: 44px;
-                height: 44px;
+            .scoreboard-innings-table thead th.team-col {
+                min-width: 100px;
+                width: 100px;
+                padding-left: 0.4rem;
             }
 
-            .matchup-popup-team-score {
-                font-size: 1.2rem;
+            .scoreboard-innings-table tbody td {
+                font-size: 0.4rem;
+                padding: 0.4rem 0.15rem;
+            }
+
+            .scoreboard-team-logo {
+                width: 24px;
+                height: 24px;
+            }
+
+            .scoreboard-team-name {
+                font-size: 0.35rem;
+            }
+
+            .scoreboard-innings-table td.team-cell {
+                padding: 0.3rem 0.4rem;
+            }
+
+            .scoreboard-team-info {
+                gap: 0.3rem;
             }
 
             .matchup-popup-player-card {
@@ -33002,6 +33122,116 @@
             }).join('');
         }
 
+        // Load daily scores data
+        let dailyScoresData = null;
+        async function loadDailyScores() {
+            if (dailyScoresData) return dailyScoresData;
+            try {
+                const response = await fetch('data/current_season/daily_scores.json');
+                if (response.ok) {
+                    dailyScoresData = await response.json();
+                    return dailyScoresData;
+                }
+            } catch (e) {
+                console.log('Could not load daily scores');
+            }
+            return null;
+        }
+
+        // Build innings-style scoreboard HTML
+        function renderInningsScoreboard(matchup, dailyData) {
+            const week = matchup.week;
+            const weekData = dailyData?.weeks?.[String(week)];
+            const days = weekData?.days || [];
+            const teamScores = weekData?.team_scores || {};
+            const team1Scores = teamScores[matchup.team1.team_key] || {};
+            const team2Scores = teamScores[matchup.team2.team_key] || {};
+            const team1Winner = matchup.team1.score > matchup.team2.score;
+            const team2Winner = matchup.team2.score > matchup.team1.score;
+
+            // Day column headers
+            const dayHeaders = days.map(d =>
+                `<th><span>${d.day_of_week}</span><span class="day-date">${d.display_date}</span></th>`
+            ).join('');
+
+            // Team 1 daily scores
+            const team1DayCells = days.map(d => {
+                const score = team1Scores[d.date];
+                if (score === undefined || score === null) return '<td class="day-score no-games">-</td>';
+                return `<td class="day-score">${score.toFixed(1)}</td>`;
+            }).join('');
+
+            // Team 2 daily scores
+            const team2DayCells = days.map(d => {
+                const score = team2Scores[d.date];
+                if (score === undefined || score === null) return '<td class="day-score no-games">-</td>';
+                return `<td class="day-score">${score.toFixed(1)}</td>`;
+            }).join('');
+
+            return `
+                <table class="scoreboard-innings-table">
+                    <thead>
+                        <tr>
+                            <th class="team-col"></th>
+                            ${dayHeaders}
+                            <th class="total-col">TOTAL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="${team1Winner ? 'winner' : (team2Winner ? 'loser' : '')}">
+                            <td class="team-cell">
+                                <div class="scoreboard-team-info">
+                                    <img src="${matchup.team1.logo}" class="scoreboard-team-logo" alt="" onerror="this.src='league_logo.png'">
+                                    <div class="scoreboard-team-text">
+                                        <div class="scoreboard-team-name">${matchup.team1.name}</div>
+                                        <div class="scoreboard-team-manager">${capitalizeManagerName(matchup.team1.manager)}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            ${team1DayCells}
+                            <td class="total-cell">${matchup.team1.score.toFixed(1)}</td>
+                        </tr>
+                        <tr class="${team2Winner ? 'winner' : (team1Winner ? 'loser' : '')}">
+                            <td class="team-cell">
+                                <div class="scoreboard-team-info">
+                                    <img src="${matchup.team2.logo}" class="scoreboard-team-logo" alt="" onerror="this.src='league_logo.png'">
+                                    <div class="scoreboard-team-text">
+                                        <div class="scoreboard-team-name">${matchup.team2.name}</div>
+                                        <div class="scoreboard-team-manager">${capitalizeManagerName(matchup.team2.manager)}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            ${team2DayCells}
+                            <td class="total-cell">${matchup.team2.score.toFixed(1)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // Fallback scoreboard when no daily data exists (preseason)
+        function renderPreseasonScoreboard(matchup) {
+            const team1Winner = matchup.team1.score > matchup.team2.score;
+            const team2Winner = matchup.team2.score > matchup.team1.score;
+            return `
+                <div class="scoreboard-preseason-row">
+                    <div class="scoreboard-preseason-team">
+                        <img src="${matchup.team1.logo}" class="scoreboard-team-logo" alt="" onerror="this.src='league_logo.png'" style="width:48px;height:48px;">
+                        <div class="scoreboard-team-name">${matchup.team1.name}</div>
+                        <div class="scoreboard-team-manager">${capitalizeManagerName(matchup.team1.manager)}</div>
+                        <div class="scoreboard-preseason-score" style="${team1Winner ? 'color:var(--retro-gold)' : ''}">${matchup.team1.score.toFixed(1)}</div>
+                    </div>
+                    <div class="scoreboard-preseason-vs">VS</div>
+                    <div class="scoreboard-preseason-team">
+                        <img src="${matchup.team2.logo}" class="scoreboard-team-logo" alt="" onerror="this.src='league_logo.png'" style="width:48px;height:48px;">
+                        <div class="scoreboard-team-name">${matchup.team2.name}</div>
+                        <div class="scoreboard-team-manager">${capitalizeManagerName(matchup.team2.manager)}</div>
+                        <div class="scoreboard-preseason-score" style="${team2Winner ? 'color:var(--retro-gold)' : ''}">${matchup.team2.score.toFixed(1)}</div>
+                    </div>
+                </div>
+            `;
+        }
+
         // Matchup Popup Functions
         async function openMatchupPopup(matchupIdx) {
             const matchup = currentMatchupsData[matchupIdx];
@@ -33014,25 +33244,17 @@
 
             weekSpan.textContent = matchup.week;
 
-            const team1Winner = matchup.team1.score > matchup.team2.score;
-            const team2Winner = matchup.team2.score > matchup.team1.score;
+            // Try to load daily scores for innings-style display
+            const dailyData = await loadDailyScores();
+            const weekData = dailyData?.weeks?.[String(matchup.week)];
+            const hasDailyData = weekData && weekData.days && weekData.days.length > 0 &&
+                Object.keys(weekData.team_scores || {}).length > 0;
 
-            // Render scoreboard
-            scoreboard.innerHTML = `
-                <div class="matchup-popup-team ${team1Winner ? 'winner' : ''}">
-                    <img src="${matchup.team1.logo}" class="matchup-popup-team-logo" alt="" onerror="this.src='league_logo.png'">
-                    <div class="matchup-popup-team-name">${matchup.team1.name}</div>
-                    <div class="matchup-popup-team-manager">${capitalizeManagerName(matchup.team1.manager)}</div>
-                    <div class="matchup-popup-team-score">${matchup.team1.score.toFixed(1)}</div>
-                </div>
-                <div class="matchup-popup-vs">VS</div>
-                <div class="matchup-popup-team ${team2Winner ? 'winner' : ''}">
-                    <img src="${matchup.team2.logo}" class="matchup-popup-team-logo" alt="" onerror="this.src='league_logo.png'">
-                    <div class="matchup-popup-team-name">${matchup.team2.name}</div>
-                    <div class="matchup-popup-team-manager">${capitalizeManagerName(matchup.team2.manager)}</div>
-                    <div class="matchup-popup-team-score">${matchup.team2.score.toFixed(1)}</div>
-                </div>
-            `;
+            if (hasDailyData) {
+                scoreboard.innerHTML = renderInningsScoreboard(matchup, dailyData);
+            } else {
+                scoreboard.innerHTML = renderPreseasonScoreboard(matchup);
+            }
 
             // Load player and transaction data for this week
             body.innerHTML = '<div style="text-align: center; padding: 2rem; grid-column: 1/-1; color: rgba(255,255,255,0.5); font-family: Arcade Gamer, monospace; font-size: 0.6rem; letter-spacing: 1px;">LOADING...</div>';
