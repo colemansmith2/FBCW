@@ -12696,36 +12696,6 @@
             color: var(--retro-cream);
         }
 
-        /* Preseason fallback (no daily data) */
-        .scoreboard-preseason-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1.5rem;
-            padding: 1rem 1.5rem;
-        }
-
-        .scoreboard-preseason-team {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.3rem;
-            flex: 1;
-        }
-
-        .scoreboard-preseason-score {
-            font-family: 'Arcade Gamer', monospace;
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .scoreboard-preseason-vs {
-            font-family: 'Arcade Gamer', monospace;
-            font-size: 0.7rem;
-            color: rgba(255, 255, 255, 0.35);
-            letter-spacing: 2px;
-        }
 
         /* Scoreboard body - two team columns */
         .matchup-popup-body {
@@ -33138,11 +33108,39 @@
             return null;
         }
 
+        // Generate default week days from a known start date
+        // MLB 2026 season starts March 26. Week 1 typically starts the Monday before or the Thursday of opening day.
+        // We use the league's actual schedule when available, otherwise estimate a Mon-Sun week.
+        function generateWeekDays(week) {
+            // 2026 MLB season: Week 1 starts March 26 (Thursday), typical Yahoo weeks are Mon-Sun
+            // but Week 1 often starts on Opening Day. Estimate: Week 1 starts 2026-03-26.
+            const seasonStart = new Date(2026, 2, 26); // March 26, 2026 (month is 0-indexed)
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            // Estimate week start: week 1 starts at seasonStart, subsequent weeks are 7 days apart
+            const weekStart = new Date(seasonStart);
+            weekStart.setDate(weekStart.getDate() + (week - 1) * 7);
+
+            // Generate 7 days (default week length)
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(weekStart);
+                d.setDate(d.getDate() + i);
+                days.push({
+                    date: d.toISOString().split('T')[0],
+                    day_of_week: dayNames[d.getDay()],
+                    display_date: `${d.getMonth() + 1}/${d.getDate()}`
+                });
+            }
+            return days;
+        }
+
         // Build innings-style scoreboard HTML
         function renderInningsScoreboard(matchup, dailyData) {
             const week = matchup.week;
             const weekData = dailyData?.weeks?.[String(week)];
-            const days = weekData?.days || [];
+            // Use actual days from data, or generate estimated days
+            const days = (weekData?.days && weekData.days.length > 0) ? weekData.days : generateWeekDays(week);
             const teamScores = weekData?.team_scores || {};
             const team1Scores = teamScores[matchup.team1.team_key] || {};
             const team2Scores = teamScores[matchup.team2.team_key] || {};
@@ -33209,29 +33207,6 @@
             `;
         }
 
-        // Fallback scoreboard when no daily data exists (preseason)
-        function renderPreseasonScoreboard(matchup) {
-            const team1Winner = matchup.team1.score > matchup.team2.score;
-            const team2Winner = matchup.team2.score > matchup.team1.score;
-            return `
-                <div class="scoreboard-preseason-row">
-                    <div class="scoreboard-preseason-team">
-                        <img src="${matchup.team1.logo}" class="scoreboard-team-logo" alt="" onerror="this.src='league_logo.png'" style="width:48px;height:48px;">
-                        <div class="scoreboard-team-name">${matchup.team1.name}</div>
-                        <div class="scoreboard-team-manager">${capitalizeManagerName(matchup.team1.manager)}</div>
-                        <div class="scoreboard-preseason-score" style="${team1Winner ? 'color:var(--retro-gold)' : ''}">${matchup.team1.score.toFixed(1)}</div>
-                    </div>
-                    <div class="scoreboard-preseason-vs">VS</div>
-                    <div class="scoreboard-preseason-team">
-                        <img src="${matchup.team2.logo}" class="scoreboard-team-logo" alt="" onerror="this.src='league_logo.png'" style="width:48px;height:48px;">
-                        <div class="scoreboard-team-name">${matchup.team2.name}</div>
-                        <div class="scoreboard-team-manager">${capitalizeManagerName(matchup.team2.manager)}</div>
-                        <div class="scoreboard-preseason-score" style="${team2Winner ? 'color:var(--retro-gold)' : ''}">${matchup.team2.score.toFixed(1)}</div>
-                    </div>
-                </div>
-            `;
-        }
-
         // Matchup Popup Functions
         async function openMatchupPopup(matchupIdx) {
             const matchup = currentMatchupsData[matchupIdx];
@@ -33244,17 +33219,9 @@
 
             weekSpan.textContent = matchup.week;
 
-            // Try to load daily scores for innings-style display
+            // Always render innings-style scoreboard (loads daily data if available, shows dashes otherwise)
             const dailyData = await loadDailyScores();
-            const weekData = dailyData?.weeks?.[String(matchup.week)];
-            const hasDailyData = weekData && weekData.days && weekData.days.length > 0 &&
-                Object.keys(weekData.team_scores || {}).length > 0;
-
-            if (hasDailyData) {
-                scoreboard.innerHTML = renderInningsScoreboard(matchup, dailyData);
-            } else {
-                scoreboard.innerHTML = renderPreseasonScoreboard(matchup);
-            }
+            scoreboard.innerHTML = renderInningsScoreboard(matchup, dailyData);
 
             // Load player and transaction data for this week
             body.innerHTML = '<div style="text-align: center; padding: 2rem; grid-column: 1/-1; color: rgba(255,255,255,0.5); font-family: Arcade Gamer, monospace; font-size: 0.6rem; letter-spacing: 1px;">LOADING...</div>';
