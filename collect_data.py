@@ -18,7 +18,7 @@ import os
 import re
 import time
 import unicodedata
-from datetime import datetime, timedelta, date
+from datetime import datetime, date, timedelta
 from typing import List, Dict, Optional, Tuple
 from yahoo_oauth import OAuth2
 from yahoo_fantasy_api import Game, League
@@ -39,7 +39,7 @@ except ImportError:
 # =============================================================================
 
 CURRENT_SEASON = 2026
-HISTORICAL_SEASONS = [2019, 2020, 2021, 2022, 2023, 2024, 2025]
+HISTORICAL_SEASONS = [2019, 2020, 2021, 2022, 2023, 2024]
 DATA_DIR = "data"
 
 # Override league IDs for specific years (if needed)
@@ -393,118 +393,15 @@ def _build_scoring_df(lg: League, settings: Dict) -> pd.DataFrame:
 # =============================================================================
 
 def setup_oauth():
-    """Initialize OAuth for Yahoo Fantasy API.
-    
-    Creates oauth2.json from environment variables if running in CI/CD,
-    or uses existing file if running locally.
-    """
+    """Initialize OAuth for Yahoo Fantasy API"""
     script_dir = os.path.dirname(os.path.abspath(__file__))
     oauth_path = os.path.join(script_dir, 'oauth2.json')
-    
-    # Check for environment variables (GitHub Actions)
-    consumer_key = os.environ.get('YAHOO_CONSUMER_KEY')
-    consumer_secret = os.environ.get('YAHOO_CONSUMER_SECRET')
-    access_token = os.environ.get('YAHOO_ACCESS_TOKEN')
-    refresh_token = os.environ.get('YAHOO_REFRESH_TOKEN')
-    token_time = os.environ.get('YAHOO_TOKEN_TIME')
-    
-    # If we have environment variables, create oauth2.json
-    if all([consumer_key, consumer_secret, access_token, refresh_token, token_time]):
-        print("Creating oauth2.json from environment variables...")
-        oauth_data = {
-            "consumer_key": consumer_key,
-            "consumer_secret": consumer_secret,
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "token_time": float(token_time),
-            "token_type": "bearer"
-        }
-        with open(oauth_path, 'w') as f:
-            json.dump(oauth_data, f, indent=2)
-        print(f"  ✓ Created {oauth_path}")
     
     if not os.path.exists(oauth_path):
         raise FileNotFoundError(f"oauth2.json not found at: {oauth_path}")
     
     oauth = OAuth2(None, None, from_file=oauth_path)
-    
-    # Check if token was refreshed and update GitHub secrets if running in CI
-    if os.environ.get('GITHUB_PAT') and os.environ.get('GITHUB_REPOSITORY'):
-        try:
-            with open(oauth_path, 'r') as f:
-                new_oauth_data = json.load(f)
-            
-            # Check if tokens changed
-            if (new_oauth_data.get('access_token') != access_token or 
-                new_oauth_data.get('refresh_token') != refresh_token):
-                print("Tokens were refreshed, updating GitHub secrets...")
-                update_github_secrets(new_oauth_data)
-        except Exception as e:
-            print(f"  Warning: Could not check/update GitHub secrets: {e}")
-    
     return oauth
-
-def update_github_secrets(oauth_data):
-    """Update GitHub repository secrets with new OAuth tokens."""
-    try:
-        from base64 import b64encode
-        from nacl import encoding, public
-        import requests
-        
-        github_token = os.environ.get('GITHUB_PAT')
-        repo = os.environ.get('GITHUB_REPOSITORY')
-        
-        if not github_token or not repo:
-            print("  Missing GITHUB_PAT or GITHUB_REPOSITORY")
-            return
-        
-        headers = {
-            'Authorization': f'token {github_token}',
-            'Accept': 'application/vnd.github.v3+json'
-        }
-        
-        # Get repository public key for encrypting secrets
-        key_url = f'https://api.github.com/repos/{repo}/actions/secrets/public-key'
-        key_response = requests.get(key_url, headers=headers)
-        key_response.raise_for_status()
-        key_data = key_response.json()
-        
-        public_key = public.PublicKey(key_data['key'].encode('utf-8'), encoding.Base64Encoder())
-        
-        def encrypt_secret(secret_value):
-            """Encrypt a secret using the repository's public key."""
-            sealed_box = public.SealedBox(public_key)
-            encrypted = sealed_box.encrypt(secret_value.encode('utf-8'))
-            return b64encode(encrypted).decode('utf-8')
-        
-        # Update secrets
-        secrets_to_update = {
-            'YAHOO_ACCESS_TOKEN': oauth_data.get('access_token', ''),
-            'YAHOO_REFRESH_TOKEN': oauth_data.get('refresh_token', ''),
-            'YAHOO_TOKEN_TIME': str(oauth_data.get('token_time', ''))
-        }
-        
-        for secret_name, secret_value in secrets_to_update.items():
-            if secret_value:
-                secret_url = f'https://api.github.com/repos/{repo}/actions/secrets/{secret_name}'
-                encrypted_value = encrypt_secret(secret_value)
-                response = requests.put(
-                    secret_url,
-                    headers=headers,
-                    json={
-                        'encrypted_value': encrypted_value,
-                        'key_id': key_data['key_id']
-                    }
-                )
-                response.raise_for_status()
-                print(f"  ✓ Updated {secret_name}")
-        
-        print("  ✓ GitHub secrets updated successfully")
-        
-    except ImportError:
-        print("  Warning: pynacl not installed, cannot update GitHub secrets")
-    except Exception as e:
-        print(f"  Warning: Failed to update GitHub secrets: {e}")
 
 def get_league_id_by_name(oauth, year: int) -> str:
     """Get league ID for a specific year"""
@@ -628,24 +525,6 @@ def get_standings(oauth, year: int) -> List[Dict]:
     standings = lg.standings()
     teams = lg.teams()
 
-    def safe_int(value, default=0):
-        """Safely convert to int, handling empty strings and None."""
-        if value is None or value == '':
-            return default
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            return default
-    
-    def safe_float(value, default=0.0):
-        """Safely convert to float, handling empty strings and None."""
-        if value is None or value == '':
-            return default
-        try:
-            return float(value)
-        except (ValueError, TypeError):
-            return default
-
     results = []
     for standing in standings:
         team_key = standing['team_key']
@@ -654,19 +533,17 @@ def get_standings(oauth, year: int) -> List[Dict]:
         raw_manager = team_info['managers'][0]['manager'].get('nickname', 'Unknown Manager')
         manager = normalize_manager_name(raw_manager, year, team_name)
         
-        outcome_totals = standing.get('outcome_totals', {})
-        
         results.append({
-            'rank': safe_int(standing.get('rank'), 0),
+            'rank': int(standing.get('rank', 0)),
             'team_key': team_key,
             'team_name': team_name,
             'manager': manager,
-            'wins': safe_int(outcome_totals.get('wins'), 0),
-            'losses': safe_int(outcome_totals.get('losses'), 0),
-            'ties': safe_int(outcome_totals.get('ties'), 0),
-            'win_pct': safe_float(outcome_totals.get('percentage'), 0.0),
-            'points_for': safe_float(standing.get('points_for'), 0.0),
-            'points_against': safe_float(standing.get('points_against'), 0.0)
+            'wins': int(standing.get('outcome_totals', {}).get('wins', 0)),
+            'losses': int(standing.get('outcome_totals', {}).get('losses', 0)),
+            'ties': int(standing.get('outcome_totals', {}).get('ties', 0)),
+            'win_pct': float(standing.get('outcome_totals', {}).get('percentage', 0)),
+            'points_for': float(standing.get('points_for', 0)),
+            'points_against': float(standing.get('points_against', 0))
         })
     
     return results
@@ -903,287 +780,6 @@ def get_rosters(oauth, year: int) -> Dict[str, List[Dict]]:
             rosters[team_key] = []
     
     return rosters
-
-
-def get_detailed_rosters(oauth, year: int, transactions: List[Dict] = None) -> Dict:
-    """
-    Get detailed roster data for all teams, including acquisition info.
-    Returns a dict keyed by team_key with full player details.
-    """
-    gm = Game(oauth, 'mlb')
-    league_id = get_league_id_by_name(oauth, year)
-    
-    if not league_id:
-        return {}
-    
-    lg = League(oauth, league_id)
-    teams_data = lg.teams()
-    
-    # Build acquisition lookup from transactions
-    # Maps player_name (lowercase) -> acquisition info
-    acquisition_map = {}
-    if transactions:
-        for trans in transactions:
-            trans_type = trans.get('type', '')
-            timestamp = trans.get('timestamp', '')
-            
-            for player in trans.get('players', []):
-                player_name = player.get('player_name', '').lower().strip()
-                player_trans_type = player.get('transaction_type', '')
-                
-                if not player_name:
-                    continue
-                
-                # Determine acquisition type
-                if trans_type == 'trade':
-                    acq_type = 'Trade'
-                elif player_trans_type == 'add' and player.get('source_type') == 'freeagents':
-                    acq_type = 'Free Agent'
-                elif player_trans_type == 'add' and player.get('source_type') == 'waivers':
-                    acq_type = 'Waivers'
-                elif player_trans_type == 'add':
-                    acq_type = 'Add'
-                else:
-                    continue  # Skip drops
-                
-                # Only store if this is an add to a team
-                dest_team = player.get('destination_team_key', '')
-                if dest_team:
-                    key = (player_name, dest_team)
-                    # Keep most recent acquisition
-                    if key not in acquisition_map or timestamp > acquisition_map[key].get('timestamp', ''):
-                        acquisition_map[key] = {
-                            'type': acq_type,
-                            'timestamp': timestamp,
-                            'from_team': player.get('source_team_name', '')
-                        }
-    
-    rosters_output = {
-        'generated_at': datetime.now().isoformat(),
-        'year': year,
-        'teams': {}
-    }
-    
-    for team_key, team_info in teams_data.items():
-        team_name = team_info.get('name', 'Unknown Team')
-        raw_manager = team_info['managers'][0]['manager'].get('nickname', 'Unknown Manager')
-        manager = normalize_manager_name(raw_manager, year, team_name)
-        team_logo = team_info.get('team_logos', [{}])[0].get('team_logo', {}).get('url', '')
-        
-        print(f"    Getting detailed roster for {team_name}...")
-        
-        try:
-            team_obj = lg.to_team(team_key)
-            roster = team_obj.roster(week=None)
-            
-            players = []
-            for player in roster:
-                player_id = player.get('player_id', '')
-                name = player.get('name', '')
-                if isinstance(name, dict):
-                    name = name.get('full', '')
-                
-                position_type = player.get('position_type', '')
-                eligible_positions = player.get('eligible_positions', [])
-                if isinstance(eligible_positions, str):
-                    eligible_positions = [eligible_positions]
-                
-                primary_position = eligible_positions[0] if eligible_positions else ''
-                selected_position = player.get('selected_position', '')
-                
-                # Get headshot URL
-                headshot = player.get('headshot', {})
-                headshot_url = ''
-                if isinstance(headshot, dict):
-                    headshot_url = headshot.get('url', '')
-                elif isinstance(headshot, str):
-                    headshot_url = headshot
-                
-                # Determine acquisition type
-                player_name_lower = name.lower().strip()
-                acq_key = (player_name_lower, team_key)
-                acq_info = acquisition_map.get(acq_key, {})
-                acquisition_type = acq_info.get('type', 'Draft')  # Default to Draft if no transaction found
-                
-                players.append({
-                    'player_id': player_id,
-                    'name': name,
-                    'position_type': position_type,
-                    'eligible_positions': eligible_positions,
-                    'primary_position': primary_position,
-                    'selected_position': selected_position,
-                    'status': player.get('status', ''),
-                    'headshot_url': headshot_url,
-                    'acquisition_type': acquisition_type,
-                    'fantasy_points': 0,  # Will be updated when season starts
-                    'position_rank': None  # Will be updated when season starts
-                })
-            
-            rosters_output['teams'][team_key] = {
-                'team_key': team_key,
-                'team_name': team_name,
-                'manager': manager,
-                'team_logo': team_logo,
-                'players': players
-            }
-            
-        except Exception as e:
-            print(f"    ⚠ Could not get roster for {team_name}: {e}")
-            rosters_output['teams'][team_key] = {
-                'team_key': team_key,
-                'team_name': team_name,
-                'manager': manager,
-                'team_logo': team_logo,
-                'players': []
-            }
-    
-    return rosters_output
-
-
-def get_detailed_rosters_for_teams(oauth, year: int, team_keys: set, transactions: List[Dict] = None) -> Dict:
-    """
-    Get detailed roster data for ONLY the specified teams.
-    This is an optimized version that minimizes API calls by only fetching
-    rosters for teams that have had recent transactions.
-    
-    Args:
-        oauth: OAuth object
-        year: Season year
-        team_keys: Set of team keys to fetch rosters for
-        transactions: List of transactions for acquisition tracking
-    
-    Returns:
-        Dict with roster data for the specified teams only
-    """
-    if not team_keys:
-        return {'generated_at': datetime.now().isoformat(), 'year': year, 'teams': {}}
-    
-    gm = Game(oauth, 'mlb')
-    league_id = get_league_id_by_name(oauth, year)
-    
-    if not league_id:
-        return {}
-    
-    lg = League(oauth, league_id)
-    teams_data = lg.teams()
-    
-    # Build acquisition lookup from transactions
-    acquisition_map = {}
-    if transactions:
-        for trans in transactions:
-            trans_type = trans.get('type', '')
-            timestamp = trans.get('timestamp', '')
-            
-            for player in trans.get('players', []):
-                player_name = player.get('player_name', '').lower().strip()
-                player_trans_type = player.get('transaction_type', '')
-                
-                if not player_name:
-                    continue
-                
-                if trans_type == 'trade':
-                    acq_type = 'Trade'
-                elif player_trans_type == 'add' and player.get('source_type') == 'freeagents':
-                    acq_type = 'Free Agent'
-                elif player_trans_type == 'add' and player.get('source_type') == 'waivers':
-                    acq_type = 'Waivers'
-                elif player_trans_type == 'add':
-                    acq_type = 'Add'
-                else:
-                    continue
-                
-                dest_team = player.get('destination_team_key', '')
-                if dest_team:
-                    key = (player_name, dest_team)
-                    if key not in acquisition_map or timestamp > acquisition_map[key].get('timestamp', ''):
-                        acquisition_map[key] = {
-                            'type': acq_type,
-                            'timestamp': timestamp,
-                            'from_team': player.get('source_team_name', '')
-                        }
-    
-    rosters_output = {
-        'generated_at': datetime.now().isoformat(),
-        'year': year,
-        'teams': {}
-    }
-    
-    # Only process teams that are in our target set
-    for team_key, team_info in teams_data.items():
-        if team_key not in team_keys:
-            continue  # Skip teams that haven't changed
-            
-        team_name = team_info.get('name', 'Unknown Team')
-        raw_manager = team_info['managers'][0]['manager'].get('nickname', 'Unknown Manager')
-        manager = normalize_manager_name(raw_manager, year, team_name)
-        team_logo = team_info.get('team_logos', [{}])[0].get('team_logo', {}).get('url', '')
-        
-        print(f"    Refreshing roster for {team_name}...")
-        
-        try:
-            team_obj = lg.to_team(team_key)
-            roster = team_obj.roster(week=None)
-            
-            players = []
-            for player in roster:
-                player_id = player.get('player_id', '')
-                name = player.get('name', '')
-                if isinstance(name, dict):
-                    name = name.get('full', '')
-                
-                position_type = player.get('position_type', '')
-                eligible_positions = player.get('eligible_positions', [])
-                if isinstance(eligible_positions, str):
-                    eligible_positions = [eligible_positions]
-                
-                primary_position = eligible_positions[0] if eligible_positions else ''
-                selected_position = player.get('selected_position', '')
-                
-                headshot = player.get('headshot', {})
-                headshot_url = ''
-                if isinstance(headshot, dict):
-                    headshot_url = headshot.get('url', '')
-                elif isinstance(headshot, str):
-                    headshot_url = headshot
-                
-                player_name_lower = name.lower().strip()
-                acq_key = (player_name_lower, team_key)
-                acq_info = acquisition_map.get(acq_key, {})
-                acquisition_type = acq_info.get('type', 'Draft')
-                
-                players.append({
-                    'player_id': player_id,
-                    'name': name,
-                    'position_type': position_type,
-                    'eligible_positions': eligible_positions,
-                    'primary_position': primary_position,
-                    'selected_position': selected_position,
-                    'status': player.get('status', ''),
-                    'headshot_url': headshot_url,
-                    'acquisition_type': acquisition_type,
-                    'fantasy_points': 0,
-                    'position_rank': None
-                })
-            
-            rosters_output['teams'][team_key] = {
-                'team_key': team_key,
-                'team_name': team_name,
-                'manager': manager,
-                'team_logo': team_logo,
-                'players': players
-            }
-            
-        except Exception as e:
-            print(f"    ⚠ Could not get roster for {team_name}: {e}")
-            rosters_output['teams'][team_key] = {
-                'team_key': team_key,
-                'team_name': team_name,
-                'manager': manager,
-                'team_logo': team_logo,
-                'players': []
-            }
-    
-    return rosters_output
 
 def get_league_settings(oauth, year: int) -> Dict:
     """Fetch league settings, categorizing points based on unique Stat ID."""
@@ -1910,17 +1506,12 @@ def calculate_manager_stats(all_seasons_data: Dict) -> Dict:
             manager_stats[manager]['total_points_for'] += team['points_for']
             manager_stats[manager]['seasons_played'] += 1
             
-            # Only count championships, runner-ups, and playoff appearances for completed seasons
-            # (seasons where games have been played - check if wins + losses > 0)
-            season_has_games = team['wins'] + team['losses'] > 0
-            
-            if season_has_games:
-                if team['rank'] == 1:
-                    manager_stats[manager]['championships'] += 1
-                if team['rank'] == 2:
-                    manager_stats[manager]['runner_ups'] += 1
-                if team['rank'] <= 6:
-                    manager_stats[manager]['playoff_appearances'] += 1
+            if team['rank'] == 1:
+                manager_stats[manager]['championships'] += 1
+            if team['rank'] == 2:
+                manager_stats[manager]['runner_ups'] += 1
+            if team['rank'] <= 6:
+                manager_stats[manager]['playoff_appearances'] += 1
             
             manager_stats[manager]['season_history'].append({
                 'year': year,
@@ -2262,123 +1853,236 @@ def weekly_update():
     print("✓ Weekly update complete!")
     print("=" * 60)
 
-def update_top_scoring_day(oauth, current_season_dir: str):
+def collect_daily_scores(oauth, year: int, lg):
     """
-    Check yesterday's scores and update top_scoring_day.json if a new high was set.
-    This tracks the season's top single-day score by comparing cumulative totals.
-    
-    Output format for top_scoring_day.json:
+    Collect daily team fantasy point totals for the current week.
+
+    Uses the Yahoo API raw endpoint to fetch each team's roster with player stats
+    for each day of the current week, summing up fantasy points per team per day.
+
+    Saves to data/current_season/daily_scores.json with structure:
     {
-        "score": 52.3,
-        "team_key": "458.l.XXXXX.t.X",
-        "team_name": "Team Name",
-        "manager": "Manager Name", 
-        "date": "4/15"
+        "current_week": 5,
+        "weeks": {
+            "5": {
+                "start_date": "2026-03-30",
+                "end_date": "2026-04-05",
+                "days": [
+                    {"date": "2026-03-30", "day_of_week": "Mon", "display_date": "3/30"},
+                    ...
+                ],
+                "team_scores": {
+                    "469.l.4114.t.1": {
+                        "2026-03-30": 42.5,
+                        "2026-03-31": 31.2,
+                        ...
+                    }
+                }
+            }
+        }
     }
     """
-    top_scoring_file = f"{current_season_dir}/top_scoring_day.json"
-    cumulative_file = f"{current_season_dir}/cumulative_scores.json"
-    
-    # Load existing top score (if any)
-    existing_top = {'score': 0, 'team_key': '', 'team_name': '', 'manager': '', 'date': ''}
-    if os.path.exists(top_scoring_file):
+    print("\nCollecting daily scores...")
+
+    current_season_dir = f"{DATA_DIR}/current_season"
+    daily_scores_file = f"{current_season_dir}/daily_scores.json"
+
+    # Load existing daily scores
+    existing = {"current_week": 0, "weeks": {}}
+    if os.path.exists(daily_scores_file):
         try:
-            with open(top_scoring_file, 'r', encoding='utf-8') as f:
-                existing_top = json.load(f)
+            with open(daily_scores_file, 'r', encoding='utf-8') as f:
+                existing = json.load(f)
         except:
             pass
-    
-    # Get yesterday's date for display
-    yesterday = date.today() - timedelta(days=1)
-    yesterday_display = f"{yesterday.month}/{yesterday.day}"
-    
-    print("Checking top scoring day...")
-    
+
     try:
-        # Get current standings with points
-        standings = get_standings(oauth, CURRENT_SEASON)
-        teams = get_teams(oauth, CURRENT_SEASON)
-        
-        if not standings:
-            print("  ⚠ Could not get standings")
+        current_week = lg.current_week()
+        existing["current_week"] = current_week
+
+        # Get week date range
+        try:
+            week_start, week_end = lg.week_date_range(current_week)
+        except Exception as e:
+            print(f"  ⚠ Could not get week date range: {e}")
             return
-        
-        # Build team info map
-        team_info = {}
-        if teams:
-            for team in teams:
-                team_info[team['team_key']] = {
-                    'name': team.get('team_name', ''),
-                    'manager': team.get('manager', '')
-                }
-        
-        # Load yesterday's cumulative scores
-        yesterday_cumulative = {}
-        if os.path.exists(cumulative_file):
-            try:
-                with open(cumulative_file, 'r', encoding='utf-8') as f:
-                    yesterday_cumulative = json.load(f)
-            except:
-                pass
-        
-        # Get current cumulative scores from standings
-        current_cumulative = {}
-        for team in standings:
-            team_key = team.get('team_key', '')
-            points = float(team.get('points_for', 0) or 0)
-            if team_key:
-                current_cumulative[team_key] = points
-        
-        # Calculate daily scores (current cumulative - yesterday's cumulative)
-        if yesterday_cumulative:
-            daily_scores = {}
-            for team_key, current_points in current_cumulative.items():
-                yesterday_points = yesterday_cumulative.get(team_key, 0)
-                daily_score = current_points - yesterday_points
-                if daily_score > 0:
-                    daily_scores[team_key] = daily_score
-            
-            # Find highest daily score
-            if daily_scores:
-                top_team_key = max(daily_scores, key=daily_scores.get)
-                top_score = daily_scores[top_team_key]
-                
-                top_team_info = team_info.get(top_team_key, {})
-                print(f"  Yesterday's top: {top_team_info.get('name', 'Unknown')} with {top_score:.1f} pts")
-                
-                # Check if this beats the existing record
-                if top_score > existing_top.get('score', 0):
-                    existing_top = {
-                        'score': top_score,
-                        'team_key': top_team_key,
-                        'team_name': top_team_info.get('name', ''),
-                        'manager': top_team_info.get('manager', ''),
-                        'date': yesterday_display
-                    }
-                    
-                    with open(top_scoring_file, 'w', encoding='utf-8') as f:
-                        json.dump(existing_top, f, indent=2)
-                    print(f"  ✓ NEW RECORD! Updated top_scoring_day.json")
-                else:
-                    print(f"  Current record ({existing_top.get('score', 0):.1f} pts on {existing_top.get('date', 'N/A')}) still stands")
-            else:
-                print(f"  No scoring activity yesterday")
+
+        week_key = str(current_week)
+
+        # Build day list for this week
+        days = []
+        day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+        current_day = week_start
+        while current_day <= week_end:
+            days.append({
+                "date": current_day.strftime("%Y-%m-%d"),
+                "day_of_week": day_names[current_day.weekday()],
+                "display_date": f"{current_day.month}/{current_day.day}"
+            })
+            current_day += timedelta(days=1)
+
+        # Initialize or update week entry
+        if week_key not in existing["weeks"]:
+            existing["weeks"][week_key] = {
+                "start_date": week_start.strftime("%Y-%m-%d"),
+                "end_date": week_end.strftime("%Y-%m-%d"),
+                "days": days,
+                "team_scores": {}
+            }
         else:
-            print(f"  No previous cumulative data - will start tracking tomorrow")
-        
-        # Save current cumulative for tomorrow's comparison
-        with open(cumulative_file, 'w', encoding='utf-8') as f:
-            json.dump(current_cumulative, f, indent=2)
-        print(f"  ✓ Saved cumulative scores for tomorrow's comparison")
-        
+            # Update days in case they changed
+            existing["weeks"][week_key]["days"] = days
+
+        week_data = existing["weeks"][week_key]
+        teams = lg.teams()
+        today = date.today()
+
+        # Scoring settings - use the ones from collect_weekly_stats
+        batting_scoring = {
+            '1B': 2.6, '2B': 5.2, '3B': 7.8, 'HR': 10.4,
+            'RBI': 1.9, 'R': 1.9, 'BB': 2.6, 'HBP': 2.6,
+            'SB': 4.2, 'CS': -2.6, 'SO': -1, 'IBB': 0
+        }
+        pitching_scoring = {
+            'IP': 5, 'W': 4, 'L': -4, 'SV': 8, 'HLD': 4,
+            'ER': -3, 'HA': -1, 'BBA': -1, 'K': 3,
+            'QS': 4, 'CG': 5, 'ShO': 5, 'NH': 10
+        }
+
+        batting_stat_ids = {
+            '60': '1B', '61': '2B', '62': '3B', '63': 'HR',
+            '13': 'RBI', '12': 'R', '18': 'BB', '17': 'HBP',
+            '15': 'SB', '16': 'CS', '14': 'SO', '76': 'IBB'
+        }
+        pitching_stat_ids = {
+            '50': 'IP', '28': 'W', '29': 'L', '32': 'SV', '48': 'HLD',
+            '27': 'ER', '25': 'HA', '39': 'BBA', '42': 'K',
+            '63': 'QS', '34': 'CG', '35': 'ShO', '54': 'NH'
+        }
+
+        # Only fetch days that have already passed (or are today)
+        days_to_fetch = [d for d in days if d["date"] <= today.strftime("%Y-%m-%d")]
+
+        if not days_to_fetch:
+            print("  No days to fetch yet (week hasn't started)")
+            with open(daily_scores_file, 'w', encoding='utf-8') as f:
+                json.dump(existing, f, indent=2, ensure_ascii=False)
+            return
+
+        # For each team, fetch daily roster stats
+        for team_key in teams:
+            team_name = teams[team_key].get('name', team_key)
+
+            if team_key not in week_data["team_scores"]:
+                week_data["team_scores"][team_key] = {}
+
+            for day_info in days_to_fetch:
+                day_str = day_info["date"]
+
+                # Skip if we already have this day's score (unless it's today - re-fetch today)
+                if day_str in week_data["team_scores"][team_key] and day_str != today.strftime("%Y-%m-%d"):
+                    continue
+
+                try:
+                    # Use raw API: team/{team_key}/roster/players/stats;type=date;date=YYYY-MM-DD
+                    raw = lg.yhandler.get(
+                        f"team/{team_key}/roster/players/stats;type=date;date={day_str}"
+                    )
+
+                    # Parse the response to sum up fantasy points
+                    day_total = 0.0
+                    try:
+                        players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
+                        player_count = int(players_data.get('count', 0))
+
+                        for i in range(player_count):
+                            player_key = str(i)
+                            if player_key not in players_data:
+                                continue
+
+                            player = players_data[player_key]['player']
+
+                            # Check if player is on bench (BN) or injured list (IL/IL+/DL)
+                            selected_pos = ''
+                            try:
+                                pos_data = player[1]['selected_position']
+                                if isinstance(pos_data, list):
+                                    selected_pos = pos_data[1].get('position', '')
+                                elif isinstance(pos_data, dict):
+                                    selected_pos = pos_data.get('position', '')
+                            except (KeyError, IndexError):
+                                pass
+
+                            if selected_pos in ('BN', 'IL', 'IL+', 'DL', 'NA'):
+                                continue
+
+                            # Get player stats
+                            player_stats = {}
+                            try:
+                                stats_data = player[1].get('player_stats', {}).get('stats', [])
+                                if isinstance(stats_data, list):
+                                    for stat in stats_data:
+                                        stat_id = str(stat.get('stat', {}).get('stat_id', ''))
+                                        stat_value = stat.get('stat', {}).get('value', '0')
+                                        try:
+                                            player_stats[stat_id] = float(stat_value) if stat_value and stat_value != '-' else 0
+                                        except (ValueError, TypeError):
+                                            player_stats[stat_id] = 0
+                            except (KeyError, IndexError):
+                                pass
+
+                            # Determine if batter or pitcher based on position type
+                            position_type = ''
+                            try:
+                                for item in player[0]:
+                                    if isinstance(item, dict) and 'position_type' in item:
+                                        position_type = item['position_type']
+                                        break
+                            except:
+                                pass
+
+                            # Calculate fantasy points
+                            points = 0.0
+                            if position_type == 'P':
+                                for stat_id, yahoo_stat in pitching_stat_ids.items():
+                                    if stat_id in player_stats and yahoo_stat in pitching_scoring:
+                                        points += player_stats[stat_id] * pitching_scoring[yahoo_stat]
+                            else:
+                                for stat_id, yahoo_stat in batting_stat_ids.items():
+                                    if stat_id in player_stats and yahoo_stat in batting_scoring:
+                                        points += player_stats[stat_id] * batting_scoring[yahoo_stat]
+
+                            day_total += points
+                    except (KeyError, IndexError, TypeError):
+                        pass
+
+                    week_data["team_scores"][team_key][day_str] = round(day_total, 1)
+
+                except Exception as e:
+                    print(f"    ⚠ Could not fetch {team_name} for {day_str}: {e}")
+                    week_data["team_scores"][team_key][day_str] = 0
+
+            # Count days fetched for this team
+            fetched = len(week_data["team_scores"].get(team_key, {}))
+            print(f"  ✓ {team_name}: {fetched} days")
+
+        # Save
+        with open(daily_scores_file, 'w', encoding='utf-8') as f:
+            json.dump(existing, f, indent=2, ensure_ascii=False)
+
+        print(f"  ✓ Daily scores saved ({len(days_to_fetch)} days, {len(teams)} teams)")
+
     except Exception as e:
-        print(f"  ⚠ Could not update top scoring day: {e}")
+        print(f"  ⚠ Could not collect daily scores: {e}")
+        import traceback
+        traceback.print_exc()
+
 
 def quick_update():
     """
     Quick update - runs every 6 hours during the season.
     Updates teams.json (logos, names, managers), standings.json, current week scores,
-    recent transactions, and manager profiles if team info changed.
+    recent transactions, daily scores, and manager profiles if team info changed.
     """
     print("=" * 60)
     print(f"QUICK UPDATE - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -2439,30 +2143,25 @@ def quick_update():
     print("Updating current week scores...")
     try:
         current_week = lg.current_week()
+        scores = get_all_season_scores(oauth, CURRENT_SEASON, num_weeks=current_week)
         
-        # Handle preseason when current_week might be 0 or None
-        if not current_week or current_week < 1:
-            print("  ⚠ Season has not started yet, no scores to collect")
-        else:
-            scores = get_all_season_scores(oauth, CURRENT_SEASON, num_weeks=current_week)
-            
-            # Save all_scores.json
-            with open(f"{current_season_dir}/all_scores.json", 'w', encoding='utf-8') as f:
-                json.dump(scores, f, indent=2, ensure_ascii=False)
-            
-            # Save individual week files
-            scores_by_week = {}
-            for score in scores:
-                week = score['week']
-                if week not in scores_by_week:
-                    scores_by_week[week] = []
-                scores_by_week[week].append(score)
-            
-            for week, week_scores in scores_by_week.items():
-                with open(f"{current_season_dir}/week_{week}_scores.json", 'w', encoding='utf-8') as f:
-                    json.dump(week_scores, f, indent=2, ensure_ascii=False)
-            
-            print(f"  ✓ Scores updated through week {current_week}")
+        # Save all_scores.json
+        with open(f"{current_season_dir}/all_scores.json", 'w', encoding='utf-8') as f:
+            json.dump(scores, f, indent=2, ensure_ascii=False)
+        
+        # Save individual week files
+        scores_by_week = {}
+        for score in scores:
+            week = score['week']
+            if week not in scores_by_week:
+                scores_by_week[week] = []
+            scores_by_week[week].append(score)
+        
+        for week, week_scores in scores_by_week.items():
+            with open(f"{current_season_dir}/week_{week}_scores.json", 'w', encoding='utf-8') as f:
+                json.dump(week_scores, f, indent=2, ensure_ascii=False)
+        
+        print(f"  ✓ Scores updated through week {current_week}")
     except Exception as e:
         print(f"  ⚠ Could not update scores: {e}")
     
@@ -2499,111 +2198,26 @@ def quick_update():
     except Exception as e:
         print(f"  ⚠ Could not update transactions: {e}")
     
-    # 5. Update top scoring day tracker
-    update_top_scoring_day(oauth, current_season_dir)
-    
-    # 6. Update rosters.json - ONLY if there were roster-affecting transactions
-    print("Checking if rosters need updating...")
-    rosters_file = f"{current_season_dir}/rosters.json"
-    
-    # Determine which teams had roster changes based on new transactions
-    teams_with_changes = set()
-    if new_count > 0:  # new_count is from transaction merge above
-        for trans in transactions:  # transactions is the newly fetched ones
-            trans_type = trans.get('type', '')
-            if trans_type in ['add', 'drop', 'add/drop', 'trade']:
-                for player in trans.get('players', []):
-                    # Track both source and destination teams
-                    src_team = player.get('source_team_key', '')
-                    dst_team = player.get('destination_team_key', '')
-                    if src_team:
-                        teams_with_changes.add(src_team)
-                    if dst_team:
-                        teams_with_changes.add(dst_team)
-    
-    if teams_with_changes:
-        print(f"  Found {len(teams_with_changes)} team(s) with roster changes")
-        try:
-            # Load existing rosters
-            existing_rosters = {}
-            if os.path.exists(rosters_file):
-                try:
-                    with open(rosters_file, 'r', encoding='utf-8') as f:
-                        existing_rosters = json.load(f)
-                except:
-                    pass
-            
-            # Load all transactions for acquisition tracking
-            all_transactions = []
-            transactions_file = f"{current_season_dir}/transactions.json"
-            if os.path.exists(transactions_file):
-                try:
-                    with open(transactions_file, 'r', encoding='utf-8') as f:
-                        all_transactions = json.load(f)
-                except:
-                    pass
-            
-            # Only fetch rosters for teams that changed
-            updated_rosters = get_detailed_rosters_for_teams(
-                oauth, CURRENT_SEASON, teams_with_changes, all_transactions
-            )
-            
-            # Merge with existing rosters
-            if existing_rosters and 'teams' in existing_rosters:
-                for team_key, team_data in updated_rosters.get('teams', {}).items():
-                    existing_rosters['teams'][team_key] = team_data
-                existing_rosters['generated_at'] = datetime.now().isoformat()
-                final_rosters = existing_rosters
-            else:
-                # No existing data, do a full fetch
-                final_rosters = get_detailed_rosters(oauth, CURRENT_SEASON, all_transactions)
-            
-            if final_rosters:
-                with open(rosters_file, 'w', encoding='utf-8') as f:
-                    json.dump(final_rosters, f, indent=2, ensure_ascii=False)
-                print(f"  ✓ rosters.json updated ({len(teams_with_changes)} teams refreshed)")
-        except Exception as e:
-            print(f"  ⚠ Could not update rosters: {e}")
-    else:
-        # Check if rosters.json exists at all - if not, do initial full fetch
-        if not os.path.exists(rosters_file):
-            print("  No rosters.json found, doing initial fetch...")
-            try:
-                all_transactions = []
-                transactions_file = f"{current_season_dir}/transactions.json"
-                if os.path.exists(transactions_file):
-                    try:
-                        with open(transactions_file, 'r', encoding='utf-8') as f:
-                            all_transactions = json.load(f)
-                    except:
-                        pass
-                
-                rosters = get_detailed_rosters(oauth, CURRENT_SEASON, all_transactions)
-                if rosters:
-                    with open(rosters_file, 'w', encoding='utf-8') as f:
-                        json.dump(rosters, f, indent=2, ensure_ascii=False)
-                    team_count = len(rosters.get('teams', {}))
-                    print(f"  ✓ rosters.json created ({team_count} teams)")
-            except Exception as e:
-                print(f"  ⚠ Could not create rosters: {e}")
-        else:
-            print("  ✓ No roster changes detected, skipping update")
-    
-    # 7. Update manager profiles if team info changed
+    # 5. Update daily scores for the current week
+    try:
+        collect_daily_scores(oauth, CURRENT_SEASON, lg)
+    except Exception as e:
+        print(f"  ⚠ Could not update daily scores: {e}")
+
+    # 6. Update manager profiles if team info changed
     if teams_changed:
         print("Updating manager profiles (team info changed)...")
         update_manager_stats(oauth)
     else:
         print("Manager profiles unchanged (no team info changes)")
-    
+
     print("\n" + "=" * 60)
     print("✓ Quick update complete!")
     print(f"  - teams.json: Team logos, names, managers")
     print(f"  - standings.json: Current W-L records")
     print(f"  - week_X_scores.json: Matchup scores")
+    print(f"  - daily_scores.json: Per-day team scores")
     print(f"  - transactions.json: Recent adds/drops/trades")
-    print(f"  - rosters.json: Team rosters (updated only if transactions occurred)")
-    print(f"  - top_scoring_day.json: Season high single-day score")
     if teams_changed:
         print(f"  - Manager profiles: Updated")
     print("=" * 60)
