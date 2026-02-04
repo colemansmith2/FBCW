@@ -12503,16 +12503,16 @@
         }
 
         .matchup-popup {
-            background: #1a1a2e;
+            background: #2d5a3d;
             border-radius: 8px;
             width: 95%;
             max-width: 780px;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 0 60px rgba(0, 0, 0, 0.6), inset 0 0 80px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
             transform: scale(0.9);
             transition: transform 0.2s ease;
-            border: 3px solid #333;
+            border: 3px solid #1a3a25;
             position: relative;
         }
 
@@ -12522,13 +12522,13 @@
 
         /* Scoreboard header bar */
         .matchup-popup-header {
-            background: #222238;
-            color: var(--retro-gold);
+            background: #1a3a25;
+            color: var(--retro-cream);
             padding: 0.6rem 1.25rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid #333;
+            border-bottom: 2px solid #244832;
             border-radius: 5px 5px 0 0;
         }
 
@@ -12538,14 +12538,13 @@
             font-weight: 700;
             letter-spacing: 2px;
             text-transform: uppercase;
-            color: var(--retro-gold);
-            text-shadow: 0 0 8px rgba(255, 204, 0, 0.4);
+            color: var(--retro-cream);
         }
 
         .matchup-popup-close {
             background: none;
             border: none;
-            color: #666;
+            color: rgba(255, 255, 255, 0.4);
             font-size: 1.5rem;
             cursor: pointer;
             padding: 0;
@@ -12554,7 +12553,7 @@
         }
 
         .matchup-popup-close:hover {
-            color: var(--retro-gold);
+            color: #fff;
         }
 
         /* Main scoreboard area - team logos, names, scores */
@@ -12564,8 +12563,8 @@
             justify-content: center;
             gap: 0;
             padding: 1.25rem 1.5rem;
-            background: #0d1117;
-            border-bottom: 2px solid #333;
+            background: #234a31;
+            border-bottom: 2px solid #1a3a25;
             position: relative;
         }
 
@@ -12583,13 +12582,12 @@
             height: 56px;
             border-radius: 50%;
             object-fit: cover;
-            border: 2px solid #444;
-            background: #222;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            background: #1a3a25;
         }
 
         .matchup-popup-team.winner .matchup-popup-team-logo {
             border-color: var(--retro-gold);
-            box-shadow: 0 0 12px rgba(255, 204, 0, 0.3);
         }
 
         .matchup-popup-team-name {
@@ -12597,35 +12595,33 @@
             font-weight: 600;
             font-size: 0.6rem;
             text-align: center;
-            color: #ccc;
+            color: #fff;
             letter-spacing: 1px;
             text-transform: uppercase;
         }
 
         .matchup-popup-team-manager {
             font-size: 0.75rem;
-            color: #666;
+            color: rgba(255, 255, 255, 0.5);
         }
 
         .matchup-popup-team-score {
             font-family: 'Arcade Gamer', monospace;
             font-size: 1.6rem;
             font-weight: 700;
-            color: #eee;
+            color: #fff;
             letter-spacing: 2px;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.15);
         }
 
         .matchup-popup-team.winner .matchup-popup-team-score {
             color: var(--retro-gold);
-            text-shadow: 0 0 12px rgba(255, 204, 0, 0.4);
         }
 
         .matchup-popup-vs {
             font-family: 'Arcade Gamer', monospace;
             font-size: 0.7rem;
             font-weight: 600;
-            color: #555;
+            color: rgba(255, 255, 255, 0.35);
             letter-spacing: 2px;
             padding: 0 0.75rem;
         }
@@ -12636,7 +12632,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1.25rem;
-            background: #1a1a2e;
+            background: #2d5a3d;
         }
 
         .matchup-popup-team-section {
@@ -12651,17 +12647,16 @@
             align-items: center;
             justify-content: space-between;
             padding-bottom: 0.5rem;
-            border-bottom: 2px solid #333;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15);
         }
 
         .matchup-popup-section-title {
             font-family: 'Arcade Gamer', monospace;
             font-weight: 600;
-            color: var(--retro-gold);
+            color: var(--retro-cream);
             font-size: 0.55rem;
             letter-spacing: 1px;
             text-transform: uppercase;
-            text-shadow: 0 0 6px rgba(255, 204, 0, 0.25);
         }
 
         /* ---- Add Tracker Dots (Scoreboard slot) ---- */
@@ -12669,10 +12664,10 @@
             display: flex;
             gap: 0.75rem;
             align-items: center;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.2);
             padding: 0.25rem 0.5rem;
             border-radius: 4px;
-            border: 1px solid #333;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .add-tracker-group {
@@ -12684,7 +12679,7 @@
         .add-tracker-label {
             font-family: 'Arcade Gamer', monospace;
             font-size: 0.4rem;
-            color: #888;
+            color: rgba(255, 255, 255, 0.5);
             margin-right: 0.15rem;
             letter-spacing: 0.5px;
             text-transform: uppercase;
@@ -12726,7 +12721,7 @@
             font-family: 'Arcade Gamer', monospace;
             font-size: 0.45rem;
             font-weight: 600;
-            color: #888;
+            color: rgba(255, 255, 255, 0.55);
             margin-bottom: 0.5rem;
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -12750,8 +12745,8 @@
         .matchup-popup-player-card {
             flex: 0 0 auto;
             width: 68px;
-            background: #222238;
-            border: 1.5px solid #333;
+            background: #1a3a25;
+            border: 1.5px solid rgba(255, 255, 255, 0.12);
             border-radius: 6px;
             display: flex;
             flex-direction: column;
@@ -12762,7 +12757,7 @@
         }
 
         .matchup-popup-player-card:hover {
-            border-color: var(--retro-gold-dark);
+            border-color: var(--retro-cream);
             transform: translateY(-2px);
         }
 
@@ -12779,8 +12774,8 @@
             height: 40px;
             border-radius: 50%;
             object-fit: cover;
-            background: #2a2a3e;
-            border: 2px solid #444;
+            background: #234a31;
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
         .player-card-mlb-logo {
@@ -12792,8 +12787,8 @@
             border-radius: 50%;
             object-fit: contain;
             background: #fff;
-            border: 1.5px solid #333;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+            border: 1.5px solid rgba(0, 0, 0, 0.2);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         /* Position badge on card (matches site-wide position badge colors) */
@@ -12827,7 +12822,7 @@
         /* Player name on card */
         .player-card-name {
             font-size: 0.6rem;
-            color: #ccc;
+            color: var(--retro-cream);
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
@@ -12843,14 +12838,13 @@
             font-size: 0.55rem;
             font-weight: 700;
             color: var(--retro-gold);
-            text-shadow: 0 0 4px rgba(255, 204, 0, 0.3);
         }
 
         /* ---- Adds Section (scoreboard style) ---- */
         .matchup-popup-adds-section {
             margin-top: 0.25rem;
             padding-top: 0.5rem;
-            border-top: 1px solid #333;
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
         }
 
         .matchup-popup-adds-header {
@@ -12864,7 +12858,7 @@
             font-family: 'Arcade Gamer', monospace;
             font-size: 0.4rem;
             font-weight: 600;
-            color: #888;
+            color: rgba(255, 255, 255, 0.5);
             letter-spacing: 1px;
             text-transform: uppercase;
         }
@@ -12873,8 +12867,7 @@
             font-family: 'Arcade Gamer', monospace;
             font-size: 0.45rem;
             font-weight: 600;
-            color: var(--retro-green);
-            text-shadow: 0 0 4px rgba(46, 204, 113, 0.3);
+            color: var(--retro-gold);
         }
 
         .matchup-popup-add-item {
@@ -12883,13 +12876,12 @@
             gap: 0.4rem;
             padding: 0.2rem 0;
             font-size: 0.7rem;
-            color: #999;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .matchup-popup-add-item .add-indicator {
-            color: var(--retro-green);
+            color: var(--retro-gold);
             font-weight: 600;
-            text-shadow: 0 0 4px rgba(46, 204, 113, 0.3);
         }
 
         .matchup-popup-add-item .player-card-pos-badge {
@@ -33043,7 +33035,7 @@
             `;
 
             // Load player and transaction data for this week
-            body.innerHTML = '<div style="text-align: center; padding: 2rem; grid-column: 1/-1; color: #888; font-family: Arcade Gamer, monospace; font-size: 0.6rem; letter-spacing: 1px;">LOADING...</div>';
+            body.innerHTML = '<div style="text-align: center; padding: 2rem; grid-column: 1/-1; color: rgba(255,255,255,0.5); font-family: Arcade Gamer, monospace; font-size: 0.6rem; letter-spacing: 1px;">LOADING...</div>';
             overlay.classList.add('active');
 
             try {
@@ -33194,14 +33186,14 @@
                 <div class="matchup-popup-players-section">
                     <div class="matchup-popup-players-title">Top Batters</div>
                     <div class="matchup-popup-players-grid">
-                        ${batters.slice(0, 5).map(p => renderPopupPlayerCard(p)).join('') || '<div style="color:#666;font-size:0.7rem;">No data</div>'}
+                        ${batters.slice(0, 5).map(p => renderPopupPlayerCard(p)).join('') || '<div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">No data</div>'}
                     </div>
                 </div>
 
                 <div class="matchup-popup-players-section">
                     <div class="matchup-popup-players-title">Top Pitchers</div>
                     <div class="matchup-popup-players-grid">
-                        ${pitchers.slice(0, 5).map(p => renderPopupPlayerCard(p)).join('') || '<div style="color:#666;font-size:0.7rem;">No data</div>'}
+                        ${pitchers.slice(0, 5).map(p => renderPopupPlayerCard(p)).join('') || '<div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">No data</div>'}
                     </div>
                 </div>
 
@@ -33242,19 +33234,31 @@
 
                 <div class="matchup-popup-players-section">
                     <div class="matchup-popup-players-title">Top Batters</div>
-                    <div style="color:#666;font-size:0.7rem;padding:0.5rem 0;">Roster data not available</div>
+                    <div style="color:rgba(255,255,255,0.4);font-size:0.7rem;padding:0.5rem 0;">Roster data not available</div>
                 </div>
 
                 <div class="matchup-popup-players-section">
                     <div class="matchup-popup-players-title">Top Pitchers</div>
-                    <div style="color:#666;font-size:0.7rem;padding:0.5rem 0;">Roster data not available</div>
+                    <div style="color:rgba(255,255,255,0.4);font-size:0.7rem;padding:0.5rem 0;">Roster data not available</div>
                 </div>
             `;
         }
 
+        // Generic silhouette placeholder for player cards
+        const playerCardPlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+
+        // Extract primary position from multi-position strings like "OF, Util" or "1B, 3B"
+        function getPrimaryPosition(player) {
+            const raw = player.selected_position || player.primary_position || player.position || '?';
+            // Split by comma or slash and trim
+            const positions = raw.split(/[,\/]/).map(p => p.trim()).filter(p => p);
+            // Pick the first non-Util/non-DH position, or fall back to the first one
+            return positions.find(p => p !== 'Util' && p !== 'DH' && p !== 'BN') || positions[0] || '?';
+        }
+
         function renderPopupPlayerCard(player, useProjected) {
-            const pos = player.selected_position || player.position || '?';
-            const headshot = player.headshot_url || 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect fill="%232a2a3e" width="100" height="100"/></svg>';
+            const pos = getPrimaryPosition(player);
+            const headshot = (player.headshot_url && player.headshot_url.trim()) ? player.headshot_url : playerCardPlaceholder;
             const points = useProjected ? (player.projected_points || 0) : (player.fantasy_points || 0);
             const mlbTeam = player.mlb_team || '';
             const mlbLogoUrl = getMLBTeamLogo(mlbTeam);
@@ -33265,7 +33269,7 @@
             return `
                 <div class="matchup-popup-player-card">
                     <div class="player-card-headshot-wrap">
-                        <img src="${headshot}" class="player-card-headshot" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%232a2a3e%22 width=%22100%22 height=%22100%22/></svg>'">
+                        <img src="${headshot}" class="player-card-headshot" alt="" onerror="this.src='${playerCardPlaceholder}'">
                         ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="player-card-mlb-logo" alt="" onerror="this.style.display='none'">` : ''}
                     </div>
                     <span class="player-card-pos-badge pos-${pos}">${pos}</span>
@@ -33316,18 +33320,18 @@
                 <div class="matchup-popup-players-section">
                     <div class="matchup-popup-players-title">Top Projected Batters</div>
                     <div class="matchup-popup-players-grid">
-                        ${batters.slice(0, 5).map(p => renderPopupPlayerCard(p, true)).join('') || '<div style="color:#666;font-size:0.7rem;">No keepers yet</div>'}
+                        ${batters.slice(0, 5).map(p => renderPopupPlayerCard(p, true)).join('') || '<div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">No keepers yet</div>'}
                     </div>
                 </div>
 
                 <div class="matchup-popup-players-section">
                     <div class="matchup-popup-players-title">Top Projected Pitchers</div>
                     <div class="matchup-popup-players-grid">
-                        ${pitchers.slice(0, 5).map(p => renderPopupPlayerCard(p, true)).join('') || '<div style="color:#666;font-size:0.7rem;">No keepers yet</div>'}
+                        ${pitchers.slice(0, 5).map(p => renderPopupPlayerCard(p, true)).join('') || '<div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">No keepers yet</div>'}
                     </div>
                 </div>
 
-                <div style="color:#555;font-size:0.55rem;text-align:center;padding-top:0.25rem;font-style:italic;">* avg projection across all systems</div>
+                <div style="color:rgba(255,255,255,0.35);font-size:0.55rem;text-align:center;padding-top:0.25rem;font-style:italic;">* avg projection across all systems</div>
             `;
         }
 
