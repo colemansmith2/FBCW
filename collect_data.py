@@ -594,16 +594,16 @@ def get_standings(oauth, year: int) -> List[Dict]:
         manager = normalize_manager_name(raw_manager, year, team_name)
         
         results.append({
-            'rank': int(standing.get('rank', 0)),
+            'rank': safe_int(standing.get('rank', 0)),
             'team_key': team_key,
             'team_name': team_name,
             'manager': manager,
-            'wins': int(standing.get('outcome_totals', {}).get('wins', 0)),
-            'losses': int(standing.get('outcome_totals', {}).get('losses', 0)),
-            'ties': int(standing.get('outcome_totals', {}).get('ties', 0)),
-            'win_pct': float(standing.get('outcome_totals', {}).get('percentage', 0)),
-            'points_for': float(standing.get('points_for', 0)),
-            'points_against': float(standing.get('points_against', 0))
+            'wins': safe_int(standing.get('outcome_totals', {}).get('wins', 0)),
+            'losses': safe_int(standing.get('outcome_totals', {}).get('losses', 0)),
+            'ties': safe_int(standing.get('outcome_totals', {}).get('ties', 0)),
+            'win_pct': safe_float(standing.get('outcome_totals', {}).get('percentage', 0)),
+            'points_for': safe_float(standing.get('points_for', 0)),
+            'points_against': safe_float(standing.get('points_against', 0))
         })
     
     return results
