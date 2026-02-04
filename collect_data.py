@@ -393,15 +393,75 @@ def _build_scoring_df(lg: League, settings: Dict) -> pd.DataFrame:
 # =============================================================================
 
 def setup_oauth():
-    """Initialize OAuth for Yahoo Fantasy API"""
+    """
+    Initialize OAuth for Yahoo Fantasy API.
+    Supports both local oauth2.json file and GitHub Actions environment variables.
+    Automatically handles token refresh and saves new tokens to GitHub Secrets.
+    """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     oauth_path = os.path.join(script_dir, 'oauth2.json')
-    
-    if not os.path.exists(oauth_path):
-        raise FileNotFoundError(f"oauth2.json not found at: {oauth_path}")
-    
-    oauth = OAuth2(None, None, from_file=oauth_path)
-    return oauth
+
+    # Check if we have environment variables (GitHub Actions mode)
+    consumer_key = os.environ.get('YAHOO_CONSUMER_KEY')
+    consumer_secret = os.environ.get('YAHOO_CONSUMER_SECRET')
+    access_token = os.environ.get('YAHOO_ACCESS_TOKEN')
+    refresh_token = os.environ.get('YAHOO_REFRESH_TOKEN')
+    token_time = os.environ.get('YAHOO_TOKEN_TIME')
+
+    if all([consumer_key, consumer_secret, access_token, refresh_token]):
+        print("Using credentials from environment variables")
+
+        original_oauth_data = {
+            "consumer_key": consumer_key,
+            "consumer_secret": consumer_secret,
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "token_time": float(token_time) if token_time else datetime.now().timestamp(),
+            "token_type": "bearer"
+        }
+
+        with open(oauth_path, 'w') as f:
+            json.dump(original_oauth_data, f)
+
+        try:
+            oauth = OAuth2(None, None, from_file=oauth_path)
+
+            # Check if tokens were refreshed
+            with open(oauth_path, 'r') as f:
+                updated_oauth_data = json.load(f)
+
+            if updated_oauth_data.get('access_token') != access_token:
+                print("OAuth tokens were refreshed!")
+                try:
+                    from collect_weekly_stats import save_tokens_to_github_secrets
+                    if save_tokens_to_github_secrets(updated_oauth_data):
+                        print("✓ Tokens automatically saved to GitHub Secrets")
+                    else:
+                        print("⚠ Could not auto-save tokens. Manual update may be required.")
+                except ImportError:
+                    print("⚠ Could not import save_tokens_to_github_secrets.")
+                    print(f"  YAHOO_ACCESS_TOKEN: {updated_oauth_data.get('access_token')}")
+                    print(f"  YAHOO_REFRESH_TOKEN: {updated_oauth_data.get('refresh_token')}")
+                    print(f"  YAHOO_TOKEN_TIME: {updated_oauth_data.get('token_time')}")
+
+            return oauth
+
+        finally:
+            if os.path.exists(oauth_path):
+                os.remove(oauth_path)
+
+    # Fall back to local file (for local development)
+    elif os.path.exists(oauth_path):
+        print("Using credentials from local oauth2.json file")
+        return OAuth2(None, None, from_file=oauth_path)
+
+    else:
+        raise FileNotFoundError(
+            "No OAuth credentials found!\n"
+            "For GitHub Actions: Set YAHOO_CONSUMER_KEY, YAHOO_CONSUMER_SECRET, "
+            "YAHOO_ACCESS_TOKEN, and YAHOO_REFRESH_TOKEN as repository secrets.\n"
+            "For local development: Create an oauth2.json file."
+        )
 
 def get_league_id_by_name(oauth, year: int) -> str:
     """Get league ID for a specific year"""
