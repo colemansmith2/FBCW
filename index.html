@@ -3299,20 +3299,21 @@
             position: relative;
             border: 2px solid #333;
             border-radius: 4px;
-            /* Pixelated gradient: red -> yellow -> green -> yellow -> red */
+            /* Gradient zones based on ratio thresholds:
+               - Green (fair): 47.5%-52.5% (ratio >= 0.95)
+               - Yellow (slight): 44.5%-47.5% and 52.5%-55.5% (ratio 0.80-0.95)
+               - Orange (unfair): 37.5%-44.5% and 55.5%-62.5% (ratio 0.60-0.80)
+               - Red (strongly unfair): 0%-37.5% and 62.5%-100% (ratio < 0.60)
+            */
             background:
                 linear-gradient(to right,
-                    #dc3545 0%, #dc3545 10%,
-                    #e85d04 10%, #e85d04 20%,
-                    #f48c06 20%, #f48c06 30%,
-                    #ffc107 30%, #ffc107 40%,
-                    #90be6d 40%, #90be6d 45%,
-                    #28a745 45%, #28a745 55%,
-                    #90be6d 55%, #90be6d 60%,
-                    #ffc107 60%, #ffc107 70%,
-                    #f48c06 70%, #f48c06 80%,
-                    #e85d04 80%, #e85d04 90%,
-                    #dc3545 90%, #dc3545 100%);
+                    #dc3545 0%, #dc3545 37.5%,
+                    #f48c06 37.5%, #f48c06 44.5%,
+                    #ffc107 44.5%, #ffc107 47.5%,
+                    #28a745 47.5%, #28a745 52.5%,
+                    #ffc107 52.5%, #ffc107 55.5%,
+                    #f48c06 55.5%, #f48c06 62.5%,
+                    #dc3545 62.5%, #dc3545 100%);
             image-rendering: pixelated;
         }
 
