@@ -28028,6 +28028,14 @@
                 verdictEl.textContent = '';
                 verdictEl.className = 'trade-balance-verdict';
                 markerEl.style.left = '50%';
+
+                // Still update perspective boxes with zeros when teams are selected
+                const team1Info = tradeAnalyzerData.teams[tradeAnalyzerData.team1];
+                const team2Info = tradeAnalyzerData.teams[tradeAnalyzerData.team2];
+                const team1Name = team1Info?.manager || 'Team 1';
+                const team2Name = team2Info?.manager || 'Team 2';
+                updatePerspectiveBox(1, team1Name, true);
+                updatePerspectiveBox(2, team2Name, true);
                 return;
             }
 
@@ -28104,7 +28112,11 @@
 
             const total = adjusted1 + adjusted2;
             const diff = adjusted1 - adjusted2;
-            const percentDiff = total > 0 ? Math.abs(diff) / total * 100 : 0;
+
+            // Calculate ratio: smaller / larger (1.0 = perfect balance, 0.95 = 5% difference)
+            const smaller = Math.min(adjusted1, adjusted2);
+            const larger = Math.max(adjusted1, adjusted2);
+            const ratio = larger > 0 ? smaller / larger : 1;
 
             // Position marker (50% = balanced, 0% = all value to team 1, 100% = all value to team 2)
             // When team1 has more value, marker moves left; when team2 has more, marker moves right
@@ -28115,27 +28127,27 @@
             const team1Name = team1Info?.manager || 'Team 1';
             const team2Name = team2Info?.manager || 'Team 2';
 
-            // Determine verdict based on percentage difference
+            // Determine verdict based on ratio (smaller/larger)
             // Colors match bar regions: green (center), yellow/orange (middle), red (edges)
             let verdict = '';
             let verdictClass = '';
 
-            if (percentDiff < 5) {
-                // Green zone - center of bar
+            if (ratio >= 0.95) {
+                // Green zone - center of bar (within 5%)
                 verdict = '✓ Fair Trade';
                 verdictClass = 'fair';
-            } else if (percentDiff < 15) {
-                // Yellow/orange zone
+            } else if (ratio >= 0.80) {
+                // Yellow/orange zone (5-20% difference)
                 const favored = diff > 0 ? team2Name : team1Name;
                 verdict = `Slightly favors ${favored}`;
                 verdictClass = 'slight';
-            } else if (percentDiff < 30) {
-                // Orange/red zone
+            } else if (ratio >= 0.60) {
+                // Orange/red zone (20-40% difference)
                 const favored = diff > 0 ? team2Name : team1Name;
                 verdict = `Favors ${favored}`;
                 verdictClass = 'unfair';
             } else {
-                // Deep red zone - lopsided deal
+                // Deep red zone - lopsided deal (>40% difference)
                 const favored = diff > 0 ? team2Name : team1Name;
                 verdict = `Strongly favors ${favored}`;
                 verdictClass = 'very-unfair';
@@ -28146,11 +28158,11 @@
             verdictEl.className = `trade-balance-verdict ${verdictClass}`;
 
             // Update perspective boxes for each side
-            updatePerspectiveBox(1, team1Name);
-            updatePerspectiveBox(2, team2Name);
+            updatePerspectiveBox(1, team1Name, false);
+            updatePerspectiveBox(2, team2Name, false);
         }
 
-        function updatePerspectiveBox(side, teamName) {
+        function updatePerspectiveBox(side, teamName, isEmpty = false) {
             const perspectiveEl = document.getElementById(`trade-perspective-${side}`);
             if (!perspectiveEl) return;
 
@@ -28195,16 +28207,27 @@
                 perspectiveEl.querySelector('.perspective-header').appendChild(verdictEl);
             }
 
-            // Verdict thresholds: Even if within +/- 30 points
-            if (perspective.net > 30) {
-                verdictEl.textContent = '✓ Good';
-                verdictEl.className = 'perspective-verdict good';
-            } else if (perspective.net < -30) {
-                verdictEl.textContent = '✗ Bad';
-                verdictEl.className = 'perspective-verdict bad';
+            // Hide verdict when no assets in trade, otherwise show based on ratio threshold (92.5%)
+            if (isEmpty) {
+                verdictEl.textContent = '';
+                verdictEl.className = 'perspective-verdict';
             } else {
-                verdictEl.textContent = '~ Even';
-                verdictEl.className = 'perspective-verdict neutral';
+                // Calculate ratio: getting / giving (>1 = good, <1 = bad)
+                const ratio = perspective.giving > 0 ? perspective.getting / perspective.giving : 1;
+
+                if (ratio >= 0.925) {
+                    // Getting at least 92.5% of what you're giving - Good or Even
+                    if (ratio > 1.075) {
+                        verdictEl.textContent = '✓ Good';
+                        verdictEl.className = 'perspective-verdict good';
+                    } else {
+                        verdictEl.textContent = '~ Even';
+                        verdictEl.className = 'perspective-verdict neutral';
+                    }
+                } else {
+                    verdictEl.textContent = '✗ Bad';
+                    verdictEl.className = 'perspective-verdict bad';
+                }
             }
         }
 
