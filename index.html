@@ -3831,13 +3831,13 @@
             display: inline;
         }
 
-        /* Premium penalty warning - positioned above the trade columns area */
+        /* Premium penalty warning - positioned above the offer column on that side */
         .trade-premium-warning {
             display: none;
             position: absolute;
             top: -2rem;
-            left: -105%;
-            width: 205%;
+            left: 0;
+            right: 0;
             color: #dc3545;
             font-size: 0.65rem;
             font-weight: 500;
@@ -28183,41 +28183,30 @@
                 }
             }
 
-            // Display penalty amounts (combine imbalance + premium)
-            const totalPenalty1 = penaltyAmount1 + premiumPenalty1;
-            const totalPenalty2 = penaltyAmount2 + premiumPenalty2;
-
+            // Display penalty amounts (imbalance only, premium shown via warning message)
             if (penalty1El) {
-                if (penaltyAmount1 > 0 && premiumPenalty1 > 0) {
-                    penalty1El.textContent = `(-${Math.round(penaltyAmount1)} imbalance, -${Math.round(premiumPenalty1)} premium)`;
-                } else if (penaltyAmount1 > 0) {
+                if (penaltyAmount1 > 0) {
                     penalty1El.textContent = `(-${Math.round(penaltyAmount1)} imbalance)`;
-                } else if (premiumPenalty1 > 0) {
-                    penalty1El.textContent = `(-${Math.round(premiumPenalty1)} premium)`;
                 } else {
                     penalty1El.textContent = '';
                 }
             }
             if (penalty2El) {
-                if (penaltyAmount2 > 0 && premiumPenalty2 > 0) {
-                    penalty2El.textContent = `(-${Math.round(penaltyAmount2)} imbalance, -${Math.round(premiumPenalty2)} premium)`;
-                } else if (penaltyAmount2 > 0) {
+                if (penaltyAmount2 > 0) {
                     penalty2El.textContent = `(-${Math.round(penaltyAmount2)} imbalance)`;
-                } else if (premiumPenalty2 > 0) {
-                    penalty2El.textContent = `(-${Math.round(premiumPenalty2)} premium)`;
                 } else {
                     penalty2El.textContent = '';
                 }
             }
 
-            // Show/hide premium penalty warnings
+            // Show/hide premium penalty warnings on the side with the LESS valuable asset
             const premiumWarning1El = document.getElementById('trade-premium-warning-1');
             const premiumWarning2El = document.getElementById('trade-premium-warning-2');
             const premiumWarningText = '⚠ Penalty applied due to significant difference in value of best assets in deal.';
 
             if (premiumWarning1El) {
-                if (premiumPenalty2 > 0) {
-                    // Team 1 has the premium asset, show warning on their side
+                if (premiumPenalty1 > 0) {
+                    // Team 2 has the premium asset, show warning on team 1's side (they have lesser assets)
                     premiumWarning1El.textContent = premiumWarningText;
                     premiumWarning1El.classList.add('visible');
                 } else {
@@ -28226,8 +28215,8 @@
                 }
             }
             if (premiumWarning2El) {
-                if (premiumPenalty1 > 0) {
-                    // Team 2 has the premium asset, show warning on their side
+                if (premiumPenalty2 > 0) {
+                    // Team 1 has the premium asset, show warning on team 2's side (they have lesser assets)
                     premiumWarning2El.textContent = premiumWarningText;
                     premiumWarning2El.classList.add('visible');
                 } else {
