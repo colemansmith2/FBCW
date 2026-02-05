@@ -10619,6 +10619,22 @@
             color: #721c24;
         }
 
+        .bet-history-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .bet-history-team {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .bet-history-manager {
+            font-size: 0.7rem;
+            color: #666;
+        }
+
         /* Betting Info Button */
         .bet-info-btn {
             display: inline-flex;
@@ -31965,7 +31981,7 @@
                     await sportsbookBalancesRef.child(sanitizedKey).set(balance);
                 }
 
-                document.getElementById('sportsbook-balance').textContent = balance.total || PRESEASON_BUDGET;
+                document.getElementById('sportsbook-balance').textContent = balance.total !== undefined && balance.total !== null ? balance.total : PRESEASON_BUDGET;
             } catch (e) {
                 console.log('Could not load sportsbook balance:', e);
                 document.getElementById('sportsbook-balance').textContent = PRESEASON_BUDGET;
@@ -32946,12 +32962,17 @@
                 const timestamp = new Date().toISOString();
                 for (const bet of sportsbookBetSlip) {
                     if (bet.wager > 0) {
+                        // Find the manager of the team being bet on
+                        const selectionTeam = sportsbookTeamData.find(t => t.team_key === bet.teamKey);
+                        const selectionManager = selectionTeam ? normalizeManagerName(selectionTeam.manager, 2026, selectionTeam.team_name, selectionTeam.team_key) : null;
+
                         await sportsbookBetsRef.push({
-                            manager: sportsbookUser.manager, // Primary identifier
+                            manager: sportsbookUser.manager, // Primary identifier (who placed the bet)
                             managerSanitized: sanitizedUserKey,
                             betType: bet.betType,
                             selection: bet.teamKey,
                             selectionName: bet.teamName,
+                            selectionManager: selectionManager, // Manager of team being bet on (for lookups)
                             opponent: bet.opponent || null,
                             odds: String(bet.odds),
                             wager: bet.wager,
@@ -32995,6 +33016,18 @@
                 sportsbookBetsRef = firebaseDb.ref('sportsbook_bets');
             }
 
+            // Load manager history if not already loaded (needed for old bet lookups)
+            if (managerHistoryData.length === 0) {
+                try {
+                    const historyResponse = await fetch('data/managers/manager_history.json');
+                    if (historyResponse.ok) {
+                        managerHistoryData = await historyResponse.json();
+                    }
+                } catch (e) {
+                    console.log('Could not load manager history for bet lookups:', e);
+                }
+            }
+
             const tbody = document.getElementById('bet-history-body');
             const emptyEl = document.getElementById('bet-history-empty');
             const sanitizedKey = sanitizeFirebaseKey(sportsbookUser.manager);
@@ -33021,12 +33054,44 @@
                     const dateStr = date.toLocaleDateString();
                     const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
+                    // Look up current team name by manager (handles team name changes across seasons)
+                    let displayName = bet.selectionName;
+                    let managerDisplay = '';
+
+                    // First try to use stored selectionManager (new bets)
+                    let lookupManager = bet.selectionManager;
+
+                    // For old bets without selectionManager, look up manager from history by old team name
+                    if (!lookupManager && bet.selectionName && managerHistoryData.length > 0) {
+                        const historyEntry = managerHistoryData.find(h => h.team_name === bet.selectionName);
+                        if (historyEntry) {
+                            lookupManager = normalizeManagerName(historyEntry.manager, historyEntry.year, historyEntry.team_name, null);
+                        }
+                    }
+
+                    if (lookupManager) {
+                        // Find current team by manager name
+                        const currentTeam = sportsbookTeamData.find(t => {
+                            const teamManager = normalizeManagerName(t.manager, 2026, t.team_name, t.team_key);
+                            return teamManager === lookupManager;
+                        });
+                        if (currentTeam) {
+                            displayName = currentTeam.team_name;
+                            managerDisplay = lookupManager;
+                        }
+                    }
+
                     return `
                         <tr>
                             <td>${dateStr}</td>
                             <td>${timeStr}</td>
                             <td>${getBetTypeLabel(bet.betType)}</td>
-                            <td>${bet.selectionName}</td>
+                            <td>
+                                <div class="bet-history-selection">
+                                    <span class="bet-history-team">${displayName}</span>
+                                    ${managerDisplay ? `<span class="bet-history-manager">${managerDisplay}</span>` : ''}
+                                </div>
+                            </td>
                             <td>${bet.opponent || '-'}</td>
                             <td>${bet.odds}</td>
                             <td>${bet.wager} units</td>
