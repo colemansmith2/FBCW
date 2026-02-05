@@ -3830,6 +3830,21 @@
             display: inline;
         }
 
+        /* Premium penalty warning */
+        .trade-premium-warning {
+            display: none;
+            color: #dc3545;
+            font-size: 0.7rem;
+            font-weight: 500;
+            padding: 0.4rem 0.5rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .trade-premium-warning.visible {
+            display: block;
+        }
+
         /* Draft pick warning */
         .trade-pick-warning {
             display: none;
@@ -14927,6 +14942,7 @@
                                 </div>
                             </div>
                             <div class="trade-offer-column">
+                                <div class="trade-premium-warning" id="trade-premium-warning-1"></div>
                                 <h5>Offering <span class="trade-imbalance-penalty" id="trade-penalty-1"></span></h5>
                                 <div class="trade-offer-list" id="trade-offer-1">
                                     <div class="trade-empty-state">Add assets to offer</div>
@@ -14980,6 +14996,7 @@
                         </div>
                         <div class="trade-columns">
                             <div class="trade-offer-column">
+                                <div class="trade-premium-warning" id="trade-premium-warning-2"></div>
                                 <h5>Offering <span class="trade-imbalance-penalty" id="trade-penalty-2"></span></h5>
                                 <div class="trade-offer-list" id="trade-offer-2">
                                     <div class="trade-empty-state">Add assets to offer</div>
@@ -27591,6 +27608,32 @@
                 gettingValue -= penaltyAmount;
             }
 
+            // Premium Penalty: If I'm giving a premium asset and not getting one back,
+            // penalize what I'm getting (the lesser assets don't truly replace my premium)
+            const myPlayerAssets = myOffer
+                .filter(o => o.type === 'player')
+                .map(item => ({ value: getAssetValue(item, myGoal) }))
+                .sort((a, b) => b.value - a.value);
+
+            const theirPlayerAssets = gettingAssets
+                .filter(a => a.type === 'player')
+                .sort((a, b) => b.value - a.value);
+
+            if (myPlayerAssets.length > 0 && theirPlayerAssets.length > 0) {
+                const myTopValue = myPlayerAssets[0].value;
+                const theirTopValue = theirPlayerAssets[0].value;
+
+                // If my top asset is more valuable and their top is less than 85% of mine
+                if (myTopValue > theirTopValue) {
+                    const ratio = theirTopValue / myTopValue;
+                    if (ratio < 0.85) {
+                        // Penalize what I'm getting by half the difference
+                        const premiumPenalty = (myTopValue - theirTopValue) * 0.5;
+                        gettingValue -= premiumPenalty;
+                    }
+                }
+            }
+
             const netValue = gettingValue - givingValue;
 
             return {
@@ -28102,12 +28145,89 @@
                 adjusted2 = raw2 - penaltyAmount2;
             }
 
-            // Display penalty amounts
-            if (penalty1El && penaltyAmount1 > 0) {
-                penalty1El.textContent = `(-${Math.round(penaltyAmount1)} imbalance)`;
+            // Premium Penalty: If the top asset on one side is significantly more valuable
+            // than the top asset on the other side, penalize the side receiving lesser assets
+            // (they're trading away a premium player and not getting one back)
+            const playerAssets1 = offer1.filter(o => o.type === 'player').sort((a, b) => (b.value || 0) - (a.value || 0));
+            const playerAssets2 = offer2.filter(o => o.type === 'player').sort((a, b) => (b.value || 0) - (a.value || 0));
+
+            let premiumPenalty1 = 0;
+            let premiumPenalty2 = 0;
+
+            if (playerAssets1.length > 0 && playerAssets2.length > 0) {
+                const top1Value = playerAssets1[0].value || 0;
+                const top2Value = playerAssets2[0].value || 0;
+
+                if (top1Value > top2Value) {
+                    // Team 1 has the premium asset, team 1 receives penalty on what they're getting
+                    const ratio = top2Value / top1Value;
+                    if (ratio < 0.85) {
+                        // Penalize team 1's return (adjusted2 is what team 1 receives)
+                        premiumPenalty2 = (top1Value - top2Value) * 0.5;
+                        adjusted2 -= premiumPenalty2;
+                    }
+                } else if (top2Value > top1Value) {
+                    // Team 2 has the premium asset, team 2 receives penalty on what they're getting
+                    const ratio = top1Value / top2Value;
+                    if (ratio < 0.85) {
+                        // Penalize team 2's return (adjusted1 is what team 2 receives)
+                        premiumPenalty1 = (top2Value - top1Value) * 0.5;
+                        adjusted1 -= premiumPenalty1;
+                    }
+                }
             }
-            if (penalty2El && penaltyAmount2 > 0) {
-                penalty2El.textContent = `(-${Math.round(penaltyAmount2)} imbalance)`;
+
+            // Display penalty amounts (combine imbalance + premium)
+            const totalPenalty1 = penaltyAmount1 + premiumPenalty1;
+            const totalPenalty2 = penaltyAmount2 + premiumPenalty2;
+
+            if (penalty1El) {
+                if (penaltyAmount1 > 0 && premiumPenalty1 > 0) {
+                    penalty1El.textContent = `(-${Math.round(penaltyAmount1)} imbalance, -${Math.round(premiumPenalty1)} premium)`;
+                } else if (penaltyAmount1 > 0) {
+                    penalty1El.textContent = `(-${Math.round(penaltyAmount1)} imbalance)`;
+                } else if (premiumPenalty1 > 0) {
+                    penalty1El.textContent = `(-${Math.round(premiumPenalty1)} premium)`;
+                } else {
+                    penalty1El.textContent = '';
+                }
+            }
+            if (penalty2El) {
+                if (penaltyAmount2 > 0 && premiumPenalty2 > 0) {
+                    penalty2El.textContent = `(-${Math.round(penaltyAmount2)} imbalance, -${Math.round(premiumPenalty2)} premium)`;
+                } else if (penaltyAmount2 > 0) {
+                    penalty2El.textContent = `(-${Math.round(penaltyAmount2)} imbalance)`;
+                } else if (premiumPenalty2 > 0) {
+                    penalty2El.textContent = `(-${Math.round(premiumPenalty2)} premium)`;
+                } else {
+                    penalty2El.textContent = '';
+                }
+            }
+
+            // Show/hide premium penalty warnings
+            const premiumWarning1El = document.getElementById('trade-premium-warning-1');
+            const premiumWarning2El = document.getElementById('trade-premium-warning-2');
+            const premiumWarningText = '⚠ Penalty applied due to significant difference in value of best assets in deal.';
+
+            if (premiumWarning1El) {
+                if (premiumPenalty2 > 0) {
+                    // Team 1 has the premium asset, show warning on their side
+                    premiumWarning1El.textContent = premiumWarningText;
+                    premiumWarning1El.classList.add('visible');
+                } else {
+                    premiumWarning1El.textContent = '';
+                    premiumWarning1El.classList.remove('visible');
+                }
+            }
+            if (premiumWarning2El) {
+                if (premiumPenalty1 > 0) {
+                    // Team 2 has the premium asset, show warning on their side
+                    premiumWarning2El.textContent = premiumWarningText;
+                    premiumWarning2El.classList.add('visible');
+                } else {
+                    premiumWarning2El.textContent = '';
+                    premiumWarning2El.classList.remove('visible');
+                }
             }
 
             const total = adjusted1 + adjusted2;
@@ -28121,27 +28241,30 @@
             // Position marker based on ratio, mapped to bar zones
             // Bar zones: green 45-55%, yellow 30-45%/55-70%, orange 20-30%/70-80%, red 0-20%/80-100%
             // Ratio thresholds: fair >=0.95, slight 0.80-0.95, unfair 0.60-0.80, strongly <0.60
+            // When adjusted1 > adjusted2, team1 is GIVING more, so team2 is FAVORED (marker toward team2/right)
             let markerPosition = 50;
             if (total > 0) {
-                const team1Favored = adjusted1 > adjusted2;
+                // team2Favored means team2 gets the better deal (adjusted1 > adjusted2)
+                const team2Favored = adjusted1 > adjusted2;
 
                 // Map ratio to position within the appropriate zone
+                // Marker moves toward the favored team: left (0%) = team1 favored, right (100%) = team2 favored
                 if (ratio >= 0.95) {
                     // Green zone: 45-55% - map ratio 0.95-1.0 to position 45-50 or 50-55
                     const zoneProgress = (ratio - 0.95) / 0.05; // 0 to 1 within zone
-                    markerPosition = team1Favored ? 50 - (1 - zoneProgress) * 5 : 50 + (1 - zoneProgress) * 5;
+                    markerPosition = team2Favored ? 50 + (1 - zoneProgress) * 5 : 50 - (1 - zoneProgress) * 5;
                 } else if (ratio >= 0.80) {
                     // Yellow zone: 30-45% or 55-70% - map ratio 0.80-0.95 to position
                     const zoneProgress = (ratio - 0.80) / 0.15; // 0 to 1 within zone
-                    markerPosition = team1Favored ? 30 + zoneProgress * 15 : 70 - zoneProgress * 15;
+                    markerPosition = team2Favored ? 70 - zoneProgress * 15 : 30 + zoneProgress * 15;
                 } else if (ratio >= 0.60) {
                     // Orange zone: 20-30% or 70-80% - map ratio 0.60-0.80 to position
                     const zoneProgress = (ratio - 0.60) / 0.20; // 0 to 1 within zone
-                    markerPosition = team1Favored ? 20 + zoneProgress * 10 : 80 - zoneProgress * 10;
+                    markerPosition = team2Favored ? 80 - zoneProgress * 10 : 20 + zoneProgress * 10;
                 } else {
                     // Red zone: 0-20% or 80-100% - map ratio 0-0.60 to position
                     const zoneProgress = ratio / 0.60; // 0 to 1 within zone
-                    markerPosition = team1Favored ? zoneProgress * 20 : 100 - zoneProgress * 20;
+                    markerPosition = team2Favored ? 100 - zoneProgress * 20 : zoneProgress * 20;
                 }
             }
             markerEl.style.left = `${markerPosition}%`;
