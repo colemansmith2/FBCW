@@ -31600,13 +31600,21 @@
             if (teams.length === 1 || teams[0].units === totalUnits) {
                 const team = teams[0];
                 if (betStatsChartMode === 'logos') {
+                    const logoSize = r * 2;
+                    const logoX = cx - r;
+                    const logoY = cy - r;
                     return `
                         <defs>
-                            <pattern id="pattern-single" patternUnits="objectBoundingBox" width="1" height="1">
-                                <image href="${team.logo}" x="0" y="0" width="200" height="200" preserveAspectRatio="xMidYMid slice"/>
-                            </pattern>
+                            <clipPath id="clip-single">
+                                <circle cx="${cx}" cy="${cy}" r="${r}"/>
+                            </clipPath>
                         </defs>
-                        <circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#pattern-single)" stroke="white" stroke-width="2"/>
+                        <image href="${team.logo}"
+                               x="${logoX}" y="${logoY}"
+                               width="${logoSize}" height="${logoSize}"
+                               preserveAspectRatio="xMidYMid slice"
+                               clip-path="url(#clip-single)"/>
+                        <circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="white" stroke-width="2"/>
                     `;
                 } else {
                     return `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${colors[0]}" stroke="white" stroke-width="2"/>`;
@@ -31637,22 +31645,26 @@
 
                 if (betStatsChartMode === 'logos') {
                     // Create clip path for logo slice
+                    // Logo is centered at the pie center and sized to fill the pie area
                     const pathId = `slice-${i}`;
-                    const patternId = `pattern-${i}`;
+                    const logoSize = r * 2; // Logo diameter matches pie diameter
+                    const logoX = cx - r; // Center the logo on the pie
+                    const logoY = cy - r;
 
                     paths += `
                         <defs>
                             <clipPath id="clip-${pathId}">
                                 <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z"/>
                             </clipPath>
-                            <pattern id="${patternId}" patternUnits="objectBoundingBox" width="1" height="1">
-                                <image href="${team.logo}" x="0" y="0" width="200" height="200" preserveAspectRatio="xMidYMid slice"/>
-                            </pattern>
                         </defs>
-                        <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z" 
-                              fill="url(#${patternId})" 
-                              stroke="white" stroke-width="2"
-                              clip-path="url(#clip-${pathId})"/>
+                        <image href="${team.logo}"
+                               x="${logoX}" y="${logoY}"
+                               width="${logoSize}" height="${logoSize}"
+                               preserveAspectRatio="xMidYMid slice"
+                               clip-path="url(#clip-${pathId})"/>
+                        <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 ${largeArc} 1 ${x2} ${y2} Z"
+                              fill="none"
+                              stroke="white" stroke-width="2"/>
                     `;
                 } else {
                     paths += `
@@ -33057,13 +33069,22 @@
                     // Look up current team name by manager (handles team name changes across seasons)
                     let displayName = bet.selectionName;
                     let managerDisplay = '';
+                    let betSuffix = ''; // For over/under bets like "O10.5 W" or "U10.5 W"
+
+                    // Parse out bet suffix for over/under bets (e.g., "King Vylan U10.5 W" -> team: "King Vylan", suffix: " U10.5 W")
+                    let teamNameForLookup = bet.selectionName;
+                    const overUnderMatch = bet.selectionName?.match(/^(.+?)(\s+[OU]\d+\.?\d*\s+[WP])$/);
+                    if (overUnderMatch) {
+                        teamNameForLookup = overUnderMatch[1].trim();
+                        betSuffix = overUnderMatch[2];
+                    }
 
                     // First try to use stored selectionManager (new bets)
                     let lookupManager = bet.selectionManager;
 
                     // For old bets without selectionManager, look up manager from history by old team name
-                    if (!lookupManager && bet.selectionName && managerHistoryData.length > 0) {
-                        const historyEntry = managerHistoryData.find(h => h.team_name === bet.selectionName);
+                    if (!lookupManager && teamNameForLookup && managerHistoryData.length > 0) {
+                        const historyEntry = managerHistoryData.find(h => h.team_name === teamNameForLookup);
                         if (historyEntry) {
                             lookupManager = normalizeManagerName(historyEntry.manager, historyEntry.year, historyEntry.team_name, null);
                         }
@@ -33076,7 +33097,8 @@
                             return teamManager === lookupManager;
                         });
                         if (currentTeam) {
-                            displayName = currentTeam.team_name;
+                            // Reconstruct display name with bet suffix if applicable
+                            displayName = currentTeam.team_name + betSuffix;
                             managerDisplay = lookupManager;
                         }
                     }
