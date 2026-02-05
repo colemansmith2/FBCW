@@ -3299,21 +3299,20 @@
             position: relative;
             border: 2px solid #333;
             border-radius: 4px;
-            /* Gradient zones based on ratio thresholds:
-               - Green (fair): 47.5%-52.5% (ratio >= 0.95)
-               - Yellow (slight): 44.5%-47.5% and 52.5%-55.5% (ratio 0.80-0.95)
-               - Orange (unfair): 37.5%-44.5% and 55.5%-62.5% (ratio 0.60-0.80)
-               - Red (strongly unfair): 0%-37.5% and 62.5%-100% (ratio < 0.60)
-            */
+            /* Pixelated gradient: red -> yellow -> green -> yellow -> red */
             background:
                 linear-gradient(to right,
-                    #dc3545 0%, #dc3545 37.5%,
-                    #f48c06 37.5%, #f48c06 44.5%,
-                    #ffc107 44.5%, #ffc107 47.5%,
-                    #28a745 47.5%, #28a745 52.5%,
-                    #ffc107 52.5%, #ffc107 55.5%,
-                    #f48c06 55.5%, #f48c06 62.5%,
-                    #dc3545 62.5%, #dc3545 100%);
+                    #dc3545 0%, #dc3545 10%,
+                    #e85d04 10%, #e85d04 20%,
+                    #f48c06 20%, #f48c06 30%,
+                    #ffc107 30%, #ffc107 40%,
+                    #90be6d 40%, #90be6d 45%,
+                    #28a745 45%, #28a745 55%,
+                    #90be6d 55%, #90be6d 60%,
+                    #ffc107 60%, #ffc107 70%,
+                    #f48c06 70%, #f48c06 80%,
+                    #e85d04 80%, #e85d04 90%,
+                    #dc3545 90%, #dc3545 100%);
             image-rendering: pixelated;
         }
 
@@ -28119,9 +28118,32 @@
             const larger = Math.max(adjusted1, adjusted2);
             const ratio = larger > 0 ? smaller / larger : 1;
 
-            // Position marker (50% = balanced, 0% = all value to team 1, 100% = all value to team 2)
-            // When team1 has more value, marker moves left; when team2 has more, marker moves right
-            const markerPosition = total > 0 ? (adjusted1 / total) * 100 : 50;
+            // Position marker based on ratio, mapped to bar zones
+            // Bar zones: green 45-55%, yellow 30-45%/55-70%, orange 20-30%/70-80%, red 0-20%/80-100%
+            // Ratio thresholds: fair >=0.95, slight 0.80-0.95, unfair 0.60-0.80, strongly <0.60
+            let markerPosition = 50;
+            if (total > 0) {
+                const team1Favored = adjusted1 > adjusted2;
+
+                // Map ratio to position within the appropriate zone
+                if (ratio >= 0.95) {
+                    // Green zone: 45-55% - map ratio 0.95-1.0 to position 45-50 or 50-55
+                    const zoneProgress = (ratio - 0.95) / 0.05; // 0 to 1 within zone
+                    markerPosition = team1Favored ? 50 - (1 - zoneProgress) * 5 : 50 + (1 - zoneProgress) * 5;
+                } else if (ratio >= 0.80) {
+                    // Yellow zone: 30-45% or 55-70% - map ratio 0.80-0.95 to position
+                    const zoneProgress = (ratio - 0.80) / 0.15; // 0 to 1 within zone
+                    markerPosition = team1Favored ? 30 + zoneProgress * 15 : 70 - zoneProgress * 15;
+                } else if (ratio >= 0.60) {
+                    // Orange zone: 20-30% or 70-80% - map ratio 0.60-0.80 to position
+                    const zoneProgress = (ratio - 0.60) / 0.20; // 0 to 1 within zone
+                    markerPosition = team1Favored ? 20 + zoneProgress * 10 : 80 - zoneProgress * 10;
+                } else {
+                    // Red zone: 0-20% or 80-100% - map ratio 0-0.60 to position
+                    const zoneProgress = ratio / 0.60; // 0 to 1 within zone
+                    markerPosition = team1Favored ? zoneProgress * 20 : 100 - zoneProgress * 20;
+                }
+            }
             markerEl.style.left = `${markerPosition}%`;
 
             // Get team names for display (team1Info and team2Info already defined above)
