@@ -9989,6 +9989,30 @@
                 height: 200px;
                 margin-bottom: 1rem;
             }
+
+            /* Projection card mobile - make whole modal scroll, not card internals */
+            .projection-card-container {
+                margin-top: 0;
+            }
+
+            .projection-card-container .card-inner {
+                max-height: none;
+                overflow: visible;
+            }
+
+            .projection-card-container .card-back {
+                overflow: visible;
+            }
+
+            .projection-card-container .card-scrollable {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            .projection-card-container .card-history-wrapper {
+                max-height: none;
+                overflow: visible;
+            }
         }
 
         footer {
