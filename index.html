@@ -28180,16 +28180,16 @@
 
             // Premium Penalty: If I'm giving a premium asset and not getting one back,
             // penalize what I'm getting (the lesser assets don't truly replace my premium)
-            // Use BASE values for comparison (goal doesn't affect premium determination)
+            // My assets use base value, their assets use goal-adjusted value
             const myPlayerAssets = myOffer
                 .filter(o => o.type === 'player')
                 .map(item => ({ value: getAssetValue(item, 'default') }))
                 .sort((a, b) => b.value - a.value);
 
-            // For premium comparison, get their player base values
+            // For premium comparison, get their player values through MY goal lens
             const theirPlayerAssets = theirOffer
                 .filter(o => o.type === 'player')
-                .map(item => ({ value: getAssetValue(item, 'default') }))
+                .map(item => ({ value: getAssetValue(item, myGoal) }))
                 .sort((a, b) => b.value - a.value);
 
             if (myPlayerAssets.length > 0 && theirPlayerAssets.length > 0) {
@@ -28750,35 +28750,71 @@
                 adjusted2 = raw2 - penaltyAmount2;
             }
 
-            // Premium Penalty: If the top asset on one side is significantly more valuable
-            // than the top asset on the other side, penalize the side receiving lesser assets
-            // (they're trading away a premium player and not getting one back)
-            // Use base values for objective comparison
-            const playerAssets1 = offer1.filter(o => o.type === 'player').sort((a, b) => (b.baseValue || b.value || 0) - (a.baseValue || a.value || 0));
-            const playerAssets2 = offer2.filter(o => o.type === 'player').sort((a, b) => (b.baseValue || b.value || 0) - (a.baseValue || a.value || 0));
+            // Premium Penalty: Only apply in top bar if at least one perspective box has it applied
+            // Check each team's perspective to see if they see a premium penalty
+            const checkPerspectivePremium = (teamSide) => {
+                const goal = tradeAnalyzerData[`team${teamSide}Goal`];
+                const otherSide = teamSide === 1 ? 2 : 1;
+                const myOffer = tradeAnalyzerData[`team${teamSide}Offer`];
+                const theirOffer = tradeAnalyzerData[`team${otherSide}Offer`];
+
+                // Helper to get goal-adjusted value
+                const getVal = (item, g) => {
+                    if (item.type === 'player' && item.rawData) {
+                        return calculatePlayerTradeValue(item.rawData, g).value;
+                    } else if (item.type === 'pick') {
+                        return calculatePickTradeValue(item, g).value;
+                    }
+                    return item.baseValue || item.value || 0;
+                };
+
+                const myPlayers = myOffer.filter(o => o.type === 'player');
+                const theirPlayers = theirOffer.filter(o => o.type === 'player');
+
+                if (myPlayers.length === 0 || theirPlayers.length === 0) return false;
+
+                // My top asset at base value, their top asset at my goal value
+                const myTopValue = Math.max(...myPlayers.map(p => getVal(p, 'default')));
+                const theirTopValue = Math.max(...theirPlayers.map(p => getVal(p, goal)));
+
+                // Premium penalty applies if I'm giving away the premium and their top < 85% of mine
+                if (myTopValue > theirTopValue) {
+                    const ratio = theirTopValue / myTopValue;
+                    return ratio < 0.85;
+                }
+                return false;
+            };
+
+            const team1HasPremiumPenalty = checkPerspectivePremium(1);
+            const team2HasPremiumPenalty = checkPerspectivePremium(2);
+            const applyTopBarPremium = team1HasPremiumPenalty || team2HasPremiumPenalty;
 
             let premiumPenalty1 = 0;
             let premiumPenalty2 = 0;
 
-            if (playerAssets1.length > 0 && playerAssets2.length > 0) {
-                const top1Value = playerAssets1[0].baseValue || playerAssets1[0].value || 0;
-                const top2Value = playerAssets2[0].baseValue || playerAssets2[0].value || 0;
+            // Only calculate and apply premium penalty if at least one perspective has it
+            if (applyTopBarPremium) {
+                const playerAssets1 = offer1.filter(o => o.type === 'player').sort((a, b) => (b.baseValue || b.value || 0) - (a.baseValue || a.value || 0));
+                const playerAssets2 = offer2.filter(o => o.type === 'player').sort((a, b) => (b.baseValue || b.value || 0) - (a.baseValue || a.value || 0));
 
-                if (top1Value > top2Value) {
-                    // Team 1 has the premium asset, team 1 receives penalty on what they're getting
-                    const ratio = top2Value / top1Value;
-                    if (ratio < 0.85) {
-                        // Penalize team 1's return (adjusted2 is what team 1 receives)
-                        premiumPenalty2 = (top1Value - top2Value) * 0.5;
-                        adjusted2 -= premiumPenalty2;
-                    }
-                } else if (top2Value > top1Value) {
-                    // Team 2 has the premium asset, team 2 receives penalty on what they're getting
-                    const ratio = top1Value / top2Value;
-                    if (ratio < 0.85) {
-                        // Penalize team 2's return (adjusted1 is what team 2 receives)
-                        premiumPenalty1 = (top2Value - top1Value) * 0.5;
-                        adjusted1 -= premiumPenalty1;
+                if (playerAssets1.length > 0 && playerAssets2.length > 0) {
+                    const top1Value = playerAssets1[0].baseValue || playerAssets1[0].value || 0;
+                    const top2Value = playerAssets2[0].baseValue || playerAssets2[0].value || 0;
+
+                    if (top1Value > top2Value) {
+                        // Team 1 has the premium asset, team 1 receives penalty on what they're getting
+                        const ratio = top2Value / top1Value;
+                        if (ratio < 0.85) {
+                            premiumPenalty2 = (top1Value - top2Value) * 0.5;
+                            adjusted2 -= premiumPenalty2;
+                        }
+                    } else if (top2Value > top1Value) {
+                        // Team 2 has the premium asset, team 2 receives penalty on what they're getting
+                        const ratio = top1Value / top2Value;
+                        if (ratio < 0.85) {
+                            premiumPenalty1 = (top2Value - top1Value) * 0.5;
+                            adjusted1 -= premiumPenalty1;
+                        }
                     }
                 }
             }
