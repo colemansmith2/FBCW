@@ -28115,7 +28115,8 @@
         }
 
         // Calculate how a team views the entire trade from their perspective
-        // Their goal affects how they value ALL assets (both giving and getting)
+        // Their goal affects how they value INCOMING assets (what they're getting)
+        // Outgoing assets (what they're giving) use base/default values
         // Also applies imbalance penalty for receiving more players than giving
         function calculatePerspectiveValue(teamSide) {
             const myGoal = tradeAnalyzerData[`team${teamSide}Goal`];
@@ -28136,10 +28137,10 @@
                 }
             };
 
-            // What I'm GIVING - valued through MY goal lens
+            // What I'm GIVING - valued at BASE/DEFAULT (my goal doesn't affect my own assets)
             let givingValue = 0;
             myOffer.forEach(item => {
-                givingValue += getAssetValue(item, myGoal);
+                givingValue += getAssetValue(item, 'default');
             });
 
             // What I'm GETTING - valued through MY goal lens
@@ -28179,13 +28180,16 @@
 
             // Premium Penalty: If I'm giving a premium asset and not getting one back,
             // penalize what I'm getting (the lesser assets don't truly replace my premium)
+            // Use BASE values for comparison (goal doesn't affect premium determination)
             const myPlayerAssets = myOffer
                 .filter(o => o.type === 'player')
-                .map(item => ({ value: getAssetValue(item, myGoal) }))
+                .map(item => ({ value: getAssetValue(item, 'default') }))
                 .sort((a, b) => b.value - a.value);
 
-            const theirPlayerAssets = gettingAssets
-                .filter(a => a.type === 'player')
+            // For premium comparison, get their player base values
+            const theirPlayerAssets = theirOffer
+                .filter(o => o.type === 'player')
+                .map(item => ({ value: getAssetValue(item, 'default') }))
                 .sort((a, b) => b.value - a.value);
 
             if (myPlayerAssets.length > 0 && theirPlayerAssets.length > 0) {
@@ -28700,9 +28704,9 @@
                 }
             }
 
-            // Calculate raw values
-            const raw1 = offer1.reduce((sum, item) => sum + (item.value || 0), 0);
-            const raw2 = offer2.reduce((sum, item) => sum + (item.value || 0), 0);
+            // Calculate raw values using BASE values (objective fairness, not goal-adjusted)
+            const raw1 = offer1.reduce((sum, item) => sum + (item.baseValue || item.value || 0), 0);
+            const raw2 = offer2.reduce((sum, item) => sum + (item.baseValue || item.value || 0), 0);
 
             // Count non-pick assets on each side (picks must be balanced, so only penalize player/budget imbalance)
             const nonPickAssets1 = offer1.filter(o => o.type !== 'pick');
@@ -28722,11 +28726,11 @@
 
             if (count1 > count2 && count2 > 0) {
                 const extraCount = count1 - count2;
-                // Sort by value ascending (lowest first)
-                const sortedAssets = [...nonPickAssets1].sort((a, b) => (a.value || 0) - (b.value || 0));
+                // Sort by base value ascending (lowest first)
+                const sortedAssets = [...nonPickAssets1].sort((a, b) => (a.baseValue || a.value || 0) - (b.baseValue || b.value || 0));
                 // Apply compounding penalty to the extra assets
                 for (let i = 0; i < extraCount && i < sortedAssets.length; i++) {
-                    const assetValue = sortedAssets[i].value || 0;
+                    const assetValue = sortedAssets[i].baseValue || sortedAssets[i].value || 0;
                     const remainingRate = getCompoundedRemainingRate(i);
                     const penalty = assetValue * (1 - remainingRate); // What's lost
                     penaltyAmount1 += penalty;
@@ -28734,11 +28738,11 @@
                 adjusted1 = raw1 - penaltyAmount1;
             } else if (count2 > count1 && count1 > 0) {
                 const extraCount = count2 - count1;
-                // Sort by value ascending (lowest first)
-                const sortedAssets = [...nonPickAssets2].sort((a, b) => (a.value || 0) - (b.value || 0));
+                // Sort by base value ascending (lowest first)
+                const sortedAssets = [...nonPickAssets2].sort((a, b) => (a.baseValue || a.value || 0) - (b.baseValue || b.value || 0));
                 // Apply compounding penalty to the extra assets
                 for (let i = 0; i < extraCount && i < sortedAssets.length; i++) {
-                    const assetValue = sortedAssets[i].value || 0;
+                    const assetValue = sortedAssets[i].baseValue || sortedAssets[i].value || 0;
                     const remainingRate = getCompoundedRemainingRate(i);
                     const penalty = assetValue * (1 - remainingRate); // What's lost
                     penaltyAmount2 += penalty;
@@ -28749,15 +28753,16 @@
             // Premium Penalty: If the top asset on one side is significantly more valuable
             // than the top asset on the other side, penalize the side receiving lesser assets
             // (they're trading away a premium player and not getting one back)
-            const playerAssets1 = offer1.filter(o => o.type === 'player').sort((a, b) => (b.value || 0) - (a.value || 0));
-            const playerAssets2 = offer2.filter(o => o.type === 'player').sort((a, b) => (b.value || 0) - (a.value || 0));
+            // Use base values for objective comparison
+            const playerAssets1 = offer1.filter(o => o.type === 'player').sort((a, b) => (b.baseValue || b.value || 0) - (a.baseValue || a.value || 0));
+            const playerAssets2 = offer2.filter(o => o.type === 'player').sort((a, b) => (b.baseValue || b.value || 0) - (a.baseValue || a.value || 0));
 
             let premiumPenalty1 = 0;
             let premiumPenalty2 = 0;
 
             if (playerAssets1.length > 0 && playerAssets2.length > 0) {
-                const top1Value = playerAssets1[0].value || 0;
-                const top2Value = playerAssets2[0].value || 0;
+                const top1Value = playerAssets1[0].baseValue || playerAssets1[0].value || 0;
+                const top2Value = playerAssets2[0].baseValue || playerAssets2[0].value || 0;
 
                 if (top1Value > top2Value) {
                     // Team 1 has the premium asset, team 1 receives penalty on what they're getting
