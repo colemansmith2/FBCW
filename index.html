@@ -4398,6 +4398,43 @@
             background: #f0f4ff;
         }
 
+        /* Home view specific column styling */
+        .home-rank-header {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .home-rank-col {
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .home-std-dev {
+            color: #888;
+        }
+
+        .home-max {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .home-min {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .home-ppg {
+            font-weight: 500;
+        }
+
+        /* Tooltips for Home view system names */
+        .home-max[title]:hover,
+        .home-min[title]:hover,
+        .home-rank-col[title]:hover {
+            cursor: help;
+        }
+
         .no-trades {
             color: #888;
             font-style: italic;
@@ -14816,10 +14853,11 @@
                     <div class="projection-selector">
                         <label for="projection-type">Projection System:</label>
                         <select id="projection-type" onchange="loadProjections()">
+                            <option value="home" selected>Home</option>
                             <option value="thebat">The BAT</option>
                             <option value="thebatx">The BAT X</option>
                             <option value="steamer">Steamer</option>
-                            <option value="zipsdc">ZiPS DC (Recommended)</option>
+                            <option value="zipsdc">ZiPS DC</option>
                             <option value="zips">ZiPS</option>
                             <option value="atc">ATC</option>
                             <option value="depthcharts">Depth Charts</option>
@@ -14945,7 +14983,7 @@
                                 <option value="thebat">The BAT</option>
                                 <option value="thebatx">The BAT X</option>
                                 <option value="steamer">Steamer</option>
-                                <option value="zipsdc">ZiPS DC (Recommended)</option>
+                                <option value="zipsdc">ZiPS DC</option>
                                 <option value="zips">ZiPS</option>
                                 <option value="atc">ATC</option>
                                 <option value="depthcharts">Depth Charts</option>
@@ -23699,6 +23737,11 @@
         let averageProjectionsMap = {}; // { playerName: { avgPoints, systems: [...], headshot } }
         let averageProjectionsLoaded = false;
 
+        // Detailed home projections data for the Home view
+        let homeProjectionsBatters = [];
+        let homeProjectionsPitchers = [];
+        let homeProjectionsLoaded = false;
+
         // Load all projection systems and calculate averages
         // NOTE: Use 'zipsdc' instead of 'zips' - base ZiPS has no playing time projections
         // and would skew averages by projecting full-season stats for all players
@@ -23706,7 +23749,16 @@
             if (averageProjectionsLoaded) return;
 
             const projectionSystems = ['thebatx', 'thebat', 'steamer', 'zipsdc', 'atc', 'depthcharts', 'oopsy'];
-            const playerProjections = {}; // { playerName: { points: [], headshot, position, type } }
+            const systemDisplayNames = {
+                'thebatx': 'BAT X',
+                'thebat': 'BAT',
+                'steamer': 'Steamer',
+                'zipsdc': 'ZiPS DC',
+                'atc': 'ATC',
+                'depthcharts': 'DC',
+                'oopsy': 'OOPSY'
+            };
+            const playerProjections = {}; // { playerName: { pointsBySystem: {}, games: [], headshot, position, type } }
 
             for (const system of projectionSystems) {
                 try {
@@ -23732,15 +23784,20 @@
 
                         if (!playerProjections[nameLower]) {
                             playerProjections[nameLower] = {
-                                points: [],
+                                name: player.name,
+                                pointsBySystem: {},
+                                gamesBySystem: {},
+                                positionRankBySystem: {},
                                 headshot: player.headshot_url || '',
                                 position: player.position || '',
                                 mlb_team: player.mlb_team || player.team || '',
+                                mlb_id: player.mlb_id || null,
                                 type: 'batter'
                             };
                         }
 
-                        playerProjections[nameLower].points.push(player.projected_points);
+                        playerProjections[nameLower].pointsBySystem[system] = player.projected_points;
+                        playerProjections[nameLower].gamesBySystem[system] = player.stats?.G || 0;
 
                         // Update headshot if we have a better one (not generic)
                         if (player.headshot_url && !player.headshot_url.includes('/people/1/')) {
@@ -23756,6 +23813,11 @@
                         const playerMlbTeam = player.mlb_team || player.team || '';
                         if (playerMlbTeam && !playerProjections[nameLower].mlb_team) {
                             playerProjections[nameLower].mlb_team = playerMlbTeam;
+                        }
+
+                        // Update mlb_id if we have one
+                        if (player.mlb_id && !playerProjections[nameLower].mlb_id) {
+                            playerProjections[nameLower].mlb_id = player.mlb_id;
                         }
                     });
 
@@ -23767,15 +23829,20 @@
 
                         if (!playerProjections[nameLower]) {
                             playerProjections[nameLower] = {
-                                points: [],
+                                name: player.name,
+                                pointsBySystem: {},
+                                gamesBySystem: {},
+                                positionRankBySystem: {},
                                 headshot: player.headshot_url || '',
                                 position: player.position || '',
                                 mlb_team: player.mlb_team || player.team || '',
+                                mlb_id: player.mlb_id || null,
                                 type: 'pitcher'
                             };
                         }
 
-                        playerProjections[nameLower].points.push(player.projected_points);
+                        playerProjections[nameLower].pointsBySystem[system] = player.projected_points;
+                        playerProjections[nameLower].gamesBySystem[system] = player.stats?.G || 0;
 
                         // Update headshot if we have a better one (not generic)
                         if (player.headshot_url && !player.headshot_url.includes('/people/1/')) {
@@ -23792,6 +23859,11 @@
                         if (playerMlbTeam && !playerProjections[nameLower].mlb_team) {
                             playerProjections[nameLower].mlb_team = playerMlbTeam;
                         }
+
+                        // Update mlb_id if we have one
+                        if (player.mlb_id && !playerProjections[nameLower].mlb_id) {
+                            playerProjections[nameLower].mlb_id = player.mlb_id;
+                        }
                     });
 
                     console.log(`Loaded ${system}: ${batters.length} batters, ${pitchers.length} pitchers`);
@@ -23800,28 +23872,95 @@
                 }
             }
 
-            // Calculate averages
-            Object.entries(playerProjections).forEach(([name, data]) => {
-                if (data.points.length > 0) {
-                    const avg = data.points.reduce((sum, p) => sum + p, 0) / data.points.length;
-                    averageProjectionsMap[name] = {
-                        avgPoints: Math.round(avg * 10) / 10, // Round to 1 decimal
-                        systems: data.points.length,
-                        headshot: data.headshot,
-                        position: data.position,
-                        mlb_team: data.mlb_team,
-                        type: data.type
-                    };
+            // Calculate averages and detailed stats
+            const homeDataBatters = [];
+            const homeDataPitchers = [];
 
-                    // Also store without (Batter)/(Pitcher) suffix for Ohtani matching
-                    const baseName = name.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
-                    if (baseName !== name && !averageProjectionsMap[baseName]) {
-                        averageProjectionsMap[baseName] = averageProjectionsMap[name];
-                    }
+            Object.entries(playerProjections).forEach(([nameLower, data]) => {
+                const points = Object.values(data.pointsBySystem);
+                if (points.length === 0) return;
+
+                const avg = points.reduce((sum, p) => sum + p, 0) / points.length;
+                const stdDev = points.length > 1
+                    ? Math.sqrt(points.reduce((sum, p) => sum + Math.pow(p - avg, 2), 0) / points.length)
+                    : 0;
+                const maxPoints = Math.max(...points);
+                const minPoints = Math.min(...points);
+
+                // Find which system has max/min
+                let maxSystem = '';
+                let minSystem = '';
+                for (const [sys, pts] of Object.entries(data.pointsBySystem)) {
+                    if (pts === maxPoints && !maxSystem) maxSystem = sys;
+                    if (pts === minPoints && !minSystem) minSystem = sys;
+                }
+
+                // Calculate average games and PPG
+                const games = Object.values(data.gamesBySystem);
+                const avgGames = games.length > 0 ? games.reduce((sum, g) => sum + g, 0) / games.length : 0;
+                const avgPPG = avgGames > 0 ? avg / avgGames : 0;
+
+                // Store for averageProjectionsMap (backwards compatibility)
+                averageProjectionsMap[nameLower] = {
+                    avgPoints: Math.round(avg * 10) / 10,
+                    systems: points.length,
+                    headshot: data.headshot,
+                    position: data.position,
+                    mlb_team: data.mlb_team,
+                    type: data.type
+                };
+
+                // Also store without (Batter)/(Pitcher) suffix for Ohtani matching
+                const baseName = nameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+                if (baseName !== nameLower && !averageProjectionsMap[baseName]) {
+                    averageProjectionsMap[baseName] = averageProjectionsMap[nameLower];
+                }
+
+                // Create home projection player object
+                const homePlayer = {
+                    name: data.name,
+                    type: data.type,
+                    position: data.position,
+                    headshot_url: data.headshot,
+                    mlb_team: data.mlb_team,
+                    mlb_id: data.mlb_id,
+                    team: data.mlb_team,
+                    // Home view specific fields
+                    avgPoints: Math.round(avg * 10) / 10,
+                    stdDev: Math.round(stdDev * 10) / 10,
+                    maxPoints: Math.round(maxPoints * 10) / 10,
+                    minPoints: Math.round(minPoints * 10) / 10,
+                    maxSystem: maxSystem,
+                    minSystem: minSystem,
+                    maxSystemDisplay: systemDisplayNames[maxSystem] || maxSystem,
+                    minSystemDisplay: systemDisplayNames[minSystem] || minSystem,
+                    avgGames: Math.round(avgGames),
+                    avgPPG: Math.round(avgPPG * 100) / 100,
+                    systemCount: points.length,
+                    pointsBySystem: data.pointsBySystem,
+                    // For compatibility with existing code
+                    projected_points: Math.round(avg * 10) / 10,
+                    games: Math.round(avgGames),
+                    ppg: Math.round(avgPPG * 100) / 100
+                };
+
+                if (data.type === 'batter') {
+                    homeDataBatters.push(homePlayer);
+                } else {
+                    homeDataPitchers.push(homePlayer);
                 }
             });
 
+            // Sort by average points descending
+            homeDataBatters.sort((a, b) => b.avgPoints - a.avgPoints);
+            homeDataPitchers.sort((a, b) => b.avgPoints - a.avgPoints);
+
+            homeProjectionsBatters = homeDataBatters;
+            homeProjectionsPitchers = homeDataPitchers;
+            homeProjectionsLoaded = true;
+
             console.log(`Loaded average projections for ${Object.keys(averageProjectionsMap).length} players`);
+            console.log(`Home projections: ${homeProjectionsBatters.length} batters, ${homeProjectionsPitchers.length} pitchers`);
             averageProjectionsLoaded = true;
         }
 
@@ -23886,10 +24025,51 @@
             const batxNotice = document.getElementById('proj-batx-notice');
             if (batxNotice) batxNotice.style.display = 'none';
 
-            // Load average projections first (for headshot fallbacks)
+            // Load average projections first (for headshot fallbacks and Home view)
             await loadAverageProjections();
 
             try {
+                // Handle Home view specially - use pre-computed data from loadAverageProjections
+                if (projectionType === 'home') {
+                    allProjectionBatters = [...homeProjectionsBatters];
+                    allProjectionPitchers = [...homeProjectionsPitchers];
+
+                    console.log(`Loaded Home view: ${allProjectionBatters.length} batters and ${allProjectionPitchers.length} pitchers`);
+
+                    // Handle Shohei Ohtani specially - normalize position
+                    allProjectionBatters.forEach(p => {
+                        const nameLower = p.name?.toLowerCase() || '';
+                        if (nameLower.includes('shohei ohtani') || nameLower === 'shohei ohtani') {
+                            if (p.position && (p.position.includes('DH') || p.position.includes('Util'))) {
+                                p.position = 'Util';
+                            }
+                        }
+                    });
+
+                    allProjectionPitchers.forEach(p => {
+                        const nameLower = p.name?.toLowerCase() || '';
+                        if (nameLower.includes('shohei ohtani') || nameLower === 'shohei ohtani') {
+                            p.position = 'SP';
+                        }
+                    });
+
+                    // Calculate position ranks for Home view
+                    calculateHomePositionRanks();
+
+                    // Set default sort to avgPoints for Home view
+                    projectionSort = { column: 'avgPoints', direction: 'desc' };
+
+                    // Hide scoring settings for Home view (it's an aggregate)
+                    const scoringEl = document.getElementById('scoring-settings-container');
+                    if (scoringEl) scoringEl.style.display = 'none';
+
+                    loadingEl.style.display = 'none';
+                    containerEl.style.display = 'block';
+
+                    filterProjections();
+                    return;
+                }
+
                 // Try to load projections data
                 const response = await fetch(`data/projections/projections_${projectionType}.json`);
 
@@ -23960,8 +24140,15 @@
                 // Calculate position ranks
                 calculateProjectionPositionRanks();
 
+                // Set default sort to projected_points for standard views
+                projectionSort = { column: 'projected_points', direction: 'desc' };
+
                 // Display scoring settings
                 displayScoringSettings(projectionsData.scoring);
+
+                // Show scoring settings container (may have been hidden by Home view)
+                const scoringEl = document.getElementById('scoring-settings-container');
+                if (scoringEl) scoringEl.style.display = '';
 
                 loadingEl.style.display = 'none';
                 containerEl.style.display = 'block';
@@ -24065,6 +24252,137 @@
                 if (!player.position_ranks) player.position_ranks = {};
                 player.position_ranks['P'] = index + 1;
             });
+        }
+
+        // Calculate position ranks for Home view (based on avgPoints)
+        // Also calculates max/min system position ranks
+        function calculateHomePositionRanks() {
+            const allPlayers = [...allProjectionBatters, ...allProjectionPitchers];
+            const positions = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'OF', 'DH', 'SP', 'RP'];
+
+            // First, calculate average position ranks
+            positions.forEach(pos => {
+                let eligiblePlayers;
+                if (pos === 'OF') {
+                    eligiblePlayers = allPlayers.filter(p => {
+                        const playerPos = (p.position || '').toUpperCase();
+                        return playerPos.includes('LF') || playerPos.includes('CF') ||
+                            playerPos.includes('RF') || playerPos.includes('OF');
+                    });
+                } else {
+                    eligiblePlayers = allPlayers.filter(p => {
+                        const playerPos = (p.position || '').toUpperCase();
+                        return playerPos.includes(pos);
+                    });
+                }
+
+                // Sort by avgPoints descending
+                eligiblePlayers.sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+
+                // Assign ranks
+                eligiblePlayers.forEach((player, index) => {
+                    if (!player.position_ranks) player.position_ranks = {};
+                    player.position_ranks[pos] = index + 1;
+                });
+            });
+
+            // Calculate overall batter and pitcher ranks by avgPoints
+            const batters = allPlayers.filter(p => p.type === 'batter')
+                .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+            batters.forEach((player, index) => {
+                if (!player.position_ranks) player.position_ranks = {};
+                player.position_ranks['B'] = index + 1;
+                player.position_ranks['UTIL'] = index + 1;
+            });
+
+            const pitchers = allPlayers.filter(p => p.type === 'pitcher')
+                .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+            pitchers.forEach((player, index) => {
+                if (!player.position_ranks) player.position_ranks = {};
+                player.position_ranks['P'] = index + 1;
+            });
+
+            // Now calculate position ranks for each system (for max/min rank display)
+            const projectionSystems = ['thebatx', 'thebat', 'steamer', 'zipsdc', 'atc', 'depthcharts', 'oopsy'];
+
+            projectionSystems.forEach(system => {
+                // For each position, calculate ranks based on that system's projections
+                positions.forEach(pos => {
+                    let eligiblePlayers;
+                    if (pos === 'OF') {
+                        eligiblePlayers = allPlayers.filter(p => {
+                            const playerPos = (p.position || '').toUpperCase();
+                            return (playerPos.includes('LF') || playerPos.includes('CF') ||
+                                playerPos.includes('RF') || playerPos.includes('OF')) &&
+                                p.pointsBySystem && p.pointsBySystem[system];
+                        });
+                    } else {
+                        eligiblePlayers = allPlayers.filter(p => {
+                            const playerPos = (p.position || '').toUpperCase();
+                            return playerPos.includes(pos) && p.pointsBySystem && p.pointsBySystem[system];
+                        });
+                    }
+
+                    // Sort by this system's points
+                    eligiblePlayers.sort((a, b) =>
+                        (b.pointsBySystem?.[system] || 0) - (a.pointsBySystem?.[system] || 0)
+                    );
+
+                    // Assign ranks per system
+                    eligiblePlayers.forEach((player, index) => {
+                        if (!player.positionRanksBySystem) player.positionRanksBySystem = {};
+                        if (!player.positionRanksBySystem[system]) player.positionRanksBySystem[system] = {};
+                        player.positionRanksBySystem[system][pos] = index + 1;
+                    });
+                });
+            });
+        }
+
+        // Get position rank for a specific system (used for max/min rank display)
+        function getSystemPositionRank(player) {
+            if (!player.position_ranks) return '-';
+
+            const position = (player.position || '').toUpperCase();
+            let primaryPos = position.split(/[,\/]/)[0].trim();
+
+            // Handle special cases
+            if (primaryPos === 'DH' || primaryPos === 'UTIL') primaryPos = 'UTIL';
+            if (['LF', 'CF', 'RF'].includes(primaryPos)) primaryPos = 'OF';
+
+            const rank = player.position_ranks[primaryPos];
+            if (!rank) return '-';
+
+            return `${primaryPos}${rank}`;
+        }
+
+        // Get position rank for a player in a specific system
+        function getPositionRankForSystem(player, system) {
+            if (!player.positionRanksBySystem || !player.positionRanksBySystem[system]) {
+                return '-';
+            }
+
+            const position = (player.position || '').toUpperCase();
+            let primaryPos = position.split(/[,\/]/)[0].trim();
+
+            // Handle special cases
+            if (primaryPos === 'DH' || primaryPos === 'UTIL') primaryPos = 'UTIL';
+            if (['LF', 'CF', 'RF'].includes(primaryPos)) {
+                // For OF players, use OF rank
+                primaryPos = 'OF';
+            }
+
+            const rank = player.positionRanksBySystem[system][primaryPos];
+            if (!rank) {
+                // Try other eligible positions
+                for (const pos of Object.keys(player.positionRanksBySystem[system])) {
+                    if (player.positionRanksBySystem[system][pos]) {
+                        return `${pos}${player.positionRanksBySystem[system][pos]}`;
+                    }
+                }
+                return '-';
+            }
+
+            return `${primaryPos}${rank}`;
         }
 
         function formatProjectionPosition(position, playerName) {
@@ -24309,6 +24627,10 @@
             const tbody = document.getElementById('proj-table-body');
             const countEl = document.getElementById('proj-player-count');
 
+            // Check if we're in Home view
+            const projectionType = document.getElementById('projection-type').value;
+            const isHomeView = projectionType === 'home';
+
             // Check if we have mixed data or just batters/pitchers
             const hasBatters = filteredProjections.some(p => p.type === 'batter');
             const hasPitchers = filteredProjections.some(p => p.type === 'pitcher');
@@ -24332,45 +24654,68 @@
                 });
             }
 
-            // Build headers based on data type
-            let headers = `
-                <tr>
-                    <th class="sortable" onclick="sortProjectionTable('rank')">#</th>
-                    <th class="sortable" onclick="sortProjectionTable('name')">Player</th>
-                    <th class="sortable" onclick="sortProjectionTable('position')">Pos</th>
-                    <th>Rank</th>
-                    <th class="sortable stat-col" onclick="sortProjectionTable('projected_points')">Proj Pts</th>
-                    ${!showKeptPlayers ? '<th class="sortable stat-col bpa-header" onclick="sortProjectionTable(\'bpa\')" title="Best Player Available - Draft ranking with keepers removed from the player pool">BPA</th>' : ''}
-                    <th class="sortable stat-col" onclick="sortProjectionTable('games')">G</th>
-                    <th class="sortable stat-col" onclick="sortProjectionTable('ppg')">PPG</th>
-            `;
+            // Build headers based on view type
+            let headers;
 
-            if (hasBatters && !hasPitchers) {
-                headers += `
-                    <th class="sortable" onclick="sortProjectionTable('HR')">HR</th>
-                    <th class="sortable" onclick="sortProjectionTable('RBI')">RBI</th>
-                    <th class="sortable" onclick="sortProjectionTable('R')">R</th>
-                    <th class="sortable" onclick="sortProjectionTable('SB')">SB</th>
-                    <th class="sortable" onclick="sortProjectionTable('AVG')">AVG</th>
-                    <th class="sortable" onclick="sortProjectionTable('OPS')">OPS</th>
-                `;
-            } else if (hasPitchers && !hasBatters) {
-                headers += `
-                    <th class="sortable" onclick="sortProjectionTable('W')">W</th>
-                    <th class="sortable" onclick="sortProjectionTable('SV')">SV</th>
-                    <th class="sortable" onclick="sortProjectionTable('K')">K</th>
-                    <th class="sortable" onclick="sortProjectionTable('ERA')">ERA</th>
-                    <th class="sortable" onclick="sortProjectionTable('WHIP')">WHIP</th>
-                    <th class="sortable" onclick="sortProjectionTable('IP')">IP</th>
+            if (isHomeView) {
+                // Home view headers: Player, Pos, Rank, Avg Pts, Std Dev, Max, Rank, Min, Rank, Avg PPG
+                headers = `
+                    <tr>
+                        <th class="sortable" onclick="sortProjectionTable('rank')">#</th>
+                        <th class="sortable" onclick="sortProjectionTable('name')">Player</th>
+                        <th class="sortable" onclick="sortProjectionTable('position')">Pos</th>
+                        <th>Rank</th>
+                        <th class="sortable stat-col" onclick="sortProjectionTable('avgPoints')">Avg Pts</th>
+                        <th class="sortable stat-col" onclick="sortProjectionTable('stdDev')">Std Dev</th>
+                        <th class="sortable stat-col" onclick="sortProjectionTable('maxPoints')">Max</th>
+                        <th class="stat-col home-rank-header">Rank</th>
+                        <th class="sortable stat-col" onclick="sortProjectionTable('minPoints')">Min</th>
+                        <th class="stat-col home-rank-header">Rank</th>
+                        <th class="sortable stat-col" onclick="sortProjectionTable('avgPPG')">Avg PPG</th>
+                    </tr>
                 `;
             } else {
-                // Mixed - show key stats for both
-                headers += `
-                    <th class="stat-col">Key Stats</th>
+                // Standard view headers
+                headers = `
+                    <tr>
+                        <th class="sortable" onclick="sortProjectionTable('rank')">#</th>
+                        <th class="sortable" onclick="sortProjectionTable('name')">Player</th>
+                        <th class="sortable" onclick="sortProjectionTable('position')">Pos</th>
+                        <th>Rank</th>
+                        <th class="sortable stat-col" onclick="sortProjectionTable('projected_points')">Proj Pts</th>
+                        ${!showKeptPlayers ? '<th class="sortable stat-col bpa-header" onclick="sortProjectionTable(\'bpa\')" title="Best Player Available - Draft ranking with keepers removed from the player pool">BPA</th>' : ''}
+                        <th class="sortable stat-col" onclick="sortProjectionTable('games')">G</th>
+                        <th class="sortable stat-col" onclick="sortProjectionTable('ppg')">PPG</th>
                 `;
+
+                if (hasBatters && !hasPitchers) {
+                    headers += `
+                        <th class="sortable" onclick="sortProjectionTable('HR')">HR</th>
+                        <th class="sortable" onclick="sortProjectionTable('RBI')">RBI</th>
+                        <th class="sortable" onclick="sortProjectionTable('R')">R</th>
+                        <th class="sortable" onclick="sortProjectionTable('SB')">SB</th>
+                        <th class="sortable" onclick="sortProjectionTable('AVG')">AVG</th>
+                        <th class="sortable" onclick="sortProjectionTable('OPS')">OPS</th>
+                    `;
+                } else if (hasPitchers && !hasBatters) {
+                    headers += `
+                        <th class="sortable" onclick="sortProjectionTable('W')">W</th>
+                        <th class="sortable" onclick="sortProjectionTable('SV')">SV</th>
+                        <th class="sortable" onclick="sortProjectionTable('K')">K</th>
+                        <th class="sortable" onclick="sortProjectionTable('ERA')">ERA</th>
+                        <th class="sortable" onclick="sortProjectionTable('WHIP')">WHIP</th>
+                        <th class="sortable" onclick="sortProjectionTable('IP')">IP</th>
+                    `;
+                } else {
+                    // Mixed - show key stats for both
+                    headers += `
+                        <th class="stat-col">Key Stats</th>
+                    `;
+                }
+
+                headers += '</tr>';
             }
 
-            headers += '</tr>';
             thead.innerHTML = headers;
 
             // Update sort indicators
@@ -24383,16 +24728,21 @@
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
 
             // Calculate column count for round divider colspan
-            let colCount = 8; // Base columns: #, Player, Pos, Rank, Proj Pts, G, PPG + BPA when shown
-            if (!showKeptPlayers) colCount++; // BPA column
-            if (hasBatters && !hasPitchers) colCount += 6; // Batter stats
-            else if (hasPitchers && !hasBatters) colCount += 6; // Pitcher stats
-            else colCount += 1; // Mixed key stats
+            let colCount;
+            if (isHomeView) {
+                colCount = 11; // Home view: #, Player, Pos, Rank, Avg Pts, Std Dev, Max, Rank, Min, Rank, Avg PPG
+            } else {
+                colCount = 8; // Base columns: #, Player, Pos, Rank, Proj Pts, G, PPG + BPA when shown
+                if (!showKeptPlayers) colCount++; // BPA column
+                if (hasBatters && !hasPitchers) colCount += 6; // Batter stats
+                else if (hasPitchers && !hasBatters) colCount += 6; // Pitcher stats
+                else colCount += 1; // Mixed key stats
+            }
 
             // Track player index for round dividers (only when keepers hidden and not filtering by position/search)
             let playerCount = 0;
             const showRoundDividers = !showKeptPlayers &&
-                projectionSort.column === 'projected_points' &&
+                (projectionSort.column === 'projected_points' || projectionSort.column === 'avgPoints') &&
                 projectionSort.direction === 'desc' &&
                 document.getElementById('proj-position-filter').value === 'all' &&
                 !document.getElementById('proj-player-search').value.trim();
@@ -24411,34 +24761,6 @@
                 const row = document.createElement('tr');
                 const stats = player.stats || {};
 
-                let statsHtml = '';
-                if (hasBatters && !hasPitchers) {
-                    statsHtml = `
-                        <td class="stat-col">${stats.HR || 0}</td>
-                        <td class="stat-col">${stats.RBI || 0}</td>
-                        <td class="stat-col">${stats.R || 0}</td>
-                        <td class="stat-col">${stats.SB || 0}</td>
-                        <td class="stat-col">${(stats.AVG || 0).toFixed(3)}</td>
-                        <td class="stat-col">${(stats.OPS || 0).toFixed(3)}</td>
-                    `;
-                } else if (hasPitchers && !hasBatters) {
-                    statsHtml = `
-                        <td class="stat-col">${stats.W || 0}</td>
-                        <td class="stat-col">${stats.SV || 0}</td>
-                        <td class="stat-col">${stats.K || stats.SO || 0}</td>
-                        <td class="stat-col">${(stats.ERA || 0).toFixed(2)}</td>
-                        <td class="stat-col">${(stats.WHIP || 0).toFixed(2)}</td>
-                        <td class="stat-col">${(stats.IP || 0).toFixed(0)}</td>
-                    `;
-                } else {
-                    // Mixed view - show abbreviated stats
-                    if (player.type === 'batter') {
-                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.HR || 0}HR, ${stats.SB || 0}SB, ${(stats.OPS || 0).toFixed(3)}OPS</td>`;
-                    } else {
-                        statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${(stats.IP || 0).toFixed(0)}IP, ${(stats.ERA || 0).toFixed(2)}ERA, ${stats.K || stats.SO || 0}K</td>`;
-                    }
-                }
-
                 // Get headshot - use MLB ID to construct URL if headshot_url is missing
                 let headshot = player.headshot_url;
                 if (!headshot && player.mlb_id) {
@@ -24449,8 +24771,8 @@
                 }
 
                 // Get team display and logo
-                const teamDisplay = formatMLBTeamDisplay(player.team || '');
-                const mlbLogoUrl = getMLBTeamLogo(player.team || '');
+                const teamDisplay = formatMLBTeamDisplay(player.team || player.mlb_team || '');
+                const mlbLogoUrl = getMLBTeamLogo(player.team || player.mlb_team || '');
                 const mlbLogoHtml = mlbLogoUrl
                     ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">`
                     : '';
@@ -24459,21 +24781,9 @@
                 const positionDisplay = formatProjectionPosition(player.position, player.name);
                 const positionRank = getProjectionPositionRank(player);
 
-                // Use pre-calculated games and PPG
-                const projPoints = player.projected_points || 0;
-                const games = player.games || 0;
-                const ppg = games > 0 ? player.ppg.toFixed(2) : '-';
-
                 // Check if player is kept by someone
                 const keeperInfo = getPlayerKeeperInfo(player.name);
                 const isKept = keeperInfo !== null;
-
-                // Get BPA rank for this player (only when keepers hidden)
-                // Use name + type as key to distinguish Ohtani batter from Ohtani pitcher
-                const playerNameLower = (player.name || '').toLowerCase().trim();
-                const playerType = player.type || 'unknown';
-                const bpaKey = `${playerNameLower}|${playerType}`;
-                const bpaRank = bpaRankings[bpaKey] || '-';
 
                 // Escape player name for onclick
                 const escapedName = player.name.replace(/'/g, "\\'");
@@ -24483,29 +24793,108 @@
                     row.classList.add('is-keeper');
                 }
 
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>
-                        <div class="player-name-cell" onclick="showProjectionPlayerDetail('${escapedName}')">
-                            <img src="${headshot}" class="player-headshot" onerror="this.src='${placeholderImg}'">
-                            <div>
-                                <div class="player-name">
-                                    ${player.name || 'Unknown'}
-                                    ${isKept ? '<span class="keeper-badge">K</span>' : ''}
+                if (isHomeView) {
+                    // Home view row: #, Player, Pos, Rank, Avg Pts, Std Dev, Max, MaxRank, Min, MinRank, Avg PPG
+                    const avgPts = player.avgPoints || 0;
+                    const stdDev = player.stdDev || 0;
+                    const maxPts = player.maxPoints || 0;
+                    const minPts = player.minPoints || 0;
+                    const avgPPG = player.avgPPG || 0;
+
+                    // Get position ranks for max and min systems
+                    const maxRank = player.maxSystem ? getPositionRankForSystem(player, player.maxSystem) : '-';
+                    const minRank = player.minSystem ? getPositionRankForSystem(player, player.minSystem) : '-';
+
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="player-name-cell" onclick="showProjectionPlayerDetail('${escapedName}')">
+                                <img src="${headshot}" class="player-headshot" onerror="this.src='${placeholderImg}'">
+                                <div>
+                                    <div class="player-name">
+                                        ${player.name || 'Unknown'}
+                                        ${isKept ? '<span class="keeper-badge">K</span>' : ''}
+                                    </div>
+                                    <div class="player-mlb-team">${mlbLogoHtml}${teamDisplay}</div>
+                                    ${isKept ? `<div class="keeper-by-tag">Kept by ${keeperInfo.manager}</div>` : ''}
                                 </div>
-                                <div class="player-mlb-team">${mlbLogoHtml}${teamDisplay}</div>
-                                ${isKept ? `<div class="keeper-by-tag">Kept by ${keeperInfo.manager}</div>` : ''}
                             </div>
-                        </div>
-                    </td>
-                    <td>${getPositionBadge(positionDisplay, player.name)}</td>
-                    <td class="player-position">${positionRank}</td>
-                    <td class="stat-col player-points">${projPoints.toFixed(1)}</td>
-                    ${!showKeptPlayers ? `<td class="stat-col bpa-value">${bpaRank}</td>` : ''}
-                    <td class="stat-col">${games || '-'}</td>
-                    <td class="stat-col">${ppg}</td>
-                    ${statsHtml}
-                `;
+                        </td>
+                        <td>${getPositionBadge(positionDisplay, player.name)}</td>
+                        <td class="player-position">${positionRank}</td>
+                        <td class="stat-col player-points">${avgPts.toFixed(1)}</td>
+                        <td class="stat-col home-std-dev">${stdDev.toFixed(1)}</td>
+                        <td class="stat-col home-max" title="${player.maxSystemDisplay || ''}">${maxPts.toFixed(1)}</td>
+                        <td class="stat-col home-rank-col" title="${player.maxSystemDisplay || ''}">${maxRank}</td>
+                        <td class="stat-col home-min" title="${player.minSystemDisplay || ''}">${minPts.toFixed(1)}</td>
+                        <td class="stat-col home-rank-col" title="${player.minSystemDisplay || ''}">${minRank}</td>
+                        <td class="stat-col home-ppg">${avgPPG.toFixed(2)}</td>
+                    `;
+                } else {
+                    // Standard view row
+                    let statsHtml = '';
+                    if (hasBatters && !hasPitchers) {
+                        statsHtml = `
+                            <td class="stat-col">${stats.HR || 0}</td>
+                            <td class="stat-col">${stats.RBI || 0}</td>
+                            <td class="stat-col">${stats.R || 0}</td>
+                            <td class="stat-col">${stats.SB || 0}</td>
+                            <td class="stat-col">${(stats.AVG || 0).toFixed(3)}</td>
+                            <td class="stat-col">${(stats.OPS || 0).toFixed(3)}</td>
+                        `;
+                    } else if (hasPitchers && !hasBatters) {
+                        statsHtml = `
+                            <td class="stat-col">${stats.W || 0}</td>
+                            <td class="stat-col">${stats.SV || 0}</td>
+                            <td class="stat-col">${stats.K || stats.SO || 0}</td>
+                            <td class="stat-col">${(stats.ERA || 0).toFixed(2)}</td>
+                            <td class="stat-col">${(stats.WHIP || 0).toFixed(2)}</td>
+                            <td class="stat-col">${(stats.IP || 0).toFixed(0)}</td>
+                        `;
+                    } else {
+                        // Mixed view - show abbreviated stats
+                        if (player.type === 'batter') {
+                            statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${stats.HR || 0}HR, ${stats.SB || 0}SB, ${(stats.OPS || 0).toFixed(3)}OPS</td>`;
+                        } else {
+                            statsHtml = `<td class="stat-col" style="font-size: 0.8rem;">${(stats.IP || 0).toFixed(0)}IP, ${(stats.ERA || 0).toFixed(2)}ERA, ${stats.K || stats.SO || 0}K</td>`;
+                        }
+                    }
+
+                    // Use pre-calculated games and PPG
+                    const projPoints = player.projected_points || 0;
+                    const games = player.games || 0;
+                    const ppg = games > 0 ? player.ppg.toFixed(2) : '-';
+
+                    // Get BPA rank for this player (only when keepers hidden)
+                    const playerNameLower = (player.name || '').toLowerCase().trim();
+                    const playerType = player.type || 'unknown';
+                    const bpaKey = `${playerNameLower}|${playerType}`;
+                    const bpaRank = bpaRankings[bpaKey] || '-';
+
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>
+                            <div class="player-name-cell" onclick="showProjectionPlayerDetail('${escapedName}')">
+                                <img src="${headshot}" class="player-headshot" onerror="this.src='${placeholderImg}'">
+                                <div>
+                                    <div class="player-name">
+                                        ${player.name || 'Unknown'}
+                                        ${isKept ? '<span class="keeper-badge">K</span>' : ''}
+                                    </div>
+                                    <div class="player-mlb-team">${mlbLogoHtml}${teamDisplay}</div>
+                                    ${isKept ? `<div class="keeper-by-tag">Kept by ${keeperInfo.manager}</div>` : ''}
+                                </div>
+                            </div>
+                        </td>
+                        <td>${getPositionBadge(positionDisplay, player.name)}</td>
+                        <td class="player-position">${positionRank}</td>
+                        <td class="stat-col player-points">${projPoints.toFixed(1)}</td>
+                        ${!showKeptPlayers ? `<td class="stat-col bpa-value">${bpaRank}</td>` : ''}
+                        <td class="stat-col">${games || '-'}</td>
+                        <td class="stat-col">${ppg}</td>
+                        ${statsHtml}
+                    `;
+                }
 
                 tbody.appendChild(row);
             });
