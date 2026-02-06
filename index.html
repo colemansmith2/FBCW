@@ -4414,6 +4414,11 @@
             color: #888;
         }
 
+        .home-std-dev-na {
+            color: #bbb;
+            font-style: italic;
+        }
+
         .home-max {
             color: #28a745;
             font-weight: 600;
@@ -24592,6 +24597,26 @@
                     return projectionSort.direction === 'asc' ? (bPoints - aPoints) : (aPoints - bPoints);
                 }
 
+                // Special handling for stdDev sorting - players with < 3 systems go to bottom
+                if (col === 'stdDev') {
+                    const aHasValidStdDev = (a.systemCount || 0) >= 3;
+                    const bHasValidStdDev = (b.systemCount || 0) >= 3;
+
+                    // If one has valid stdDev and the other doesn't, valid one goes first
+                    if (aHasValidStdDev && !bHasValidStdDev) return -1;
+                    if (!aHasValidStdDev && bHasValidStdDev) return 1;
+
+                    // If both are NA, sort by avgPoints descending as a tiebreaker
+                    if (!aHasValidStdDev && !bHasValidStdDev) {
+                        return (b.avgPoints || 0) - (a.avgPoints || 0);
+                    }
+
+                    // Both have valid stdDev, sort normally
+                    const aVal = a.stdDev || 0;
+                    const bVal = b.stdDev || 0;
+                    return projectionSort.direction === 'asc' ? (aVal - bVal) : (bVal - aVal);
+                }
+
                 // === HELPER: Check both main object AND stats object ===
                 const getVal = (obj) => {
                     // 1. Check main object (Rank, Name, Projected Points, Games)
@@ -24800,6 +24825,11 @@
                     const maxPts = player.maxPoints || 0;
                     const minPts = player.minPoints || 0;
                     const avgPPG = player.avgPPG || 0;
+                    const systemCount = player.systemCount || 0;
+
+                    // Show NA for std dev if player is in less than 3 systems
+                    const stdDevDisplay = systemCount >= 3 ? stdDev.toFixed(1) : 'NA';
+                    const stdDevClass = systemCount >= 3 ? 'home-std-dev' : 'home-std-dev-na';
 
                     // Get position ranks for max and min systems
                     const maxRank = player.maxSystem ? getPositionRankForSystem(player, player.maxSystem) : '-';
@@ -24823,7 +24853,7 @@
                         <td>${getPositionBadge(positionDisplay, player.name)}</td>
                         <td class="player-position">${positionRank}</td>
                         <td class="stat-col player-points">${avgPts.toFixed(1)}</td>
-                        <td class="stat-col home-std-dev">${stdDev.toFixed(1)}</td>
+                        <td class="stat-col ${stdDevClass}" title="${systemCount} system${systemCount !== 1 ? 's' : ''}">${stdDevDisplay}</td>
                         <td class="stat-col home-max" title="${player.maxSystemDisplay || ''}">${maxPts.toFixed(1)}</td>
                         <td class="stat-col home-rank-col" title="${player.maxSystemDisplay || ''}">${maxRank}</td>
                         <td class="stat-col home-min" title="${player.minSystemDisplay || ''}">${minPts.toFixed(1)}</td>
