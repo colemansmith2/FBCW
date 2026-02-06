@@ -7824,6 +7824,7 @@
         .projection-card-container {
             flex: 0 0 420px;
             max-width: 420px;
+            margin-top: -2rem;
         }
 
         /* Projection Baseball Card Styles */
@@ -31314,13 +31315,57 @@
             const scatterChartEl = document.getElementById('projection-scatter-chart');
             const scatterTitleEl = document.getElementById('projection-scatter-title');
 
+            // Check if we're in Home view
+            const projectionType = document.getElementById('projection-type').value;
+            const isHomeView = projectionType === 'home';
+
             // Find player in projection data
             const allPlayers = [...allProjectionBatters, ...allProjectionPitchers];
             const player = allPlayers.find(p => p.name === playerName);
             if (!player) return;
 
             const isBatter = player.type === 'batter';
-            const stats = player.stats || {};
+
+            // For Home view, load stats from the player's maxSystem projection
+            let stats = player.stats || {};
+            let statsSourceSystem = '';
+            let statsSourceDisplayName = '';
+            let maxSystemProjectionData = null;
+
+            if (isHomeView && player.maxSystem) {
+                const systemDisplayNames = {
+                    'thebatx': 'BAT X',
+                    'thebat': 'BAT',
+                    'steamer': 'Steamer',
+                    'zipsdc': 'ZiPS DC',
+                    'atc': 'ATC',
+                    'depthcharts': 'DC',
+                    'oopsy': 'OOPSY'
+                };
+                statsSourceSystem = player.maxSystem;
+                statsSourceDisplayName = systemDisplayNames[player.maxSystem] || player.maxSystem;
+
+                // Load the maxSystem projection data
+                try {
+                    const response = await fetch(`data/projections/projections_${player.maxSystem}.json`);
+                    if (response.ok) {
+                        maxSystemProjectionData = await response.json();
+                        const systemPlayers = isBatter ? maxSystemProjectionData.batters : maxSystemProjectionData.pitchers;
+                        const playerInSystem = systemPlayers?.find(p => p.name?.toLowerCase() === playerName.toLowerCase());
+                        if (playerInSystem) {
+                            stats = playerInSystem.stats || {};
+                            // Also update projected_points and games for display
+                            player._maxSystemPoints = playerInSystem.projected_points;
+                            player._maxSystemGames = playerInSystem.stats?.G || 0;
+                            player._maxSystemPPG = player._maxSystemGames > 0
+                                ? playerInSystem.projected_points / player._maxSystemGames
+                                : 0;
+                        }
+                    }
+                } catch (e) {
+                    console.log(`Could not load ${player.maxSystem} projection for card detail`);
+                }
+            }
 
             // Placeholders
             const placeholderHeadshot = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
@@ -31421,9 +31466,13 @@
                         
                         <div class="card-stats-section">
                             <div class="card-stats-header">
-                                <div class="card-stats-title">2026 Projected Statistics</div>
+                                <div class="card-stats-title">2026 Projected Statistics${isHomeView && statsSourceDisplayName ? ` (${statsSourceDisplayName})` : ''}</div>
                             </div>
                             <div id="projection-modal-stats-content">`;
+
+            // Use maxSystem data for games/ppg in Home view if available
+            const displayGames = isHomeView && player._maxSystemGames !== undefined ? player._maxSystemGames : (player.games || 0);
+            const displayPPG = isHomeView && player._maxSystemPPG !== undefined ? player._maxSystemPPG : player.ppg;
 
             if (isBatter) {
                 const singles = (stats['1B'] || 0);
@@ -31433,7 +31482,7 @@
                                     <th>G</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>R</th><th>SB</th>
                                 </tr>
                                 <tr>
-                                    <td>${player.games || 0}</td>
+                                    <td>${displayGames}</td>
                                     <td>${stats.PA || 0}</td>
                                     <td>${stats.H || 0}</td>
                                     <td>${stats.HR || 0}</td>
@@ -31451,7 +31500,7 @@
                                     <td>${stats['3B'] || 0}</td>
                                     <td>${stats.AVG ? stats.AVG.toFixed(3) : '.000'}</td>
                                     <td>${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</td>
-                                    <td>${player.ppg ? player.ppg.toFixed(2) : '-'}</td>
+                                    <td>${displayPPG ? displayPPG.toFixed(2) : '-'}</td>
                                 </tr>
                             </table>`;
             } else {
@@ -31464,7 +31513,7 @@
                                     <td>${stats.W || 0}</td>
                                     <td>${stats.L || 0}</td>
                                     <td>${stats.SV || 0}</td>
-                                    <td>${stats.G || 0}</td>
+                                    <td>${displayGames}</td>
                                     <td>${stats.GS || 0}</td>
                                     <td>${(stats.IP || 0).toFixed(1)}</td>
                                     <td>${stats.K || stats.SO || 0}</td>
@@ -31479,7 +31528,7 @@
                                     <td>${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</td>
                                     <td>${stats.WHIP ? stats.WHIP.toFixed(2) : '0.00'}</td>
                                     <td>${stats.HLD || 0}</td>
-                                    <td>${player.ppg ? player.ppg.toFixed(2) : '-'}</td>
+                                    <td>${displayPPG ? displayPPG.toFixed(2) : '-'}</td>
                                 </tr>
                             </table>`;
             }
@@ -31624,8 +31673,16 @@
             renderPositionRankChart(player, posChartEl);
 
             // Set title and render scatter
-            scatterTitleEl.textContent = (player.type === 'batter') ? 'Points vs PA' : 'Points vs IP';
-            renderScatterChart(player, scatterChartEl, (player.type === 'batter'));
+            // For Home view, use maxSystem data for the scatter chart
+            if (isHomeView && maxSystemProjectionData) {
+                scatterTitleEl.textContent = isBatter
+                    ? `Points vs PA (${statsSourceDisplayName})`
+                    : `Points vs IP (${statsSourceDisplayName})`;
+                renderScatterChart(player, scatterChartEl, isBatter, maxSystemProjectionData);
+            } else {
+                scatterTitleEl.textContent = isBatter ? 'Points vs PA' : 'Points vs IP';
+                renderScatterChart(player, scatterChartEl, isBatter);
+            }
         }
 
         function renderPositionRankChart(selectedPlayer, container) {
@@ -31743,8 +31800,16 @@
             });
         }
 
-        function renderScatterChart(selectedPlayer, container, isBatter) {
-            const allPlayers = isBatter ? [...allProjectionBatters] : [...allProjectionPitchers];
+        function renderScatterChart(selectedPlayer, container, isBatter, systemProjectionData = null) {
+            // If systemProjectionData is provided (Home view), use that data instead
+            let allPlayers;
+            if (systemProjectionData) {
+                allPlayers = isBatter
+                    ? (systemProjectionData.batters || [])
+                    : (systemProjectionData.pitchers || []);
+            } else {
+                allPlayers = isBatter ? [...allProjectionBatters] : [...allProjectionPitchers];
+            }
 
             const getXValue = (p) => isBatter ? (p.stats?.PA || 0) : (p.stats?.IP || 0);
             const validPlayers = allPlayers.filter(p => getXValue(p) > 0);
