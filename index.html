@@ -7550,11 +7550,48 @@
 
         .card-history-title {
             background: var(--retro-blue);
-            color: #d4af37;
-            font-size: 0.8rem;
+            color: white;
+            font-size: 0.75rem;
             font-weight: bold;
             text-transform: uppercase;
-            padding: 0.4rem 0.75rem;
+            padding: 0.35rem 0.75rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-history-title-text {
+            flex: 1;
+        }
+
+        .card-history-header-col {
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .card-history-header-col.ovr {
+            width: 32px;
+            text-align: center;
+        }
+
+        .card-history-header-col.type {
+            width: 42px;
+            text-align: center;
+            margin-left: 0.25rem;
+        }
+
+        .card-history-header-col.pos {
+            width: 42px;
+            text-align: center;
+            margin-left: 0.25rem;
+        }
+
+        .card-history-header-col.pts {
+            width: 45px;
+            text-align: center;
+            margin-left: 0.25rem;
         }
 
         .card-history-row {
@@ -7592,23 +7629,54 @@
             font-size: 0.75rem;
         }
 
-        .card-history-pts {
+        .card-history-ovr-rank {
+            background: var(--retro-blue);
+            color: white;
+            font-size: 0.65rem;
             font-weight: bold;
-            color: var(--retro-blue);
-            min-width: 52px;
-            text-align: right;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            width: 32px;
+            text-align: center;
+        }
+
+        .card-history-type-rank {
+            background: var(--retro-blue);
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 0.1rem 0.3rem;
+            border-radius: 3px;
+            margin-left: 0.25rem;
+            width: 42px;
+            text-align: center;
         }
 
         .card-history-rank {
             background: var(--retro-blue);
-            color: #d4af37;
-            font-size: 0.7rem;
+            color: white;
+            font-size: 0.65rem;
             font-weight: bold;
-            padding: 0.15rem 0.35rem;
+            padding: 0.1rem 0.3rem;
             border-radius: 3px;
-            margin-left: 0.4rem;
-            min-width: 30px;
+            margin-left: 0.25rem;
+            width: 42px;
             text-align: center;
+        }
+
+        .card-history-rank.rank-1 {
+            background: var(--retro-blue);
+            color: #d4af37;
+            border: 2px solid #d4af37;
+            padding: 0 0.2rem;
+        }
+
+        .card-history-pts {
+            font-weight: bold;
+            color: var(--retro-blue);
+            width: 45px;
+            text-align: center;
+            margin-left: 0.25rem;
         }
 
         /* Manager footer */
@@ -7688,6 +7756,11 @@
 
         #player-modal-header {
             display: none;
+        }
+
+        #player-modal.active {
+            align-items: flex-start;
+            padding-top: 2rem;
         }
 
         /* Projection Modal Styles */
@@ -17428,47 +17501,47 @@
                             <div class="card-stats-label">SEASON</div>
                             <div class="card-stats-cells">
                                 <div class="card-stats-header-cell">G</div>
+                                <div class="card-stats-header-cell">PA</div>
                                 <div class="card-stats-header-cell">AB</div>
-                                <div class="card-stats-header-cell">H</div>
+                                <div class="card-stats-header-cell">1B</div>
+                                <div class="card-stats-header-cell">2B</div>
+                                <div class="card-stats-header-cell">3B</div>
                                 <div class="card-stats-header-cell">HR</div>
-                                <div class="card-stats-header-cell">RBI</div>
-                                <div class="card-stats-header-cell">SB</div>
-                                <div class="card-stats-header-cell">AVG</div>
                             </div>
                         </div>
                         <div class="card-stats-data-row">
                             <div class="card-stats-data-label">${selectedYear}</div>
                             <div class="card-stats-data-cells">
                                 <div class="card-stats-data-cell">${stats.G || 0}</div>
+                                <div class="card-stats-data-cell">${stats.PA || 0}</div>
                                 <div class="card-stats-data-cell">${stats.AB || 0}</div>
-                                <div class="card-stats-data-cell">${stats.H || 0}</div>
+                                <div class="card-stats-data-cell">${stats['1B'] || 0}</div>
+                                <div class="card-stats-data-cell">${stats['2B'] || 0}</div>
+                                <div class="card-stats-data-cell">${stats['3B'] || 0}</div>
                                 <div class="card-stats-data-cell">${stats.HR || 0}</div>
-                                <div class="card-stats-data-cell">${stats.RBI || 0}</div>
-                                <div class="card-stats-data-cell">${stats.SB || 0}</div>
-                                <div class="card-stats-data-cell">${stats.AVG ? stats.AVG.toFixed(3) : '.000'}</div>
                             </div>
                         </div>
                         <div class="card-stats-row">
                             <div class="card-stats-label">MORE</div>
                             <div class="card-stats-cells">
-                                <div class="card-stats-header-cell">R</div>
+                                <div class="card-stats-header-cell">RBI</div>
                                 <div class="card-stats-header-cell">BB</div>
-                                <div class="card-stats-header-cell">2B</div>
-                                <div class="card-stats-header-cell">3B</div>
-                                <div class="card-stats-header-cell">OBP</div>
-                                <div class="card-stats-header-cell">SLG</div>
+                                <div class="card-stats-header-cell">SO</div>
+                                <div class="card-stats-header-cell">SB</div>
+                                <div class="card-stats-header-cell">CS</div>
+                                <div class="card-stats-header-cell">HBP</div>
                                 <div class="card-stats-header-cell">OPS</div>
                             </div>
                         </div>
                         <div class="card-stats-data-row">
                             <div class="card-stats-data-label"></div>
                             <div class="card-stats-data-cells">
-                                <div class="card-stats-data-cell">${stats.R || 0}</div>
+                                <div class="card-stats-data-cell">${stats.RBI || 0}</div>
                                 <div class="card-stats-data-cell">${stats.BB || 0}</div>
-                                <div class="card-stats-data-cell">${stats['2B'] || 0}</div>
-                                <div class="card-stats-data-cell">${stats['3B'] || 0}</div>
-                                <div class="card-stats-data-cell">${stats.OBP ? stats.OBP.toFixed(3) : '.000'}</div>
-                                <div class="card-stats-data-cell">${stats.SLG ? stats.SLG.toFixed(3) : '.000'}</div>
+                                <div class="card-stats-data-cell">${stats.SO || 0}</div>
+                                <div class="card-stats-data-cell">${stats.SB || 0}</div>
+                                <div class="card-stats-data-cell">${stats.CS || 0}</div>
+                                <div class="card-stats-data-cell">${stats.HBP || 0}</div>
                                 <div class="card-stats-data-cell">${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</div>
                             </div>
                         </div>`;
@@ -17477,49 +17550,49 @@
                         <div class="card-stats-row">
                             <div class="card-stats-label">SEASON</div>
                             <div class="card-stats-cells">
+                                <div class="card-stats-header-cell">G</div>
+                                <div class="card-stats-header-cell">GS</div>
+                                <div class="card-stats-header-cell">IP</div>
                                 <div class="card-stats-header-cell">W</div>
                                 <div class="card-stats-header-cell">L</div>
                                 <div class="card-stats-header-cell">SV</div>
-                                <div class="card-stats-header-cell">G</div>
-                                <div class="card-stats-header-cell">IP</div>
-                                <div class="card-stats-header-cell">K</div>
-                                <div class="card-stats-header-cell">ERA</div>
+                                <div class="card-stats-header-cell">HLD</div>
                             </div>
                         </div>
                         <div class="card-stats-data-row">
                             <div class="card-stats-data-label">${selectedYear}</div>
                             <div class="card-stats-data-cells">
+                                <div class="card-stats-data-cell">${stats.G || 0}</div>
+                                <div class="card-stats-data-cell">${stats.GS || 0}</div>
+                                <div class="card-stats-data-cell">${stats.IP || 0}</div>
                                 <div class="card-stats-data-cell">${stats.W || 0}</div>
                                 <div class="card-stats-data-cell">${stats.L || 0}</div>
                                 <div class="card-stats-data-cell">${stats.SV || 0}</div>
-                                <div class="card-stats-data-cell">${stats.G || 0}</div>
-                                <div class="card-stats-data-cell">${stats.IP || 0}</div>
-                                <div class="card-stats-data-cell">${stats.SO || 0}</div>
-                                <div class="card-stats-data-cell">${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</div>
+                                <div class="card-stats-data-cell">${stats.HLD || 0}</div>
                             </div>
                         </div>
                         <div class="card-stats-row">
                             <div class="card-stats-label">MORE</div>
                             <div class="card-stats-cells">
-                                <div class="card-stats-header-cell">GS</div>
-                                <div class="card-stats-header-cell">HLD</div>
-                                <div class="card-stats-header-cell">BB</div>
+                                <div class="card-stats-header-cell">ERA</div>
                                 <div class="card-stats-header-cell">WHIP</div>
-                                <div class="card-stats-header-cell">K/9</div>
+                                <div class="card-stats-header-cell">K</div>
+                                <div class="card-stats-header-cell">BB</div>
                                 <div class="card-stats-header-cell">K%</div>
                                 <div class="card-stats-header-cell">BB%</div>
+                                <div class="card-stats-header-cell">TBF</div>
                             </div>
                         </div>
                         <div class="card-stats-data-row">
                             <div class="card-stats-data-label"></div>
                             <div class="card-stats-data-cells">
-                                <div class="card-stats-data-cell">${stats.GS || 0}</div>
-                                <div class="card-stats-data-cell">${stats.HLD || 0}</div>
-                                <div class="card-stats-data-cell">${stats.BB || 0}</div>
+                                <div class="card-stats-data-cell">${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</div>
                                 <div class="card-stats-data-cell">${stats.WHIP ? stats.WHIP.toFixed(2) : '0.00'}</div>
-                                <div class="card-stats-data-cell">${stats['K/9'] ? stats['K/9'].toFixed(1) : '0.0'}</div>
+                                <div class="card-stats-data-cell">${stats.SO || 0}</div>
+                                <div class="card-stats-data-cell">${stats.BB || 0}</div>
                                 <div class="card-stats-data-cell">${stats['K%'] ? stats['K%'].toFixed(0) : '0'}%</div>
                                 <div class="card-stats-data-cell">${stats['BB%'] ? stats['BB%'].toFixed(0) : '0'}%</div>
+                                <div class="card-stats-data-cell">${stats.TBF || 0}</div>
                             </div>
                         </div>`;
             }
@@ -17557,6 +17630,7 @@
             if (playerHistory && playerHistory.seasons && playerHistory.seasons.length > 0) {
                 const historyLogos = {};
                 const historyRanks = {};
+                const primaryPos = player.primary_position;
 
                 for (const season of playerHistory.seasons) {
                     const teams = await getTeamData(season.year);
@@ -17569,40 +17643,58 @@
 
                     const yearPlayers = await getPlayerStatsData(season.year);
                     if (yearPlayers) {
+                        // Overall rank (all players)
+                        const allPlayersSorted = yearPlayers
+                            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+                        const ovrRank = allPlayersSorted.findIndex(p => p.name === player.name) + 1;
+
+                        // Type rank (batters or pitchers)
                         const sameType = yearPlayers
                             .filter(p => p.position_type === player.position_type)
                             .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
-                        const overallRank = sameType.findIndex(p => p.name === player.name) + 1;
+                        const typeRank = sameType.findIndex(p => p.name === player.name) + 1;
 
-                        const primaryPos = player.primary_position;
+                        // Position rank
                         const samePos = yearPlayers
                             .filter(p => p.eligible_positions && p.eligible_positions.includes(primaryPos))
                             .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
                         const posRank = samePos.findIndex(p => p.name === player.name) + 1;
 
                         historyRanks[season.year] = {
-                            overall: overallRank > 0 ? overallRank : '-',
-                            position: posRank > 0 ? `${primaryPos}${posRank}` : '-'
+                            overall: ovrRank > 0 ? ovrRank : '-',
+                            type: typeRank > 0 ? typeRank : '-',
+                            position: posRank > 0 ? `${primaryPos}${posRank}` : '-',
+                            posRankNum: posRank
                         };
                     } else {
-                        historyRanks[season.year] = { overall: '-', position: '-' };
+                        historyRanks[season.year] = { overall: '-', type: '-', position: '-', posRankNum: 0 };
                     }
                 }
 
+                const typeLabel = isBatter ? 'Batter' : 'Pitcher';
                 cardHTML += `
                         <div class="card-history-wrapper">
-                            <div class="card-history-title">League History</div>`;
+                            <div class="card-history-title">
+                                <span class="card-history-title-text">League History</span>
+                                <span class="card-history-header-col ovr">Ovr</span>
+                                <span class="card-history-header-col type">${typeLabel}</span>
+                                <span class="card-history-header-col pos">Position</span>
+                                <span class="card-history-header-col pts">Points</span>
+                            </div>`;
 
                 playerHistory.seasons.sort((a, b) => b.year - a.year).forEach(season => {
                     const logo = historyLogos[`${season.year}_${season.team_name}`] || '';
-                    const ranks = historyRanks[season.year] || { overall: '-', position: '-' };
+                    const ranks = historyRanks[season.year] || { overall: '-', type: '-', position: '-', posRankNum: 0 };
+                    const posRankClass = ranks.posRankNum === 1 ? 'card-history-rank rank-1' : 'card-history-rank';
                     cardHTML += `
                             <div class="card-history-row">
                                 <span class="card-history-year">${season.year}</span>
                                 ${logo ? `<img src="${logo}" class="card-history-logo" alt="">` : ''}
                                 <span class="card-history-manager">${season.manager || ''}</span>
-                                <span class="card-history-pts">${(season.fantasy_points || 0).toFixed(0)} pts</span>
-                                <span class="card-history-rank">${ranks.position}</span>
+                                <span class="card-history-ovr-rank">${ranks.overall}</span>
+                                <span class="card-history-type-rank">${ranks.type}</span>
+                                <span class="${posRankClass}">${ranks.position}</span>
+                                <span class="card-history-pts">${(season.fantasy_points || 0).toFixed(0)}</span>
                             </div>`;
                 });
 
