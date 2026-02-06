@@ -3927,6 +3927,15 @@
             display: block;
         }
 
+        .trade-goal-legend-left {
+            position: absolute;
+            top: -2.5rem;
+            left: 0;
+            right: 50%;
+            text-align: center;
+            margin-top: 0;
+        }
+
         .trade-goal-legend-right {
             position: absolute;
             top: -2.5rem;
@@ -14956,9 +14965,9 @@
                                 </div>
                             </div>
                             <div class="trade-team-info" id="trade-team-1-info"></div>
-                            <div class="trade-goal-legend" id="trade-goal-legend-1"></div>
                         </div>
                         <div class="trade-columns">
+                            <div class="trade-goal-legend trade-goal-legend-left" id="trade-goal-legend-1"></div>
                             <div class="trade-assets-column">
                                 <h5>Available Assets</h5>
                                 <div class="trade-pick-warning" id="trade-pick-warning-1"></div>
@@ -33071,9 +33080,10 @@
                     let managerDisplay = '';
                     let betSuffix = ''; // For over/under bets like "O10.5 W" or "U10.5 W"
 
-                    // Parse out bet suffix for over/under bets (e.g., "King Vylan U10.5 W" -> team: "King Vylan", suffix: " U10.5 W")
+                    // Parse out bet suffix for over/under bets
+                    // Patterns: "Team Name U10.5 W", "Team Name O10.5 W", "Team Name U1234.5 pts", "Team Name O1234.5 pts"
                     let teamNameForLookup = bet.selectionName;
-                    const overUnderMatch = bet.selectionName?.match(/^(.+?)(\s+[OU]\d+\.?\d*\s+[WP])$/);
+                    const overUnderMatch = bet.selectionName?.match(/^(.+?)(\s+[OU]\d+\.?\d*\s+(?:W|P|pts))$/i);
                     if (overUnderMatch) {
                         teamNameForLookup = overUnderMatch[1].trim();
                         betSuffix = overUnderMatch[2];
