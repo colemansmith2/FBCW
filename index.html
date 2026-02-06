@@ -2970,6 +2970,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 110px;
         }
 
         .trade-asset-item .player-meta,
@@ -3108,6 +3109,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 110px;
         }
 
         .trade-offer-item .player-meta {
@@ -28296,6 +28298,32 @@
             return 'trade-value-neutral';
         }
 
+        // Shorten long player names to "First Initial. Last Name" format
+        // e.g., "Vinnie Pasquantino" becomes "V. Pasquantino"
+        function shortenPlayerName(fullName, maxLength = 14) {
+            if (!fullName) return '';
+            if (fullName.length <= maxLength) return fullName;
+
+            const parts = fullName.trim().split(/\s+/);
+            if (parts.length < 2) return fullName;
+
+            // Get first initial and last name
+            const firstInitial = parts[0].charAt(0).toUpperCase();
+            const lastName = parts[parts.length - 1];
+
+            // Handle suffixes like Jr., Sr., III, etc.
+            const suffixes = ['Jr.', 'Sr.', 'II', 'III', 'IV', 'V'];
+            let suffix = '';
+            let actualLastName = lastName;
+
+            if (parts.length > 2 && suffixes.includes(lastName)) {
+                suffix = ' ' + lastName;
+                actualLastName = parts[parts.length - 2];
+            }
+
+            return `${firstInitial}. ${actualLastName}${suffix}`;
+        }
+
         function showTradeAssetTab(side, tab) {
             tradeAnalyzerData.activeTab[side] = tab;
 
@@ -28350,11 +28378,14 @@
                         ? '<span class="trade-round-tag prospect">NA</span>'
                         : `<span class="trade-round-tag">R${player.roundCost}</span>`;
 
+                    // Shorten long names for display
+                    const displayName = shortenPlayerName(player.name, 14);
+
                     return `
                         <div class="trade-asset-item ${inTrade ? 'in-trade' : ''}" onclick="addToTrade(${side}, 'player', ${idx})">
                             <img src="${headshot}" class="trade-headshot" alt="" onerror="this.src='${placeholderImg}'">
                             <div class="player-info">
-                                <div class="player-name">${player.name}</div>
+                                <div class="player-name" title="${player.name}">${displayName}</div>
                                 <div class="player-meta">
                                     ${hasMlbLogo ? `<img src="${mlbLogoUrl}" class="trade-mlb-logo" alt="">` : ''}
                                     <span class="trade-mlb-abbrev">${mlbTeamText}</span>
@@ -28535,11 +28566,14 @@
                         ? getValueColorClass(item.value, item.baseValue)
                         : 'trade-value-neutral';
 
+                    // Shorten long names for display
+                    const displayName = shortenPlayerName(item.name, 14);
+
                     return `
                         <div class="trade-offer-item">
                             <img src="${headshot}" class="trade-headshot" alt="" onerror="this.src='${placeholderImg}'">
                             <div class="player-info">
-                                <div class="player-name">${item.name}</div>
+                                <div class="player-name" title="${item.name}">${displayName}</div>
                                 <div class="player-meta">
                                     ${hasMlbLogo ? `<img src="${mlbLogoUrl}" class="trade-mlb-logo" alt="">` : ''}
                                     <span class="trade-mlb-abbrev">${mlbTeamText}</span>
