@@ -14904,8 +14904,6 @@
                         <label for="proj-position-filter">Position:</label>
                         <select id="proj-position-filter" onchange="filterProjections()">
                             <option value="all">All Players</option>
-                            <option value="B">All Batters</option>
-                            <option value="P">All Pitchers</option>
                             <optgroup label="Batting Positions">
                                 <option value="C">C - Catcher</option>
                                 <option value="1B">1B - First Base</option>
@@ -14913,7 +14911,7 @@
                                 <option value="3B">3B - Third Base</option>
                                 <option value="SS">SS - Shortstop</option>
                                 <option value="OF">OF - Outfield</option>
-                                <option value="DH">DH - Designated Hitter</option>
+                                <option value="UTIL">UTIL - Utility Only</option>
                             </optgroup>
                             <optgroup label="Pitching Positions">
                                 <option value="SP">SP - Starting Pitcher</option>
@@ -24589,6 +24587,15 @@
                     data = data.filter(p => p.type === 'batter');
                 } else if (positionFilter === 'P') {
                     data = data.filter(p => p.type === 'pitcher');
+                } else if (positionFilter === 'UTIL') {
+                    // UTIL-only: players who are batters but don't qualify at any standard position
+                    const standardPositions = ['C', '1B', '2B', '3B', 'SS', 'LF', 'CF', 'RF', 'OF'];
+                    data = data.filter(p => {
+                        if (p.type !== 'batter') return false;
+                        const pos = (p.position || '').toUpperCase();
+                        // Check if they have any standard position
+                        return !standardPositions.some(stdPos => pos.includes(stdPos));
+                    });
                 } else {
                     data = data.filter(p => {
                         const pos = (p.position || '').toUpperCase();
@@ -24794,24 +24801,45 @@
                 else colCount += 1; // Mixed key stats
             }
 
-            // Track player index for round dividers (only when keepers hidden and not filtering by position/search)
-            let playerCount = 0;
+            // Track round dividers based on BPA (only when keepers hidden, sorted by points desc, no search)
             const showRoundDividers = !showKeptPlayers &&
-                (projectionSort.column === 'projected_points' || projectionSort.column === 'avgPoints') &&
+                (projectionSort.column === 'projected_points' || projectionSort.column === 'avgPoints' || projectionSort.column === 'bpa') &&
                 projectionSort.direction === 'desc' &&
                 document.getElementById('proj-position-filter').value === 'all' &&
                 !document.getElementById('proj-player-search').value.trim();
 
+            // For Home view, calculate BPA rankings based on avgPoints
+            let homeBpaRankings = {};
+            if (isHomeView && !showKeptPlayers) {
+                const allNonKeepers = [...allProjectionBatters, ...allProjectionPitchers]
+                    .filter(p => getPlayerKeeperInfo(p.name) === null)
+                    .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+                allNonKeepers.forEach((player, idx) => {
+                    const nameLower = (player.name || '').toLowerCase().trim();
+                    const playerType = player.type || 'unknown';
+                    homeBpaRankings[`${nameLower}|${playerType}`] = idx + 1;
+                });
+            }
+
+            let lastRoundShown = 0;
             filteredProjections.forEach((player, index) => {
-                // Insert round divider before every 12 players when keepers are hidden
-                if (showRoundDividers && playerCount % 12 === 0) {
-                    const roundNum = Math.floor(playerCount / 12) + 1;
-                    const roundRow = document.createElement('tr');
-                    roundRow.className = 'round-divider';
-                    roundRow.innerHTML = `<td colspan="${colCount}">Projected Round ${roundNum}</td>`;
-                    tbody.appendChild(roundRow);
+                // Get BPA rank for this player to determine round divider
+                const playerNameLower = (player.name || '').toLowerCase().trim();
+                const playerType = player.type || 'unknown';
+                const bpaKey = `${playerNameLower}|${playerType}`;
+                const bpaRank = isHomeView ? (homeBpaRankings[bpaKey] || 0) : (bpaRankings[bpaKey] || 0);
+
+                // Insert round divider based on BPA rank (round = ceil(bpaRank / 12))
+                if (showRoundDividers && bpaRank > 0) {
+                    const roundNum = Math.ceil(bpaRank / 12);
+                    if (roundNum > lastRoundShown) {
+                        const roundRow = document.createElement('tr');
+                        roundRow.className = 'round-divider';
+                        roundRow.innerHTML = `<td colspan="${colCount}">Projected Round ${roundNum}</td>`;
+                        tbody.appendChild(roundRow);
+                        lastRoundShown = roundNum;
+                    }
                 }
-                playerCount++;
 
                 const row = document.createElement('tr');
                 const stats = player.stats || {};
