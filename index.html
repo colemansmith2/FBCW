@@ -23814,9 +23814,11 @@
                         if (!player.name || !player.projected_points || player.projected_points <= 0) return;
 
                         const nameLower = player.name.toLowerCase().trim();
+                        // Use name|type as key to keep Ohtani batter and pitcher separate
+                        const playerKey = `${nameLower}|batter`;
 
-                        if (!playerProjections[nameLower]) {
-                            playerProjections[nameLower] = {
+                        if (!playerProjections[playerKey]) {
+                            playerProjections[playerKey] = {
                                 name: player.name,
                                 pointsBySystem: {},
                                 gamesBySystem: {},
@@ -23829,28 +23831,28 @@
                             };
                         }
 
-                        playerProjections[nameLower].pointsBySystem[system] = player.projected_points;
-                        playerProjections[nameLower].gamesBySystem[system] = player.stats?.G || 0;
+                        playerProjections[playerKey].pointsBySystem[system] = player.projected_points;
+                        playerProjections[playerKey].gamesBySystem[system] = player.stats?.G || 0;
 
                         // Update headshot if we have a better one (not generic)
                         if (player.headshot_url && !player.headshot_url.includes('/people/1/')) {
-                            playerProjections[nameLower].headshot = player.headshot_url;
+                            playerProjections[playerKey].headshot = player.headshot_url;
                         }
 
                         // Update position if we have one
-                        if (player.position && !playerProjections[nameLower].position) {
-                            playerProjections[nameLower].position = player.position;
+                        if (player.position && !playerProjections[playerKey].position) {
+                            playerProjections[playerKey].position = player.position;
                         }
 
                         // Update mlb_team if we have one (check both mlb_team and team fields)
                         const playerMlbTeam = player.mlb_team || player.team || '';
-                        if (playerMlbTeam && !playerProjections[nameLower].mlb_team) {
-                            playerProjections[nameLower].mlb_team = playerMlbTeam;
+                        if (playerMlbTeam && !playerProjections[playerKey].mlb_team) {
+                            playerProjections[playerKey].mlb_team = playerMlbTeam;
                         }
 
                         // Update mlb_id if we have one
-                        if (player.mlb_id && !playerProjections[nameLower].mlb_id) {
-                            playerProjections[nameLower].mlb_id = player.mlb_id;
+                        if (player.mlb_id && !playerProjections[playerKey].mlb_id) {
+                            playerProjections[playerKey].mlb_id = player.mlb_id;
                         }
                     });
 
@@ -23859,9 +23861,11 @@
                         if (!player.name || !player.projected_points || player.projected_points <= 0) return;
 
                         const nameLower = player.name.toLowerCase().trim();
+                        // Use name|type as key to keep Ohtani batter and pitcher separate
+                        const playerKey = `${nameLower}|pitcher`;
 
-                        if (!playerProjections[nameLower]) {
-                            playerProjections[nameLower] = {
+                        if (!playerProjections[playerKey]) {
+                            playerProjections[playerKey] = {
                                 name: player.name,
                                 pointsBySystem: {},
                                 gamesBySystem: {},
@@ -23874,28 +23878,28 @@
                             };
                         }
 
-                        playerProjections[nameLower].pointsBySystem[system] = player.projected_points;
-                        playerProjections[nameLower].gamesBySystem[system] = player.stats?.G || 0;
+                        playerProjections[playerKey].pointsBySystem[system] = player.projected_points;
+                        playerProjections[playerKey].gamesBySystem[system] = player.stats?.G || 0;
 
                         // Update headshot if we have a better one (not generic)
                         if (player.headshot_url && !player.headshot_url.includes('/people/1/')) {
-                            playerProjections[nameLower].headshot = player.headshot_url;
+                            playerProjections[playerKey].headshot = player.headshot_url;
                         }
 
                         // Update position if we have one
-                        if (player.position && !playerProjections[nameLower].position) {
-                            playerProjections[nameLower].position = player.position;
+                        if (player.position && !playerProjections[playerKey].position) {
+                            playerProjections[playerKey].position = player.position;
                         }
 
                         // Update mlb_team if we have one (check both mlb_team and team fields)
                         const playerMlbTeam = player.mlb_team || player.team || '';
-                        if (playerMlbTeam && !playerProjections[nameLower].mlb_team) {
-                            playerProjections[nameLower].mlb_team = playerMlbTeam;
+                        if (playerMlbTeam && !playerProjections[playerKey].mlb_team) {
+                            playerProjections[playerKey].mlb_team = playerMlbTeam;
                         }
 
                         // Update mlb_id if we have one
-                        if (player.mlb_id && !playerProjections[nameLower].mlb_id) {
-                            playerProjections[nameLower].mlb_id = player.mlb_id;
+                        if (player.mlb_id && !playerProjections[playerKey].mlb_id) {
+                            playerProjections[playerKey].mlb_id = player.mlb_id;
                         }
                     });
 
@@ -23909,7 +23913,7 @@
             const homeDataBatters = [];
             const homeDataPitchers = [];
 
-            Object.entries(playerProjections).forEach(([nameLower, data]) => {
+            Object.entries(playerProjections).forEach(([playerKey, data]) => {
                 const points = Object.values(data.pointsBySystem);
                 if (points.length === 0) return;
 
@@ -23933,8 +23937,12 @@
                 const avgGames = games.length > 0 ? games.reduce((sum, g) => sum + g, 0) / games.length : 0;
                 const avgPPG = avgGames > 0 ? avg / avgGames : 0;
 
+                // Extract name from playerKey (format: "name|type")
+                const nameLower = playerKey.split('|')[0];
+
                 // Store for averageProjectionsMap (backwards compatibility)
-                averageProjectionsMap[nameLower] = {
+                // Use playerKey to keep Ohtani batter/pitcher separate
+                averageProjectionsMap[playerKey] = {
                     avgPoints: Math.round(avg * 10) / 10,
                     systems: points.length,
                     headshot: data.headshot,
@@ -23943,10 +23951,10 @@
                     type: data.type
                 };
 
-                // Also store without (Batter)/(Pitcher) suffix for Ohtani matching
-                const baseName = nameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
-                if (baseName !== nameLower && !averageProjectionsMap[baseName]) {
-                    averageProjectionsMap[baseName] = averageProjectionsMap[nameLower];
+                // Also store by just name for non-Ohtani players (backwards compatibility)
+                // Only if not already set (don't let pitcher overwrite batter for Ohtani)
+                if (!averageProjectionsMap[nameLower]) {
+                    averageProjectionsMap[nameLower] = averageProjectionsMap[playerKey];
                 }
 
                 // Create home projection player object
