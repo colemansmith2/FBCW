@@ -13028,38 +13028,42 @@
             gap: 0.4rem;
         }
 
-        .matchup-popup-player-card.stream-card {
-            border: 1.5px solid #f97316;
+        .matchup-popup-adds-group {
+            display: flex;
+            gap: 0.4rem;
+            padding: 0.35rem;
+            border-radius: 6px;
+            border: 1.5px solid;
         }
 
-        .matchup-popup-player-card.stream-card:hover {
-            border-color: #fb923c;
+        .matchup-popup-adds-group.streams-group {
+            border-color: #f97316;
         }
 
-        .matchup-popup-player-card.add-card {
-            border: 1.5px solid #a855f7;
+        .matchup-popup-adds-group.adds-group {
+            border-color: #a855f7;
+            margin-left: auto;
         }
 
-        .matchup-popup-player-card.add-card:hover {
-            border-color: #c084fc;
+        .matchup-popup-adds-group.placeholder-group {
+            border-style: dashed;
+            opacity: 0.5;
+        }
+
+        .matchup-popup-adds-group.streams-group.placeholder-group {
+            border-color: rgba(249, 115, 22, 0.5);
+        }
+
+        .matchup-popup-adds-group.adds-group.placeholder-group {
+            border-color: rgba(168, 85, 247, 0.5);
         }
 
         .matchup-popup-player-card.placeholder-card {
-            opacity: 0.35;
-            border-style: dashed;
+            opacity: 0.5;
         }
 
         .matchup-popup-player-card.placeholder-card:hover {
             transform: none;
-            border-color: rgba(255, 255, 255, 0.12);
-        }
-
-        .matchup-popup-player-card.stream-card.placeholder-card {
-            border-color: rgba(249, 115, 22, 0.4);
-        }
-
-        .matchup-popup-player-card.add-card.placeholder-card {
-            border-color: rgba(168, 85, 247, 0.4);
         }
 
         /* ---- Players Section Labels ---- */
@@ -34469,8 +34473,12 @@
                         <span class="matchup-popup-adds-row-title adds">Adds</span>
                     </div>
                     <div class="matchup-popup-adds-grid">
-                        ${[0, 1, 2].map(i => streamPlayers[i] ? renderAddPlayerCard(streamPlayers[i], true) : renderPlaceholderAddCard(true)).join('')}
-                        ${[0, 1].map(i => regularAddPlayers[i] ? renderAddPlayerCard(regularAddPlayers[i], false) : renderPlaceholderAddCard(false)).join('')}
+                        <div class="matchup-popup-adds-group streams-group ${streamPlayers.length === 0 ? 'placeholder-group' : ''}">
+                            ${[0, 1, 2].map(i => streamPlayers[i] ? renderAddPlayerCard(streamPlayers[i]) : renderPlaceholderAddCard()).join('')}
+                        </div>
+                        <div class="matchup-popup-adds-group adds-group ${regularAddPlayers.length === 0 ? 'placeholder-group' : ''}">
+                            ${[0, 1].map(i => regularAddPlayers[i] ? renderAddPlayerCard(regularAddPlayers[i]) : renderPlaceholderAddCard()).join('')}
+                        </div>
                     </div>
                 </div>
             `;
@@ -34508,8 +34516,12 @@
                         <span class="matchup-popup-adds-row-title adds">Adds</span>
                     </div>
                     <div class="matchup-popup-adds-grid">
-                        ${[0, 1, 2].map(() => renderPlaceholderAddCard(true)).join('')}
-                        ${[0, 1].map(() => renderPlaceholderAddCard(false)).join('')}
+                        <div class="matchup-popup-adds-group streams-group placeholder-group">
+                            ${[0, 1, 2].map(() => renderPlaceholderAddCard()).join('')}
+                        </div>
+                        <div class="matchup-popup-adds-group adds-group placeholder-group">
+                            ${[0, 1].map(() => renderPlaceholderAddCard()).join('')}
+                        </div>
                     </div>
                 </div>
             `;
@@ -34550,8 +34562,8 @@
             `;
         }
 
-        // Render an add/stream player card with special border styling
-        function renderAddPlayerCard(player, isStream) {
+        // Render an add/stream player card
+        function renderAddPlayerCard(player) {
             const pos = player.position || '?';
             const headshot = (player.headshot_url && player.headshot_url.trim()) ? player.headshot_url : playerCardPlaceholder;
             const points = player.points || 0;
@@ -34560,10 +34572,9 @@
             // Get last name only for compact display
             const nameParts = (player.name || '').split(' ');
             const displayName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : player.name;
-            const cardClass = isStream ? 'stream-card' : 'add-card';
 
             return `
-                <div class="matchup-popup-player-card ${cardClass}">
+                <div class="matchup-popup-player-card">
                     <div class="player-card-headshot-wrap">
                         <img src="${headshot}" class="player-card-headshot" alt="" onerror="this.src='${playerCardPlaceholder}'">
                         ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="player-card-mlb-logo" alt="" onerror="this.style.display='none'">` : ''}
@@ -34576,10 +34587,9 @@
         }
 
         // Render a placeholder card for unused add/stream slots
-        function renderPlaceholderAddCard(isStream) {
-            const cardClass = isStream ? 'stream-card' : 'add-card';
+        function renderPlaceholderAddCard() {
             return `
-                <div class="matchup-popup-player-card ${cardClass} placeholder-card">
+                <div class="matchup-popup-player-card placeholder-card">
                     <div class="player-card-headshot-wrap">
                         <img src="${playerCardPlaceholder}" class="player-card-headshot" alt="">
                     </div>
@@ -34639,6 +34649,21 @@
                     <div class="matchup-popup-players-title">Top Projected Pitchers</div>
                     <div class="matchup-popup-players-grid">
                         ${pitchers.slice(0, 5).map(p => renderPopupPlayerCard(p, true)).join('') || '<div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">No keepers yet</div>'}
+                    </div>
+                </div>
+
+                <div class="matchup-popup-adds-row">
+                    <div class="matchup-popup-adds-row-header">
+                        <span class="matchup-popup-adds-row-title streams">Streams</span>
+                        <span class="matchup-popup-adds-row-title adds">Adds</span>
+                    </div>
+                    <div class="matchup-popup-adds-grid">
+                        <div class="matchup-popup-adds-group streams-group placeholder-group">
+                            ${[0, 1, 2].map(() => renderPlaceholderAddCard()).join('')}
+                        </div>
+                        <div class="matchup-popup-adds-group adds-group placeholder-group">
+                            ${[0, 1].map(() => renderPlaceholderAddCard()).join('')}
+                        </div>
                     </div>
                 </div>
 
