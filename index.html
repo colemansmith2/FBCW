@@ -12994,6 +12994,74 @@
             box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
         }
 
+        /* ---- Streams/Adds Row ---- */
+        .matchup-popup-adds-row {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .matchup-popup-adds-row-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.4rem;
+        }
+
+        .matchup-popup-adds-row-title {
+            font-family: 'Arcade Gamer', monospace;
+            font-size: 0.45rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .matchup-popup-adds-row-title.streams {
+            color: #f97316;
+        }
+
+        .matchup-popup-adds-row-title.adds {
+            color: #a855f7;
+        }
+
+        .matchup-popup-adds-grid {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .matchup-popup-player-card.stream-card {
+            border: 1.5px solid #f97316;
+        }
+
+        .matchup-popup-player-card.stream-card:hover {
+            border-color: #fb923c;
+        }
+
+        .matchup-popup-player-card.add-card {
+            border: 1.5px solid #a855f7;
+        }
+
+        .matchup-popup-player-card.add-card:hover {
+            border-color: #c084fc;
+        }
+
+        .matchup-popup-player-card.placeholder-card {
+            opacity: 0.35;
+            border-style: dashed;
+        }
+
+        .matchup-popup-player-card.placeholder-card:hover {
+            transform: none;
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+
+        .matchup-popup-player-card.stream-card.placeholder-card {
+            border-color: rgba(249, 115, 22, 0.4);
+        }
+
+        .matchup-popup-player-card.add-card.placeholder-card {
+            border-color: rgba(168, 85, 247, 0.4);
+        }
+
         /* ---- Players Section Labels ---- */
         .matchup-popup-players-section {
             margin-bottom: 0.5rem;
@@ -34327,7 +34395,8 @@
                 players.forEach(p => {
                     if (p.destination_team_key === team.team_key && p.type === 'add') {
                         const pos = p.position || '';
-                        if (pos === 'SP') {
+                        const isStream = pos === 'SP';
+                        if (isStream) {
                             streamCount++;
                         } else {
                             regularAddCount++;
@@ -34335,7 +34404,10 @@
                         addedPlayers.push({
                             name: p.name,
                             position: pos,
-                            points: 0 // Would need to look up from roster
+                            headshot_url: p.headshot_url || '',
+                            mlb_team: p.mlb_team || p.team || '',
+                            points: 0, // Would need to look up from roster
+                            isStream: isStream
                         });
                     }
                 });
@@ -34345,15 +34417,22 @@
             streamCount = Math.min(streamCount, 3);
             regularAddCount = Math.min(regularAddCount, 2);
 
-            // Calculate points from added players
+            // Calculate points from added players and fill in missing data
             let addedPoints = 0;
             addedPlayers.forEach(ap => {
                 const rosterPlayer = teamRoster.find(r => r.name === ap.name);
                 if (rosterPlayer) {
                     ap.points = rosterPlayer.fantasy_points || 0;
                     addedPoints += ap.points;
+                    // Fill in headshot and mlb_team from roster if missing
+                    if (!ap.headshot_url) ap.headshot_url = rosterPlayer.headshot_url || '';
+                    if (!ap.mlb_team) ap.mlb_team = rosterPlayer.mlb_team || '';
                 }
             });
+
+            // Separate streams and regular adds
+            const streamPlayers = addedPlayers.filter(p => p.isStream);
+            const regularAddPlayers = addedPlayers.filter(p => !p.isStream);
 
             return `
                 <div class="matchup-popup-section-header">
@@ -34384,22 +34463,16 @@
                     </div>
                 </div>
 
-                ${addedPlayers.length > 0 ? `
-                <div class="matchup-popup-adds-section">
-                    <div class="matchup-popup-adds-header">
-                        <span class="matchup-popup-adds-title">Weekly Adds</span>
-                        <span class="matchup-popup-adds-total">+${addedPoints.toFixed(1)} PTS</span>
+                <div class="matchup-popup-adds-row">
+                    <div class="matchup-popup-adds-row-header">
+                        <span class="matchup-popup-adds-row-title streams">Streams</span>
+                        <span class="matchup-popup-adds-row-title adds">Adds</span>
                     </div>
-                    ${addedPlayers.map(p => `
-                        <div class="matchup-popup-add-item">
-                            <span class="add-indicator">+</span>
-                            <span class="player-card-pos-badge pos-${p.position}">${p.position}</span>
-                            <span>${p.name}</span>
-                            <span style="margin-left:auto;font-weight:600;color:var(--retro-gold);">${p.points.toFixed(1)}</span>
-                        </div>
-                    `).join('')}
+                    <div class="matchup-popup-adds-grid">
+                        ${[0, 1, 2].map(i => streamPlayers[i] ? renderAddPlayerCard(streamPlayers[i], true) : renderPlaceholderAddCard(true)).join('')}
+                        ${[0, 1].map(i => regularAddPlayers[i] ? renderAddPlayerCard(regularAddPlayers[i], false) : renderPlaceholderAddCard(false)).join('')}
+                    </div>
                 </div>
-                ` : ''}
             `;
         }
 
@@ -34427,6 +34500,17 @@
                 <div class="matchup-popup-players-section">
                     <div class="matchup-popup-players-title">Top Pitchers</div>
                     <div style="color:rgba(255,255,255,0.4);font-size:0.7rem;padding:0.5rem 0;">Roster data not available</div>
+                </div>
+
+                <div class="matchup-popup-adds-row">
+                    <div class="matchup-popup-adds-row-header">
+                        <span class="matchup-popup-adds-row-title streams">Streams</span>
+                        <span class="matchup-popup-adds-row-title adds">Adds</span>
+                    </div>
+                    <div class="matchup-popup-adds-grid">
+                        ${[0, 1, 2].map(() => renderPlaceholderAddCard(true)).join('')}
+                        ${[0, 1].map(() => renderPlaceholderAddCard(false)).join('')}
+                    </div>
                 </div>
             `;
         }
@@ -34462,6 +34546,46 @@
                     <span class="player-card-pos-badge pos-${pos}">${pos}</span>
                     <div class="player-card-name" title="${player.name}">${displayName}</div>
                     <div class="player-card-pts">${points.toFixed(1)}${useProjected ? '*' : ''}</div>
+                </div>
+            `;
+        }
+
+        // Render an add/stream player card with special border styling
+        function renderAddPlayerCard(player, isStream) {
+            const pos = player.position || '?';
+            const headshot = (player.headshot_url && player.headshot_url.trim()) ? player.headshot_url : playerCardPlaceholder;
+            const points = player.points || 0;
+            const mlbTeam = player.mlb_team || '';
+            const mlbLogoUrl = getMLBTeamLogo(mlbTeam);
+            // Get last name only for compact display
+            const nameParts = (player.name || '').split(' ');
+            const displayName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : player.name;
+            const cardClass = isStream ? 'stream-card' : 'add-card';
+
+            return `
+                <div class="matchup-popup-player-card ${cardClass}">
+                    <div class="player-card-headshot-wrap">
+                        <img src="${headshot}" class="player-card-headshot" alt="" onerror="this.src='${playerCardPlaceholder}'">
+                        ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="player-card-mlb-logo" alt="" onerror="this.style.display='none'">` : ''}
+                    </div>
+                    <span class="player-card-pos-badge pos-${pos}">${pos}</span>
+                    <div class="player-card-name" title="${player.name}">${displayName}</div>
+                    <div class="player-card-pts">${points.toFixed(1)}</div>
+                </div>
+            `;
+        }
+
+        // Render a placeholder card for unused add/stream slots
+        function renderPlaceholderAddCard(isStream) {
+            const cardClass = isStream ? 'stream-card' : 'add-card';
+            return `
+                <div class="matchup-popup-player-card ${cardClass} placeholder-card">
+                    <div class="player-card-headshot-wrap">
+                        <img src="${playerCardPlaceholder}" class="player-card-headshot" alt="">
+                    </div>
+                    <span class="player-card-pos-badge pos-?">?</span>
+                    <div class="player-card-name">—</div>
+                    <div class="player-card-pts">0.0</div>
                 </div>
             `;
         }
