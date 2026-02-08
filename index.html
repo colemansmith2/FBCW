@@ -13033,17 +13033,19 @@
         .matchup-popup-adds-group {
             display: flex;
             gap: 0.4rem;
-            border-radius: 6px;
+            border-radius: 8px;
             position: relative;
         }
 
-        /* Use box-shadow for border effect without taking up space */
+        /* Use outline for border effect - doesn't affect layout or clip content */
         .matchup-popup-adds-group.streams-group {
-            box-shadow: inset 0 0 0 2px #f97316;
+            outline: 2px solid #f97316;
+            outline-offset: 2px;
         }
 
         .matchup-popup-adds-group.adds-group {
-            box-shadow: inset 0 0 0 2px #a855f7;
+            outline: 2px solid #a855f7;
+            outline-offset: 2px;
             margin-left: auto;
         }
 
@@ -13052,11 +13054,11 @@
         }
 
         .matchup-popup-adds-group.streams-group.placeholder-group {
-            box-shadow: inset 0 0 0 2px rgba(249, 115, 22, 0.7);
+            outline-color: rgba(249, 115, 22, 0.7);
         }
 
         .matchup-popup-adds-group.adds-group.placeholder-group {
-            box-shadow: inset 0 0 0 2px rgba(168, 85, 247, 0.7);
+            outline-color: rgba(168, 85, 247, 0.7);
         }
 
         .matchup-popup-player-card.placeholder-card {
@@ -13070,6 +13072,7 @@
         /* ---- Players Section Labels ---- */
         .matchup-popup-players-section {
             margin-bottom: 0.5rem;
+            overflow: visible;
         }
 
         .matchup-popup-players-title {
@@ -13088,7 +13091,9 @@
             gap: 0.4rem;
             flex-wrap: nowrap;
             overflow-x: auto;
+            overflow-y: visible;
             padding-bottom: 0.25rem;
+            padding-top: 0.25rem;
             scrollbar-width: none;
         }
 
@@ -13114,6 +13119,7 @@
         .matchup-popup-player-card:hover {
             border-color: var(--retro-cream);
             transform: translateY(-2px);
+            z-index: 10;
         }
 
         /* Headshot container with MLB logo overlay */
