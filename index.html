@@ -3371,6 +3371,7 @@
         .trade-reset-container {
             display: flex;
             justify-content: center;
+            gap: 0.75rem;
             margin-top: 1rem;
         }
 
@@ -3387,6 +3388,293 @@
 
         .trade-reset-btn:hover {
             background: #5a6268;
+        }
+
+        .trade-screenshot-btn {
+            padding: 0.6rem 1.5rem;
+            background: var(--retro-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .trade-screenshot-btn:hover {
+            background: #153057;
+        }
+
+        /* Trade Screenshot Modal */
+        .trade-screenshot-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10000;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .trade-screenshot-overlay.active {
+            display: flex;
+        }
+
+        .trade-screenshot-container {
+            background: white;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 100%;
+            margin: auto;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .trade-screenshot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: var(--retro-blue);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .trade-screenshot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+        }
+
+        .trade-screenshot-content {
+            padding: 1rem;
+            background: linear-gradient(135deg, #1a3c6e 0%, #0d2240 100%);
+        }
+
+        /* Screenshot internal styles */
+        .screenshot-balance-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .screenshot-team-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+            background: #f0f0f0;
+        }
+
+        .screenshot-bar {
+            flex: 1;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid white;
+            background:
+                linear-gradient(to right,
+                    #dc3545 0%, #dc3545 10%,
+                    #e85d04 10%, #e85d04 20%,
+                    #f48c06 20%, #f48c06 30%,
+                    #ffc107 30%, #ffc107 40%,
+                    #90be6d 40%, #90be6d 45%,
+                    #28a745 45%, #28a745 55%,
+                    #90be6d 55%, #90be6d 60%,
+                    #ffc107 60%, #ffc107 70%,
+                    #f48c06 70%, #f48c06 80%,
+                    #e85d04 80%, #e85d04 90%,
+                    #dc3545 90%, #dc3545 100%);
+            position: relative;
+        }
+
+        .screenshot-marker {
+            position: absolute;
+            top: -3px;
+            bottom: -3px;
+            width: 5px;
+            background: white;
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .screenshot-verdict {
+            text-align: center;
+            color: white;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .screenshot-teams {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .screenshot-team {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .screenshot-team-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .screenshot-team-header img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .screenshot-team-name {
+            color: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .screenshot-team-manager {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.7rem;
+        }
+
+        .screenshot-section-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.35rem;
+        }
+
+        .screenshot-players {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .screenshot-player {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 4px;
+            padding: 0.35rem 0.5rem;
+        }
+
+        .screenshot-player-headshot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #ccc;
+        }
+
+        .screenshot-player-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .screenshot-player-name {
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .screenshot-player-meta {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.6rem;
+        }
+
+        .screenshot-player-value {
+            color: var(--retro-gold);
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .screenshot-perspective {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .screenshot-perspective-header {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+        }
+
+        .screenshot-perspective-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.8);
+            padding: 0.15rem 0;
+        }
+
+        .screenshot-perspective-row.net {
+            border-top: 1px dashed rgba(255, 255, 255, 0.3);
+            margin-top: 0.25rem;
+            padding-top: 0.35rem;
+            font-weight: 700;
+        }
+
+        .screenshot-perspective-value.positive { color: #28a745; }
+        .screenshot-perspective-value.negative { color: #dc3545; }
+        .screenshot-perspective-value.neutral { color: #adb5bd; }
+
+        .screenshot-watermark {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.6rem;
+            margin-top: 0.75rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Mobile screenshot layout */
+        @media (max-width: 500px) {
+            .screenshot-teams {
+                flex-direction: column;
+            }
+
+            .screenshot-balance-bar {
+                gap: 0.35rem;
+            }
+
+            .screenshot-team-logo {
+                width: 28px;
+                height: 28px;
+            }
+
+            .screenshot-bar {
+                height: 16px;
+            }
         }
 
         /* Trade Player Detail Modal */
@@ -4226,10 +4514,15 @@
                 font-size: 0.6rem;
             }
 
-            /* Reset button */
-            .trade-reset-btn {
-                padding: 0.5rem 1rem;
-                font-size: 0.8rem;
+            /* Reset and Screenshot buttons */
+            .trade-reset-container {
+                flex-wrap: wrap;
+            }
+
+            .trade-reset-btn,
+            .trade-screenshot-btn {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.75rem;
             }
 
             /* Empty states */
@@ -15587,7 +15880,21 @@
                 </div>
 
                 <div class="trade-reset-container">
+                    <button class="trade-screenshot-btn" onclick="generateTradeScreenshot()">📸 Generate Screenshot</button>
                     <button class="trade-reset-btn" onclick="resetTradeAnalyzer()">Reset Trade</button>
+                </div>
+            </div>
+
+            <!-- Trade Screenshot Modal -->
+            <div id="trade-screenshot-modal" class="trade-screenshot-overlay" onclick="closeTradeScreenshot(event)">
+                <div class="trade-screenshot-container">
+                    <div class="trade-screenshot-header">
+                        <span>Screenshot your trade below</span>
+                        <button class="trade-screenshot-close" onclick="closeTradeScreenshot()">&times;</button>
+                    </div>
+                    <div class="trade-screenshot-content" id="trade-screenshot-content">
+                        <!-- Screenshot content generated dynamically -->
+                    </div>
                 </div>
             </div>
 
@@ -28231,7 +28538,12 @@
                         const projMap = {};
                         [...(data.batters || []), ...(data.pitchers || [])].forEach(p => {
                             const name = p.name.toLowerCase().trim();
-                            projMap[name] = p.projected_points || 0;
+                            projMap[name] = {
+                                points: p.projected_points || 0,
+                                mlb_team: p.mlb_team || p.team || '',
+                                headshot_url: p.headshot_url || '',
+                                mlb_id: p.mlb_id || null
+                            };
                         });
                         tradeAnalyzerData[targets[i]] = projMap;
                         console.log(`Loaded ${Object.keys(projMap).length} ${targets[i]} projections from ${systems[i]}`);
@@ -28348,11 +28660,21 @@
                 if (keeper && keeper.player_name) {
                     const valueResult = calculatePlayerTradeValue(keeper, 'default');
 
-                    // Look up MLB team from averageProjectionsMap
+                    // Look up MLB team and headshot - try 2026 first, then 2027, then 2028
                     const playerNameLower = keeper.player_name.toLowerCase().trim();
                     const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+
+                    // Get ZiPS data for each year
+                    const zips2026 = tradeAnalyzerData.zips2026[playerNameLower] || tradeAnalyzerData.zips2026[baseNameLower] || {};
+                    const zips2027 = tradeAnalyzerData.zips2027[playerNameLower] || tradeAnalyzerData.zips2027[baseNameLower] || {};
+                    const zips2028 = tradeAnalyzerData.zips2028[playerNameLower] || tradeAnalyzerData.zips2028[baseNameLower] || {};
+
+                    // Also check averageProjectionsMap as fallback
                     const avgProjData = averageProjectionsMap[playerNameLower] || averageProjectionsMap[baseNameLower];
-                    const mlbTeam = avgProjData?.mlb_team || '';
+
+                    // Prioritize: 2026 data > 2027 data > 2028 data > averageProjectionsMap
+                    const mlbTeam = zips2026.mlb_team || zips2027.mlb_team || zips2028.mlb_team || avgProjData?.mlb_team || '';
+                    const headshot = keeper.headshot_url || zips2026.headshot_url || zips2027.headshot_url || zips2028.headshot_url || avgProjData?.headshot || '';
 
                     players.push({
                         type: 'player',
@@ -28361,7 +28683,7 @@
                         isProspect: keeper.isProspect || false,
                         roundCost: keeper.roundCost || 20,
                         dollarCost: keeper.dollarCost || 1,
-                        headshot: keeper.headshot_url || avgProjData?.headshot || '',
+                        headshot: headshot,
                         mlbTeam: mlbTeam,
                         value: valueResult.value,
                         baseValue: valueResult.baseValue,
@@ -28449,10 +28771,13 @@
         function calculatePlayerTradeValue(keeper, goal = 'default') {
             const name = keeper.player_name.toLowerCase().trim();
 
-            // Get projections for each year
-            const proj2026 = tradeAnalyzerData.zips2026[name] || 0;
-            const proj2027 = tradeAnalyzerData.zips2027[name] || 0;
-            const proj2028 = tradeAnalyzerData.zips2028[name] || 0;
+            // Get projections for each year (data is now an object with points, mlb_team, etc.)
+            const data2026 = tradeAnalyzerData.zips2026[name] || {};
+            const data2027 = tradeAnalyzerData.zips2027[name] || {};
+            const data2028 = tradeAnalyzerData.zips2028[name] || {};
+            const proj2026 = data2026.points || 0;
+            const proj2027 = data2027.points || 0;
+            const proj2028 = data2028.points || 0;
 
             // If no projections at all, return 0
             if (proj2026 === 0 && proj2027 === 0 && proj2028 === 0) {
@@ -29421,6 +29746,165 @@
             }
         }
 
+        function generateTradeScreenshot() {
+            const team1Key = tradeAnalyzerData.team1;
+            const team2Key = tradeAnalyzerData.team2;
+            const offer1 = tradeAnalyzerData.team1Offer || [];
+            const offer2 = tradeAnalyzerData.team2Offer || [];
+
+            if (!team1Key || !team2Key || (offer1.length === 0 && offer2.length === 0)) {
+                alert('Please select two teams and add assets to generate a screenshot');
+                return;
+            }
+
+            const team1 = tradeAnalyzerData.teams[team1Key];
+            const team2 = tradeAnalyzerData.teams[team2Key];
+            const perspective1 = calculatePerspectiveValue(1);
+            const perspective2 = calculatePerspectiveValue(2);
+
+            // Get current marker position and verdict from the actual UI
+            const markerEl = document.getElementById('trade-balance-marker');
+            const verdictEl = document.getElementById('trade-balance-verdict');
+            const labelEl = document.getElementById('trade-balance-label');
+            const markerLeft = markerEl ? markerEl.style.left : '50%';
+            const verdict = verdictEl ? verdictEl.textContent : '';
+            const label = labelEl ? labelEl.textContent : '';
+
+            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+
+            // Helper to render an offer item
+            const renderOfferItem = (item) => {
+                if (item.type === 'player') {
+                    const headshot = item.headshot || placeholderImg;
+                    const pos = item.position || 'UT';
+                    const prospect = item.isProspect ? ' (P)' : '';
+                    return `
+                        <div class="screenshot-player">
+                            <img src="${headshot}" class="screenshot-player-headshot" onerror="this.src='${placeholderImg}'">
+                            <div class="screenshot-player-info">
+                                <div class="screenshot-player-name">${item.name}${prospect}</div>
+                                <div class="screenshot-player-meta">${pos}${item.mlbTeam ? ' • ' + item.mlbTeam : ''}</div>
+                            </div>
+                            <div class="screenshot-player-value">${item.baseValue || item.value || 0}</div>
+                        </div>
+                    `;
+                } else if (item.type === 'pick') {
+                    return `
+                        <div class="screenshot-player">
+                            <div class="screenshot-player-headshot" style="background: linear-gradient(135deg, #f5d442, #e8c230); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold; color: #333;">R${item.round}</div>
+                            <div class="screenshot-player-info">
+                                <div class="screenshot-player-name">${item.year} Round ${item.round} Pick</div>
+                                <div class="screenshot-player-meta">Draft Pick</div>
+                            </div>
+                            <div class="screenshot-player-value">${item.baseValue || item.value || 0}</div>
+                        </div>
+                    `;
+                } else if (item.type === 'budget') {
+                    return `
+                        <div class="screenshot-player">
+                            <div class="screenshot-player-headshot" style="background: #28a745; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: white;">$</div>
+                            <div class="screenshot-player-info">
+                                <div class="screenshot-player-name">$${item.amount} Budget</div>
+                                <div class="screenshot-player-meta">Auction Budget</div>
+                            </div>
+                            <div class="screenshot-player-value">${item.value || 0}</div>
+                        </div>
+                    `;
+                }
+                return '';
+            };
+
+            // Helper to get perspective value class
+            const getValueClass = (val) => {
+                if (val > 0) return 'positive';
+                if (val < 0) return 'negative';
+                return 'neutral';
+            };
+
+            const contentEl = document.getElementById('trade-screenshot-content');
+            contentEl.innerHTML = `
+                <div class="screenshot-balance-bar">
+                    <img src="${team1?.team_logo || ''}" class="screenshot-team-logo" onerror="this.style.background='#ddd'">
+                    <div class="screenshot-bar">
+                        <div class="screenshot-marker" style="left: ${markerLeft}; transform: translateX(-50%);"></div>
+                    </div>
+                    <img src="${team2?.team_logo || ''}" class="screenshot-team-logo" onerror="this.style.background='#ddd'">
+                </div>
+                <div class="screenshot-verdict">${label}${verdict ? ' • ' + verdict : ''}</div>
+
+                <div class="screenshot-teams">
+                    <div class="screenshot-team">
+                        <div class="screenshot-team-header">
+                            <img src="${team1?.team_logo || ''}" onerror="this.style.display='none'">
+                            <div>
+                                <div class="screenshot-team-name">${team1?.team_name || 'Team 1'}</div>
+                                <div class="screenshot-team-manager">${team1?.manager || ''}</div>
+                            </div>
+                        </div>
+                        <div class="screenshot-section-label">Offering</div>
+                        <div class="screenshot-players">
+                            ${offer1.length > 0 ? offer1.map(renderOfferItem).join('') : '<div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; padding: 0.5rem 0;">No assets</div>'}
+                        </div>
+                        <div class="screenshot-perspective">
+                            <div class="screenshot-perspective-header">From ${team1?.manager?.split(' ')[0] || 'Their'}'s View</div>
+                            <div class="screenshot-perspective-row">
+                                <span>Giving:</span>
+                                <span class="screenshot-perspective-value negative">${perspective1.giving}</span>
+                            </div>
+                            <div class="screenshot-perspective-row">
+                                <span>Getting:</span>
+                                <span class="screenshot-perspective-value positive">${perspective1.getting}</span>
+                            </div>
+                            <div class="screenshot-perspective-row net">
+                                <span>Net:</span>
+                                <span class="screenshot-perspective-value ${getValueClass(perspective1.net)}">${perspective1.net > 0 ? '+' : ''}${perspective1.net}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="screenshot-team">
+                        <div class="screenshot-team-header">
+                            <img src="${team2?.team_logo || ''}" onerror="this.style.display='none'">
+                            <div>
+                                <div class="screenshot-team-name">${team2?.team_name || 'Team 2'}</div>
+                                <div class="screenshot-team-manager">${team2?.manager || ''}</div>
+                            </div>
+                        </div>
+                        <div class="screenshot-section-label">Offering</div>
+                        <div class="screenshot-players">
+                            ${offer2.length > 0 ? offer2.map(renderOfferItem).join('') : '<div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; padding: 0.5rem 0;">No assets</div>'}
+                        </div>
+                        <div class="screenshot-perspective">
+                            <div class="screenshot-perspective-header">From ${team2?.manager?.split(' ')[0] || 'Their'}'s View</div>
+                            <div class="screenshot-perspective-row">
+                                <span>Giving:</span>
+                                <span class="screenshot-perspective-value negative">${perspective2.giving}</span>
+                            </div>
+                            <div class="screenshot-perspective-row">
+                                <span>Getting:</span>
+                                <span class="screenshot-perspective-value positive">${perspective2.getting}</span>
+                            </div>
+                            <div class="screenshot-perspective-row net">
+                                <span>Net:</span>
+                                <span class="screenshot-perspective-value ${getValueClass(perspective2.net)}">${perspective2.net > 0 ? '+' : ''}${perspective2.net}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="screenshot-watermark">Trade Analyzer • 12 Team Punts League</div>
+            `;
+
+            document.getElementById('trade-screenshot-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTradeScreenshot(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('trade-screenshot-modal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
         function resetTradeAnalyzer() {
             document.getElementById('trade-team-1').value = '';
             document.getElementById('trade-team-2').value = '';
@@ -29631,10 +30115,13 @@
             const name = (player.name || '').toLowerCase().trim();
             const baseName = name.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
 
-            // Get projections for each year
-            const proj2026 = tradeAnalyzerData.zips2026[name] || tradeAnalyzerData.zips2026[baseName] || 0;
-            const proj2027 = tradeAnalyzerData.zips2027[name] || tradeAnalyzerData.zips2027[baseName] || 0;
-            const proj2028 = tradeAnalyzerData.zips2028[name] || tradeAnalyzerData.zips2028[baseName] || 0;
+            // Get projections for each year (data is now an object with points, mlb_team, etc.)
+            const data2026 = tradeAnalyzerData.zips2026[name] || tradeAnalyzerData.zips2026[baseName] || {};
+            const data2027 = tradeAnalyzerData.zips2027[name] || tradeAnalyzerData.zips2027[baseName] || {};
+            const data2028 = tradeAnalyzerData.zips2028[name] || tradeAnalyzerData.zips2028[baseName] || {};
+            const proj2026 = data2026.points || 0;
+            const proj2027 = data2027.points || 0;
+            const proj2028 = data2028.points || 0;
 
             let round2026, round2027, round2028;
 
