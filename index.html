@@ -3960,7 +3960,7 @@
             color: #dc3545 !important;
         }
 
-        /* Mobile responsive */
+        /* Mobile responsive - Trade Analyzer */
         @media (max-width: 900px) {
             .trade-analyzer-container {
                 flex-direction: column;
@@ -3983,6 +3983,277 @@
             .trade-goal-buttons {
                 justify-content: center;
                 margin-top: 0.5rem;
+            }
+        }
+
+        /* Enhanced mobile styles for Trade Analyzer */
+        @media (max-width: 600px) {
+            .trade-analyzer-section {
+                padding: 0.75rem;
+                border-radius: 8px;
+            }
+
+            .trade-analyzer-section h3 {
+                font-size: 1.1rem;
+                margin-bottom: 0.25rem;
+            }
+
+            .trade-analyzer-section > div:first-of-type {
+                font-size: 0.75rem;
+                margin-bottom: 0.75rem;
+            }
+
+            /* Compact balance indicator */
+            .trade-balance-indicator {
+                margin-bottom: 0.75rem;
+            }
+
+            .trade-balance-bar-container {
+                gap: 0.5rem;
+            }
+
+            .trade-balance-team-logo {
+                width: 32px;
+                height: 32px;
+            }
+
+            .trade-balance-bar {
+                height: 18px;
+            }
+
+            .trade-balance-marker {
+                width: 5px;
+            }
+
+            .trade-balance-labels {
+                flex-direction: column;
+                gap: 0.15rem;
+                margin-top: 0.35rem;
+            }
+
+            .trade-balance-label {
+                font-size: 0.7rem;
+            }
+
+            .trade-balance-verdict {
+                font-size: 0.65rem;
+            }
+
+            /* Compact trade sides */
+            .trade-side {
+                padding: 0.65rem;
+                gap: 0.5rem;
+            }
+
+            /* Team selector */
+            .trade-team-selector select {
+                padding: 0.5rem;
+                font-size: 0.85rem;
+            }
+
+            .trade-team-info {
+                padding: 0.5rem;
+                min-height: 40px;
+                margin-top: 0.35rem;
+            }
+
+            .trade-team-info .team-logo {
+                width: 32px;
+                height: 32px;
+            }
+
+            .trade-team-info .team-name {
+                font-size: 0.85rem;
+            }
+
+            .trade-team-info .manager-name {
+                font-size: 0.7rem;
+            }
+
+            /* Goal buttons */
+            .trade-goal-buttons {
+                gap: 0.25rem;
+            }
+
+            .trade-goal-btn {
+                padding: 0.35rem 0.6rem;
+                font-size: 0.7rem;
+            }
+
+            /* Remove column separator on mobile */
+            .trade-columns::before {
+                display: none;
+            }
+
+            .trade-columns {
+                gap: 0.5rem;
+            }
+
+            /* Column headers */
+            .trade-assets-column h5,
+            .trade-offer-column h5 {
+                font-size: 0.75rem;
+                margin-bottom: 0.35rem;
+            }
+
+            /* Tabs */
+            .trade-asset-tabs {
+                gap: 0.25rem;
+                margin-bottom: 0.35rem;
+            }
+
+            .trade-tab {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.7rem;
+            }
+
+            /* Asset lists - more compact */
+            .trade-assets-list,
+            .trade-offer-list {
+                max-height: 180px;
+                padding: 0.35rem;
+                gap: 0.3rem;
+            }
+
+            /* Asset items - compact cards */
+            .trade-asset-item {
+                padding: 0.4rem;
+                gap: 0.35rem;
+            }
+
+            .trade-asset-item .headshot,
+            .trade-offer-item .headshot {
+                width: 32px;
+                height: 32px;
+            }
+
+            .trade-asset-item .player-name,
+            .trade-offer-item .player-name {
+                font-size: 0.75rem;
+            }
+
+            .trade-asset-item .player-meta,
+            .trade-offer-item .player-meta {
+                font-size: 0.65rem;
+                gap: 0.2rem;
+            }
+
+            .trade-asset-item .player-meta .position-badge,
+            .trade-offer-item .player-meta .position-badge {
+                font-size: 0.55rem;
+                padding: 0.1rem 0.25rem;
+            }
+
+            .trade-asset-item .asset-value,
+            .trade-offer-item .asset-value {
+                font-size: 0.7rem;
+            }
+
+            .trade-round-tag {
+                font-size: 0.55rem;
+                padding: 0.1rem 0.25rem;
+            }
+
+            /* Offer items */
+            .trade-offer-item {
+                padding: 0.4rem;
+                gap: 0.35rem;
+            }
+
+            .trade-offer-item .remove-btn {
+                width: 18px;
+                height: 18px;
+                font-size: 0.65rem;
+            }
+
+            /* Total row */
+            .trade-side-total {
+                padding: 0.4rem 0.5rem;
+                margin-top: 0.35rem;
+            }
+
+            .trade-side-total .total-label {
+                font-size: 0.7rem;
+            }
+
+            .trade-side-total .total-value {
+                font-size: 0.85rem;
+            }
+
+            /* Perspective box - compact */
+            .trade-perspective-box {
+                padding: 0.5rem;
+                margin-top: 0.5rem;
+            }
+
+            .trade-perspective-box .perspective-header {
+                margin-bottom: 0.35rem;
+            }
+
+            .trade-perspective-box .perspective-label {
+                font-size: 0.7rem;
+            }
+
+            .trade-perspective-box .perspective-row {
+                font-size: 0.7rem;
+                padding: 0.2rem 0;
+            }
+
+            .trade-perspective-box .perspective-net {
+                margin-top: 0.25rem;
+                padding-top: 0.25rem;
+            }
+
+            .trade-perspective-box .perspective-net-value {
+                font-size: 0.85rem;
+            }
+
+            /* Goal legend */
+            .trade-goal-legend {
+                font-size: 0.6rem;
+                padding: 0.25rem 0.4rem;
+            }
+
+            /* Warnings */
+            .trade-pick-warning,
+            .trade-premium-warning {
+                font-size: 0.65rem;
+                padding: 0.3rem 0.5rem;
+            }
+
+            /* Imbalance penalty */
+            .trade-imbalance-penalty {
+                font-size: 0.6rem;
+            }
+
+            /* Reset button */
+            .trade-reset-btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+
+            /* Empty states */
+            .trade-empty-state {
+                font-size: 0.7rem;
+                padding: 1rem 0.5rem;
+            }
+
+            /* Player detail button */
+            .trade-player-detail-btn {
+                width: 18px;
+                height: 18px;
+                font-size: 0.6rem;
+            }
+
+            /* Trade headshot and MLB logo */
+            .trade-headshot {
+                width: 32px;
+                height: 32px;
+            }
+
+            .trade-mlb-logo {
+                width: 12px;
+                height: 12px;
             }
         }
 
