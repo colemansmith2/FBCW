@@ -3286,9 +3286,9 @@
         }
 
         .trade-balance-team-logo img {
-            width: 32px;
-            height: 32px;
-            object-fit: contain;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .trade-balance-team-logo.empty {
@@ -28320,20 +28320,21 @@
             // Premium Penalty: If I'm giving a premium asset and not getting one back,
             // penalize what I'm getting (the lesser assets don't truly replace my premium)
             // My assets use base value, their assets use goal-adjusted value
-            const myPlayerAssets = myOffer
-                .filter(o => o.type === 'player')
+            // Include both players and picks in premium consideration
+            const myPremiumAssets = myOffer
+                .filter(o => o.type === 'player' || o.type === 'pick')
                 .map(item => ({ value: getAssetValue(item, 'default') }))
                 .sort((a, b) => b.value - a.value);
 
-            // For premium comparison, get their player values through MY goal lens
-            const theirPlayerAssets = theirOffer
-                .filter(o => o.type === 'player')
+            // For premium comparison, get their asset values through MY goal lens
+            const theirPremiumAssets = theirOffer
+                .filter(o => o.type === 'player' || o.type === 'pick')
                 .map(item => ({ value: getAssetValue(item, myGoal) }))
                 .sort((a, b) => b.value - a.value);
 
-            if (myPlayerAssets.length > 0 && theirPlayerAssets.length > 0) {
-                const myTopValue = myPlayerAssets[0].value;
-                const theirTopValue = theirPlayerAssets[0].value;
+            if (myPremiumAssets.length > 0 && theirPremiumAssets.length > 0) {
+                const myTopValue = myPremiumAssets[0].value;
+                const theirTopValue = theirPremiumAssets[0].value;
 
                 // If my top asset is more valuable and their top is less than 85% of mine
                 if (myTopValue > theirTopValue) {
@@ -28907,14 +28908,15 @@
                     return item.baseValue || item.value || 0;
                 };
 
-                const myPlayers = myOffer.filter(o => o.type === 'player');
-                const theirPlayers = theirOffer.filter(o => o.type === 'player');
+                // Include both players and picks in premium consideration
+                const myAssets = myOffer.filter(o => o.type === 'player' || o.type === 'pick');
+                const theirAssets = theirOffer.filter(o => o.type === 'player' || o.type === 'pick');
 
-                if (myPlayers.length === 0 || theirPlayers.length === 0) return false;
+                if (myAssets.length === 0 || theirAssets.length === 0) return false;
 
                 // My top asset at base value, their top asset at my goal value
-                const myTopValue = Math.max(...myPlayers.map(p => getVal(p, 'default')));
-                const theirTopValue = Math.max(...theirPlayers.map(p => getVal(p, goal)));
+                const myTopValue = Math.max(...myAssets.map(p => getVal(p, 'default')));
+                const theirTopValue = Math.max(...theirAssets.map(p => getVal(p, goal)));
 
                 // Premium penalty applies if I'm giving away the premium and their top < 85% of mine
                 if (myTopValue > theirTopValue) {
@@ -28932,13 +28934,14 @@
             let premiumPenalty2 = 0;
 
             // Only calculate and apply premium penalty if at least one perspective has it
+            // Include both players and picks in premium consideration
             if (applyTopBarPremium) {
-                const playerAssets1 = offer1.filter(o => o.type === 'player').sort((a, b) => (b.baseValue || b.value || 0) - (a.baseValue || a.value || 0));
-                const playerAssets2 = offer2.filter(o => o.type === 'player').sort((a, b) => (b.baseValue || b.value || 0) - (a.baseValue || a.value || 0));
+                const premiumAssets1 = offer1.filter(o => o.type === 'player' || o.type === 'pick').sort((a, b) => (b.baseValue || b.value || 0) - (a.baseValue || a.value || 0));
+                const premiumAssets2 = offer2.filter(o => o.type === 'player' || o.type === 'pick').sort((a, b) => (b.baseValue || b.value || 0) - (a.baseValue || a.value || 0));
 
-                if (playerAssets1.length > 0 && playerAssets2.length > 0) {
-                    const top1Value = playerAssets1[0].baseValue || playerAssets1[0].value || 0;
-                    const top2Value = playerAssets2[0].baseValue || playerAssets2[0].value || 0;
+                if (premiumAssets1.length > 0 && premiumAssets2.length > 0) {
+                    const top1Value = premiumAssets1[0].baseValue || premiumAssets1[0].value || 0;
+                    const top2Value = premiumAssets2[0].baseValue || premiumAssets2[0].value || 0;
 
                     if (top1Value > top2Value) {
                         // Team 1 has the premium asset, team 1 receives penalty on what they're getting
