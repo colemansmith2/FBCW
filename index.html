@@ -13703,7 +13703,6 @@
         .matchup-popup-adds-group.adds-group {
             outline: 2px solid #a855f7;
             outline-offset: 2px;
-            margin-left: auto;
         }
 
         .matchup-popup-adds-group.placeholder-group {
@@ -35306,7 +35305,7 @@
 
             // Cap at max values
             streamCount = Math.min(streamCount, 3);
-            regularAddCount = Math.min(regularAddCount, 2);
+            regularAddCount = Math.min(regularAddCount, 5);
 
             // Calculate points from added players and fill in missing data
             let addedPoints = 0;
@@ -35325,6 +35324,11 @@
             const streamPlayers = addedPlayers.filter(p => p.isStream);
             const regularAddPlayers = addedPlayers.filter(p => !p.isStream);
 
+            // Dynamic slot allocation: 5 total slots, adds can expand into stream slots
+            const actualAdds = Math.min(regularAddPlayers.length, 5);
+            const addSlots = Math.max(2, actualAdds); // minimum 2 add slots, up to 5
+            const streamSlots = 5 - addSlots; // streams get whatever remains
+
             return `
                 <div class="matchup-popup-section-header">
                     <span class="matchup-popup-section-title">${team.name}</span>
@@ -35335,7 +35339,7 @@
                         </div>
                         <div class="add-tracker-group">
                             <span class="add-tracker-label">ADD</span>
-                            ${[0, 1].map(i => `<div class="add-dot regular ${i < regularAddCount ? 'used' : ''}"></div>`).join('')}
+                            ${[0, 1, 2, 3, 4].map(i => `<div class="add-dot regular ${i < regularAddCount ? 'used' : ''}"></div>`).join('')}
                         </div>
                     </div>
                 </div>
@@ -35356,15 +35360,16 @@
 
                 <div class="matchup-popup-adds-row">
                     <div class="matchup-popup-adds-row-header">
-                        <span class="matchup-popup-adds-row-title streams">Streams</span>
-                        <span class="matchup-popup-adds-row-title adds">Adds</span>
+                        ${streamSlots > 0 ? `<span class="matchup-popup-adds-row-title streams">Streams</span>` : ''}
+                        <span class="matchup-popup-adds-row-title adds" ${streamSlots === 0 ? '' : 'style="margin-left:auto;"'}>Adds</span>
                     </div>
                     <div class="matchup-popup-adds-grid">
+                        ${streamSlots > 0 ? `
                         <div class="matchup-popup-adds-group streams-group ${streamPlayers.length === 0 ? 'placeholder-group' : ''}">
-                            ${[0, 1, 2].map(i => streamPlayers[i] ? renderAddPlayerCard(streamPlayers[i]) : renderPlaceholderAddCard()).join('')}
-                        </div>
+                            ${Array.from({length: streamSlots}, (_, i) => streamPlayers[i] ? renderAddPlayerCard(streamPlayers[i]) : renderPlaceholderAddCard()).join('')}
+                        </div>` : ''}
                         <div class="matchup-popup-adds-group adds-group ${regularAddPlayers.length === 0 ? 'placeholder-group' : ''}">
-                            ${[0, 1].map(i => regularAddPlayers[i] ? renderAddPlayerCard(regularAddPlayers[i]) : renderPlaceholderAddCard()).join('')}
+                            ${Array.from({length: addSlots}, (_, i) => regularAddPlayers[i] ? renderAddPlayerCard(regularAddPlayers[i]) : renderPlaceholderAddCard()).join('')}
                         </div>
                     </div>
                 </div>
@@ -35382,7 +35387,7 @@
                         </div>
                         <div class="add-tracker-group">
                             <span class="add-tracker-label">ADD</span>
-                            ${[0, 1].map(() => `<div class="add-dot regular"></div>`).join('')}
+                            ${[0, 1, 2, 3, 4].map(() => `<div class="add-dot regular"></div>`).join('')}
                         </div>
                     </div>
                 </div>
@@ -35400,7 +35405,7 @@
                 <div class="matchup-popup-adds-row">
                     <div class="matchup-popup-adds-row-header">
                         <span class="matchup-popup-adds-row-title streams">Streams</span>
-                        <span class="matchup-popup-adds-row-title adds">Adds</span>
+                        <span class="matchup-popup-adds-row-title adds" style="margin-left:auto;">Adds</span>
                     </div>
                     <div class="matchup-popup-adds-grid">
                         <div class="matchup-popup-adds-group streams-group placeholder-group">
@@ -35542,7 +35547,7 @@
                 <div class="matchup-popup-adds-row">
                     <div class="matchup-popup-adds-row-header">
                         <span class="matchup-popup-adds-row-title streams">Streams</span>
-                        <span class="matchup-popup-adds-row-title adds">Adds</span>
+                        <span class="matchup-popup-adds-row-title adds" style="margin-left:auto;">Adds</span>
                     </div>
                     <div class="matchup-popup-adds-grid">
                         <div class="matchup-popup-adds-group streams-group placeholder-group">
