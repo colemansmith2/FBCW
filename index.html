@@ -3576,7 +3576,7 @@
             display: flex;
             align-items: center;
             gap: 0.4rem;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.15);
             border-radius: 4px;
             padding: 0.35rem 0.5rem;
         }
@@ -3615,7 +3615,7 @@
         }
 
         .screenshot-perspective {
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 6px;
             padding: 0.5rem;
             margin-top: 0.5rem;
@@ -3659,21 +3659,113 @@
 
         /* Mobile screenshot layout */
         @media (max-width: 500px) {
-            .screenshot-teams {
-                flex-direction: column;
+            .trade-screenshot-content {
+                padding: 0.6rem;
             }
 
             .screenshot-balance-bar {
-                gap: 0.35rem;
+                gap: 0.3rem;
+                margin-bottom: 0.4rem;
             }
 
             .screenshot-team-logo {
-                width: 28px;
-                height: 28px;
+                width: 24px;
+                height: 24px;
             }
 
             .screenshot-bar {
-                height: 16px;
+                height: 14px;
+            }
+
+            .screenshot-verdict {
+                font-size: 0.75rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .screenshot-teams {
+                flex-direction: column;
+                gap: 0.4rem;
+            }
+
+            .screenshot-team {
+                padding: 0.5rem;
+            }
+
+            .screenshot-team-header {
+                gap: 0.35rem;
+                margin-bottom: 0.3rem;
+                padding-bottom: 0.3rem;
+            }
+
+            .screenshot-team-header img {
+                width: 22px;
+                height: 22px;
+            }
+
+            .screenshot-team-name {
+                font-size: 0.8rem;
+            }
+
+            .screenshot-team-manager {
+                font-size: 0.65rem;
+            }
+
+            .screenshot-section-label {
+                font-size: 0.6rem;
+                margin-bottom: 0.2rem;
+            }
+
+            .screenshot-players {
+                gap: 0.2rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .screenshot-player {
+                padding: 0.25rem 0.4rem;
+                gap: 0.3rem;
+            }
+
+            .screenshot-player-headshot {
+                width: 22px;
+                height: 22px;
+            }
+
+            .screenshot-player-name {
+                font-size: 0.7rem;
+            }
+
+            .screenshot-player-meta {
+                font-size: 0.55rem;
+            }
+
+            .screenshot-player-value {
+                font-size: 0.7rem;
+            }
+
+            .screenshot-perspective {
+                padding: 0.35rem;
+                margin-top: 0.3rem;
+            }
+
+            .screenshot-perspective-header {
+                font-size: 0.6rem;
+                margin-bottom: 0.15rem;
+            }
+
+            .screenshot-perspective-row {
+                font-size: 0.65rem;
+                padding: 0.1rem 0;
+            }
+
+            .screenshot-perspective-row.net {
+                margin-top: 0.15rem;
+                padding-top: 0.2rem;
+            }
+
+            .screenshot-watermark {
+                margin-top: 0.4rem;
+                padding-top: 0.3rem;
+                font-size: 0.5rem;
             }
         }
 
