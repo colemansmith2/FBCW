@@ -28566,6 +28566,9 @@
             zips2026: {},        // player projections by year
             zips2027: {},
             zips2028: {},
+            rosProjections: {},  // ROS projections: name -> { rosPoints, systems }
+            actualStats: {},     // Actual YTD stats: name -> { fantasyPoints }
+            isInSeason: false,   // true when ROS data is available
             activeTab: { 1: 'players', 2: 'players' },
             team1Goal: 'default', // 'buy', 'default', 'sell'
             team2Goal: 'default'
@@ -28619,6 +28622,20 @@
             // Load ZiPS projections for multi-year value
             await loadZiPSProjections();
 
+            // Load ROS projections and actual stats (in-season mode)
+            await loadROSProjections();
+            await loadPlayerActualStats();
+
+            // Detect in-season mode: if we have ROS data, use actual + ROS for 2026
+            tradeAnalyzerData.isInSeason = Object.keys(tradeAnalyzerData.rosProjections).length > 0;
+            if (tradeAnalyzerData.isInSeason) {
+                const rosCount = Object.keys(tradeAnalyzerData.rosProjections).length;
+                const actualCount = Object.keys(tradeAnalyzerData.actualStats).length;
+                console.log(`In-season mode active: ${rosCount} ROS projections, ${actualCount} actual stat lines`);
+            } else {
+                console.log('Preseason mode: using ZiPS projections only');
+            }
+
             // Populate team dropdowns
             populateTradeTeamDropdowns();
         }
@@ -28649,6 +28666,92 @@
                 } catch (e) {
                     console.log(`Error loading ${systems[i]} projections:`, e);
                 }
+            }
+        }
+
+        async function loadROSProjections() {
+            // Load all 7 ROS projection systems from data/projections/ros/
+            // Average projected_points across all available systems per player
+            const rosSystems = [
+                'ros_oopsydc', 'ros_zipsdc', 'ros_steamer',
+                'ros_fangraphsdc', 'ros_atcdc', 'ros_thebat', 'ros_thebatx'
+            ];
+
+            const playerROS = {}; // name -> { totalPoints, systemCount, systems[] }
+            let loadedCount = 0;
+
+            for (const system of rosSystems) {
+                try {
+                    const response = await fetch(`data/projections/ros/${system}.json`);
+                    if (!response.ok) continue;
+
+                    const data = await response.json();
+                    const batters = data.batters || [];
+                    const pitchers = data.pitchers || [];
+
+                    if (batters.length === 0 && pitchers.length === 0) continue;
+
+                    loadedCount++;
+
+                    [...batters, ...pitchers].forEach(p => {
+                        const name = p.name.toLowerCase().trim();
+                        if (!playerROS[name]) {
+                            playerROS[name] = { totalPoints: 0, systemCount: 0, systems: [] };
+                        }
+                        playerROS[name].totalPoints += (p.projected_points || 0);
+                        playerROS[name].systemCount += 1;
+                        playerROS[name].systems.push(system);
+                    });
+                } catch (e) {
+                    // ROS files may not exist yet (preseason)
+                }
+            }
+
+            // Build averaged map
+            const rosMap = {};
+            for (const [name, data] of Object.entries(playerROS)) {
+                if (data.systemCount > 0) {
+                    rosMap[name] = {
+                        rosPoints: Math.round((data.totalPoints / data.systemCount) * 10) / 10,
+                        systemCount: data.systemCount,
+                        systems: data.systems
+                    };
+                }
+            }
+
+            tradeAnalyzerData.rosProjections = rosMap;
+            if (loadedCount > 0) {
+                console.log(`Loaded ROS projections from ${loadedCount} systems, ${Object.keys(rosMap).length} players`);
+            }
+        }
+
+        async function loadPlayerActualStats() {
+            // Load actual YTD player stats from data/current_season/player_stats.json
+            try {
+                const response = await fetch('data/current_season/player_stats.json');
+                if (!response.ok) return;
+
+                const players = await response.json();
+                const statsMap = {};
+
+                for (const player of players) {
+                    const name = (player.name || '').toLowerCase().trim();
+                    if (name) {
+                        statsMap[name] = {
+                            fantasyPoints: player.fantasy_points || 0,
+                            team: player.mlb_team || player.team || '',
+                            position: player.position || '',
+                            headshot_url: player.headshot_url || ''
+                        };
+                    }
+                }
+
+                tradeAnalyzerData.actualStats = statsMap;
+                if (Object.keys(statsMap).length > 0) {
+                    console.log(`Loaded actual stats for ${Object.keys(statsMap).length} players`);
+                }
+            } catch (e) {
+                // player_stats.json may not exist yet
             }
         }
 
@@ -28873,9 +28976,27 @@
             const data2026 = tradeAnalyzerData.zips2026[name] || {};
             const data2027 = tradeAnalyzerData.zips2027[name] || {};
             const data2028 = tradeAnalyzerData.zips2028[name] || {};
-            const proj2026 = data2026.points || 0;
-            const proj2027 = data2027.points || 0;
-            const proj2028 = data2028.points || 0;
+
+            let proj2026, proj2027, proj2028;
+
+            if (tradeAnalyzerData.isInSeason) {
+                // In-season mode: 2026 = actual YTD points + ROS projected points
+                const actual = (tradeAnalyzerData.actualStats[name] || {}).fantasyPoints || 0;
+                const ros = (tradeAnalyzerData.rosProjections[name] || {}).rosPoints || 0;
+                proj2026 = actual + ros;  // Full season outlook
+
+                // If no ROS or actual data, fall back to preseason ZiPS
+                if (proj2026 === 0) {
+                    proj2026 = data2026.points || 0;
+                }
+            } else {
+                // Preseason mode: use ZiPS projection as before
+                proj2026 = data2026.points || 0;
+            }
+
+            // 2027 and 2028 always use ZiPS multi-year projections
+            proj2027 = data2027.points || 0;
+            proj2028 = data2028.points || 0;
 
             // If no projections at all, return 0
             if (proj2026 === 0 && proj2027 === 0 && proj2028 === 0) {
