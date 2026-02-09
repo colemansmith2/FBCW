@@ -13372,7 +13372,7 @@
             background: #2d5a3d;
             border-radius: 8px;
             width: 95%;
-            max-width: 850px;
+            max-width: 800px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
@@ -13598,6 +13598,13 @@
             text-transform: uppercase;
         }
 
+        .matchup-section-hat {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
         /* ---- Add Tracker Dots (Scoreboard slot) ---- */
         .add-tracker {
             display: flex;
@@ -13658,20 +13665,13 @@
             border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .matchup-popup-adds-row-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            position: relative;
-            z-index: 1;
-        }
-
         .matchup-popup-adds-row-title {
             font-family: 'Arcade Gamer', monospace;
             font-size: 0.45rem;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-bottom: 0.3rem;
         }
 
         .matchup-popup-adds-row-title.streams {
@@ -13689,18 +13689,24 @@
 
         .matchup-popup-adds-group {
             display: flex;
-            gap: 0.4rem;
+            flex-direction: column;
             border-radius: 8px;
             position: relative;
         }
 
+        .matchup-popup-adds-group-cards {
+            display: flex;
+            gap: 0.4rem;
+            border-radius: 8px;
+        }
+
         /* Use outline for border effect - doesn't affect layout or clip content */
-        .matchup-popup-adds-group.streams-group {
+        .matchup-popup-adds-group.streams-group .matchup-popup-adds-group-cards {
             outline: 2px solid #f97316;
             outline-offset: 2px;
         }
 
-        .matchup-popup-adds-group.adds-group {
+        .matchup-popup-adds-group.adds-group .matchup-popup-adds-group-cards {
             outline: 2px solid #a855f7;
             outline-offset: 2px;
         }
@@ -13709,11 +13715,11 @@
             opacity: 0.6;
         }
 
-        .matchup-popup-adds-group.streams-group.placeholder-group {
+        .matchup-popup-adds-group.streams-group.placeholder-group .matchup-popup-adds-group-cards {
             outline-color: rgba(249, 115, 22, 0.7);
         }
 
-        .matchup-popup-adds-group.adds-group.placeholder-group {
+        .matchup-popup-adds-group.adds-group.placeholder-group .matchup-popup-adds-group-cards {
             outline-color: rgba(168, 85, 247, 0.7);
         }
 
@@ -35329,9 +35335,15 @@
             const addSlots = Math.max(2, actualAdds); // minimum 2 add slots, up to 5
             const streamSlots = 5 - addSlots; // streams get whatever remains
 
+            const hatFilename = getManagerHatFilename(team.manager);
+            const hatUrl = `data/hats/${hatFilename}`;
+
             return `
                 <div class="matchup-popup-section-header">
-                    <span class="matchup-popup-section-title">${team.name}</span>
+                    <div style="display:flex;align-items:center;gap:0.4rem;">
+                        <img src="${hatUrl}" class="matchup-section-hat" alt="" onerror="this.style.display='none'">
+                        <span class="matchup-popup-section-title">${team.name}</span>
+                    </div>
                     <div class="add-tracker">
                         <div class="add-tracker-group">
                             <span class="add-tracker-label">STR</span>
@@ -35359,17 +35371,19 @@
                 </div>
 
                 <div class="matchup-popup-adds-row">
-                    <div class="matchup-popup-adds-row-header">
-                        ${streamSlots > 0 ? `<span class="matchup-popup-adds-row-title streams">Streams</span>` : ''}
-                        <span class="matchup-popup-adds-row-title adds" ${streamSlots === 0 ? '' : 'style="margin-left:auto;"'}>Adds</span>
-                    </div>
                     <div class="matchup-popup-adds-grid">
                         ${streamSlots > 0 ? `
                         <div class="matchup-popup-adds-group streams-group ${streamPlayers.length === 0 ? 'placeholder-group' : ''}">
-                            ${Array.from({length: streamSlots}, (_, i) => streamPlayers[i] ? renderAddPlayerCard(streamPlayers[i]) : renderPlaceholderAddCard()).join('')}
+                            <span class="matchup-popup-adds-row-title streams">Streams</span>
+                            <div class="matchup-popup-adds-group-cards">
+                                ${Array.from({length: streamSlots}, (_, i) => streamPlayers[i] ? renderAddPlayerCard(streamPlayers[i]) : renderPlaceholderAddCard()).join('')}
+                            </div>
                         </div>` : ''}
                         <div class="matchup-popup-adds-group adds-group ${regularAddPlayers.length === 0 ? 'placeholder-group' : ''}">
-                            ${Array.from({length: addSlots}, (_, i) => regularAddPlayers[i] ? renderAddPlayerCard(regularAddPlayers[i]) : renderPlaceholderAddCard()).join('')}
+                            <span class="matchup-popup-adds-row-title adds">Adds</span>
+                            <div class="matchup-popup-adds-group-cards">
+                                ${Array.from({length: addSlots}, (_, i) => regularAddPlayers[i] ? renderAddPlayerCard(regularAddPlayers[i]) : renderPlaceholderAddCard()).join('')}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -35377,9 +35391,14 @@
         }
 
         function renderTeamPopupSectionBasic(team) {
+            const hatFilename = getManagerHatFilename(team.manager);
+            const hatUrl = `data/hats/${hatFilename}`;
             return `
                 <div class="matchup-popup-section-header">
-                    <span class="matchup-popup-section-title">${team.name}</span>
+                    <div style="display:flex;align-items:center;gap:0.4rem;">
+                        <img src="${hatUrl}" class="matchup-section-hat" alt="" onerror="this.style.display='none'">
+                        <span class="matchup-popup-section-title">${team.name}</span>
+                    </div>
                     <div class="add-tracker">
                         <div class="add-tracker-group">
                             <span class="add-tracker-label">STR</span>
@@ -35403,16 +35422,18 @@
                 </div>
 
                 <div class="matchup-popup-adds-row">
-                    <div class="matchup-popup-adds-row-header">
-                        <span class="matchup-popup-adds-row-title streams">Streams</span>
-                        <span class="matchup-popup-adds-row-title adds" style="margin-left:auto;">Adds</span>
-                    </div>
                     <div class="matchup-popup-adds-grid">
                         <div class="matchup-popup-adds-group streams-group placeholder-group">
-                            ${[0, 1, 2].map(() => renderPlaceholderAddCard()).join('')}
+                            <span class="matchup-popup-adds-row-title streams">Streams</span>
+                            <div class="matchup-popup-adds-group-cards">
+                                ${[0, 1, 2].map(() => renderPlaceholderAddCard()).join('')}
+                            </div>
                         </div>
                         <div class="matchup-popup-adds-group adds-group placeholder-group">
-                            ${[0, 1].map(() => renderPlaceholderAddCard()).join('')}
+                            <span class="matchup-popup-adds-row-title adds">Adds</span>
+                            <div class="matchup-popup-adds-group-cards">
+                                ${[0, 1].map(() => renderPlaceholderAddCard()).join('')}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -35525,9 +35546,15 @@
                 .filter(p => ['SP', 'RP', 'P'].includes(p.primary_position || p.position))
                 .sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
 
+            const hatFilename = getManagerHatFilename(team.manager);
+            const hatUrl = `data/hats/${hatFilename}`;
+
             return `
                 <div class="matchup-popup-section-header">
-                    <span class="matchup-popup-section-title">${team.name}</span>
+                    <div style="display:flex;align-items:center;gap:0.4rem;">
+                        <img src="${hatUrl}" class="matchup-section-hat" alt="" onerror="this.style.display='none'">
+                        <span class="matchup-popup-section-title">${team.name}</span>
+                    </div>
                 </div>
 
                 <div class="matchup-popup-players-section">
@@ -35545,16 +35572,18 @@
                 </div>
 
                 <div class="matchup-popup-adds-row">
-                    <div class="matchup-popup-adds-row-header">
-                        <span class="matchup-popup-adds-row-title streams">Streams</span>
-                        <span class="matchup-popup-adds-row-title adds" style="margin-left:auto;">Adds</span>
-                    </div>
                     <div class="matchup-popup-adds-grid">
                         <div class="matchup-popup-adds-group streams-group placeholder-group">
-                            ${[0, 1, 2].map(() => renderPlaceholderAddCard()).join('')}
+                            <span class="matchup-popup-adds-row-title streams">Streams</span>
+                            <div class="matchup-popup-adds-group-cards">
+                                ${[0, 1, 2].map(() => renderPlaceholderAddCard()).join('')}
+                            </div>
                         </div>
                         <div class="matchup-popup-adds-group adds-group placeholder-group">
-                            ${[0, 1].map(() => renderPlaceholderAddCard()).join('')}
+                            <span class="matchup-popup-adds-row-title adds">Adds</span>
+                            <div class="matchup-popup-adds-group-cards">
+                                ${[0, 1].map(() => renderPlaceholderAddCard()).join('')}
+                            </div>
                         </div>
                     </div>
                 </div>
