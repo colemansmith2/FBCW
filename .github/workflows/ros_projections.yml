@@ -1,0 +1,71 @@
+# .github/workflows/ros_projections.yml
+#
+# Daily Rest-of-Season projection collection from Fangraphs
+# Runs every day at 6:00 AM ET (11:00 UTC) during the MLB season
+#
+# No Yahoo OAuth needed — Fangraphs API is publicly accessible.
+# Fetches 7 ROS projection systems and saves to data/projections/ros/
+# Preseason projections in data/projections/ are NOT modified.
+
+name: ROS Projections (Daily)
+
+on:
+  # Daily at 6:00 AM Eastern (11:00 UTC)
+  schedule:
+    - cron: '0 11 * * *'
+
+  # Allow manual triggering from the Actions tab
+  workflow_dispatch:
+
+# Permissions needed to push commits
+permissions:
+  contents: write
+
+jobs:
+  collect-ros:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Set up Python
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # 3. Install dependencies (only requests needed — no Yahoo OAuth)
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      # 4. Run the ROS projection fetcher
+      - name: Fetch ROS projections
+        run: |
+          python fetch_ros_projections.py
+        env:
+          TZ: America/New_York
+
+      # 5. Commit and push changes
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+          # Only add ROS projection files
+          git add data/projections/ros/
+
+          # Check if there are changes to commit
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            DATE=$(date +'%Y-%m-%d')
+            git commit -m "📈 ROS projections update - ${DATE}"
+            git push
+            echo "ROS projections committed and pushed successfully"
+          fi
