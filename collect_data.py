@@ -2264,7 +2264,20 @@ def quick_update():
     except Exception as e:
         print(f"  ⚠ Could not update daily scores: {e}")
 
-    # 6. Update manager profiles if team info changed
+    # 6. Update player stats (for trade analyzer actual points)
+    print("Updating player stats...")
+    try:
+        player_stats = build_player_stats(oauth, CURRENT_SEASON)
+        if player_stats:
+            with open(f"{current_season_dir}/player_stats.json", 'w', encoding='utf-8') as f:
+                json.dump(player_stats, f, indent=2, ensure_ascii=False)
+            print(f"  ✓ player_stats.json updated ({len(player_stats)} players)")
+        else:
+            print("  ⚠ No player stats returned")
+    except Exception as e:
+        print(f"  ⚠ Could not update player stats: {e}")
+
+    # 7. Update manager profiles if team info changed
     if teams_changed:
         print("Updating manager profiles (team info changed)...")
         update_manager_stats(oauth)
@@ -2278,6 +2291,7 @@ def quick_update():
     print(f"  - week_X_scores.json: Matchup scores")
     print(f"  - daily_scores.json: Per-day team scores")
     print(f"  - transactions.json: Recent adds/drops/trades")
+    print(f"  - player_stats.json: Player fantasy points (YTD)")
     if teams_changed:
         print(f"  - Manager profiles: Updated")
     print("=" * 60)
