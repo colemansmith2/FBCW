@@ -13372,7 +13372,7 @@
             background: #2d5a3d;
             border-radius: 8px;
             width: 95%;
-            max-width: 780px;
+            max-width: 850px;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
@@ -14896,7 +14896,7 @@
             <div class="matchup-popup-overlay" id="matchup-popup-overlay" onclick="closeMatchupPopup(event)">
                 <div class="matchup-popup" onclick="event.stopPropagation()">
                     <div class="matchup-popup-header">
-                        <div class="matchup-popup-title">Week <span id="matchup-popup-week">1</span> Matchup</div>
+                        <div class="matchup-popup-title">Week <span id="matchup-popup-week">1</span> Matchup<span id="matchup-popup-dates" style="opacity:0.6;margin-left:6px;"></span></div>
                         <button class="matchup-popup-close" onclick="closeMatchupPopup()">&times;</button>
                     </div>
                     <div class="matchup-popup-scoreboard" id="matchup-popup-scoreboard">
@@ -35169,6 +35169,16 @@
             // Always render innings-style scoreboard (loads daily data if available, shows dashes otherwise)
             const dailyData = await loadDailyScores();
             scoreboard.innerHTML = renderInningsScoreboard(matchup, dailyData);
+
+            // Set date range in header
+            const datesSpan = document.getElementById('matchup-popup-dates');
+            const weekData = dailyData?.weeks?.[String(matchup.week)];
+            const days = (weekData?.days && weekData.days.length > 0) ? weekData.days : generateWeekDays(matchup.week);
+            if (days.length > 0) {
+                datesSpan.textContent = `| ${days[0].display_date} - ${days[days.length - 1].display_date}`;
+            } else {
+                datesSpan.textContent = '';
+            }
 
             // Load player and transaction data for this week
             body.innerHTML = '<div style="text-align: center; padding: 2rem; grid-column: 1/-1; color: rgba(255,255,255,0.5); font-family: Arcade Gamer, monospace; font-size: 0.6rem; letter-spacing: 1px;">LOADING...</div>';
