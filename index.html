@@ -3604,7 +3604,7 @@
         }
 
         .screenshot-player-meta {
-            color: rgba(255, 255, 255, 0.6);
+            color: white;
             font-size: 0.7rem;
         }
 
@@ -29869,10 +29869,10 @@
                 if (item.type === 'player') {
                     const headshot = item.headshot || placeholderImg;
                     const pos = item.position || 'UT';
-                    const prospect = item.isProspect ? ' <span style="color:#888;font-size:0.55rem;">(P)</span>' : '';
+                    const prospect = item.isProspect ? ' <span style="font-size:0.55rem;">(P)</span>' : '';
                     const mlbTeam = item.mlbTeam ? formatMLBTeamDisplay(item.mlbTeam) : '';
                     const mlbLogoUrl = item.mlbTeam ? getMLBTeamLogo(item.mlbTeam) : '';
-                    const mlbLogoHtml = mlbLogoUrl ? `<img src="${mlbLogoUrl}" style="width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:2px;" onerror="this.style.display='none'">` : '';
+                    const mlbLogoHtml = mlbLogoUrl ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:white;border-radius:50%;vertical-align:middle;margin-right:2px;"><img src="${mlbLogoUrl}" style="width:10px;height:10px;border-radius:50%;" onerror="this.parentElement.style.display='none'"></span>` : '';
                     return `
                         <div class="screenshot-player">
                             <img src="${headshot}" class="screenshot-player-headshot" onerror="this.src='${placeholderImg}'">
@@ -29885,10 +29885,10 @@
                     `;
                 } else if (item.type === 'pick') {
                     const pickColors = item.year === 2027
-                        ? { circleBg: '#ab47bc', rowBg: 'rgba(171, 71, 188, 0.15)', text: '#fff' }
-                        : { circleBg: '#ffa726', rowBg: 'rgba(255, 167, 38, 0.15)', text: '#333' };
+                        ? { circleBg: '#ab47bc', text: '#fff' }
+                        : { circleBg: '#ffa726', text: '#333' };
                     return `
-                        <div class="screenshot-player" style="background: ${pickColors.rowBg};">
+                        <div class="screenshot-player">
                             <div class="screenshot-player-headshot" style="background: ${pickColors.circleBg}; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold; color: ${pickColors.text};">R${item.round}</div>
                             <div class="screenshot-player-info">
                                 <div class="screenshot-player-name">${item.year} Round ${item.round} Pick</div>
