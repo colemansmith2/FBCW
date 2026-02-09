@@ -3576,7 +3576,7 @@
             display: flex;
             align-items: center;
             gap: 0.4rem;
-            background: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.22);
             border-radius: 4px;
             padding: 0.35rem 0.5rem;
         }
@@ -3615,7 +3615,7 @@
         }
 
         .screenshot-perspective {
-            background: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.22);
             border-radius: 6px;
             padding: 0.5rem;
             margin-top: 0.5rem;
@@ -3644,6 +3644,7 @@
             font-weight: 700;
         }
 
+        .screenshot-perspective-value { font-weight: 700; }
         .screenshot-perspective-value.positive { color: #28a745; }
         .screenshot-perspective-value.negative { color: #dc3545; }
         .screenshot-perspective-value.neutral { color: #adb5bd; }
@@ -29872,7 +29873,7 @@
                     const prospect = item.isProspect ? ' <span style="font-size:0.55rem;">(P)</span>' : '';
                     const mlbTeam = item.mlbTeam ? formatMLBTeamDisplay(item.mlbTeam) : '';
                     const mlbLogoUrl = item.mlbTeam ? getMLBTeamLogo(item.mlbTeam) : '';
-                    const mlbLogoHtml = mlbLogoUrl ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:white;border-radius:50%;vertical-align:middle;margin-right:2px;"><img src="${mlbLogoUrl}" style="width:10px;height:10px;border-radius:50%;" onerror="this.parentElement.style.display='none'"></span>` : '';
+                    const mlbLogoHtml = mlbLogoUrl ? `<img src="${mlbLogoUrl}" style="width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:2px;" onerror="this.style.display='none'">` : '';
                     return `
                         <div class="screenshot-player">
                             <img src="${headshot}" class="screenshot-player-headshot" onerror="this.src='${placeholderImg}'">
