@@ -3458,7 +3458,7 @@
 
         .trade-screenshot-content {
             padding: 1rem;
-            background: linear-gradient(135deg, #1a3c6e 0%, #0d2240 100%);
+            background: var(--retro-blue);
         }
 
         /* Screenshot internal styles */
@@ -3559,7 +3559,7 @@
 
         .screenshot-section-label {
             color: rgba(255, 255, 255, 0.6);
-            font-size: 0.65rem;
+            font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             margin-bottom: 0.35rem;
@@ -3582,8 +3582,8 @@
         }
 
         .screenshot-player-headshot {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             object-fit: cover;
             background: #ccc;
@@ -3596,7 +3596,7 @@
 
         .screenshot-player-name {
             color: white;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
             font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
@@ -3605,13 +3605,13 @@
 
         .screenshot-player-meta {
             color: rgba(255, 255, 255, 0.6);
-            font-size: 0.6rem;
+            font-size: 0.7rem;
         }
 
         .screenshot-player-value {
             color: var(--retro-gold);
             font-weight: 600;
-            font-size: 0.75rem;
+            font-size: 0.85rem;
         }
 
         .screenshot-perspective {
@@ -29793,11 +29793,11 @@
                     `;
                 } else if (item.type === 'pick') {
                     const pickColors = item.year === 2027
-                        ? { bg: 'linear-gradient(135deg, #ce93d8, #ab47bc)', text: '#fff' }
-                        : { bg: 'linear-gradient(135deg, #ffcc80, #ffa726)', text: '#333' };
+                        ? { circleBg: '#ab47bc', rowBg: 'rgba(171, 71, 188, 0.15)', text: '#fff' }
+                        : { circleBg: '#ffa726', rowBg: 'rgba(255, 167, 38, 0.15)', text: '#333' };
                     return `
-                        <div class="screenshot-player">
-                            <div class="screenshot-player-headshot" style="background: ${pickColors.bg}; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold; color: ${pickColors.text};">R${item.round}</div>
+                        <div class="screenshot-player" style="background: ${pickColors.rowBg};">
+                            <div class="screenshot-player-headshot" style="background: ${pickColors.circleBg}; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold; color: ${pickColors.text};">R${item.round}</div>
                             <div class="screenshot-player-info">
                                 <div class="screenshot-player-name">${item.year} Round ${item.round} Pick</div>
                                 <div class="screenshot-player-meta">Draft Pick</div>
@@ -29829,8 +29829,10 @@
 
             // Sort offers: players first, then picks, then budget
             const sortOfferItems = (items) => {
-                const typeOrder = { player: 0, pick: 1, budget: 2 };
-                return [...items].sort((a, b) => (typeOrder[a.type] || 99) - (typeOrder[b.type] || 99));
+                const players = items.filter(i => i.type === 'player');
+                const picks = items.filter(i => i.type === 'pick');
+                const rest = items.filter(i => i.type !== 'player' && i.type !== 'pick');
+                return [...players, ...picks, ...rest];
             };
             const sortedOffer1 = sortOfferItems(offer1);
             const sortedOffer2 = sortOfferItems(offer2);
