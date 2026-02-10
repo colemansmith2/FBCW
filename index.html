@@ -12884,11 +12884,22 @@
             border-radius: 8px;
             border: 1px solid #e0d5c0;
         }
+        .mock-draft-controls-left {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
         .mock-draft-round-label {
             font-family: 'Basis33', monospace;
             font-size: 1rem;
             letter-spacing: 1px;
             color: var(--retro-blue);
+        }
+        .mock-draft-picks-remaining {
+            font-family: 'Basis33', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            color: #666;
         }
         .mock-draft-controls-right { display: flex; gap: 0.5rem; }
 
@@ -17297,7 +17308,10 @@
 
                 <!-- Controls -->
                 <div class="mock-draft-controls">
-                    <span id="mock-draft-round-display" class="mock-draft-round-label">Round 1 — Pick 1</span>
+                    <div class="mock-draft-controls-left">
+                        <span id="mock-draft-round-display" class="mock-draft-round-label">Round 1 — Pick 1</span>
+                        <span id="mock-draft-picks-remaining" class="mock-draft-picks-remaining"></span>
+                    </div>
                     <div class="mock-draft-controls-right">
                         <button id="mock-draft-skip-btn" class="mock-draft-btn-primary" style="padding:0.4rem 1rem;font-size:0.85rem;margin-top:0;" onclick="skipToNextUserPick()">⏭ Skip to My Pick</button>
                         <button id="mock-draft-pause-btn" class="mock-draft-btn-secondary" onclick="toggleMockDraftPause()">⏸ Pause</button>
@@ -38611,6 +38625,7 @@
             isUserTurn: false,
             keeperConsumedPicks: {},
             keeperPickMap: {},
+            keeperPickByOverall: {},
             resolvedKeeperCosts: {},
             typeFilter: 'all',
             sortField: 'avg'
@@ -39016,8 +39031,9 @@
                 };
             });
 
-            // Pre-populate with keepers and build keeper pick map for ticker/log
-            const keeperPickMap = {}; // { teamKey: { round: { name, positions, headshot_url, ... } } }
+            // Pre-populate with keepers and build keeper pick maps for ticker/log/report
+            const keeperPickMap = {}; // { teamKey: { round: [{ name, positions, headshot_url, ... }] } }
+            const keeperPickByOverall = {}; // { overallPick: keeperData }
 
             // Helper: normalize name for matching (strip parentheticals, suffixes, diacritics)
             function mockDraftNormalizeName(name) {
@@ -39114,14 +39130,15 @@
                         const actualRound = resolvedCosts[keeperName.toLowerCase()] || k.roundCost || k.round_cost || k.cost || k.round;
                         if (actualRound && !isNAKeeper) {
                             if (!keeperPickMap[teamKey]) keeperPickMap[teamKey] = {};
-                            keeperPickMap[teamKey][actualRound] = {
+                            if (!keeperPickMap[teamKey][actualRound]) keeperPickMap[teamKey][actualRound] = [];
+                            keeperPickMap[teamKey][actualRound].push({
                                 name: player.name,
                                 normName: player.normName,
                                 positions: player.positions || [],
                                 headshot_url: player.headshot_url || '',
                                 avgPoints: player.avgPoints || 0,
                                 mlbTeam: player.mlbTeam || ''
-                            };
+                            });
                         }
 
                         // Remove from available pool so they can't be drafted again
@@ -39137,8 +39154,57 @@
                 });
             }
 
+            // Resolve round-bucketed keeper entries to specific overall picks so duplicate rounds are supported.
+            Object.entries(keeperPickMap).forEach(([teamKey, roundBuckets]) => {
+                Object.entries(roundBuckets).forEach(([roundStr, keepersInRound]) => {
+                    const roundNum = Number(roundStr);
+                    const keeperPicksInRound = mockDraftState.pickSequence
+                        .filter(p => p.isKeeper && p.teamKey === teamKey && p.round === roundNum)
+                        .sort((a, b) => a.pickInRound - b.pickInRound);
+                    const sortedKeepers = [...keepersInRound].sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+
+                    keeperPicksInRound.forEach((pick, idx) => {
+                        const keeperData = sortedKeepers[idx] || sortedKeepers[sortedKeepers.length - 1];
+                        if (keeperData) keeperPickByOverall[pick.overallPick] = keeperData;
+                    });
+                });
+            });
+
             mockDraftState.teamRosters = rosters;
             mockDraftState.keeperPickMap = keeperPickMap;
+            mockDraftState.keeperPickByOverall = keeperPickByOverall;
+        }
+
+        function mockDraftGetKeeperDataForPick(pick) {
+            if (!pick || !pick.isKeeper) return null;
+            const byOverall = mockDraftState.keeperPickByOverall?.[pick.overallPick];
+            if (byOverall) return byOverall;
+            const byRound = mockDraftState.keeperPickMap?.[pick.teamKey]?.[pick.round];
+            if (Array.isArray(byRound)) return byRound[0] || null;
+            return byRound || null;
+        }
+
+        function getMockDraftUserPicksRemaining() {
+            if (!mockDraftState.userTeamKey || !Array.isArray(mockDraftState.pickSequence)) return 0;
+            return mockDraftState.pickSequence
+                .slice(mockDraftState.currentPickIndex)
+                .filter(p => !p.isKeeper && p.teamKey === mockDraftState.userTeamKey)
+                .length;
+        }
+
+        function updateMockDraftPicksRemaining() {
+            const el = document.getElementById('mock-draft-picks-remaining');
+            if (!el) return;
+            if (mockDraftState.phase !== 'drafting') {
+                el.textContent = '';
+                return;
+            }
+
+            const totalUserPicks = mockDraftState.pickSequence
+                .filter(p => !p.isKeeper && p.teamKey === mockDraftState.userTeamKey)
+                .length;
+            const remaining = getMockDraftUserPicksRemaining();
+            el.textContent = `Your Picks Left: ${remaining} / ${totalUserPicks}`;
         }
 
         function mockDraftAssignSlot(player, roster) {
@@ -39363,6 +39429,7 @@
 
             // Advance
             mockDraftState.currentPickIndex++;
+            updateMockDraftPicksRemaining();
         }
 
         async function startMockDraft() {
@@ -39410,6 +39477,7 @@
             renderMockDraftAvailableTable();
             renderMockDraftRoster();
             document.getElementById('mock-draft-log').innerHTML = '';
+            updateMockDraftPicksRemaining();
 
             // Start the loop
             mockDraftRunLoop();
@@ -39426,6 +39494,7 @@
                     addMockDraftKeeperLogEntry(pick);
                     mockDraftState.currentPickIndex++;
                     updateMockDraftTicker();
+                    updateMockDraftPicksRemaining();
                     continue;
                 }
                 break;
@@ -39440,6 +39509,7 @@
             const pick = mockDraftState.pickSequence[mockDraftState.currentPickIndex];
             updateMockDraftRoundDisplay(pick);
             updateMockDraftTicker();
+            updateMockDraftPicksRemaining();
 
             // Check if it's the user's turn
             if (pick.teamKey === mockDraftState.userTeamKey) {
@@ -39463,6 +39533,7 @@
                 mockDraftExecutePick(pick.teamKey, aiPlayer, false);
             } else {
                 mockDraftState.currentPickIndex++;
+                updateMockDraftPicksRemaining();
             }
 
             renderMockDraftAvailableTable();
@@ -39503,6 +39574,7 @@
                     addMockDraftKeeperLogEntry(pick);
                     mockDraftState.currentPickIndex++;
                     updateMockDraftTicker();
+                    updateMockDraftPicksRemaining();
                     continue;
                 }
                 // If this is the user's pick, stop and let them choose
@@ -39515,6 +39587,7 @@
                     mockDraftExecutePick(pick.teamKey, aiPlayer, false);
                 } else {
                     mockDraftState.currentPickIndex++;
+                    updateMockDraftPicksRemaining();
                 }
             }
 
@@ -39551,6 +39624,7 @@
             mockDraftState.isUserTurn = false;
             mockDraftState.pickSequence = [];
             mockDraftState.keeperPickMap = {};
+            mockDraftState.keeperPickByOverall = {};
             mockDraftState.resolvedKeeperCosts = {};
             mockDraftState.typeFilter = 'all';
             mockDraftState.sortField = 'avg';
@@ -39566,6 +39640,7 @@
             document.querySelectorAll('.mock-draft-filter-btn').forEach((b, i) => {
                 b.classList.toggle('active', i === 0);
             });
+            updateMockDraftPicksRemaining();
             renderDraftOrderPreview();
         }
 
@@ -39574,6 +39649,7 @@
             if (mockDraftState.draftTimeout) clearTimeout(mockDraftState.draftTimeout);
             document.getElementById('mock-draft-active').style.display = 'none';
             document.getElementById('mock-draft-report').style.display = 'block';
+            updateMockDraftPicksRemaining();
             // Reset to summary view — hide all other views
             document.getElementById('mock-draft-report-summary-view').style.display = '';
             document.getElementById('mock-draft-report-rosters-view').style.display = 'none';
@@ -39607,7 +39683,7 @@
 
                 if (isKeeper) {
                     // Look up keeper data from pre-built map
-                    const keeperData = mockDraftState.keeperPickMap?.[pick.teamKey]?.[pick.round];
+                    const keeperData = mockDraftGetKeeperDataForPick(pick);
                     const keeperHeadshot = keeperData?.headshot_url || '';
                     const keeperName = keeperData?.name || '';
                     const imgSrc = keeperHeadshot || logo;
@@ -39863,7 +39939,7 @@
             const info = mockDraftState.teamInfo[pick.teamKey];
             const logo = info ? info.logo : '';
             // Look up keeper data from pre-built map
-            const keeperData = mockDraftState.keeperPickMap?.[pick.teamKey]?.[pick.round];
+            const keeperData = mockDraftGetKeeperDataForPick(pick);
             const keeperName = keeperData?.name || 'Keeper';
             const keeperPositions = keeperData?.positions || [];
             const keeperPts = keeperData?.avgPoints || '';
@@ -39968,25 +40044,37 @@
                 </div>
             `;
 
-            // Build a combined list of keepers + picks, all with round/pick info, sorted by round then pick
-            // For keepers, find their pick from the sequence
-            const keeperPicks = mockDraftState.pickSequence.filter(p => p.isKeeper && p.teamKey === userKey);
+            // Build a combined list of keepers + picks, all with round/pick info, sorted by round then pick.
             const allEntries = [];
 
-            // Map keepers to their picks
+            // Add keepers from the pick sequence (supports multiple keepers in the same round).
+            const mappedKeeperNames = new Set();
+            mockDraftState.pickSequence
+                .filter(p => p.isKeeper && p.teamKey === userKey)
+                .forEach(pick => {
+                    const keeperData = mockDraftGetKeeperDataForPick(pick);
+                    if (!keeperData) return;
+                    mappedKeeperNames.add((keeperData.name || '').toLowerCase().trim());
+                    allEntries.push({
+                        round: pick.round,
+                        pickInRound: pick.pickInRound,
+                        name: keeperData.name || 'Keeper',
+                        positions: keeperData.positions || [],
+                        avgPoints: keeperData.avgPoints || 0,
+                        headshot_url: keeperData.headshot_url || '',
+                        mlbTeam: keeperData.mlbTeam || '',
+                        isKeeper: true,
+                        isProspect: false
+                    });
+                });
+
+            // Safety fallback: include any keeper not mapped to a specific sequence pick.
             keeperPlayers.forEach(kp => {
-                // Find the keeper's pick in the sequence using keeperPickMap
-                const keeperMap = mockDraftState.keeperPickMap?.[userKey] || {};
-                let matchedPick = null;
-                for (const [rd, data] of Object.entries(keeperMap)) {
-                    if (data.name === kp.name) {
-                        matchedPick = keeperPicks.find(p => p.round === Number(rd));
-                        break;
-                    }
-                }
+                const key = (kp.name || '').toLowerCase().trim();
+                if (mappedKeeperNames.has(key)) return;
                 allEntries.push({
-                    round: matchedPick ? matchedPick.round : 0,
-                    pickInRound: matchedPick ? matchedPick.pickInRound : 0,
+                    round: 0,
+                    pickInRound: 0,
                     name: kp.name,
                     positions: kp.positions || [],
                     avgPoints: kp.avgPoints || 0,
@@ -40115,7 +40203,7 @@
                         mlbTeam = drafted.player.mlbTeam || '';
                     } else if (isKeeper) {
                         // Keeper pick — look up from keeperPickMap
-                        const keeperData = mockDraftState.keeperPickMap?.[pick.teamKey]?.[pick.round];
+                        const keeperData = mockDraftGetKeeperDataForPick(pick);
                         if (keeperData) {
                             playerName = keeperData.name;
                             headshot = keeperData.headshot_url || '';
@@ -40236,15 +40324,34 @@
                     const posPlayers = roster.players.filter(p =>
                         p.assignedSlot && group.slots.includes(p.assignedSlot)
                     );
+
+                    // If a team has no drafted/rostered players in this position group,
+                    // fall back to NA prospects who qualify at that position.
+                    let displayPlayers = posPlayers;
+                    if (displayPlayers.length === 0) {
+                        const naProspects = roster.players.filter(p => {
+                            if (p.assignedSlot !== 'NA') return false;
+                            const pPos = (p.positions || []).map(x => (x || '').toUpperCase());
+                            if (group.slots.includes('OF')) {
+                                return pPos.some(pos => ['OF', 'LF', 'CF', 'RF'].includes(pos));
+                            }
+                            if (group.slots.includes('SP') || group.slots.includes('RP') || group.slots.includes('P')) {
+                                return p.type === 'pitcher' || pPos.some(pos => ['SP', 'RP', 'P'].includes(pos));
+                            }
+                            return pPos.some(pos => group.slots.includes(pos));
+                        });
+                        if (naProspects.length > 0) displayPlayers = naProspects;
+                    }
+
                     // Sort players within team by points descending
-                    posPlayers.sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
-                    const totalPts = posPlayers.reduce((sum, p) => sum + (p.avgPoints || 0), 0);
+                    displayPlayers.sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+                    const totalPts = displayPlayers.reduce((sum, p) => sum + (p.avgPoints || 0), 0);
                     teamPosData.push({
                         teamKey,
                         teamName: info.teamName || teamKey,
                         manager: info.manager || '',
                         logo: fixTeamLogo(info.logo || ''),
-                        players: posPlayers,
+                        players: displayPlayers,
                         totalPts,
                         isUser: teamKey === userKey
                     });
@@ -40306,18 +40413,17 @@
             // Get team's keeper picks and drafted picks
             const teamDraftedPicks = mockDraftState.draftedPlayers.filter(dp => dp.teamKey === teamKey);
             const keeperPicksInSeq = mockDraftState.pickSequence.filter(p => p.isKeeper && p.teamKey === teamKey);
-            const keeperMap = mockDraftState.keeperPickMap?.[teamKey] || {};
 
             // Build a lookup: playerName -> round.pick
             const playerRoundMap = {};
 
-            // Keepers: map from keeperPickMap
-            for (const [rd, data] of Object.entries(keeperMap)) {
-                const kPick = keeperPicksInSeq.find(p => p.round === Number(rd));
-                if (kPick) {
-                    playerRoundMap[data.name] = { round: kPick.round, pickInRound: kPick.pickInRound, isKeeper: true };
+            // Keepers: map directly from resolved keeper pick sequence
+            keeperPicksInSeq.forEach(kPick => {
+                const keeperData = mockDraftGetKeeperDataForPick(kPick);
+                if (keeperData?.name) {
+                    playerRoundMap[keeperData.name] = { round: kPick.round, pickInRound: kPick.pickInRound, isKeeper: true };
                 }
-            }
+            });
 
             // Drafted picks
             teamDraftedPicks.forEach(dp => {
