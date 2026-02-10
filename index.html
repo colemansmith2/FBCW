@@ -13000,8 +13000,20 @@
             height: 14px;
             object-fit: contain;
         }
+        .mock-draft-player-headshot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #f0f0f0;
+        }
+        .mock-draft-player-headshot.placeholder {
+            background: #e8e8e8;
+        }
         .mock-draft-available-table-wrapper {
-            max-height: 500px;
+            max-height: calc(100vh - 340px);
+            min-height: 400px;
             overflow-y: auto;
         }
         .mock-draft-available-table {
@@ -38195,6 +38207,7 @@
             aiPickDelay: 600,
             isUserTurn: false,
             keeperConsumedPicks: {},
+            keeperPickMap: {},
             typeFilter: 'all'
         };
 
@@ -38502,7 +38515,9 @@
                 };
             });
 
-            // Pre-populate with keepers
+            // Pre-populate with keepers and build keeper pick map for ticker/log
+            const keeperPickMap = {}; // { teamKey: { round: { name, positions, headshot_url, ... } } }
+
             if (keeperSelections) {
                 Object.entries(keeperSelections).forEach(([teamKey, keepers]) => {
                     if (!keepers || !Array.isArray(keepers) || !rosters[teamKey]) return;
@@ -38543,6 +38558,19 @@
                             rosters[teamKey].players.push({ ...player, assignedSlot: slot, isKeeper: true, isNAKeeper: isNAKeeper });
                         }
 
+                        // Build keeper pick map for ticker/log lookup
+                        const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
+                        if (roundCost && !isNAKeeper) {
+                            if (!keeperPickMap[teamKey]) keeperPickMap[teamKey] = {};
+                            keeperPickMap[teamKey][roundCost] = {
+                                name: player.name,
+                                normName: player.normName,
+                                positions: player.positions || [],
+                                headshot_url: player.headshot_url || '',
+                                avgPoints: player.avgPoints || 0
+                            };
+                        }
+
                         // Remove from available pool so they can't be drafted again
                         const idx = mockDraftState.availablePlayers.findIndex(p => p.normName === normName);
                         if (idx >= 0) mockDraftState.availablePlayers.splice(idx, 1);
@@ -38551,6 +38579,7 @@
             }
 
             mockDraftState.teamRosters = rosters;
+            mockDraftState.keeperPickMap = keeperPickMap;
         }
 
         function mockDraftAssignSlot(player, roster) {
@@ -38886,6 +38915,7 @@
             mockDraftState.paused = false;
             mockDraftState.isUserTurn = false;
             mockDraftState.pickSequence = [];
+            mockDraftState.keeperPickMap = {};
             mockDraftState.typeFilter = 'all';
 
             document.getElementById('mock-draft-setup').style.display = 'block';
@@ -38929,25 +38959,10 @@
                 if (isKeeper) cls += ' keeper-pick';
 
                 if (isKeeper) {
-                    // Find the keeper player to get headshot
-                    let keeperHeadshot = '';
-                    let keeperName = '';
-                    if (keeperSelections && keeperSelections[pick.teamKey]) {
-                        const matchingKeeper = keeperSelections[pick.teamKey].find(k => {
-                            const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
-                            return roundCost === pick.round;
-                        });
-                        if (matchingKeeper) {
-                            keeperName = matchingKeeper.player_name || matchingKeeper.name || '';
-                            // Find headshot from pool or roster
-                            const normName = keeperName.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                            const roster = mockDraftState.teamRosters[pick.teamKey];
-                            if (roster) {
-                                const rosterPlayer = roster.players.find(p => p.normName === normName);
-                                if (rosterPlayer && rosterPlayer.headshot_url) keeperHeadshot = rosterPlayer.headshot_url;
-                            }
-                        }
-                    }
+                    // Look up keeper data from pre-built map
+                    const keeperData = mockDraftState.keeperPickMap?.[pick.teamKey]?.[pick.round];
+                    const keeperHeadshot = keeperData?.headshot_url || '';
+                    const keeperName = keeperData?.name || '';
                     const imgSrc = keeperHeadshot || logo;
                     html += `<div class="${cls}" id="ticker-pick-${i}">
                         <img src="${imgSrc}" alt="${keeperName}" onerror="this.src='${logo}';">
@@ -39028,9 +39043,14 @@
                 const mlbLogoHtml = mlbLogoUrl
                     ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">`
                     : '';
+                const headshotUrl = player.headshot_url || '';
+                const headshotHtml = headshotUrl
+                    ? `<img src="${headshotUrl}" alt="" class="mock-draft-player-headshot" onerror="this.style.display='none'">`
+                    : `<div class="mock-draft-player-headshot placeholder"></div>`;
                 html += `<tr>
                     <td>${dispIdx + 1}</td>
                     <td><div class="mock-draft-player-cell">
+                        ${headshotHtml}
                         <div class="player-info">
                             <span class="player-name">${player.name}</span>
                             <span class="player-mlb-team">${mlbLogoHtml}${mlbDisplay}</span>
@@ -39149,33 +39169,10 @@
             if (!log) return;
             const info = mockDraftState.teamInfo[pick.teamKey];
             const logo = info ? info.logo : '';
-            // Find the keeper player for this team/round by matching roundCost
-            let keeperName = 'Keeper';
-            let keeperPositions = [];
-            if (keeperSelections && keeperSelections[pick.teamKey]) {
-                const teamKeepers = keeperSelections[pick.teamKey];
-                const matchingKeeper = teamKeepers.find(k => {
-                    const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
-                    return roundCost === pick.round;
-                });
-                if (matchingKeeper) {
-                    keeperName = matchingKeeper.player_name || matchingKeeper.name || 'Keeper';
-                    const keeperPos = matchingKeeper.position || '';
-                    // Try to find full position data from roster
-                    const normName = keeperName.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                    const roster = mockDraftState.teamRosters[pick.teamKey];
-                    if (roster) {
-                        const rosterPlayer = roster.players.find(p => p.normName === normName);
-                        if (rosterPlayer && rosterPlayer.positions) {
-                            keeperPositions = rosterPlayer.positions;
-                        }
-                    }
-                    if (keeperPositions.length === 0 && keeperPos) {
-                        const isPitcher = ['SP', 'RP', 'P'].includes(keeperPos);
-                        keeperPositions = mockDraftParsePositions(keeperPos, isPitcher ? 'pitcher' : 'batter');
-                    }
-                }
-            }
+            // Look up keeper data from pre-built map
+            const keeperData = mockDraftState.keeperPickMap?.[pick.teamKey]?.[pick.round];
+            const keeperName = keeperData?.name || 'Keeper';
+            const keeperPositions = keeperData?.positions || [];
             const entry = document.createElement('div');
             entry.className = 'mock-draft-log-entry keeper-entry';
             entry.innerHTML = `
