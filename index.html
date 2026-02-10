@@ -13521,13 +13521,23 @@
             font-size: 0.8rem;
         }
         .mock-draft-chart-bar-row .bar-team {
-            min-width: 120px;
+            width: 130px;
+            min-width: 130px;
+            max-width: 130px;
             text-align: right;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: #555;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+        }
+        .mock-draft-chart-bar-row .bar-team .bar-manager {
+            font-weight: 600;
+            color: #333;
         }
         .mock-draft-chart-bar-row .bar-track {
             flex-grow: 1;
@@ -13554,9 +13564,9 @@
         .mock-draft-chart-bar-row.user-bar .bar-fill {
             background: var(--retro-green);
         }
-        .mock-draft-chart-bar-row.user-bar .bar-team {
-            font-weight: bold;
+        .mock-draft-chart-bar-row.user-bar .bar-team .bar-manager {
             color: var(--retro-blue);
+            font-weight: bold;
         }
         .mock-draft-pos-rankings {
             display: grid;
@@ -13579,22 +13589,28 @@
             font-size: 0.85rem;
             color: var(--retro-blue);
             font-weight: bold;
+            border-bottom: 2px solid var(--retro-blue);
+            padding-bottom: 0.3rem;
         }
         .mock-draft-pos-rank-row {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.2rem 0;
+            gap: 0.35rem;
+            padding: 0.3rem 0.15rem;
             font-size: 0.78rem;
             border-bottom: 1px solid #f0f0f0;
         }
         .mock-draft-pos-rank-row:last-child { border-bottom: none; }
         .mock-draft-pos-rank-row .pos-rank-num { min-width: 18px; color: #999; font-weight: bold; font-size: 0.7rem; text-align: center; }
-        .mock-draft-pos-rank-row .pos-rank-team { min-width: 90px; font-size: 0.75rem; }
-        .mock-draft-pos-rank-row .pos-rank-players { flex-grow: 1; color: #666; font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .mock-draft-pos-rank-row .pos-rank-pts { font-weight: bold; color: var(--retro-blue); font-size: 0.75rem; min-width: 36px; text-align: right; }
-        .mock-draft-pos-rank-row.user-rank { background: rgba(46,204,113,0.08); border-radius: 3px; padding: 0.2rem 0.3rem; }
-        .mock-draft-pos-rank-row.user-rank .pos-rank-team { font-weight: 600; }
+        .mock-draft-pos-rank-row .pos-rank-team-logo { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+        .mock-draft-pos-rank-row .pos-rank-manager { min-width: 70px; font-size: 0.72rem; font-weight: 600; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mock-draft-pos-rank-row .pos-rank-players { flex-grow: 1; display: flex; align-items: center; gap: 0.3rem; overflow: hidden; flex-wrap: wrap; }
+        .mock-draft-pos-rank-card.full-width { grid-column: 1 / -1; }
+        .mock-draft-pos-rank-row .pos-rank-player-chip { display: flex; align-items: center; gap: 3px; font-size: 0.7rem; color: #555; white-space: nowrap; }
+        .mock-draft-pos-rank-row .pos-rank-player-chip img { width: 18px; height: 18px; border-radius: 50%; object-fit: cover; background: #f0f0f0; }
+        .mock-draft-pos-rank-row .pos-rank-pts { font-weight: bold; color: var(--retro-blue); font-size: 0.75rem; min-width: 40px; text-align: right; }
+        .mock-draft-pos-rank-row.user-rank { background: rgba(46,204,113,0.08); border-radius: 4px; padding: 0.3rem 0.3rem; }
+        .mock-draft-pos-rank-row.user-rank .pos-rank-manager { color: var(--retro-blue); }
 
         /* Bylaws Section Styles */
         .bylaws-container {
@@ -39171,10 +39187,18 @@
         }
 
         // AI Scoring
+        // Strategy: Early rounds are BPA-driven (best player available by points).
+        // As draft progresses, positional need becomes increasingly important.
+        // "needWeight" scales from ~0.1 in round 1 to ~1.0 by round 15+.
         function mockDraftScorePlayer(player, roster, round) {
             let score = player.avgPoints;
             const positions = player.positions || [];
             const isP = player.type === 'pitcher';
+            const totalRounds = 23;
+
+            // How much to weight need — very low early, ramps up mid-draft
+            // Round 1: ~0.1, Round 6: ~0.35, Round 10: ~0.55, Round 15: ~0.8, Round 20+: ~1.0
+            const needWeight = Math.min(1.0, 0.1 + (round - 1) * 0.9 / (totalRounds - 1));
 
             // Hard roster limits: NEVER exceed max batters or pitchers
             if (isP && roster.totalPitchers >= MOCK_DRAFT_MAX_PITCHERS) return -Infinity;
@@ -39185,12 +39209,13 @@
                 return -Infinity;
             }
 
-            // Position scarcity multipliers
-            const scarcityMult = { C: 1.25, SS: 1.10, RP: 1.10, '2B': 1.05, '3B': 1.05, SP: 1.05, '1B': 1.0, OF: 1.0 };
+            // Position scarcity multipliers — scaled by needWeight so they barely matter early
+            const scarcityBase = { C: 0.25, SS: 0.10, RP: 0.10, '2B': 0.05, '3B': 0.05, SP: 0.05, '1B': 0.0, OF: 0.0 };
             const primaryPos = positions[0] || (isP ? 'SP' : 'DH');
-            score *= (scarcityMult[primaryPos] || 1.0);
+            const scarcityBonus = (scarcityBase[primaryPos] || 0) * needWeight;
+            score *= (1.0 + scarcityBonus);
 
-            // Need boost: unfilled core positions
+            // Need boost: unfilled core positions — scaled by needWeight
             let needBoost = 0;
             if (!isP) {
                 for (const pos of positions) {
@@ -39203,10 +39228,8 @@
                         if (pos === 'SS') needBoost += 15;
                     }
                 }
-                // Util need: 3 util slots available for any batter
                 const utilNeeded = 3 - (roster.slots.Util || 0);
                 if (utilNeeded > 0 && needBoost === 0) {
-                    // No specific positional need met, but util is open
                     needBoost += 20;
                 }
             } else {
@@ -39214,7 +39237,7 @@
                 if (positions.includes('RP') && roster.slots.RP < 1) needBoost += 35;
                 if (roster.slots.P < 2) needBoost += 15;
             }
-            score += needBoost;
+            score += needBoost * needWeight;
 
             // Count unfilled batter starting slots
             const unfilledBatterSlots = Math.max(0, 1 - (roster.slots.C || 0))
@@ -39230,21 +39253,18 @@
                 + Math.max(0, 1 - (roster.slots.RP || 0))
                 + Math.max(0, 2 - (roster.slots.P || 0));
 
-            // If batter lineup slots are still open, boost batters
-            if (!isP && unfilledBatterSlots > 0) score += 20;
-
-            // If pitcher lineup slots are still open, boost pitchers
-            if (isP && unfilledPitcherSlots > 0) score += 20;
+            // Lineup fill boosts — scaled by needWeight
+            if (!isP && unfilledBatterSlots > 0) score += 20 * needWeight;
+            if (isP && unfilledPitcherSlots > 0) score += 20 * needWeight;
 
             // Bench strategy: once starting lineup is mostly filled, prefer pitchers for bench
-            // This is the normal draft preference — pitchers are more valuable bench pieces
             const totalStartingUnfilled = unfilledBatterSlots + unfilledPitcherSlots;
             if (totalStartingUnfilled <= 2) {
                 if (isP) score += 40;
             }
 
-            // BUT: if batter lineup spots are still open, penalize pitchers to fill the lineup first
-            if (isP && unfilledBatterSlots >= 3) score -= 40;
+            // If batter lineup spots are still open, penalize pitchers to fill the lineup first
+            if (isP && unfilledBatterSlots >= 3) score -= 40 * needWeight;
 
             return score;
         }
@@ -40147,11 +40167,10 @@
             teamTotals.forEach((team, idx) => {
                 const pct = maxPts > 0 ? (team.totalPts / maxPts * 100) : 0;
                 const barClass = team.isUser ? 'mock-draft-chart-bar-row user-bar' : 'mock-draft-chart-bar-row';
-                const rank = idx + 1;
                 html += `<div class="${barClass}">
                     <span class="bar-team">
-                        <img src="${team.logo}" alt="" style="width:16px;height:16px;border-radius:50%;vertical-align:middle;margin-right:4px;" onerror="this.style.display='none'">
-                        ${team.teamName}
+                        <img src="${team.logo}" alt="" style="width:18px;height:18px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">
+                        <span class="bar-manager">${team.manager}</span>
                     </span>
                     <span class="bar-track">
                         <span class="bar-fill" style="width:${pct.toFixed(1)}%">${team.totalPts.toFixed(0)}</span>
@@ -40162,16 +40181,15 @@
             html += `</div></div>`;
 
             // ===== POSITION RANKINGS =====
-            // Define position groups to rank
+            // Define position groups — SP and RP combined into Pitching
             const posGroups = [
-                { label: 'Catcher', positions: ['C'], slots: 1 },
-                { label: 'First Base', positions: ['1B'], slots: 1 },
-                { label: 'Second Base', positions: ['2B'], slots: 1 },
-                { label: 'Third Base', positions: ['3B'], slots: 1 },
-                { label: 'Shortstop', positions: ['SS'], slots: 1 },
-                { label: 'Outfield', positions: ['OF'], slots: 3 },
-                { label: 'Starting Pitchers', positions: ['SP'], slots: 3 },
-                { label: 'Relief Pitchers', positions: ['RP'], slots: 1 }
+                { label: 'Catcher', slots: ['C'] },
+                { label: 'First Base', slots: ['1B'] },
+                { label: 'Second Base', slots: ['2B'] },
+                { label: 'Third Base', slots: ['3B'] },
+                { label: 'Shortstop', slots: ['SS'] },
+                { label: 'Outfield', slots: ['OF'] },
+                { label: 'Pitching', slots: ['SP', 'RP', 'P'] }
             ];
 
             html += `<div class="mock-draft-insights-section">
@@ -40179,13 +40197,14 @@
                 <div class="mock-draft-pos-rankings">`;
 
             posGroups.forEach(group => {
-                // For each team, find players in the slot(s) for this position
                 const teamPosData = [];
                 Object.entries(mockDraftState.teamRosters).forEach(([teamKey, roster]) => {
                     const info = mockDraftState.teamInfo[teamKey] || {};
                     const posPlayers = roster.players.filter(p =>
-                        p.assignedSlot && group.positions.includes(p.assignedSlot)
+                        p.assignedSlot && group.slots.includes(p.assignedSlot)
                     );
+                    // Sort players within team by points descending
+                    posPlayers.sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
                     const totalPts = posPlayers.reduce((sum, p) => sum + (p.avgPoints || 0), 0);
                     teamPosData.push({
                         teamKey,
@@ -40199,18 +40218,30 @@
                 });
                 teamPosData.sort((a, b) => b.totalPts - a.totalPts);
 
-                html += `<div class="mock-draft-pos-rank-card">
+                const isWide = group.slots.length > 2; // Pitching has 3 slot types
+                html += `<div class="mock-draft-pos-rank-card${isWide ? ' full-width' : ''}">
                     <div class="pos-rank-header">${group.label}</div>`;
 
                 teamPosData.forEach((team, idx) => {
                     const rank = idx + 1;
                     const rowClass = team.isUser ? 'mock-draft-pos-rank-row user-rank' : 'mock-draft-pos-rank-row';
-                    const playerNames = team.players.map(p => p.name).join(', ') || '—';
+                    // Build player chips with headshots
+                    const playerChipsHtml = team.players.length > 0
+                        ? team.players.map(p => {
+                            const hs = p.headshot_url
+                                ? `<img src="${p.headshot_url}" alt="" onerror="this.style.display='none'">`
+                                : `<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:#e8e8e8;"></span>`;
+                            // Show last name only for compact display
+                            const parts = (p.name || '').split(' ');
+                            const shortName = parts.length > 1 ? parts[parts.length - 1] : p.name;
+                            return `<span class="pos-rank-player-chip">${hs}${shortName}</span>`;
+                        }).join('')
+                        : '<span style="color:#bbb;font-size:0.7rem;">—</span>';
                     html += `<div class="${rowClass}">
                         <span class="pos-rank-num">${rank}</span>
-                        <img src="${team.logo}" alt="" style="width:16px;height:16px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">
-                        <span class="pos-rank-team">${team.teamName}</span>
-                        <span class="pos-rank-players">${playerNames}</span>
+                        <img src="${team.logo}" alt="" class="pos-rank-team-logo" onerror="this.style.display='none'">
+                        <span class="pos-rank-manager">${team.manager}</span>
+                        <span class="pos-rank-players">${playerChipsHtml}</span>
                         <span class="pos-rank-pts">${team.totalPts.toFixed(1)}</span>
                     </div>`;
                 });
