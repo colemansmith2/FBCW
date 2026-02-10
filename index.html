@@ -12926,6 +12926,8 @@
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             padding: 1rem;
+            display: flex;
+            flex-direction: column;
         }
         .mock-draft-available-panel.user-turn {
             border-color: #2ecc71;
@@ -13012,8 +13014,9 @@
             background: #e8e8e8;
         }
         .mock-draft-available-table-wrapper {
-            max-height: 600px;
+            flex: 1 1 0;
             overflow-y: auto;
+            min-height: 200px;
         }
         .mock-draft-available-table {
             width: 100%;
@@ -13071,6 +13074,10 @@
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             padding: 1rem;
+        }
+        .mock-draft-roster-body-scroll {
+            max-height: 420px;
+            overflow-y: auto;
         }
         .mock-draft-roster-header {
             display: flex;
@@ -13138,7 +13145,7 @@
             padding: 1rem;
         }
         .mock-draft-log {
-            max-height: 300px;
+            height: 280px;
             overflow-y: auto;
             font-size: 0.78rem;
         }
@@ -17007,7 +17014,7 @@
                                 <h3 style="margin:0;">Team Roster</h3>
                                 <select id="mock-draft-roster-team" onchange="renderMockDraftRoster()"></select>
                             </div>
-                            <div id="mock-draft-roster-body"></div>
+                            <div id="mock-draft-roster-body" class="mock-draft-roster-body-scroll"></div>
                         </div>
                     </div>
                 </div>
@@ -38557,32 +38564,42 @@
             }
 
             // Helper: find pool player with fuzzy matching
-            function findPoolPlayer(keeperName, pool) {
+            // keeperType: 'pitcher' or 'batter' to disambiguate same-name players (e.g. Ohtani)
+            function findPoolPlayer(keeperName, pool, keeperType) {
                 const norm = mockDraftNormalizeName(keeperName);
                 if (!norm) return null;
+
+                // Helper: from matches, prefer the one matching keeperType
+                function preferType(matches) {
+                    if (matches.length === 0) return null;
+                    if (matches.length === 1 || !keeperType) return matches[0];
+                    const typed = matches.find(p => p.type === keeperType);
+                    return typed || matches[0];
+                }
+
                 // 1. Exact normalized match
-                let match = pool.find(p => p.normName === norm);
-                if (match) return match;
+                let matches = pool.filter(p => p.normName === norm);
+                if (matches.length > 0) return preferType(matches);
                 // 2. Strip parentheticals from pool names too and retry
-                match = pool.find(p => mockDraftNormalizeName(p.name) === norm);
-                if (match) return match;
+                matches = pool.filter(p => mockDraftNormalizeName(p.name) === norm);
+                if (matches.length > 0) return preferType(matches);
                 // 3. Try without Jr/Sr/II/III/IV suffixes
                 const stripSuffix = (n) => n.replace(/\b(jr\.?|sr\.?|ii|iii|iv)\b/gi, '').trim().replace(/\s+/g, ' ');
                 const normStripped = stripSuffix(norm);
-                match = pool.find(p => stripSuffix(p.normName) === normStripped);
-                if (match) return match;
+                matches = pool.filter(p => stripSuffix(p.normName) === normStripped);
+                if (matches.length > 0) return preferType(matches);
                 // 4. Last name + first initial match (for nickname differences)
                 const parts = norm.split(' ');
                 if (parts.length >= 2) {
                     const lastName = parts[parts.length - 1];
                     const firstInit = parts[0][0];
-                    match = pool.find(p => {
+                    matches = pool.filter(p => {
                         const pp = p.normName.split(' ');
                         return pp.length >= 2 && pp[pp.length - 1] === lastName && pp[0][0] === firstInit;
                     });
-                    if (match) return match;
+                    if (matches.length > 0) return preferType(matches);
                 }
-                console.warn(`Mock Draft: Could not match keeper "${keeperName}" to projection pool`);
+                console.warn(`Mock Draft: Could not match keeper "${keeperName}" (${keeperType}) to projection pool`);
                 return null;
             }
 
@@ -38595,13 +38612,13 @@
                         const normName = mockDraftNormalizeName(keeperName);
                         if (!normName) return;
 
-                        // Find this player in the pool with fuzzy matching
-                        const poolPlayer = findPoolPlayer(keeperName, mockDraftState.availablePlayers);
-
                         // Determine player type from keeper position field
                         const keeperPos = k.position || '';
                         const isPitcher = ['SP', 'RP', 'P'].includes(keeperPos);
                         const playerType = isPitcher ? 'pitcher' : 'batter';
+
+                        // Find this player in the pool with fuzzy matching, using type to disambiguate
+                        const poolPlayer = findPoolPlayer(keeperName, mockDraftState.availablePlayers, playerType);
 
                         const player = poolPlayer || {
                             name: keeperName,
@@ -39221,10 +39238,12 @@
                 });
             });
 
-            // Show NA keepers at the bottom
-            const naPlayers = roster.players.filter(p => p.assignedSlot === 'NA');
+            // Show top 6 NA keepers at the bottom, sorted by projected points
+            const naPlayers = roster.players.filter(p => p.assignedSlot === 'NA')
+                .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0))
+                .slice(0, 6);
             if (naPlayers.length > 0) {
-                html += `<div class="mock-draft-roster-divider">NA (Not Active)</div>`;
+                html += `<div class="mock-draft-roster-divider">NA (Not Active) — Top ${naPlayers.length}</div>`;
                 naPlayers.forEach(p => {
                     html += `<div class="mock-draft-roster-slot keeper-slot" style="opacity:0.6;">
                         <span class="slot-label"><span class="position-badge" style="background:#e8f7fa;color:#17a2b8;">NA</span></span>
