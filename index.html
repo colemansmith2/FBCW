@@ -33207,7 +33207,7 @@
             statsSourceDisplayName: ''
         };
 
-        // Cache for ZiPS 2027/2028 projection data (loaded once)
+        // Cache for ZiPS 2027/2028 projection data (loaded once, keys are NFD-normalized)
         let _zipsProjectionCache = {};
 
         async function _loadZiPSProjectionFile(system) {
@@ -33218,7 +33218,8 @@
                     const data = await response.json();
                     const projMap = {};
                     [...(data.batters || []), ...(data.pitchers || [])].forEach(p => {
-                        projMap[p.name.toLowerCase().trim()] = p.projected_points || 0;
+                        const key = p.name.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        projMap[key] = p.projected_points || 0;
                     });
                     _zipsProjectionCache[system] = projMap;
                     return projMap;
@@ -33235,7 +33236,7 @@
             }
 
             const ctx = canvasEl.getContext('2d');
-            const playerKey = player.name.toLowerCase().trim();
+            const playerKey = player.name.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
             // Gather historical data — filter out zero-point seasons entirely
             const history = playerHistoryData[playerKey];
@@ -33406,8 +33407,8 @@
 
             const coreMin = coreValues.length > 0 ? Math.min(...coreValues) : 0;
             const coreMax = coreValues.length > 0 ? Math.max(...coreValues) : 100;
-            const yMin = Math.max(0, Math.floor(coreMin / 25) * 25 - 15);
-            const yMax = Math.ceil(coreMax / 25) * 25 + 15;
+            const yMin = Math.max(0, Math.floor(coreMin / 50) * 50);
+            const yMax = Math.ceil(coreMax / 50) * 50;
 
             // Clamp outlier bars to yMin so they appear as small slivers at the bottom
             barData.forEach((val, i) => {
@@ -33562,7 +33563,7 @@
                             beginAtZero: false,
                             min: Math.max(0, yMin),
                             max: yMax,
-                            ticks: { font: { size: 10 } },
+                            ticks: { font: { size: 10 }, stepSize: 50 },
                             title: {
                                 display: true,
                                 text: 'Fantasy Points',
