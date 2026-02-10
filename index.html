@@ -33417,27 +33417,32 @@
                 }
             });
 
-            // Custom plugin: draw COVID column background, SD bands, and outlier value labels
+            // Custom plugin: draw column backgrounds, SD bands, and outlier value labels
+            const injuryBgColor = 'rgba(220, 53, 69, 0.12)';
+            const prospectBgColor = 'rgba(23, 162, 184, 0.12)';
             const chartOverlayPlugin = {
                 id: 'chartOverlay',
-                // Draw COVID background BEFORE bars
+                // Draw outlier column backgrounds BEFORE bars
                 beforeDatasetsDraw: function(chart) {
                     const drawCtx = chart.ctx;
                     const mainMeta = chart.getDatasetMeta(0);
-                    const xScale = chart.scales.x;
-                    const yScale = chart.scales.y;
                     const chartArea = chart.chartArea;
 
-                    // Draw COVID green column backgrounds
                     outlierInfo.forEach((info, i) => {
-                        if (!info || info.type !== 'covid') return;
+                        if (!info) return;
                         const bar = mainMeta.data[i];
                         if (!bar) return;
                         const barWidth = bar.width || 20;
                         const colHalfW = barWidth * 0.9;
 
+                        let bgColor;
+                        if (info.type === 'covid') bgColor = covidBgColor;
+                        else if (info.type === 'injury') bgColor = injuryBgColor;
+                        else if (info.type === 'prospect') bgColor = prospectBgColor;
+                        else return;
+
                         drawCtx.save();
-                        drawCtx.fillStyle = covidBgColor;
+                        drawCtx.fillStyle = bgColor;
                         drawCtx.fillRect(
                             bar.x - colHalfW,
                             chartArea.top,
