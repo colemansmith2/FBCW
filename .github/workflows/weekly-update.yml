@@ -5,14 +5,17 @@
 #
 # Prerequisites:
 # 1. Set up repository secrets (Settings > Secrets and variables > Actions):
-#    - YAHOO_CLIENT_ID: Your Yahoo app's client ID
-#    - YAHOO_CLIENT_SECRET: Your Yahoo app's client secret  
+#    - YAHOO_CONSUMER_KEY: Your Yahoo app's consumer/client key
+#    - YAHOO_CONSUMER_SECRET: Your Yahoo app's consumer/client secret
+#    - YAHOO_ACCESS_TOKEN: OAuth access token from initial setup
 #    - YAHOO_REFRESH_TOKEN: OAuth refresh token from initial setup
+#    - YAHOO_TOKEN_TIME: Timestamp when the token was issued
+#    - PAT: Personal access token (for auto-updating rotated tokens)
 #
 # 2. The workflow will:
 #    - Check out your repository
 #    - Set up Python with required dependencies
-#    - Reconstruct oauth2.json from secrets
+#    - Pass OAuth credentials as environment variables
 #    - Run the weekly stats collection script
 #    - Commit and push changes back to the repository
 
@@ -68,27 +71,22 @@ jobs:
           python -m pip install --upgrade pip
           pip install yahoo_oauth yahoo_fantasy_api pandas pybaseball
       
-      # 5. Create oauth2.json from secrets
-      - name: Create OAuth credentials file
-        run: |
-          cat > oauth2.json << EOF
-          {
-            "consumer_key": "${{ secrets.YAHOO_CLIENT_ID }}",
-            "consumer_secret": "${{ secrets.YAHOO_CLIENT_SECRET }}",
-            "refresh_token": "${{ secrets.YAHOO_REFRESH_TOKEN }}",
-            "token_type": "bearer"
-          }
-          EOF
-      
-      # 6. Run the weekly stats collection
+      # 5. Run the weekly stats collection
+      #    Credentials are passed as env vars — the script builds oauth2.json internally
       - name: Collect weekly stats
         run: |
           python collect_weekly_stats.py
         env:
-          # Set timezone for accurate week calculations
           TZ: America/New_York
+          YAHOO_CONSUMER_KEY: ${{ secrets.YAHOO_CONSUMER_KEY }}
+          YAHOO_CONSUMER_SECRET: ${{ secrets.YAHOO_CONSUMER_SECRET }}
+          YAHOO_ACCESS_TOKEN: ${{ secrets.YAHOO_ACCESS_TOKEN }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
+          YAHOO_TOKEN_TIME: ${{ secrets.YAHOO_TOKEN_TIME }}
+          GITHUB_PAT: ${{ secrets.PAT }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
       
-      # 7. Commit and push changes
+      # 6. Commit and push changes
       - name: Commit and push changes
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
@@ -108,7 +106,7 @@ jobs:
             echo "Changes committed and pushed successfully"
           fi
       
-      # 8. Clean up sensitive files
+      # 7. Clean up sensitive files (safety net — script cleans up after itself)
       - name: Clean up
         if: always()
         run: |
