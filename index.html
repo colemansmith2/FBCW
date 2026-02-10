@@ -16976,6 +16976,8 @@
                                         <th>Player</th>
                                         <th>Pos</th>
                                         <th>Pts</th>
+                                        <th>Min</th>
+                                        <th>Max</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -38377,6 +38379,8 @@
                     positions: mockDraftParsePositions(p.position, p.type),
                     mlbTeam: p.mlbTeam,
                     avgPoints: Math.round(avg * 10) / 10,
+                    minPoints: Math.round(Math.min(...p.points) * 10) / 10,
+                    maxPoints: Math.round(Math.max(...p.points) * 10) / 10,
                     headshot_url: p.headshot_url
                 });
             });
@@ -38518,17 +38522,56 @@
             // Pre-populate with keepers and build keeper pick map for ticker/log
             const keeperPickMap = {}; // { teamKey: { round: { name, positions, headshot_url, ... } } }
 
+            // Helper: normalize name for matching (strip parentheticals, suffixes, diacritics)
+            function mockDraftNormalizeName(name) {
+                if (!name) return '';
+                return name
+                    .replace(/\s*\(.*?\)\s*/g, '')   // Remove (Batter), (Pitcher) etc
+                    .toLowerCase().trim()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            }
+
+            // Helper: find pool player with fuzzy matching
+            function findPoolPlayer(keeperName, pool) {
+                const norm = mockDraftNormalizeName(keeperName);
+                if (!norm) return null;
+                // 1. Exact normalized match
+                let match = pool.find(p => p.normName === norm);
+                if (match) return match;
+                // 2. Strip parentheticals from pool names too and retry
+                match = pool.find(p => mockDraftNormalizeName(p.name) === norm);
+                if (match) return match;
+                // 3. Try without Jr/Sr/II/III/IV suffixes
+                const stripSuffix = (n) => n.replace(/\b(jr\.?|sr\.?|ii|iii|iv)\b/gi, '').trim().replace(/\s+/g, ' ');
+                const normStripped = stripSuffix(norm);
+                match = pool.find(p => stripSuffix(p.normName) === normStripped);
+                if (match) return match;
+                // 4. Last name + first initial match (for nickname differences)
+                const parts = norm.split(' ');
+                if (parts.length >= 2) {
+                    const lastName = parts[parts.length - 1];
+                    const firstInit = parts[0][0];
+                    match = pool.find(p => {
+                        const pp = p.normName.split(' ');
+                        return pp.length >= 2 && pp[pp.length - 1] === lastName && pp[0][0] === firstInit;
+                    });
+                    if (match) return match;
+                }
+                console.warn(`Mock Draft: Could not match keeper "${keeperName}" to projection pool`);
+                return null;
+            }
+
             if (keeperSelections) {
                 Object.entries(keeperSelections).forEach(([teamKey, keepers]) => {
                     if (!keepers || !Array.isArray(keepers) || !rosters[teamKey]) return;
                     keepers.forEach(k => {
                         // Keeper objects use player_name, not name
                         const keeperName = k.player_name || k.name || '';
-                        const normName = keeperName.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        const normName = mockDraftNormalizeName(keeperName);
                         if (!normName) return;
 
-                        // Find this player in the pool to get full position/projection info
-                        const poolPlayer = mockDraftState.availablePlayers.find(p => p.normName === normName);
+                        // Find this player in the pool with fuzzy matching
+                        const poolPlayer = findPoolPlayer(keeperName, mockDraftState.availablePlayers);
 
                         // Determine player type from keeper position field
                         const keeperPos = k.position || '';
@@ -38572,8 +38615,14 @@
                         }
 
                         // Remove from available pool so they can't be drafted again
-                        const idx = mockDraftState.availablePlayers.findIndex(p => p.normName === normName);
-                        if (idx >= 0) mockDraftState.availablePlayers.splice(idx, 1);
+                        if (poolPlayer) {
+                            const idx = mockDraftState.availablePlayers.indexOf(poolPlayer);
+                            if (idx >= 0) mockDraftState.availablePlayers.splice(idx, 1);
+                        } else {
+                            // Fallback: try normalized name match
+                            const idx = mockDraftState.availablePlayers.findIndex(p => p.normName === normName);
+                            if (idx >= 0) mockDraftState.availablePlayers.splice(idx, 1);
+                        }
                     });
                 });
             }
@@ -39058,10 +39107,12 @@
                     </div></td>
                     <td>${posBadges}</td>
                     <td><strong>${player.avgPoints}</strong></td>
+                    <td style="color:#999;font-size:0.8rem;">${player.minPoints}</td>
+                    <td style="color:#999;font-size:0.8rem;">${player.maxPoints}</td>
                     <td><button class="mock-draft-draft-btn" onclick="userMockDraftPick(${realIdx})" ${draftDisabled}>Draft</button></td>
                 </tr>`;
             });
-            tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:#999;">No players match filter</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="7" style="text-align:center;color:#999;">No players match filter</td></tr>';
         }
 
         function setMockDraftPosFilter(type, btn) {
@@ -39173,6 +39224,7 @@
             const keeperData = mockDraftState.keeperPickMap?.[pick.teamKey]?.[pick.round];
             const keeperName = keeperData?.name || 'Keeper';
             const keeperPositions = keeperData?.positions || [];
+            const keeperPts = keeperData?.avgPoints || '';
             const entry = document.createElement('div');
             entry.className = 'mock-draft-log-entry keeper-entry';
             entry.innerHTML = `
@@ -39180,7 +39232,7 @@
                 <img src="${logo}" alt="" onerror="this.style.display='none'">
                 <span class="log-player-name">${keeperName}<span class="log-keeper-badge">K</span></span>
                 <span class="log-pos">${mockDraftPositionBadges(keeperPositions)}</span>
-                <span class="log-pts"></span>
+                <span class="log-pts">${keeperPts}</span>
             `;
             log.insertBefore(entry, log.firstChild);
         }
