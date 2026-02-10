@@ -12836,8 +12836,42 @@
         .mock-draft-ticker-pick.completed { opacity: 0.35; }
         .mock-draft-ticker-pick.completed img { filter: grayscale(50%); }
         .mock-draft-ticker-pick.user-pick { border: 2px solid #2ecc71; }
-        .mock-draft-ticker-pick.keeper-pick { opacity: 0.2; }
-        .mock-draft-ticker-pick.keeper-pick .pick-label { text-decoration: line-through; }
+        .mock-draft-ticker-pick.keeper-pick {
+            opacity: 1;
+            border: 2px solid #d4af37;
+            background: rgba(212, 175, 55, 0.15);
+            position: relative;
+        }
+        .mock-draft-ticker-pick.keeper-pick .pick-label { color: #d4af37; font-weight: 600; }
+        .mock-draft-ticker-pick.keeper-pick img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #d4af37;
+        }
+        .mock-draft-ticker-pick.keeper-pick .ticker-team-logo {
+            position: absolute;
+            bottom: 14px;
+            right: 2px;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: white;
+            border: 1px solid #d4af37;
+            z-index: 2;
+        }
+        .mock-draft-ticker-pick.keeper-pick.user-pick {
+            border: 2px solid transparent;
+            background: rgba(46, 204, 113, 0.15);
+            background-clip: padding-box;
+            outline: 2px solid #d4af37;
+            outline-offset: -4px;
+            box-shadow: 0 0 0 2px #2ecc71;
+        }
+        .mock-draft-ticker-pick.keeper-pick.user-pick img { border-color: #2ecc71; }
+        .mock-draft-ticker-pick.keeper-pick.completed { opacity: 0.35; }
 
         /* Controls */
         .mock-draft-controls {
@@ -12899,8 +12933,34 @@
         }
         .mock-draft-filters {
             display: flex;
+            flex-direction: column;
             gap: 0.5rem;
             margin-bottom: 0.75rem;
+        }
+        .mock-draft-filter-buttons {
+            display: flex;
+            gap: 0.35rem;
+        }
+        .mock-draft-filter-btn {
+            padding: 0.35rem 0.7rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-family: 'Basis33', monospace;
+            background: white;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .mock-draft-filter-btn:hover { background: #f0f0f0; }
+        .mock-draft-filter-btn.active {
+            background: #0a2351;
+            color: white;
+            border-color: #0a2351;
+        }
+        .mock-draft-filter-row {
+            display: flex;
+            gap: 0.5rem;
         }
         .mock-draft-filters select {
             padding: 0.4rem 0.5rem;
@@ -12914,6 +12974,31 @@
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 0.9rem;
+        }
+        /* Available table player cell with MLB info */
+        .mock-draft-player-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .mock-draft-player-cell .player-info {
+            display: flex;
+            flex-direction: column;
+        }
+        .mock-draft-player-cell .player-name {
+            font-weight: 500;
+        }
+        .mock-draft-player-cell .player-mlb-team {
+            font-size: 0.68rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+        .mock-draft-player-cell .player-mlb-logo {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
         }
         .mock-draft-available-table-wrapper {
             max-height: 500px;
@@ -12986,22 +13071,31 @@
         }
         .mock-draft-roster-slot:last-child { border-bottom: none; }
         .mock-draft-roster-slot .slot-label {
-            font-weight: bold;
-            min-width: 32px;
-            color: #0a2351;
-            font-size: 0.75rem;
+            min-width: 36px;
+        }
+        .mock-draft-roster-slot .slot-label .position-badge {
+            font-size: 0.65rem;
+            padding: 0.1rem 0.35rem;
+            min-width: 24px;
         }
         .mock-draft-roster-slot .slot-player { flex-grow: 1; }
         .mock-draft-roster-slot .slot-points { color: #888; font-size: 0.75rem; }
         .mock-draft-roster-slot.empty .slot-player { color: #ccc; font-style: italic; }
         .mock-draft-roster-slot.keeper-slot { background: rgba(212,160,23,0.08); }
         .mock-draft-roster-slot .keeper-tag {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: transparent;
+            border: 2px solid #d4af37;
+            border-radius: 50%;
+            color: #d4af37;
             font-size: 0.6rem;
-            background: #d4a017;
-            color: white;
-            padding: 1px 4px;
-            border-radius: 3px;
+            font-weight: bold;
             margin-left: 4px;
+            flex-shrink: 0;
         }
         .mock-draft-roster-divider {
             font-size: 0.7rem;
@@ -13046,9 +13140,31 @@
             font-size: 0.7rem;
         }
         .mock-draft-log-entry .log-player-name { flex-grow: 1; font-weight: 500; }
-        .mock-draft-log-entry .log-pos { color: #666; font-size: 0.7rem; }
+        .mock-draft-log-entry .log-pos { display: flex; gap: 2px; align-items: center; }
         .mock-draft-log-entry .log-pts { color: #0a2351; font-weight: bold; font-size: 0.75rem; }
         .mock-draft-log-entry.user-pick { background: rgba(46,204,113,0.1); border-radius: 4px; }
+        .mock-draft-log-entry.keeper-entry { background: rgba(212,175,55,0.06); }
+        .mock-draft-log-entry.keeper-entry .log-player-name { color: #b8860b; font-weight: 600; }
+        .mock-draft-log-entry .log-keeper-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            background: transparent;
+            border: 2px solid #d4af37;
+            border-radius: 50%;
+            color: #d4af37;
+            font-size: 0.55rem;
+            font-weight: bold;
+            flex-shrink: 0;
+            margin-left: 3px;
+        }
+        .mock-draft-log-entry .log-pos .position-badge {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.3rem;
+            min-width: 20px;
+        }
 
         /* Draft Report */
         .mock-draft-report-card {
@@ -13108,9 +13224,9 @@
         }
         .mock-draft-report-pick .pick-pos {
             min-width: 35px;
-            color: #0a2351;
-            font-weight: bold;
-            font-size: 0.8rem;
+            display: flex;
+            gap: 2px;
+            align-items: center;
         }
         .mock-draft-report-pick .pick-name { flex-grow: 1; }
         .mock-draft-report-pick .pick-team { color: #888; font-size: 0.8rem; min-width: 35px; }
@@ -16819,19 +16935,26 @@
                     <div class="mock-draft-available-panel" id="mock-draft-available-panel">
                         <h3 style="margin-top:0;">Best Available</h3>
                         <div class="mock-draft-filters">
-                            <select id="mock-draft-pos-filter" onchange="filterMockDraftAvailable()">
-                                <option value="all">All Positions</option>
-                                <option value="C">C</option>
-                                <option value="1B">1B</option>
-                                <option value="2B">2B</option>
-                                <option value="3B">3B</option>
-                                <option value="SS">SS</option>
-                                <option value="OF">OF</option>
-                                <option value="DH">DH</option>
-                                <option value="SP">SP</option>
-                                <option value="RP">RP</option>
-                            </select>
-                            <input type="text" id="mock-draft-search" placeholder="Search player..." oninput="filterMockDraftAvailable()">
+                            <div class="mock-draft-filter-buttons">
+                                <button class="mock-draft-filter-btn active" onclick="setMockDraftPosFilter('all', this)">All</button>
+                                <button class="mock-draft-filter-btn" onclick="setMockDraftPosFilter('batters', this)">All Batters</button>
+                                <button class="mock-draft-filter-btn" onclick="setMockDraftPosFilter('pitchers', this)">All Pitchers</button>
+                            </div>
+                            <div class="mock-draft-filter-row">
+                                <select id="mock-draft-pos-filter" onchange="filterMockDraftAvailable()">
+                                    <option value="all">All Positions</option>
+                                    <option value="C">C</option>
+                                    <option value="1B">1B</option>
+                                    <option value="2B">2B</option>
+                                    <option value="3B">3B</option>
+                                    <option value="SS">SS</option>
+                                    <option value="OF">OF</option>
+                                    <option value="DH">DH</option>
+                                    <option value="SP">SP</option>
+                                    <option value="RP">RP</option>
+                                </select>
+                                <input type="text" id="mock-draft-search" placeholder="Search player..." oninput="filterMockDraftAvailable()">
+                            </div>
                         </div>
                         <div class="mock-draft-available-table-wrapper">
                             <table class="mock-draft-available-table">
@@ -16840,7 +16963,6 @@
                                         <th>#</th>
                                         <th>Player</th>
                                         <th>Pos</th>
-                                        <th>Team</th>
                                         <th>Pts</th>
                                         <th></th>
                                     </tr>
@@ -16850,18 +16972,18 @@
                         </div>
                     </div>
 
-                    <!-- Right: Roster + Log -->
+                    <!-- Right: Log + Roster -->
                     <div class="mock-draft-right-panel">
+                        <div class="mock-draft-log-panel">
+                            <h3 style="margin-top:0;">Draft Log</h3>
+                            <div class="mock-draft-log" id="mock-draft-log"></div>
+                        </div>
                         <div class="mock-draft-roster-panel">
                             <div class="mock-draft-roster-header">
                                 <h3 style="margin:0;">Team Roster</h3>
                                 <select id="mock-draft-roster-team" onchange="renderMockDraftRoster()"></select>
                             </div>
                             <div id="mock-draft-roster-body"></div>
-                        </div>
-                        <div class="mock-draft-log-panel">
-                            <h3 style="margin-top:0;">Draft Log</h3>
-                            <div class="mock-draft-log" id="mock-draft-log"></div>
                         </div>
                     </div>
                 </div>
@@ -38072,7 +38194,8 @@
             draftTimeout: null,
             aiPickDelay: 600,
             isUserTurn: false,
-            keeperConsumedPicks: {}
+            keeperConsumedPicks: {},
+            typeFilter: 'all'
         };
 
         const MOCK_DRAFT_ROSTER_SLOTS = [
@@ -38763,6 +38886,7 @@
             mockDraftState.paused = false;
             mockDraftState.isUserTurn = false;
             mockDraftState.pickSequence = [];
+            mockDraftState.typeFilter = 'all';
 
             document.getElementById('mock-draft-setup').style.display = 'block';
             document.getElementById('mock-draft-active').style.display = 'none';
@@ -38771,6 +38895,10 @@
             document.getElementById('mock-draft-start-btn').textContent = 'Start Mock Draft';
             document.getElementById('mock-draft-user-turn-banner').style.display = 'none';
             document.getElementById('mock-draft-pause-btn').textContent = '⏸ Pause';
+            // Reset filter buttons
+            document.querySelectorAll('.mock-draft-filter-btn').forEach((b, i) => {
+                b.classList.toggle('active', i === 0);
+            });
             renderDraftOrderPreview();
         }
 
@@ -38799,10 +38927,39 @@
                 if (isCompleted) cls += ' completed';
                 if (isUser) cls += ' user-pick';
                 if (isKeeper) cls += ' keeper-pick';
-                html += `<div class="${cls}" id="ticker-pick-${i}">
-                    <img src="${logo}" alt="" onerror="this.style.display='none'">
-                    <span class="pick-label">${pick.round}.${pick.pickInRound}</span>
-                </div>`;
+
+                if (isKeeper) {
+                    // Find the keeper player to get headshot
+                    let keeperHeadshot = '';
+                    let keeperName = '';
+                    if (keeperSelections && keeperSelections[pick.teamKey]) {
+                        const matchingKeeper = keeperSelections[pick.teamKey].find(k => {
+                            const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
+                            return roundCost === pick.round;
+                        });
+                        if (matchingKeeper) {
+                            keeperName = matchingKeeper.player_name || matchingKeeper.name || '';
+                            // Find headshot from pool or roster
+                            const normName = keeperName.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                            const roster = mockDraftState.teamRosters[pick.teamKey];
+                            if (roster) {
+                                const rosterPlayer = roster.players.find(p => p.normName === normName);
+                                if (rosterPlayer && rosterPlayer.headshot_url) keeperHeadshot = rosterPlayer.headshot_url;
+                            }
+                        }
+                    }
+                    const imgSrc = keeperHeadshot || logo;
+                    html += `<div class="${cls}" id="ticker-pick-${i}">
+                        <img src="${imgSrc}" alt="${keeperName}" onerror="this.src='${logo}';">
+                        ${logo ? `<img src="${logo}" class="ticker-team-logo" alt="" onerror="this.style.display='none'">` : ''}
+                        <span class="pick-label">${pick.round}.${pick.pickInRound}</span>
+                    </div>`;
+                } else {
+                    html += `<div class="${cls}" id="ticker-pick-${i}">
+                        <img src="${logo}" alt="" onerror="this.style.display='none'">
+                        <span class="pick-label">${pick.round}.${pick.pickInRound}</span>
+                    </div>`;
+                }
             });
             container.innerHTML = html;
         }
@@ -38835,8 +38992,18 @@
 
             const posFilter = document.getElementById('mock-draft-pos-filter').value;
             const search = (document.getElementById('mock-draft-search').value || '').toLowerCase().trim();
+            const typeFilter = mockDraftState.typeFilter || 'all';
 
             let filtered = mockDraftState.availablePlayers;
+
+            // Apply type filter (All Batters / All Pitchers buttons)
+            if (typeFilter === 'batters') {
+                filtered = filtered.filter(p => p.type === 'batter');
+            } else if (typeFilter === 'pitchers') {
+                filtered = filtered.filter(p => p.type === 'pitcher');
+            }
+
+            // Apply position filter
             if (posFilter !== 'all') {
                 filtered = filtered.filter(p => {
                     if (posFilter === 'DH') return p.type === 'batter';
@@ -38854,18 +39021,37 @@
             top100.forEach((player, dispIdx) => {
                 // Find actual index in availablePlayers for drafting
                 const realIdx = mockDraftState.availablePlayers.indexOf(player);
-                const posStr = player.positions.join('/');
+                const posBadges = mockDraftPositionBadges(player.positions);
                 const draftDisabled = !mockDraftState.isUserTurn ? 'disabled' : '';
+                const mlbDisplay = formatMLBTeamDisplay(player.mlbTeam);
+                const mlbLogoUrl = getMLBTeamLogo(player.mlbTeam);
+                const mlbLogoHtml = mlbLogoUrl
+                    ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">`
+                    : '';
                 html += `<tr>
                     <td>${dispIdx + 1}</td>
-                    <td>${player.name}</td>
-                    <td>${posStr}</td>
-                    <td>${player.mlbTeam}</td>
+                    <td><div class="mock-draft-player-cell">
+                        <div class="player-info">
+                            <span class="player-name">${player.name}</span>
+                            <span class="player-mlb-team">${mlbLogoHtml}${mlbDisplay}</span>
+                        </div>
+                    </div></td>
+                    <td>${posBadges}</td>
                     <td><strong>${player.avgPoints}</strong></td>
                     <td><button class="mock-draft-draft-btn" onclick="userMockDraftPick(${realIdx})" ${draftDisabled}>Draft</button></td>
                 </tr>`;
             });
-            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#999;">No players match filter</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="5" style="text-align:center;color:#999;">No players match filter</td></tr>';
+        }
+
+        function setMockDraftPosFilter(type, btn) {
+            mockDraftState.typeFilter = type;
+            // Update active button
+            document.querySelectorAll('.mock-draft-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            // Reset position dropdown when switching type
+            document.getElementById('mock-draft-pos-filter').value = 'all';
+            renderMockDraftAvailableTable();
         }
 
         function filterMockDraftAvailable() {
@@ -38904,13 +39090,13 @@
                         if (p) {
                             const keeperTag = p.isKeeper ? '<span class="keeper-tag">K</span>' : '';
                             html += `<div class="mock-draft-roster-slot${p.isKeeper ? ' keeper-slot' : ''}">
-                                <span class="slot-label">${slotDef.pos}</span>
+                                <span class="slot-label"><span class="position-badge pos-${slotDef.pos}">${slotDef.pos}</span></span>
                                 <span class="slot-player">${p.name}${keeperTag}</span>
                                 <span class="slot-points">${p.avgPoints}</span>
                             </div>`;
                         } else {
                             html += `<div class="mock-draft-roster-slot empty">
-                                <span class="slot-label">${slotDef.pos}</span>
+                                <span class="slot-label"><span class="position-badge pos-${slotDef.pos}">${slotDef.pos}</span></span>
                                 <span class="slot-player">Empty</span>
                                 <span class="slot-points">—</span>
                             </div>`;
@@ -38925,13 +39111,18 @@
                 html += `<div class="mock-draft-roster-divider">NA (Not Active)</div>`;
                 naPlayers.forEach(p => {
                     html += `<div class="mock-draft-roster-slot keeper-slot" style="opacity:0.6;">
-                        <span class="slot-label">NA</span>
+                        <span class="slot-label"><span class="position-badge" style="background:#e8f7fa;color:#17a2b8;">NA</span></span>
                         <span class="slot-player">${p.name}<span class="keeper-tag">K</span></span>
                         <span class="slot-points">${p.avgPoints}</span>
                     </div>`;
                 });
             }
             body.innerHTML = html;
+        }
+
+        function mockDraftPositionBadges(positions) {
+            if (!positions || positions.length === 0) return '';
+            return positions.map(pos => `<span class="position-badge pos-${pos}">${pos}</span>`).join('');
         }
 
         function addMockDraftLogEntry(pick, teamKey, player, isUser) {
@@ -38946,7 +39137,7 @@
                 <span class="log-pick-num">${pick.round}.${pick.pickInRound}</span>
                 <img src="${logo}" alt="" onerror="this.style.display='none'">
                 <span class="log-player-name">${player.name}</span>
-                <span class="log-pos">${player.positions.join('/')}</span>
+                <span class="log-pos">${mockDraftPositionBadges(player.positions)}</span>
                 <span class="log-pts">${player.avgPoints}</span>
             `;
             // Prepend (newest first)
@@ -38960,7 +39151,7 @@
             const logo = info ? info.logo : '';
             // Find the keeper player for this team/round by matching roundCost
             let keeperName = 'Keeper';
-            let keeperPos = '';
+            let keeperPositions = [];
             if (keeperSelections && keeperSelections[pick.teamKey]) {
                 const teamKeepers = keeperSelections[pick.teamKey];
                 const matchingKeeper = teamKeepers.find(k => {
@@ -38969,17 +39160,29 @@
                 });
                 if (matchingKeeper) {
                     keeperName = matchingKeeper.player_name || matchingKeeper.name || 'Keeper';
-                    keeperPos = matchingKeeper.position || '';
+                    const keeperPos = matchingKeeper.position || '';
+                    // Try to find full position data from roster
+                    const normName = keeperName.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    const roster = mockDraftState.teamRosters[pick.teamKey];
+                    if (roster) {
+                        const rosterPlayer = roster.players.find(p => p.normName === normName);
+                        if (rosterPlayer && rosterPlayer.positions) {
+                            keeperPositions = rosterPlayer.positions;
+                        }
+                    }
+                    if (keeperPositions.length === 0 && keeperPos) {
+                        const isPitcher = ['SP', 'RP', 'P'].includes(keeperPos);
+                        keeperPositions = mockDraftParsePositions(keeperPos, isPitcher ? 'pitcher' : 'batter');
+                    }
                 }
             }
             const entry = document.createElement('div');
-            entry.className = 'mock-draft-log-entry';
-            entry.style.opacity = '0.5';
+            entry.className = 'mock-draft-log-entry keeper-entry';
             entry.innerHTML = `
                 <span class="log-pick-num">${pick.round}.${pick.pickInRound}</span>
                 <img src="${logo}" alt="" onerror="this.style.display='none'">
-                <span class="log-player-name" style="font-style:italic;">🔒 ${keeperName}</span>
-                <span class="log-pos">${keeperPos}</span>
+                <span class="log-player-name">${keeperName}<span class="log-keeper-badge">K</span></span>
+                <span class="log-pos">${mockDraftPositionBadges(keeperPositions)}</span>
                 <span class="log-pts"></span>
             `;
             log.insertBefore(entry, log.firstChild);
@@ -39028,12 +39231,12 @@
             // Also include keepers
             const keeperPlayers = mockDraftState.teamRosters[mockDraftState.userTeamKey]?.players.filter(p => p.isKeeper) || [];
             if (keeperPlayers.length > 0) {
-                html += `<div style="font-size:0.8rem;color:#888;margin-bottom:0.5rem;font-style:italic;">Keepers</div>`;
+                html += `<div style="font-size:0.8rem;color:#b8860b;margin-bottom:0.5rem;font-weight:600;">Keepers</div>`;
                 keeperPlayers.forEach(p => {
-                    html += `<div class="mock-draft-report-pick" style="opacity:0.7;">
-                        <span class="pick-round">🔒</span>
-                        <span class="pick-pos">${p.positions ? p.positions.join('/') : p.assignedSlot}</span>
-                        <span class="pick-name">${p.name}</span>
+                    html += `<div class="mock-draft-report-pick" style="background:rgba(212,175,55,0.06);">
+                        <span class="pick-round" style="color:#b8860b;">K</span>
+                        <span class="pick-pos">${mockDraftPositionBadges(p.positions || [])}</span>
+                        <span class="pick-name">${p.name}<span class="log-keeper-badge" style="margin-left:4px;">K</span></span>
                         <span class="pick-team">${p.mlbTeam || ''}</span>
                         <span class="pick-pts">${p.avgPoints}</span>
                     </div>`;
@@ -39044,7 +39247,7 @@
             userPicks.forEach(dp => {
                 html += `<div class="mock-draft-report-pick">
                     <span class="pick-round">Rd ${dp.round}</span>
-                    <span class="pick-pos">${dp.player.positions.join('/')}</span>
+                    <span class="pick-pos">${mockDraftPositionBadges(dp.player.positions)}</span>
                     <span class="pick-name">${dp.player.name}</span>
                     <span class="pick-team">${dp.player.mlbTeam || ''}</span>
                     <span class="pick-pts">${dp.player.avgPoints}</span>
