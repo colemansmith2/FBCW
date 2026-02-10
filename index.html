@@ -33237,12 +33237,12 @@
             const ctx = canvasEl.getContext('2d');
             const playerKey = player.name.toLowerCase().trim();
 
-            // Gather historical data
+            // Gather historical data — filter out zero-point seasons entirely
             const history = playerHistoryData[playerKey];
             const historicalSeasons = [];
             if (history && history.seasons) {
                 history.seasons
-                    .filter(s => s.year < 2026)
+                    .filter(s => s.year < 2026 && (s.fantasy_points || 0) > 0)
                     .sort((a, b) => a.year - b.year)
                     .forEach(s => {
                         historicalSeasons.push({ year: s.year, points: s.fantasy_points || 0 });
@@ -33281,12 +33281,15 @@
             const covidBgColor = 'rgba(76, 175, 80, 0.15)';
 
             // --- Outlier detection ---
-            // Collect all non-zero historical point values for median calculation
-            const historicalPoints = historicalSeasons.map(s => s.points).filter(p => p > 0);
+            // Collect non-zero historical point values EXCLUDING 2020 for median calculation
+            const historicalPointsNon2020 = historicalSeasons
+                .filter(s => s.year !== 2020)
+                .map(s => s.points)
+                .filter(p => p > 0);
             const allProjectedPts = [avg2026, pts2027, pts2028].filter(p => p > 0);
-            const allNonZeroPts = [...historicalPoints, ...allProjectedPts];
+            const allNonZeroPts = [...historicalPointsNon2020, ...allProjectedPts];
 
-            // Compute median of all values
+            // Compute median of non-2020, non-zero values
             let median = 0;
             if (allNonZeroPts.length > 0) {
                 const sorted = [...allNonZeroPts].sort((a, b) => a - b);
@@ -33294,20 +33297,27 @@
                 median = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
             }
 
-            // Outlier threshold: below 45% of median
-            const outlierThreshold = median * 0.45;
+            // Outlier threshold: below 55% of median
+            const outlierThreshold = median * 0.55;
 
             // Classify historical seasons
-            const historicalCount = historicalSeasons.length;
             const seasonOutliers = historicalSeasons.map((s, i) => {
-                if (s.points <= 0) return null;
-                if (s.points >= outlierThreshold) return null;
-
-                // 2020 is always COVID (takes precedence)
+                // 2020 is ALWAYS COVID-styled (takes precedence over everything)
                 if (s.year === 2020) return { type: 'covid', value: s.points };
 
-                // First 1-2 years = prospect
-                if (i === 0 || (i === 1 && historicalSeasons[0].points < outlierThreshold)) {
+                // Not an outlier if above threshold
+                if (s.points >= outlierThreshold) return null;
+
+                // Check if this is a prospect year: count non-2020 seasons before this one
+                const priorNon2020Seasons = historicalSeasons.slice(0, i).filter(ps => ps.year !== 2020);
+                const priorNon2020Count = priorNon2020Seasons.length;
+
+                // First non-2020 season = prospect if it's an outlier
+                if (priorNon2020Count === 0) {
+                    return { type: 'prospect', value: s.points };
+                }
+                // Second non-2020 season = prospect if the first was also an outlier
+                if (priorNon2020Count === 1 && priorNon2020Seasons[0].points < outlierThreshold) {
                     return { type: 'prospect', value: s.points };
                 }
 
@@ -33565,17 +33575,11 @@
                                 maxRotation: 45,
                                 minRotation: 45,
                                 font: { size: 10, weight: 'bold' },
-                                padding: 2,
+                                padding: 0,
+                                labelOffset: 6,
                                 color: function(context) {
                                     return labelColors[context.index] || historicalColor;
                                 }
-                            },
-                            afterTickToLabelConversion: function(scale) {
-                                // Shift labels slightly right by prepending a small space
-                                scale.ticks = scale.ticks.map(tick => ({
-                                    ...tick,
-                                    label: '  ' + tick.label
-                                }));
                             }
                         }
                     }
