@@ -12915,11 +12915,9 @@
             display: grid;
             grid-template-columns: 1.3fr 0.7fr;
             gap: 1rem;
-            min-height: calc(100vh - 280px);
-            align-items: start;
         }
         @media (max-width: 900px) {
-            .mock-draft-main { grid-template-columns: 1fr; min-height: auto; }
+            .mock-draft-main { grid-template-columns: 1fr; }
         }
 
         /* Available Players Panel */
@@ -12928,9 +12926,6 @@
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            max-height: calc(100vh - 250px);
         }
         .mock-draft-available-panel.user-turn {
             border-color: #2ecc71;
@@ -13017,9 +13012,8 @@
             background: #e8e8e8;
         }
         .mock-draft-available-table-wrapper {
-            flex: 1 1 0;
+            max-height: 600px;
             overflow-y: auto;
-            min-height: 0;
         }
         .mock-draft-available-table {
             width: 100%;
