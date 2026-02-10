@@ -38639,39 +38639,18 @@
 
             mockDraftState.draftOrder = resolvedOrder;
 
-            // Build pick ownership map from trades
-            // For each round, track which team owns which original-owner's pick
-            const pickOwnership = {}; // { round: { originalOwnerKey: currentOwnerKey } }
-            for (let r = 1; r <= rounds; r++) {
-                pickOwnership[r] = {};
-                resolvedOrder.forEach(tk => {
-                    if (tk) pickOwnership[r][tk] = tk; // default: each team owns their own pick
+            // Use the canonical getTeamPicks() system which correctly handles all trades
+            // Build a lookup: for each round + originalOwner, who currently owns that pick?
+            // This uses the same array-based trade resolution as Value Suite / Preseason Tools
+            const pickOwnerLookup = {}; // { "round-originalOwner": currentOwnerKey }
+            const allTeams = Object.keys(keeperConfig.teams);
+            allTeams.forEach(teamKey => {
+                const picks = typeof getTeamPicks === 'function' ? getTeamPicks(teamKey) : [];
+                picks.forEach(pick => {
+                    const key = `${pick.round}-${pick.originalOwner}`;
+                    pickOwnerLookup[key] = teamKey;
                 });
-            }
-
-            // Apply trades
-            if (tradeData && tradeData.trades && tradeData.trades.length > 0) {
-                tradeData.trades.forEach(trade => {
-                    // Process assets going from A to B
-                    (trade.assetsA || []).forEach(asset => {
-                        if (asset.type === 'pick' && asset.round) {
-                            const origOwner = asset.originalOwner || asset.fromTeam || trade.teamA;
-                            if (pickOwnership[asset.round] && pickOwnership[asset.round][origOwner]) {
-                                pickOwnership[asset.round][origOwner] = trade.teamB;
-                            }
-                        }
-                    });
-                    // Process assets going from B to A
-                    (trade.assetsB || []).forEach(asset => {
-                        if (asset.type === 'pick' && asset.round) {
-                            const origOwner = asset.originalOwner || asset.fromTeam || trade.teamB;
-                            if (pickOwnership[asset.round] && pickOwnership[asset.round][origOwner]) {
-                                pickOwnership[asset.round][origOwner] = trade.teamA;
-                            }
-                        }
-                    });
-                });
-            }
+            });
 
             // Count keeper-consumed picks per team per round
             // Use calculateTeamKeeperRoundCosts() to get ACTUAL resolved round costs
@@ -38709,24 +38688,28 @@
             mockDraftState.keeperConsumedPicks = keeperRoundCounts;
             mockDraftState.resolvedKeeperCosts = resolvedKeeperCosts;
 
-            // Build pick sequence (without keeper flags first)
+            // Build pick sequence using canonical pick ownership
             const sequence = [];
             let overallPick = 0;
 
             for (let round = 1; round <= rounds; round++) {
+                // Snake draft: odd rounds go 1→12, even rounds go 12→1
                 const orderForRound = (config.snake && round % 2 === 0)
                     ? [...resolvedOrder].reverse()
                     : [...resolvedOrder];
 
+                // Collect all picks for this round and their draft slot positions
+                // Each slot in the draft order represents an original team's pick position
+                const roundPicks = [];
+
                 orderForRound.forEach((originalSlotTeam, slotIdx) => {
                     if (!originalSlotTeam) return;
 
-                    // Who owns this pick after trades?
-                    const pickOwner = pickOwnership[round][originalSlotTeam] || originalSlotTeam;
+                    // Who currently owns this original team's pick in this round?
+                    const lookupKey = `${round}-${originalSlotTeam}`;
+                    const pickOwner = pickOwnerLookup[lookupKey] || originalSlotTeam;
 
-                    overallPick++;
-                    sequence.push({
-                        overallPick,
+                    roundPicks.push({
                         round,
                         pickInRound: slotIdx + 1,
                         teamKey: pickOwner,
@@ -38734,9 +38717,38 @@
                         isKeeper: false
                     });
                 });
+
+                // Safety check: verify all picks for this round are accounted for
+                // The base draft order covers all 12 original teams' picks per round.
+                // Trades just change who OWNS each original pick (handled by pickOwnerLookup).
+                // This catch handles edge cases where a team exists but isn't in the draft order.
+                const placedOriginals = new Set(roundPicks.map(p => `${round}-${p.originalSlotTeam}`));
+                allTeams.forEach(teamKey => {
+                    const key = `${round}-${teamKey}`;
+                    if (!placedOriginals.has(key)) {
+                        // This team's original pick wasn't placed — they're not in the draft order
+                        const pickOwner = pickOwnerLookup[key] || teamKey;
+                        roundPicks.push({
+                            round,
+                            pickInRound: roundPicks.length + 1,
+                            teamKey: pickOwner,
+                            originalSlotTeam: teamKey,
+                            isKeeper: false
+                        });
+                    }
+                });
+
+                // Add to sequence with overall pick numbering
+                roundPicks.forEach(pick => {
+                    overallPick++;
+                    sequence.push({
+                        ...pick,
+                        overallPick
+                    });
+                });
             }
 
-            // Now assign keeper flags to the LATEST pick per team per round
+            // Assign keeper flags to the LATEST pick per team per round
             // For each team+round that has keepers, find picks for that team in that round,
             // and mark the latest one(s) as keepers
             Object.entries(keeperRoundCounts).forEach(([teamKey, roundCounts]) => {
@@ -38748,6 +38760,20 @@
                     const picksToMark = teamPicksInRound.slice(-count);
                     picksToMark.forEach(p => { p.isKeeper = true; });
                 });
+            });
+
+            // Debug: verify pick counts per team
+            const pickCountsByTeam = {};
+            sequence.forEach(p => {
+                pickCountsByTeam[p.teamKey] = (pickCountsByTeam[p.teamKey] || 0) + 1;
+            });
+            console.log('Mock Draft Pick Counts by Team:', pickCountsByTeam);
+            const expectedTotal = rounds;
+            Object.entries(pickCountsByTeam).forEach(([tk, count]) => {
+                if (count !== expectedTotal) {
+                    const info = mockDraftState.teamInfo[tk];
+                    console.warn(`Team "${info?.teamName || tk}" has ${count} picks (expected ${expectedTotal})`);
+                }
             });
 
             mockDraftState.pickSequence = sequence;
