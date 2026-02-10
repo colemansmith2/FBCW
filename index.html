@@ -13169,8 +13169,22 @@
             font-size: 0.7rem;
         }
         .mock-draft-log-entry .log-player-name { flex-grow: 1; font-weight: 500; }
+        .mock-draft-log-entry .log-player-name .log-mlb-team {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            font-size: 0.65rem;
+            color: #888;
+            font-weight: 400;
+            margin-top: 1px;
+        }
+        .mock-draft-log-entry .log-player-name .log-mlb-team img {
+            width: 12px;
+            height: 12px;
+            border-radius: 0;
+        }
         .mock-draft-log-entry .log-pos { display: flex; gap: 2px; align-items: center; }
-        .mock-draft-log-entry .log-pts { color: #0a2351; font-weight: bold; font-size: 0.75rem; }
+        .mock-draft-log-entry .log-pts { color: #0a2351; font-weight: bold; font-size: 0.75rem; min-width: 38px; text-align: right; }
         .mock-draft-log-entry.user-pick { background: rgba(46,204,113,0.1); border-radius: 4px; }
         .mock-draft-log-entry.keeper-entry { background: rgba(212,175,55,0.06); }
         .mock-draft-log-entry.keeper-entry .log-player-name { color: #b8860b; font-weight: 600; }
@@ -38897,7 +38911,8 @@
                                 normName: player.normName,
                                 positions: player.positions || [],
                                 headshot_url: player.headshot_url || '',
-                                avgPoints: player.avgPoints || 0
+                                avgPoints: player.avgPoints || 0,
+                                mlbTeam: player.mlbTeam || ''
                             };
                         }
 
@@ -39569,13 +39584,18 @@
             if (!log) return;
             const info = mockDraftState.teamInfo[teamKey];
             const logo = info ? info.logo : '';
+            const mlbDisplay = formatMLBTeamDisplay(player.mlbTeam || '');
+            const mlbLogoUrl = getMLBTeamLogo(player.mlbTeam || '');
+            const mlbHtml = mlbLogoUrl
+                ? `<span class="log-mlb-team"><img src="${mlbLogoUrl}" alt="" onerror="this.style.display='none'">${mlbDisplay}</span>`
+                : (mlbDisplay ? `<span class="log-mlb-team">${mlbDisplay}</span>` : '');
             const cls = isUser ? 'mock-draft-log-entry user-pick' : 'mock-draft-log-entry';
             const entry = document.createElement('div');
             entry.className = cls;
             entry.innerHTML = `
                 <span class="log-pick-num">${pick.round}.${pick.pickInRound}</span>
                 <img src="${logo}" alt="" onerror="this.style.display='none'">
-                <span class="log-player-name">${player.name}</span>
+                <span class="log-player-name"><div>${player.name}</div>${mlbHtml}</span>
                 <span class="log-pos">${mockDraftPositionBadges(player.positions)}</span>
                 <span class="log-pts">${player.avgPoints}</span>
             `;
@@ -39593,12 +39613,18 @@
             const keeperName = keeperData?.name || 'Keeper';
             const keeperPositions = keeperData?.positions || [];
             const keeperPts = keeperData?.avgPoints || '';
+            const keeperMlb = keeperData?.mlbTeam || '';
+            const mlbDisplay = formatMLBTeamDisplay(keeperMlb);
+            const mlbLogoUrl = getMLBTeamLogo(keeperMlb);
+            const mlbHtml = mlbLogoUrl
+                ? `<span class="log-mlb-team"><img src="${mlbLogoUrl}" alt="" onerror="this.style.display='none'">${mlbDisplay}</span>`
+                : (mlbDisplay ? `<span class="log-mlb-team">${mlbDisplay}</span>` : '');
             const entry = document.createElement('div');
             entry.className = 'mock-draft-log-entry keeper-entry';
             entry.innerHTML = `
                 <span class="log-pick-num">${pick.round}.${pick.pickInRound}</span>
                 <img src="${logo}" alt="" onerror="this.style.display='none'">
-                <span class="log-player-name">${keeperName}<span class="log-keeper-badge">K</span></span>
+                <span class="log-player-name"><div>${keeperName}<span class="log-keeper-badge">K</span></div>${mlbHtml}</span>
                 <span class="log-pos">${mockDraftPositionBadges(keeperPositions)}</span>
                 <span class="log-pts">${keeperPts}</span>
             `;
