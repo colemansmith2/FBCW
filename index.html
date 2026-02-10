@@ -12915,9 +12915,11 @@
             display: grid;
             grid-template-columns: 1.3fr 0.7fr;
             gap: 1rem;
+            min-height: calc(100vh - 280px);
+            align-items: start;
         }
         @media (max-width: 900px) {
-            .mock-draft-main { grid-template-columns: 1fr; }
+            .mock-draft-main { grid-template-columns: 1fr; min-height: auto; }
         }
 
         /* Available Players Panel */
@@ -12926,6 +12928,9 @@
             border: 2px solid #e0e0e0;
             border-radius: 10px;
             padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(100vh - 250px);
         }
         .mock-draft-available-panel.user-turn {
             border-color: #2ecc71;
@@ -13012,9 +13017,9 @@
             background: #e8e8e8;
         }
         .mock-draft-available-table-wrapper {
-            max-height: calc(100vh - 340px);
-            min-height: 400px;
+            flex: 1 1 0;
             overflow-y: auto;
+            min-height: 0;
         }
         .mock-draft-available-table {
             width: 100%;
@@ -13029,6 +13034,17 @@
             font-size: 0.8rem;
             text-align: left;
             z-index: 1;
+        }
+        .mock-draft-available-table th.mock-draft-sortable {
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .mock-draft-available-table th.mock-draft-sortable:hover {
+            background: #14305e;
+        }
+        .mock-draft-available-table th.mock-draft-sortable.active {
+            background: #1a4a8a;
         }
         .mock-draft-available-table td {
             padding: 0.35rem 0.4rem;
@@ -16975,9 +16991,9 @@
                                         <th>#</th>
                                         <th>Player</th>
                                         <th>Pos</th>
-                                        <th>Pts</th>
-                                        <th>Min</th>
-                                        <th>Max</th>
+                                        <th class="mock-draft-sortable active" data-sort="avg" onclick="mockDraftSortAvailable('avg', this)">Pts ▼</th>
+                                        <th class="mock-draft-sortable" data-sort="max" onclick="mockDraftSortAvailable('max', this)">Max</th>
+                                        <th class="mock-draft-sortable" data-sort="min" onclick="mockDraftSortAvailable('min', this)">Min</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -38210,7 +38226,8 @@
             isUserTurn: false,
             keeperConsumedPicks: {},
             keeperPickMap: {},
-            typeFilter: 'all'
+            typeFilter: 'all',
+            sortField: 'avg'
         };
 
         const MOCK_DRAFT_ROSTER_SLOTS = [
@@ -38459,21 +38476,24 @@
                 });
             }
 
-            // Identify keeper-consumed picks
-            const keeperConsumed = {}; // { teamKey: Set of consumed rounds }
+            // Count keeper-consumed picks per team per round
+            const keeperRoundCounts = {}; // { teamKey: { round: count } }
             if (keeperSelections) {
                 Object.entries(keeperSelections).forEach(([teamKey, keepers]) => {
                     if (!keepers || !Array.isArray(keepers) || keepers.length === 0) return;
-                    keeperConsumed[teamKey] = new Set();
+                    keeperRoundCounts[teamKey] = {};
                     keepers.forEach(k => {
+                        if (k.isProspect) return; // Prospects don't consume picks
                         const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
-                        if (roundCost) keeperConsumed[teamKey].add(roundCost);
+                        if (roundCost) {
+                            keeperRoundCounts[teamKey][roundCost] = (keeperRoundCounts[teamKey][roundCost] || 0) + 1;
+                        }
                     });
                 });
             }
-            mockDraftState.keeperConsumedPicks = keeperConsumed;
+            mockDraftState.keeperConsumedPicks = keeperRoundCounts;
 
-            // Build pick sequence
+            // Build pick sequence (without keeper flags first)
             const sequence = [];
             let overallPick = 0;
 
@@ -38488,9 +38508,6 @@
                     // Who owns this pick after trades?
                     const pickOwner = pickOwnership[round][originalSlotTeam] || originalSlotTeam;
 
-                    // Is this pick consumed by a keeper?
-                    const consumed = keeperConsumed[pickOwner] && keeperConsumed[pickOwner].has(round);
-
                     overallPick++;
                     sequence.push({
                         overallPick,
@@ -38498,10 +38515,24 @@
                         pickInRound: slotIdx + 1,
                         teamKey: pickOwner,
                         originalSlotTeam,
-                        isKeeper: consumed
+                        isKeeper: false
                     });
                 });
             }
+
+            // Now assign keeper flags to the LATEST pick per team per round
+            // For each team+round that has keepers, find picks for that team in that round,
+            // and mark the latest one(s) as keepers
+            Object.entries(keeperRoundCounts).forEach(([teamKey, roundCounts]) => {
+                Object.entries(roundCounts).forEach(([round, count]) => {
+                    const roundNum = Number(round);
+                    // Find all picks for this team in this round, ordered by pickInRound
+                    const teamPicksInRound = sequence.filter(p => p.teamKey === teamKey && p.round === roundNum);
+                    // Mark the last N picks as keepers (latest picks in the round)
+                    const picksToMark = teamPicksInRound.slice(-count);
+                    picksToMark.forEach(p => { p.isKeeper = true; });
+                });
+            });
 
             mockDraftState.pickSequence = sequence;
         }
@@ -38966,6 +38997,7 @@
             mockDraftState.pickSequence = [];
             mockDraftState.keeperPickMap = {};
             mockDraftState.typeFilter = 'all';
+            mockDraftState.sortField = 'avg';
 
             document.getElementById('mock-draft-setup').style.display = 'block';
             document.getElementById('mock-draft-active').style.display = 'none';
@@ -39058,7 +39090,7 @@
             const search = (document.getElementById('mock-draft-search').value || '').toLowerCase().trim();
             const typeFilter = mockDraftState.typeFilter || 'all';
 
-            let filtered = mockDraftState.availablePlayers;
+            let filtered = [...mockDraftState.availablePlayers];
 
             // Apply type filter (All Batters / All Pitchers buttons)
             if (typeFilter === 'batters') {
@@ -39079,6 +39111,11 @@
                     p.name.toLowerCase().includes(search) || p.mlbTeam.toLowerCase().includes(search)
                 );
             }
+
+            // Apply sort
+            const sortField = mockDraftState.sortField || 'avg';
+            const sortKey = sortField === 'avg' ? 'avgPoints' : sortField === 'max' ? 'maxPoints' : 'minPoints';
+            filtered.sort((a, b) => b[sortKey] - a[sortKey]);
 
             const top100 = filtered.slice(0, 100);
             let html = '';
@@ -39107,8 +39144,8 @@
                     </div></td>
                     <td>${posBadges}</td>
                     <td><strong>${player.avgPoints}</strong></td>
+                    <td style="color:#888;font-size:0.8rem;">${player.maxPoints}</td>
                     <td style="color:#999;font-size:0.8rem;">${player.minPoints}</td>
-                    <td style="color:#999;font-size:0.8rem;">${player.maxPoints}</td>
                     <td><button class="mock-draft-draft-btn" onclick="userMockDraftPick(${realIdx})" ${draftDisabled}>Draft</button></td>
                 </tr>`;
             });
@@ -39126,6 +39163,20 @@
         }
 
         function filterMockDraftAvailable() {
+            renderMockDraftAvailableTable();
+        }
+
+        function mockDraftSortAvailable(field, thEl) {
+            mockDraftState.sortField = field;
+            // Update header labels
+            document.querySelectorAll('.mock-draft-sortable').forEach(th => {
+                th.classList.remove('active');
+                const base = th.dataset.sort === 'avg' ? 'Pts' : th.dataset.sort === 'max' ? 'Max' : 'Min';
+                th.textContent = base;
+            });
+            thEl.classList.add('active');
+            const label = field === 'avg' ? 'Pts' : field === 'max' ? 'Max' : 'Min';
+            thEl.textContent = label + ' ▼';
             renderMockDraftAvailableTable();
         }
 
