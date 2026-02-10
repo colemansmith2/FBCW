@@ -13462,6 +13462,26 @@
             color: #ccc;
             font-style: italic;
         }
+        .mock-draft-roster-row.prospect-fill-row {
+            background: rgba(23,162,184,0.08);
+        }
+        .mock-draft-roster-row.prospect-fill-row .roster-round {
+            color: #17a2b8;
+            font-weight: 600;
+        }
+        .mock-draft-roster-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .mock-draft-roster-column {
+            min-width: 0;
+        }
+        @media (max-width: 900px) {
+            .mock-draft-roster-columns {
+                grid-template-columns: 1fr;
+            }
+        }
         /* Compact screenshot layout for full-roster view */
         .mock-draft-roster-team-card.screenshot-compact {
             padding: 0.75rem;
@@ -13581,11 +13601,16 @@
             font-family: 'Basis33', monospace;
             letter-spacing: 1px;
             color: var(--retro-blue);
+            line-height: 1.2;
+            display: block;
+            position: relative;
+            z-index: 1;
         }
         .mock-draft-points-chart {
             display: flex;
             flex-direction: column;
             gap: 0.4rem;
+            margin-top: 0.35rem;
         }
         .mock-draft-chart-bar-row {
             display: flex;
@@ -38707,7 +38732,7 @@
             { pos: 'BN', count: 99, type: 'any' }
         ];
         const MOCK_DRAFT_MAX_BATTERS = 13;
-        const MOCK_DRAFT_MAX_PITCHERS = 10;
+        const MOCK_DRAFT_MAX_PITCHERS = 12;
 
         const MOCK_PROJECTION_SYSTEMS = ['steamer', 'zipsdc', 'thebat', 'thebatx', 'atc', 'depthcharts', 'oopsy'];
 
@@ -39173,17 +39198,14 @@
                             avgPoints: k.fantasy_points_2025 || 0
                         };
 
-                        // NA/prospect keepers with low projections: track them but don't fill roster slots
+                        // NA/prospect keepers should never consume active draft roster slots
                         const isNAKeeper = k.isProspect === true;
-                        const projectedPts = poolPlayer ? poolPlayer.avgPoints : (k.fantasy_points_2025 || 0);
-                        const naNoSlot = isNAKeeper && projectedPts < 300;
-
-                        if (naNoSlot) {
+                        if (isNAKeeper) {
                             // Add to roster for display but don't consume a roster slot
                             rosters[teamKey].players.push({ ...player, assignedSlot: 'NA', isKeeper: true, isNAKeeper: true });
                         } else {
                             const slot = mockDraftAssignSlot(player, rosters[teamKey]);
-                            rosters[teamKey].players.push({ ...player, assignedSlot: slot, isKeeper: true, isNAKeeper: isNAKeeper });
+                            rosters[teamKey].players.push({ ...player, assignedSlot: slot, isKeeper: true, isNAKeeper: false });
                         }
 
                         // Build keeper pick map for ticker/log lookup
@@ -39357,6 +39379,15 @@
             const isP = player.type === 'pitcher';
             const totalRounds = 23;
 
+            // Count unfilled batter starting slots
+            const unfilledBatterSlots = Math.max(0, 1 - (roster.slots.C || 0))
+                + Math.max(0, 1 - (roster.slots['1B'] || 0))
+                + Math.max(0, 1 - (roster.slots['2B'] || 0))
+                + Math.max(0, 1 - (roster.slots['3B'] || 0))
+                + Math.max(0, 1 - (roster.slots.SS || 0))
+                + Math.max(0, 3 - (roster.slots.OF || 0))
+                + Math.max(0, 3 - (roster.slots.Util || 0));
+
             // How much to weight need — very low early, ramps up mid-draft
             // Round 1: ~0.1, Round 6: ~0.35, Round 10: ~0.55, Round 15: ~0.8, Round 20+: ~1.0
             const needWeight = Math.min(1.0, 0.1 + (round - 1) * 0.9 / (totalRounds - 1));
@@ -39399,15 +39430,6 @@
                 if (roster.slots.P < 2) needBoost += 15;
             }
             score += needBoost * needWeight;
-
-            // Count unfilled batter starting slots
-            const unfilledBatterSlots = Math.max(0, 1 - (roster.slots.C || 0))
-                + Math.max(0, 1 - (roster.slots['1B'] || 0))
-                + Math.max(0, 1 - (roster.slots['2B'] || 0))
-                + Math.max(0, 1 - (roster.slots['3B'] || 0))
-                + Math.max(0, 1 - (roster.slots.SS || 0))
-                + Math.max(0, 3 - (roster.slots.OF || 0))
-                + Math.max(0, 3 - (roster.slots.Util || 0));
 
             // Count unfilled pitcher starting slots
             const unfilledPitcherSlots = Math.max(0, 3 - (roster.slots.SP || 0))
@@ -40324,9 +40346,8 @@
             const teamTotals = [];
             Object.entries(mockDraftState.teamRosters).forEach(([teamKey, roster]) => {
                 const info = mockDraftState.teamInfo[teamKey] || {};
-                // Sum only rostered players (not NA prospects)
+                // Sum all players, including NA prospects
                 const totalPts = roster.players
-                    .filter(p => p.assignedSlot !== 'NA')
                     .reduce((sum, p) => sum + (p.avgPoints || 0), 0);
                 teamTotals.push({
                     teamKey,
@@ -40492,8 +40513,32 @@
                 playerRoundMap[dp.player.name] = { round: dp.round, pickInRound: dp.pickInRound, isKeeper: false };
             });
 
+            const naProspects = roster.players
+                .filter(p => p.assignedSlot === 'NA')
+                .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+            const usedProspects = new Set();
+
+            function qualifiesProspectForSlot(player, slotLabel) {
+                const slot = (slotLabel || '').toUpperCase();
+                const pPos = (player.positions || []).map(pos => (pos || '').toUpperCase());
+                if (slot === 'UTIL') return player.type === 'batter';
+                if (slot === 'OF') return pPos.some(pos => ['OF', 'LF', 'CF', 'RF'].includes(pos));
+                if (slot === 'P') return player.type === 'pitcher' || pPos.some(pos => ['SP', 'RP', 'P'].includes(pos));
+                return pPos.includes(slot);
+            }
+
+            function getProspectFallbackForSlot(slotLabel) {
+                for (const p of naProspects) {
+                    if (usedProspects.has(p)) continue;
+                    if (!qualifiesProspectForSlot(p, slotLabel)) continue;
+                    usedProspects.add(p);
+                    return p;
+                }
+                return null;
+            }
+
             let html = `
-                <div class="mock-draft-roster-team-card screenshot-compact">
+                <div class="mock-draft-roster-team-card">
                     <div class="mock-draft-roster-team-header">
                         <img src="${info.logo}" alt="" onerror="this.style.display='none'">
                         <div>
@@ -40507,22 +40552,18 @@
                     </div>
             `;
 
-            // Render roster by position groups
-            const slotOrder = [
-                { label: 'BATTERS', slots: [
-                    { pos: 'C', max: 1 }, { pos: '1B', max: 1 }, { pos: '2B', max: 1 },
-                    { pos: '3B', max: 1 }, { pos: 'SS', max: 1 },
-                    { pos: 'OF', max: 3 }, { pos: 'Util', max: 3 }
-                ]},
-                { label: 'PITCHERS', slots: [
-                    { pos: 'SP', max: 3 }, { pos: 'RP', max: 1 }, { pos: 'P', max: 2 }
-                ]}
+            const batterSlots = [
+                { pos: 'C', max: 1 }, { pos: '1B', max: 1 }, { pos: '2B', max: 1 },
+                { pos: '3B', max: 1 }, { pos: 'SS', max: 1 }, { pos: 'OF', max: 3 }, { pos: 'Util', max: 3 }
+            ];
+            const pitcherSlots = [
+                { pos: 'SP', max: 3 }, { pos: 'RP', max: 1 }, { pos: 'P', max: 2 }
             ];
 
-            function renderFullRosterRow(p, slotLabel, playerRoundMap) {
+            function renderFullRosterRow(p, slotLabel, playerRoundMap, options = {}) {
                 const roundInfo = playerRoundMap[p.name];
-                const roundLabel = roundInfo ? `${roundInfo.round}.${roundInfo.pickInRound}` : '—';
-                const isKeeper = roundInfo?.isKeeper || p.isKeeper;
+                const roundLabel = options.roundLabel ?? (roundInfo ? `${roundInfo.round}.${roundInfo.pickInRound}` : '—');
+                const isKeeper = options.isKeeper ?? (roundInfo?.isKeeper || p.isKeeper);
                 const mlbDisplay = formatMLBTeamDisplay(p.mlbTeam || '');
                 const mlbLogoUrl = getMLBTeamLogo(p.mlbTeam || '');
                 const mlbLogoHtml = mlbLogoUrl
@@ -40531,8 +40572,9 @@
                 const headshotHtml = p.headshot_url
                     ? `<img src="${p.headshot_url}" alt="" class="roster-headshot" onerror="this.style.display='none'">`
                     : `<div class="roster-headshot" style="background:#e8e8e8;"></div>`;
+                const prospectFillClass = options.isProspectFill ? ' prospect-fill-row' : '';
 
-                return `<div class="mock-draft-roster-row${isKeeper ? ' keeper-row' : ''}">
+                return `<div class="mock-draft-roster-row${isKeeper ? ' keeper-row' : ''}${prospectFillClass}">
                     <span class="roster-pos"><span class="position-badge pos-${slotLabel}">${slotLabel}</span></span>
                     ${headshotHtml}
                     <span class="roster-player">
@@ -40544,26 +40586,50 @@
                 </div>`;
             }
 
-            slotOrder.forEach(group => {
-                html += `<div class="mock-draft-roster-section-label">${group.label}</div>`;
-                group.slots.forEach(slotDef => {
+            function renderSlotList(slots) {
+                let sectionHtml = '';
+                slots.forEach(slotDef => {
                     const playersInSlot = roster.players.filter(p => p.assignedSlot === slotDef.pos);
                     for (let i = 0; i < slotDef.max; i++) {
                         const p = playersInSlot[i];
                         if (p) {
-                            html += renderFullRosterRow(p, slotDef.pos, playerRoundMap);
+                            sectionHtml += renderFullRosterRow(p, slotDef.pos, playerRoundMap);
                         } else {
-                            html += `<div class="mock-draft-roster-row empty-row">
-                                <span class="roster-pos"><span class="position-badge pos-${slotDef.pos}">${slotDef.pos}</span></span>
-                                <div class="roster-headshot" style="background:#e8e8e8;"></div>
-                                <span class="roster-player">Empty</span>
-                                <span class="roster-pts" style="color:#ccc;">—</span>
-                                <span class="roster-round">—</span>
-                            </div>`;
+                            const prospectFallback = getProspectFallbackForSlot(slotDef.pos);
+                            if (prospectFallback) {
+                                sectionHtml += renderFullRosterRow(
+                                    prospectFallback,
+                                    slotDef.pos,
+                                    playerRoundMap,
+                                    { roundLabel: 'NA', isKeeper: true, isProspectFill: true }
+                                );
+                            } else {
+                                sectionHtml += `<div class="mock-draft-roster-row empty-row">
+                                    <span class="roster-pos"><span class="position-badge pos-${slotDef.pos}">${slotDef.pos}</span></span>
+                                    <div class="roster-headshot" style="background:#e8e8e8;"></div>
+                                    <span class="roster-player">Empty</span>
+                                    <span class="roster-pts" style="color:#ccc;">—</span>
+                                    <span class="roster-round">—</span>
+                                </div>`;
+                            }
                         }
                     }
                 });
-            });
+                return sectionHtml;
+            }
+
+            html += `
+                <div class="mock-draft-roster-columns">
+                    <div class="mock-draft-roster-column">
+                        <div class="mock-draft-roster-section-label">BATTERS</div>
+                        ${renderSlotList(batterSlots)}
+                    </div>
+                    <div class="mock-draft-roster-column">
+                        <div class="mock-draft-roster-section-label">PITCHERS</div>
+                        ${renderSlotList(pitcherSlots)}
+                    </div>
+                </div>
+            `;
 
             // Bench: show ALL bench players dynamically
             const benchPlayers = roster.players.filter(p => p.assignedSlot === 'BN');
@@ -40575,7 +40641,7 @@
             }
 
             // NA prospects
-            const naPlayers = roster.players.filter(p => p.assignedSlot === 'NA')
+            const naPlayers = roster.players.filter(p => p.assignedSlot === 'NA' && !usedProspects.has(p))
                 .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
             if (naPlayers.length > 0) {
                 html += `<div class="mock-draft-roster-section-label">PROSPECTS (NA)</div>`;
