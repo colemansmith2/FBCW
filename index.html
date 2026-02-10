@@ -13462,6 +13462,68 @@
             color: #ccc;
             font-style: italic;
         }
+        /* Compact screenshot layout for full-roster view */
+        .mock-draft-roster-team-card.screenshot-compact {
+            padding: 0.75rem;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-team-header {
+            margin-bottom: 0.4rem;
+            padding-bottom: 0.35rem;
+            gap: 0.5rem;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-team-header img {
+            width: 30px;
+            height: 30px;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .team-name {
+            font-size: 0.92rem;
+            line-height: 1.1;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .team-manager {
+            font-size: 0.64rem;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .team-total .total-value {
+            font-size: 1rem;
+            line-height: 1;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .team-total .total-label {
+            font-size: 0.56rem;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-section-label {
+            font-size: 0.68rem;
+            margin: 0.35rem 0 0.15rem;
+            padding-bottom: 0.08rem;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-row {
+            font-size: 0.72rem;
+            padding: 0.14rem 0.12rem;
+            gap: 0.35rem;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-row .roster-pos {
+            min-width: 26px;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-row .roster-pos .position-badge {
+            font-size: 0.52rem;
+            padding: 0.06rem 0.2rem;
+            min-width: 18px;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-row .roster-headshot {
+            display: none;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-row .roster-player {
+            line-height: 1.1;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-row .roster-player .player-mlb-team {
+            display: none;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-row .roster-pts {
+            min-width: 31px;
+            font-size: 0.7rem;
+        }
+        .mock-draft-roster-team-card.screenshot-compact .mock-draft-roster-row .roster-round {
+            min-width: 33px;
+            font-size: 0.64rem;
+        }
 
         /* Draft Overview */
         .mock-draft-overview {
@@ -40431,7 +40493,7 @@
             });
 
             let html = `
-                <div class="mock-draft-roster-team-card">
+                <div class="mock-draft-roster-team-card screenshot-compact">
                     <div class="mock-draft-roster-team-header">
                         <img src="${info.logo}" alt="" onerror="this.style.display='none'">
                         <div>
