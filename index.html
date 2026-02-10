@@ -9009,6 +9009,27 @@
             position: relative;
         }
 
+        .projection-chart-canvas-wrap {
+            position: relative;
+        }
+
+        .projection-bottom-chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .projection-bottom-toggle {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .chart-toggle-btn-sm {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.6rem;
+        }
+
         #projection-modal .modal-close {
             position: absolute;
             top: -12px;
@@ -15584,15 +15605,26 @@
                         <!-- Baseball card loaded dynamically -->
                     </div>
                     <div class="projection-charts-container">
+                        <!-- Top chart: History + Projections (Home view only) -->
+                        <div class="projection-chart-box" id="projection-history-chart-box" style="display:none;">
+                            <div class="projection-chart-title">Historical & Projected Points</div>
+                            <div class="projection-chart projection-chart-canvas-wrap" id="projection-history-chart">
+                                <canvas id="projection-history-canvas"></canvas>
+                            </div>
+                        </div>
+                        <!-- Bottom chart: Toggle between Position Ranking and Points vs G/IP -->
                         <div class="projection-chart-box">
-                            <div class="projection-chart-title">Position Ranking</div>
+                            <div class="projection-bottom-chart-header">
+                                <div class="projection-chart-title" id="projection-bottom-chart-title" style="margin-bottom:0;">Position Ranking</div>
+                                <div class="chart-toggle projection-bottom-toggle">
+                                    <button class="chart-toggle-btn chart-toggle-btn-sm active" id="proj-toggle-rank-btn" onclick="toggleProjectionBottomChart('rank')">Pos Rank</button>
+                                    <button class="chart-toggle-btn chart-toggle-btn-sm" id="proj-toggle-scatter-btn" onclick="toggleProjectionBottomChart('scatter')">Pts vs G/IP</button>
+                                </div>
+                            </div>
                             <div class="projection-chart" id="projection-pos-chart">
                                 <!-- Position rank chart -->
                             </div>
-                        </div>
-                        <div class="projection-chart-box">
-                            <div class="projection-chart-title" id="projection-scatter-title">Points vs PA</div>
-                            <div class="projection-chart" id="projection-scatter-chart">
+                            <div class="projection-chart" id="projection-scatter-chart" style="display:none;">
                                 <!-- Scatter plot -->
                             </div>
                         </div>
@@ -32522,8 +32554,6 @@
             const modal = document.getElementById('projection-modal');
             const cardContainer = document.getElementById('projection-card-container');
             const posChartEl = document.getElementById('projection-pos-chart');
-            const scatterChartEl = document.getElementById('projection-scatter-chart');
-            const scatterTitleEl = document.getElementById('projection-scatter-title');
 
             // Check if we're in Home view
             const projectionType = document.getElementById('projection-type').value;
@@ -32686,58 +32716,63 @@
 
             if (isBatter) {
                 const singles = (stats['1B'] || 0);
+                const pa = stats.PA || 0;
+                const so = stats.SO || 0;
+                const bb = stats.BB || 0;
+                const kPct = pa > 0 ? ((so / pa) * 100).toFixed(1) + '%' : '-';
+                const bbPct = pa > 0 ? ((bb / pa) * 100).toFixed(1) + '%' : '-';
                 cardHTML += `
                             <table class="card-stats-table">
                                 <tr>
-                                    <th>G</th><th>PA</th><th>H</th><th>HR</th><th>RBI</th><th>R</th><th>SB</th>
+                                    <th>G</th><th>PA</th><th>1B</th><th>2B</th><th>3B</th><th>HR</th><th>RBI</th>
                                 </tr>
                                 <tr>
                                     <td>${displayGames}</td>
-                                    <td>${stats.PA || 0}</td>
-                                    <td>${stats.H || 0}</td>
-                                    <td>${stats.HR || 0}</td>
-                                    <td>${stats.RBI || 0}</td>
-                                    <td>${stats.R || 0}</td>
-                                    <td>${stats.SB || 0}</td>
-                                </tr>
-                                <tr>
-                                    <th>BB</th><th>1B</th><th>2B</th><th>3B</th><th>AVG</th><th>OPS</th><th>PPG</th>
-                                </tr>
-                                <tr>
-                                    <td>${stats.BB || 0}</td>
+                                    <td>${pa}</td>
                                     <td>${singles}</td>
                                     <td>${stats['2B'] || 0}</td>
                                     <td>${stats['3B'] || 0}</td>
-                                    <td>${stats.AVG ? stats.AVG.toFixed(3) : '.000'}</td>
-                                    <td>${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</td>
+                                    <td>${stats.HR || 0}</td>
+                                    <td>${stats.RBI || 0}</td>
+                                </tr>
+                                <tr>
+                                    <th>SB</th><th>SO</th><th>BB</th><th>K%</th><th>BB%</th><th>PPG</th><th>OPS</th>
+                                </tr>
+                                <tr>
+                                    <td>${stats.SB || 0}</td>
+                                    <td>${so}</td>
+                                    <td>${bb}</td>
+                                    <td>${kPct}</td>
+                                    <td>${bbPct}</td>
                                     <td>${displayPPG ? displayPPG.toFixed(2) : '-'}</td>
+                                    <td>${stats.OPS ? stats.OPS.toFixed(3) : '.000'}</td>
                                 </tr>
                             </table>`;
             } else {
                 cardHTML += `
                             <table class="card-stats-table">
                                 <tr>
-                                    <th>W</th><th>L</th><th>SV</th><th>G</th><th>GS</th><th>IP</th><th>K</th>
+                                    <th>G</th><th>GS</th><th>IP</th><th>W</th><th>L</th><th>ERA</th><th>WHIP</th>
                                 </tr>
                                 <tr>
-                                    <td>${stats.W || 0}</td>
-                                    <td>${stats.L || 0}</td>
-                                    <td>${stats.SV || 0}</td>
                                     <td>${displayGames}</td>
                                     <td>${stats.GS || 0}</td>
                                     <td>${(stats.IP || 0).toFixed(1)}</td>
-                                    <td>${stats.K || stats.SO || 0}</td>
-                                </tr>
-                                <tr>
-                                    <th>BB</th><th>ER</th><th>H</th><th>ERA</th><th>WHIP</th><th>HLD</th><th>PPG</th>
-                                </tr>
-                                <tr>
-                                    <td>${stats.BB || 0}</td>
-                                    <td>${stats.ER || 0}</td>
-                                    <td>${stats.H || 0}</td>
+                                    <td>${stats.W || 0}</td>
+                                    <td>${stats.L || 0}</td>
                                     <td>${stats.ERA ? stats.ERA.toFixed(2) : '0.00'}</td>
                                     <td>${stats.WHIP ? stats.WHIP.toFixed(2) : '0.00'}</td>
+                                </tr>
+                                <tr>
+                                    <th>SV</th><th>HLD</th><th>ER</th><th>H</th><th>K</th><th>BB</th><th>PPG</th>
+                                </tr>
+                                <tr>
+                                    <td>${stats.SV || 0}</td>
                                     <td>${stats.HLD || 0}</td>
+                                    <td>${stats.ER || 0}</td>
+                                    <td>${stats.H || 0}</td>
+                                    <td>${stats.K || stats.SO || 0}</td>
+                                    <td>${stats.BB || 0}</td>
                                     <td>${displayPPG ? displayPPG.toFixed(2) : '-'}</td>
                                 </tr>
                             </table>`;
@@ -32880,19 +32915,42 @@
             document.body.classList.add('modal-open');
 
             // 3. Render Charts (Now they can see the real width)
+
+            // History chart (Home view only)
+            const historyChartBox = document.getElementById('projection-history-chart-box');
+            const historyCanvas = document.getElementById('projection-history-canvas');
+            if (isHomeView && historyChartBox && historyCanvas) {
+                historyChartBox.style.display = '';
+                renderHistoryProjectionChart(player, historyCanvas);
+            } else if (historyChartBox) {
+                historyChartBox.style.display = 'none';
+            }
+
+            // Bottom chart: always start on Position Ranking
             renderPositionRankChart(player, posChartEl);
 
-            // Set title and render scatter
-            // For Home view, use maxSystem data for the scatter chart
-            if (isHomeView && maxSystemProjectionData) {
-                scatterTitleEl.textContent = isBatter
-                    ? `Points vs PA (${statsSourceDisplayName})`
-                    : `Points vs IP (${statsSourceDisplayName})`;
-                renderScatterChart(player, scatterChartEl, isBatter, maxSystemProjectionData);
-            } else {
-                scatterTitleEl.textContent = isBatter ? 'Points vs PA' : 'Points vs IP';
-                renderScatterChart(player, scatterChartEl, isBatter);
-            }
+            // Reset bottom toggle to rank view
+            const posChart = document.getElementById('projection-pos-chart');
+            const scatterChart = document.getElementById('projection-scatter-chart');
+            posChart.style.display = '';
+            scatterChart.style.display = 'none';
+            const rankBtn = document.getElementById('proj-toggle-rank-btn');
+            const scatterBtn = document.getElementById('proj-toggle-scatter-btn');
+            if (rankBtn) rankBtn.classList.add('active');
+            if (scatterBtn) scatterBtn.classList.remove('active');
+            const bottomTitle = document.getElementById('projection-bottom-chart-title');
+            if (bottomTitle) bottomTitle.textContent = 'Position Ranking';
+
+            // Store state for lazy scatter rendering via toggle
+            projectionBottomChartState = {
+                currentView: 'rank',
+                player: player,
+                isBatter: isBatter,
+                isHomeView: isHomeView,
+                scatterRendered: false,
+                maxSystemProjectionData: maxSystemProjectionData,
+                statsSourceDisplayName: statsSourceDisplayName
+            };
         }
 
         function renderPositionRankChart(selectedPlayer, container) {
@@ -33135,9 +33193,328 @@
             });
         }
 
+        // ---- History + Projection Bar Chart (Home view only) ----
+        let projectionHistoryChart = null;
+
+        // State for the bottom chart toggle
+        let projectionBottomChartState = {
+            currentView: 'rank',
+            player: null,
+            isBatter: true,
+            isHomeView: false,
+            scatterRendered: false,
+            maxSystemProjectionData: null,
+            statsSourceDisplayName: ''
+        };
+
+        function renderHistoryProjectionChart(player, canvasEl) {
+            // Destroy previous chart
+            if (projectionHistoryChart) {
+                projectionHistoryChart.destroy();
+                projectionHistoryChart = null;
+            }
+
+            const ctx = canvasEl.getContext('2d');
+            const playerKey = player.name.toLowerCase().trim();
+
+            // Gather historical data
+            const history = playerHistoryData[playerKey];
+            const historicalSeasons = [];
+            if (history && history.seasons) {
+                history.seasons
+                    .filter(s => s.year < 2026)
+                    .sort((a, b) => a.year - b.year)
+                    .forEach(s => {
+                        historicalSeasons.push({ year: s.year, points: s.fantasy_points || 0 });
+                    });
+            }
+
+            // 2026 projection data (from Home view player object)
+            const avg2026 = player.avgPoints || 0;
+            const sd2026 = player.stdDev || 0;
+            const max2026 = player.maxPoints || avg2026;
+            const min2026 = player.minPoints || avg2026;
+
+            // 2027/2028 from trade analyzer ZiPS data
+            const name = playerKey;
+            const data2027 = (typeof tradeAnalyzerData !== 'undefined' && tradeAnalyzerData.zips2027) ? tradeAnalyzerData.zips2027[name] : null;
+            const data2028 = (typeof tradeAnalyzerData !== 'undefined' && tradeAnalyzerData.zips2028) ? tradeAnalyzerData.zips2028[name] : null;
+            const pts2027 = data2027 ? (data2027.points || 0) : 0;
+            const pts2028 = data2028 ? (data2028.points || 0) : 0;
+
+            // Build labels and data arrays
+            const labels = [];
+            const barData = [];
+            const sdBandData = []; // floating bar: [low, high] or null
+            const barColors = [];
+            const barBorderColors = [];
+            const projectedIndices = []; // track which bars are projected (for whiskers)
+
+            const historicalColor = '#0048ba';
+            const projectedColor = '#d4a017';
+            const projectedColorLight = 'rgba(212, 160, 23, 0.3)';
+            const projectedBorderColor = '#b8860b';
+
+            // Historical bars
+            historicalSeasons.forEach(s => {
+                labels.push(String(s.year));
+                barData.push(s.points);
+                sdBandData.push(null); // no SD for historical
+                barColors.push(historicalColor);
+                barBorderColors.push(historicalColor);
+            });
+
+            // 2026 projected
+            const idx2026 = labels.length;
+            labels.push('2026');
+            barData.push(avg2026);
+            sdBandData.push(sd2026 > 0 ? [avg2026 - sd2026, avg2026 + sd2026] : null);
+            barColors.push(projectedColor);
+            barBorderColors.push(projectedBorderColor);
+            projectedIndices.push({ index: idx2026, min: min2026, max: max2026, sd: sd2026, points: avg2026 });
+
+            // 2027 projected
+            if (pts2027 > 0) {
+                const idx2027 = labels.length;
+                labels.push('2027');
+                barData.push(pts2027);
+                sdBandData.push(sd2026 > 0 ? [pts2027 - sd2026, pts2027 + sd2026] : null);
+                barColors.push(projectedColor);
+                barBorderColors.push(projectedBorderColor);
+                projectedIndices.push({ index: idx2027, min: pts2027 - sd2026 * 1.5, max: pts2027 + sd2026 * 1.5, sd: sd2026, points: pts2027 });
+            }
+
+            // 2028 projected
+            if (pts2028 > 0) {
+                const idx2028 = labels.length;
+                labels.push('2028');
+                barData.push(pts2028);
+                sdBandData.push(sd2026 > 0 ? [pts2028 - sd2026, pts2028 + sd2026] : null);
+                barColors.push(projectedColor);
+                barBorderColors.push(projectedBorderColor);
+                projectedIndices.push({ index: idx2028, min: pts2028 - sd2026 * 1.5, max: pts2028 + sd2026 * 1.5, sd: sd2026, points: pts2028 });
+            }
+
+            // If no data at all, show empty state
+            if (labels.length === 0) {
+                canvasEl.parentElement.innerHTML = '<div style="text-align:center;color:#999;padding:2rem;">No historical or projection data available</div>';
+                return;
+            }
+
+            // Custom plugin: draw dotted whisker lines from SD band to min/max
+            const whiskerPlugin = {
+                id: 'projectionWhiskers',
+                afterDatasetsDraw: function(chart) {
+                    const ctx = chart.ctx;
+                    const sdMeta = chart.getDatasetMeta(0); // SD band dataset
+
+                    projectedIndices.forEach(info => {
+                        const bar = sdMeta.data[info.index];
+                        if (!bar || !sdBandData[info.index]) return;
+
+                        const x = bar.x;
+                        const barWidth = bar.width || 20;
+                        const halfW = barWidth * 0.3;
+
+                        // Get pixel positions for the SD band top/bottom
+                        const yScale = chart.scales.y;
+                        const sdTop = yScale.getPixelForValue(sdBandData[info.index][1]);
+                        const sdBottom = yScale.getPixelForValue(sdBandData[info.index][0]);
+                        const whiskerTop = yScale.getPixelForValue(info.max);
+                        const whiskerBottom = yScale.getPixelForValue(info.min);
+
+                        ctx.save();
+                        ctx.strokeStyle = projectedBorderColor;
+                        ctx.lineWidth = 1.5;
+                        ctx.setLineDash([3, 3]);
+
+                        // Top whisker: from SD band top to max
+                        if (info.max > sdBandData[info.index][1]) {
+                            ctx.beginPath();
+                            ctx.moveTo(x, sdTop);
+                            ctx.lineTo(x, whiskerTop);
+                            ctx.stroke();
+                            // Cap line at top
+                            ctx.beginPath();
+                            ctx.setLineDash([]);
+                            ctx.moveTo(x - halfW, whiskerTop);
+                            ctx.lineTo(x + halfW, whiskerTop);
+                            ctx.stroke();
+                            ctx.setLineDash([3, 3]);
+                        }
+
+                        // Bottom whisker: from SD band bottom to min
+                        if (info.min < sdBandData[info.index][0]) {
+                            ctx.beginPath();
+                            ctx.moveTo(x, sdBottom);
+                            ctx.lineTo(x, whiskerBottom);
+                            ctx.stroke();
+                            // Cap line at bottom
+                            ctx.beginPath();
+                            ctx.setLineDash([]);
+                            ctx.moveTo(x - halfW, whiskerBottom);
+                            ctx.lineTo(x + halfW, whiskerBottom);
+                            ctx.stroke();
+                        }
+
+                        ctx.restore();
+                    });
+                }
+            };
+
+            // Build datasets
+            const datasets = [];
+
+            // Dataset 0: SD band (floating bars) — only for projected years
+            datasets.push({
+                label: '±1 SD Range',
+                data: sdBandData,
+                backgroundColor: projectedColorLight,
+                borderColor: projectedBorderColor,
+                borderWidth: 1,
+                barPercentage: 0.7,
+                categoryPercentage: 0.8,
+                order: 1
+            });
+
+            // Dataset 1: Main bars (historical + projected)
+            datasets.push({
+                label: 'Fantasy Points',
+                data: barData,
+                backgroundColor: barColors,
+                borderColor: barBorderColors,
+                borderWidth: 1,
+                barPercentage: 0.45,
+                categoryPercentage: 0.8,
+                order: 2
+            });
+
+            // Compute y-axis range
+            const allValues = [...barData];
+            projectedIndices.forEach(info => {
+                allValues.push(info.max, info.min);
+            });
+            const yMin = Math.floor(Math.min(...allValues.filter(v => v > 0)) / 50) * 50 - 50;
+            const yMax = Math.ceil(Math.max(...allValues) / 50) * 50 + 50;
+
+            projectionHistoryChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return context[0].label;
+                                },
+                                label: function(context) {
+                                    if (context.dataset.label === '±1 SD Range') {
+                                        const raw = context.raw;
+                                        if (Array.isArray(raw)) {
+                                            return `±1σ: ${Math.round(raw[0])} – ${Math.round(raw[1])} pts`;
+                                        }
+                                        return '';
+                                    }
+                                    return `${Math.round(context.raw)} pts`;
+                                }
+                            },
+                            filter: function(item) {
+                                // Hide tooltip for null SD band entries
+                                if (item.dataset.label === '±1 SD Range' && !item.raw) return false;
+                                return true;
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: Math.max(0, yMin),
+                            max: yMax,
+                            ticks: { font: { size: 10 } },
+                            title: {
+                                display: true,
+                                text: 'Fantasy Points',
+                                font: { size: 10 }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: { size: 10, weight: 'bold' },
+                                color: function(context) {
+                                    const label = labels[context.index];
+                                    const yr = parseInt(label);
+                                    return yr >= 2026 ? projectedColor : historicalColor;
+                                }
+                            }
+                        }
+                    }
+                },
+                plugins: [whiskerPlugin]
+            });
+        }
+
+        // ---- Bottom chart toggle ----
+        function toggleProjectionBottomChart(view) {
+            const posChart = document.getElementById('projection-pos-chart');
+            const scatterChart = document.getElementById('projection-scatter-chart');
+            const titleEl = document.getElementById('projection-bottom-chart-title');
+            const rankBtn = document.getElementById('proj-toggle-rank-btn');
+            const scatterBtn = document.getElementById('proj-toggle-scatter-btn');
+
+            if (view === 'rank') {
+                posChart.style.display = '';
+                scatterChart.style.display = 'none';
+                titleEl.textContent = 'Position Ranking';
+                rankBtn.classList.add('active');
+                scatterBtn.classList.remove('active');
+            } else {
+                posChart.style.display = 'none';
+                scatterChart.style.display = '';
+                const state = projectionBottomChartState;
+                const isBatter = state.isBatter;
+
+                // Render scatter chart if not yet rendered
+                if (!state.scatterRendered && state.player) {
+                    const scatterChartEl = document.getElementById('projection-scatter-chart');
+                    if (state.isHomeView && state.maxSystemProjectionData) {
+                        titleEl.textContent = isBatter
+                            ? `Points vs PA (${state.statsSourceDisplayName})`
+                            : `Points vs IP (${state.statsSourceDisplayName})`;
+                        renderScatterChart(state.player, scatterChartEl, isBatter, state.maxSystemProjectionData);
+                    } else {
+                        titleEl.textContent = isBatter ? 'Points vs PA' : 'Points vs IP';
+                        renderScatterChart(state.player, scatterChartEl, isBatter);
+                    }
+                    state.scatterRendered = true;
+                } else {
+                    if (state.isHomeView && state.statsSourceDisplayName) {
+                        titleEl.textContent = isBatter
+                            ? `Points vs PA (${state.statsSourceDisplayName})`
+                            : `Points vs IP (${state.statsSourceDisplayName})`;
+                    } else {
+                        titleEl.textContent = isBatter ? 'Points vs PA' : 'Points vs IP';
+                    }
+                }
+
+                rankBtn.classList.remove('active');
+                scatterBtn.classList.add('active');
+            }
+
+            projectionBottomChartState.currentView = view;
+        }
+
         function closeProjectionModal() {
             document.getElementById('projection-modal').classList.remove('active');
             document.body.classList.remove('modal-open');
+            // Destroy history chart to prevent memory leaks
+            if (projectionHistoryChart) {
+                projectionHistoryChart.destroy();
+                projectionHistoryChart = null;
+            }
         }
 
         // Close projection modal on outside click
