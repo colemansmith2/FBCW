@@ -12700,7 +12700,7 @@
             padding: 2rem;
             background: #faf3e0;
             border-radius: 12px;
-            border: 3px solid #0a2351;
+            border: 3px solid var(--retro-blue);
         }
         .mock-draft-logo {
             width: 120px;
@@ -12714,13 +12714,13 @@
             max-width: 300px;
             padding: 0.75rem;
             font-size: 1.1rem;
-            border: 2px solid #0a2351;
+            border: 2px solid var(--retro-blue);
             border-radius: 8px;
             margin: 1rem auto;
             display: block;
         }
         .mock-draft-btn-primary {
-            background: #0a2351;
+            background: var(--retro-blue);
             color: white;
             border: none;
             padding: 0.75rem 2rem;
@@ -12732,7 +12732,7 @@
             transition: background 0.3s;
             margin-top: 1rem;
         }
-        .mock-draft-btn-primary:hover:not(:disabled) { background: #1a3a6b; }
+        .mock-draft-btn-primary:hover:not(:disabled) { background: var(--retro-blue-light); }
         .mock-draft-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
         .mock-draft-btn-secondary {
             background: #d4a017;
@@ -12766,7 +12766,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            border: 2px solid #0a2351;
+            border: 2px solid var(--retro-blue);
             object-fit: cover;
         }
         .mock-draft-order-slot.tbd img { opacity: 0.3; border-style: dashed; }
@@ -12788,7 +12788,7 @@
         /* Pick Ticker */
         .mock-draft-ticker-container {
             overflow-x: auto;
-            background: linear-gradient(135deg, #0a2351 0%, #1a3a6b 100%);
+            background: linear-gradient(135deg, var(--retro-blue) 0%, var(--retro-blue-light) 100%);
             border-radius: 10px;
             padding: 0.5rem 0.75rem;
             margin-bottom: 1rem;
@@ -12888,7 +12888,7 @@
             font-family: 'Basis33', monospace;
             font-size: 1rem;
             letter-spacing: 1px;
-            color: #0a2351;
+            color: var(--retro-blue);
         }
         .mock-draft-controls-right { display: flex; gap: 0.5rem; }
 
@@ -12956,9 +12956,9 @@
         }
         .mock-draft-filter-btn:hover { background: #f0f0f0; }
         .mock-draft-filter-btn.active {
-            background: #0a2351;
+            background: var(--retro-blue);
             color: white;
-            border-color: #0a2351;
+            border-color: var(--retro-blue);
         }
         .mock-draft-filter-row {
             display: flex;
@@ -13025,7 +13025,7 @@
         .mock-draft-available-table th {
             position: sticky;
             top: 0;
-            background: #0a2351;
+            background: var(--retro-blue);
             color: white;
             padding: 0.5rem 0.4rem;
             font-size: 0.8rem;
@@ -13038,10 +13038,10 @@
             transition: background 0.2s;
         }
         .mock-draft-available-table th.mock-draft-sortable:hover {
-            background: #14305e;
+            background: var(--retro-blue-light);
         }
         .mock-draft-available-table th.mock-draft-sortable.active {
-            background: #1a4a8a;
+            background: var(--retro-blue-light);
         }
         .mock-draft-available-table td {
             padding: 0.35rem 0.4rem;
@@ -13132,7 +13132,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             padding: 0.4rem 0.3rem 0.15rem;
-            border-bottom: 2px solid #0a2351;
+            border-bottom: 2px solid var(--retro-blue);
             margin-top: 0.3rem;
             font-weight: bold;
         }
@@ -13184,7 +13184,7 @@
             border-radius: 0;
         }
         .mock-draft-log-entry .log-pos { display: flex; gap: 2px; align-items: center; }
-        .mock-draft-log-entry .log-pts { color: #0a2351; font-weight: bold; font-size: 0.75rem; min-width: 38px; text-align: right; }
+        .mock-draft-log-entry .log-pts { color: var(--retro-blue); font-weight: bold; font-size: 0.75rem; min-width: 38px; text-align: right; }
         .mock-draft-log-entry.user-pick { background: rgba(46,204,113,0.1); border-radius: 4px; }
         .mock-draft-log-entry.keeper-entry { background: rgba(212,175,55,0.06); }
         .mock-draft-log-entry.keeper-entry .log-player-name { color: #b8860b; font-weight: 600; }
@@ -13215,7 +13215,7 @@
             margin: 2rem auto;
             padding: 2rem;
             background: #faf3e0;
-            border: 3px solid #0a2351;
+            border: 3px solid var(--retro-blue);
             border-radius: 12px;
         }
         .mock-draft-report-summary {
@@ -13234,7 +13234,7 @@
         .mock-draft-report-stat .stat-value {
             font-size: 1.5rem;
             font-family: 'Basis33', monospace;
-            color: #0a2351;
+            color: var(--retro-blue);
         }
         .mock-draft-report-stat .stat-label {
             font-size: 0.75rem;
@@ -13245,8 +13245,8 @@
             font-family: 'Basis33', monospace;
             font-size: 0.9rem;
             letter-spacing: 1px;
-            color: #0a2351;
-            border-bottom: 2px solid #0a2351;
+            color: var(--retro-blue);
+            border-bottom: 2px solid var(--retro-blue);
             padding-bottom: 0.3rem;
             margin: 1.5rem 0 0.75rem;
         }
@@ -13293,7 +13293,7 @@
             background: #f0f0f0;
         }
         .mock-draft-report-pick .pick-team { color: #888; font-size: 0.8rem; min-width: 35px; }
-        .mock-draft-report-pick .pick-pts { font-weight: bold; color: #0a2351; }
+        .mock-draft-report-pick .pick-pts { font-weight: bold; color: var(--retro-blue); }
 
         /* Report View Toggle */
         .mock-draft-report-tabs {
@@ -13304,10 +13304,10 @@
         }
         .mock-draft-report-tab {
             padding: 0.5rem 1.2rem;
-            border: 2px solid #0a2351;
+            border: 2px solid var(--retro-blue);
             border-radius: 8px;
             background: white;
-            color: #0a2351;
+            color: var(--retro-blue);
             font-family: 'Basis33', monospace;
             font-size: 0.9rem;
             letter-spacing: 1px;
@@ -13316,7 +13316,7 @@
         }
         .mock-draft-report-tab:hover { background: #f0f4ff; }
         .mock-draft-report-tab.active {
-            background: #0a2351;
+            background: var(--retro-blue);
             color: white;
         }
 
@@ -13334,7 +13334,7 @@
         }
         .mock-draft-roster-view-select select {
             padding: 0.5rem 0.75rem;
-            border: 2px solid #0a2351;
+            border: 2px solid var(--retro-blue);
             border-radius: 8px;
             font-size: 0.95rem;
             font-family: 'Basis33', monospace;
@@ -13342,7 +13342,7 @@
         }
         .mock-draft-roster-team-card {
             background: #faf3e0;
-            border: 3px solid #0a2351;
+            border: 3px solid var(--retro-blue);
             border-radius: 12px;
             padding: 1.5rem;
         }
@@ -13352,7 +13352,7 @@
             gap: 0.75rem;
             margin-bottom: 1rem;
             padding-bottom: 0.75rem;
-            border-bottom: 2px solid #0a2351;
+            border-bottom: 2px solid var(--retro-blue);
         }
         .mock-draft-roster-team-header img {
             width: 50px;
@@ -13363,7 +13363,7 @@
         .mock-draft-roster-team-header .team-name {
             font-size: 1.2rem;
             font-weight: bold;
-            color: #0a2351;
+            color: var(--retro-blue);
         }
         .mock-draft-roster-team-header .team-manager {
             font-size: 0.8rem;
@@ -13376,7 +13376,7 @@
         .mock-draft-roster-team-header .team-total .total-value {
             font-size: 1.8rem;
             font-family: 'Basis33', monospace;
-            color: #0a2351;
+            color: var(--retro-blue);
             font-weight: bold;
         }
         .mock-draft-roster-team-header .team-total .total-label {
@@ -13387,7 +13387,7 @@
             font-family: 'Basis33', monospace;
             font-size: 0.85rem;
             letter-spacing: 1px;
-            color: #0a2351;
+            color: var(--retro-blue);
             border-bottom: 2px solid rgba(10,35,81,0.2);
             padding-bottom: 0.3rem;
             margin: 1rem 0 0.5rem;
@@ -13437,7 +13437,7 @@
         }
         .mock-draft-roster-row .roster-pts {
             font-weight: bold;
-            color: #0a2351;
+            color: var(--retro-blue);
             min-width: 40px;
             text-align: right;
         }
@@ -13451,6 +13451,150 @@
             color: #ccc;
             font-style: italic;
         }
+
+        /* Draft Overview */
+        .mock-draft-overview {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .mock-draft-overview-round {
+            margin-bottom: 1.5rem;
+        }
+        .mock-draft-overview-round-header {
+            font-family: 'Basis33', monospace;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+            color: var(--retro-blue);
+            border-bottom: 2px solid var(--retro-blue);
+            padding-bottom: 0.3rem;
+            margin-bottom: 0.5rem;
+        }
+        .mock-draft-overview-pick {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.3rem;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            font-size: 0.85rem;
+        }
+        .mock-draft-overview-pick:last-child { border-bottom: none; }
+        .mock-draft-overview-pick.user-pick-row { background: rgba(46,204,113,0.08); border-radius: 4px; }
+        .mock-draft-overview-pick.keeper-pick-row { background: rgba(212,175,55,0.06); }
+        .mock-draft-overview-pick .ov-pick-num { min-width: 30px; color: #999; font-size: 0.75rem; font-weight: bold; }
+        .mock-draft-overview-pick .ov-team-logo { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+        .mock-draft-overview-pick .ov-team-name { min-width: 110px; font-size: 0.78rem; color: #666; }
+        .mock-draft-overview-pick .ov-headshot { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; background: #f0f0f0; }
+        .mock-draft-overview-pick .ov-player { flex-grow: 1; font-weight: 500; }
+        .mock-draft-overview-pick .ov-player .ov-mlb { display: flex; align-items: center; gap: 2px; font-size: 0.65rem; color: #888; font-weight: 400; }
+        .mock-draft-overview-pick .ov-player .ov-mlb img { width: 12px; height: 12px; }
+        .mock-draft-overview-pick .ov-pos { display: flex; gap: 2px; }
+        .mock-draft-overview-pick .ov-pos .position-badge { font-size: 0.6rem; padding: 0.1rem 0.3rem; min-width: 20px; }
+        .mock-draft-overview-pick .ov-pts { font-weight: bold; color: var(--retro-blue); min-width: 38px; text-align: right; font-size: 0.8rem; }
+
+        /* Team Insights */
+        .mock-draft-insights {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .mock-draft-insights-section {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+        .mock-draft-insights-section h4 {
+            margin: 0 0 1rem;
+            font-family: 'Basis33', monospace;
+            letter-spacing: 1px;
+            color: var(--retro-blue);
+        }
+        .mock-draft-points-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .mock-draft-chart-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+        }
+        .mock-draft-chart-bar-row .bar-team {
+            min-width: 120px;
+            text-align: right;
+            font-size: 0.75rem;
+            color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mock-draft-chart-bar-row .bar-track {
+            flex-grow: 1;
+            height: 22px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        .mock-draft-chart-bar-row .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: var(--retro-blue);
+            transition: width 0.5s;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 6px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            white-space: nowrap;
+        }
+        .mock-draft-chart-bar-row.user-bar .bar-fill {
+            background: var(--retro-green);
+        }
+        .mock-draft-chart-bar-row.user-bar .bar-team {
+            font-weight: bold;
+            color: var(--retro-blue);
+        }
+        .mock-draft-pos-rankings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 700px) {
+            .mock-draft-pos-rankings { grid-template-columns: 1fr; }
+        }
+        .mock-draft-pos-rank-card {
+            background: #fafafa;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 0.75rem;
+        }
+        .mock-draft-pos-rank-card .pos-rank-header {
+            margin: 0 0 0.5rem;
+            font-family: 'Basis33', monospace;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+            color: var(--retro-blue);
+            font-weight: bold;
+        }
+        .mock-draft-pos-rank-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.2rem 0;
+            font-size: 0.78rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .mock-draft-pos-rank-row:last-child { border-bottom: none; }
+        .mock-draft-pos-rank-row .pos-rank-num { min-width: 18px; color: #999; font-weight: bold; font-size: 0.7rem; text-align: center; }
+        .mock-draft-pos-rank-row .pos-rank-team { min-width: 90px; font-size: 0.75rem; }
+        .mock-draft-pos-rank-row .pos-rank-players { flex-grow: 1; color: #666; font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mock-draft-pos-rank-row .pos-rank-pts { font-weight: bold; color: var(--retro-blue); font-size: 0.75rem; min-width: 36px; text-align: right; }
+        .mock-draft-pos-rank-row.user-rank { background: rgba(46,204,113,0.08); border-radius: 3px; padding: 0.2rem 0.3rem; }
+        .mock-draft-pos-rank-row.user-rank .pos-rank-team { font-weight: 600; }
 
         /* Bylaws Section Styles */
         .bylaws-container {
@@ -17139,6 +17283,7 @@
                 <div class="mock-draft-controls">
                     <span id="mock-draft-round-display" class="mock-draft-round-label">Round 1 — Pick 1</span>
                     <div class="mock-draft-controls-right">
+                        <button id="mock-draft-skip-btn" class="mock-draft-btn-primary" style="padding:0.4rem 1rem;font-size:0.85rem;margin-top:0;" onclick="skipToNextUserPick()">⏭ Skip to My Pick</button>
                         <button id="mock-draft-pause-btn" class="mock-draft-btn-secondary" onclick="toggleMockDraftPause()">⏸ Pause</button>
                         <button class="mock-draft-btn-secondary mock-draft-btn-reset" onclick="resetMockDraft()">↺ New Draft</button>
                     </div>
@@ -17215,6 +17360,8 @@
             <div id="mock-draft-report" style="display: none;">
                 <div class="mock-draft-report-tabs">
                     <button class="mock-draft-report-tab active" onclick="switchReportView('summary', this)">Your Summary</button>
+                    <button class="mock-draft-report-tab" onclick="switchReportView('overview', this)">Draft Overview</button>
+                    <button class="mock-draft-report-tab" onclick="switchReportView('insights', this)">Team Insights</button>
                     <button class="mock-draft-report-tab" onclick="switchReportView('rosters', this)">All Rosters</button>
                 </div>
                 <div id="mock-draft-report-summary-view">
@@ -17226,10 +17373,22 @@
                         </div>
                     </div>
                 </div>
+                <div id="mock-draft-report-overview-view" style="display: none;">
+                    <div id="mock-draft-overview-content"></div>
+                    <div style="text-align:center; margin-top:1.5rem;">
+                        <button class="mock-draft-btn-primary" onclick="resetMockDraft()">Run Another Mock</button>
+                    </div>
+                </div>
+                <div id="mock-draft-report-insights-view" style="display: none;">
+                    <div id="mock-draft-insights-content"></div>
+                    <div style="text-align:center; margin-top:1.5rem;">
+                        <button class="mock-draft-btn-primary" onclick="resetMockDraft()">Run Another Mock</button>
+                    </div>
+                </div>
                 <div id="mock-draft-report-rosters-view" style="display: none;">
                     <div class="mock-draft-roster-view">
                         <div class="mock-draft-roster-view-select">
-                            <label style="font-weight:600;color:#0a2351;">View Team:</label>
+                            <label style="font-weight:600;color:var(--retro-blue);">View Team:</label>
                             <select id="mock-draft-report-team-select" onchange="renderMockDraftFullRoster()"></select>
                         </div>
                         <div id="mock-draft-full-roster-content"></div>
@@ -39276,6 +39435,46 @@
             mockDraftState.draftTimeout = setTimeout(() => mockDraftRunLoop(), mockDraftState.aiPickDelay);
         }
 
+        function skipToNextUserPick() {
+            if (mockDraftState.phase !== 'drafting' || mockDraftState.isUserTurn) return;
+            // Cancel any pending AI timeout
+            if (mockDraftState.draftTimeout) clearTimeout(mockDraftState.draftTimeout);
+            mockDraftState.paused = false;
+            document.getElementById('mock-draft-pause-btn').textContent = '⏸ Pause';
+
+            // Fast-forward through AI picks until we hit the user's next pick or end of draft
+            const seq = mockDraftState.pickSequence;
+            while (mockDraftState.currentPickIndex < seq.length) {
+                const pick = seq[mockDraftState.currentPickIndex];
+                if (pick.isKeeper) {
+                    addMockDraftKeeperLogEntry(pick);
+                    mockDraftState.currentPickIndex++;
+                    updateMockDraftTicker();
+                    continue;
+                }
+                // If this is the user's pick, stop and let them choose
+                if (pick.teamKey === mockDraftState.userTeamKey) {
+                    break;
+                }
+                // AI pick — execute instantly
+                const aiPlayer = mockDraftAIPick(pick.teamKey);
+                if (aiPlayer) {
+                    mockDraftExecutePick(pick.teamKey, aiPlayer, false);
+                } else {
+                    mockDraftState.currentPickIndex++;
+                }
+            }
+
+            // Check if draft is done
+            if (mockDraftState.currentPickIndex >= seq.length) {
+                finishMockDraft();
+                return;
+            }
+
+            // Should be user's turn now — trigger the normal loop to show the UI
+            mockDraftRunLoop();
+        }
+
         function toggleMockDraftPause() {
             mockDraftState.paused = !mockDraftState.paused;
             const btn = document.getElementById('mock-draft-pause-btn');
@@ -39322,9 +39521,11 @@
             if (mockDraftState.draftTimeout) clearTimeout(mockDraftState.draftTimeout);
             document.getElementById('mock-draft-active').style.display = 'none';
             document.getElementById('mock-draft-report').style.display = 'block';
-            // Reset to summary view
+            // Reset to summary view — hide all other views
             document.getElementById('mock-draft-report-summary-view').style.display = '';
             document.getElementById('mock-draft-report-rosters-view').style.display = 'none';
+            document.getElementById('mock-draft-report-overview-view').style.display = 'none';
+            document.getElementById('mock-draft-report-insights-view').style.display = 'none';
             document.querySelectorAll('.mock-draft-report-tab').forEach(t => t.classList.remove('active'));
             document.querySelector('.mock-draft-report-tab')?.classList.add('active');
             // Clear roster select so it repopulates
@@ -39634,14 +39835,22 @@
         function switchReportView(view, btn) {
             document.querySelectorAll('.mock-draft-report-tab').forEach(t => t.classList.remove('active'));
             btn.classList.add('active');
-            const summaryView = document.getElementById('mock-draft-report-summary-view');
-            const rostersView = document.getElementById('mock-draft-report-rosters-view');
-            if (view === 'summary') {
-                summaryView.style.display = '';
-                rostersView.style.display = 'none';
-            } else {
-                summaryView.style.display = 'none';
-                rostersView.style.display = '';
+            const views = {
+                summary: document.getElementById('mock-draft-report-summary-view'),
+                overview: document.getElementById('mock-draft-report-overview-view'),
+                insights: document.getElementById('mock-draft-report-insights-view'),
+                rosters: document.getElementById('mock-draft-report-rosters-view')
+            };
+            // Hide all views
+            Object.values(views).forEach(v => { if (v) v.style.display = 'none'; });
+            // Show selected view
+            if (views[view]) views[view].style.display = '';
+
+            if (view === 'overview') {
+                renderMockDraftOverview();
+            } else if (view === 'insights') {
+                renderMockDraftInsights();
+            } else if (view === 'rosters') {
                 // Populate team selector if not already done
                 const sel = document.getElementById('mock-draft-report-team-select');
                 if (sel && sel.options.length === 0) {
@@ -39653,7 +39862,6 @@
                         opt.textContent = info.teamName;
                         sel.appendChild(opt);
                     });
-                    // Default to user's team
                     if (mockDraftState.userTeamKey) sel.value = mockDraftState.userTeamKey;
                 }
                 renderMockDraftFullRoster();
@@ -39807,6 +40015,211 @@
                 });
             }
 
+            container.innerHTML = html;
+        }
+
+        function renderMockDraftOverview() {
+            const container = document.getElementById('mock-draft-overview-content');
+            if (!container) return;
+
+            const seq = mockDraftState.pickSequence;
+            const draftedMap = {};
+            mockDraftState.draftedPlayers.forEach(dp => {
+                draftedMap[dp.overallPick] = dp;
+            });
+
+            // Group picks by round
+            const rounds = {};
+            seq.forEach(pick => {
+                if (!rounds[pick.round]) rounds[pick.round] = [];
+                rounds[pick.round].push(pick);
+            });
+
+            let html = '<div class="mock-draft-overview">';
+            const sortedRounds = Object.keys(rounds).map(Number).sort((a, b) => a - b);
+
+            sortedRounds.forEach(roundNum => {
+                const picks = rounds[roundNum];
+                html += `<div class="mock-draft-overview-round">`;
+                html += `<div class="mock-draft-overview-round-header">ROUND ${roundNum}</div>`;
+
+                picks.forEach(pick => {
+                    const info = mockDraftState.teamInfo[pick.teamKey] || {};
+                    const teamLogo = fixTeamLogo(info.logo || '');
+                    const teamName = info.teamName || pick.teamKey;
+                    const isUser = pick.teamKey === mockDraftState.userTeamKey;
+                    const drafted = draftedMap[pick.overallPick];
+
+                    // Get player data — either from drafted picks, keepers, or keeper pick map
+                    let playerName = '', headshot = '', positions = [], avgPoints = 0, mlbTeam = '';
+                    let isKeeper = pick.isKeeper;
+
+                    if (drafted) {
+                        playerName = drafted.player.name;
+                        headshot = drafted.player.headshot_url || '';
+                        positions = drafted.player.positions || [];
+                        avgPoints = drafted.player.avgPoints || 0;
+                        mlbTeam = drafted.player.mlbTeam || '';
+                    } else if (isKeeper) {
+                        // Keeper pick — look up from keeperPickMap
+                        const keeperData = mockDraftState.keeperPickMap?.[pick.teamKey]?.[pick.round];
+                        if (keeperData) {
+                            playerName = keeperData.name;
+                            headshot = keeperData.headshot_url || '';
+                            positions = keeperData.positions || [];
+                            avgPoints = keeperData.avgPoints || 0;
+                            mlbTeam = keeperData.mlbTeam || '';
+                        } else {
+                            playerName = 'Keeper';
+                        }
+                    }
+
+                    const rowClasses = ['mock-draft-overview-pick'];
+                    if (isUser) rowClasses.push('user-pick-row');
+                    if (isKeeper) rowClasses.push('keeper-pick-row');
+
+                    const headshotHtml = headshot
+                        ? `<img src="${headshot}" alt="" class="ov-headshot" onerror="this.style.display='none'">`
+                        : `<div class="ov-headshot" style="background:#e8e8e8;"></div>`;
+
+                    const mlbDisplay = formatMLBTeamDisplay(mlbTeam);
+                    const mlbLogoUrl = getMLBTeamLogo(mlbTeam);
+                    const mlbHtml = mlbLogoUrl
+                        ? `<span class="ov-mlb"><img src="${mlbLogoUrl}" alt="">${mlbDisplay}</span>`
+                        : (mlbDisplay ? `<span class="ov-mlb">${mlbDisplay}</span>` : '');
+
+                    const keeperBadge = isKeeper ? ' <span style="font-size:0.6rem;color:#d4af37;font-weight:bold;">K</span>' : '';
+
+                    html += `<div class="${rowClasses.join(' ')}">
+                        <span class="ov-pick-num">${pick.round}.${pick.pickInRound}</span>
+                        <img src="${teamLogo}" alt="" class="ov-team-logo" onerror="this.style.display='none'">
+                        <span class="ov-team-name">${teamName}</span>
+                        ${headshotHtml}
+                        <span class="ov-player">
+                            <div>${playerName}${keeperBadge}</div>
+                            ${mlbHtml}
+                        </span>
+                        <span class="ov-pos">${mockDraftPositionBadges(positions)}</span>
+                        <span class="ov-pts">${avgPoints > 0 ? avgPoints.toFixed(1) : ''}</span>
+                    </div>`;
+                });
+
+                html += `</div>`;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderMockDraftInsights() {
+            const container = document.getElementById('mock-draft-insights-content');
+            if (!container) return;
+
+            const userKey = mockDraftState.userTeamKey;
+
+            // Calculate team totals (including keepers)
+            const teamTotals = [];
+            Object.entries(mockDraftState.teamRosters).forEach(([teamKey, roster]) => {
+                const info = mockDraftState.teamInfo[teamKey] || {};
+                // Sum only rostered players (not NA prospects)
+                const totalPts = roster.players
+                    .filter(p => p.assignedSlot !== 'NA')
+                    .reduce((sum, p) => sum + (p.avgPoints || 0), 0);
+                teamTotals.push({
+                    teamKey,
+                    teamName: info.teamName || teamKey,
+                    manager: info.manager || '',
+                    logo: fixTeamLogo(info.logo || ''),
+                    totalPts,
+                    isUser: teamKey === userKey
+                });
+            });
+            teamTotals.sort((a, b) => b.totalPts - a.totalPts);
+
+            const maxPts = teamTotals.length > 0 ? teamTotals[0].totalPts : 1;
+
+            // ===== PROJECTED POINTS BAR CHART =====
+            let html = '<div class="mock-draft-insights">';
+            html += `<div class="mock-draft-insights-section">
+                <h4>PROJECTED POINTS BY TEAM</h4>
+                <div class="mock-draft-points-chart">`;
+
+            teamTotals.forEach((team, idx) => {
+                const pct = maxPts > 0 ? (team.totalPts / maxPts * 100) : 0;
+                const barClass = team.isUser ? 'mock-draft-chart-bar-row user-bar' : 'mock-draft-chart-bar-row';
+                const rank = idx + 1;
+                html += `<div class="${barClass}">
+                    <span class="bar-team">
+                        <img src="${team.logo}" alt="" style="width:16px;height:16px;border-radius:50%;vertical-align:middle;margin-right:4px;" onerror="this.style.display='none'">
+                        ${team.teamName}
+                    </span>
+                    <span class="bar-track">
+                        <span class="bar-fill" style="width:${pct.toFixed(1)}%">${team.totalPts.toFixed(0)}</span>
+                    </span>
+                </div>`;
+            });
+
+            html += `</div></div>`;
+
+            // ===== POSITION RANKINGS =====
+            // Define position groups to rank
+            const posGroups = [
+                { label: 'Catcher', positions: ['C'], slots: 1 },
+                { label: 'First Base', positions: ['1B'], slots: 1 },
+                { label: 'Second Base', positions: ['2B'], slots: 1 },
+                { label: 'Third Base', positions: ['3B'], slots: 1 },
+                { label: 'Shortstop', positions: ['SS'], slots: 1 },
+                { label: 'Outfield', positions: ['OF'], slots: 3 },
+                { label: 'Starting Pitchers', positions: ['SP'], slots: 3 },
+                { label: 'Relief Pitchers', positions: ['RP'], slots: 1 }
+            ];
+
+            html += `<div class="mock-draft-insights-section">
+                <h4>POSITION RANKINGS</h4>
+                <div class="mock-draft-pos-rankings">`;
+
+            posGroups.forEach(group => {
+                // For each team, find players in the slot(s) for this position
+                const teamPosData = [];
+                Object.entries(mockDraftState.teamRosters).forEach(([teamKey, roster]) => {
+                    const info = mockDraftState.teamInfo[teamKey] || {};
+                    const posPlayers = roster.players.filter(p =>
+                        p.assignedSlot && group.positions.includes(p.assignedSlot)
+                    );
+                    const totalPts = posPlayers.reduce((sum, p) => sum + (p.avgPoints || 0), 0);
+                    teamPosData.push({
+                        teamKey,
+                        teamName: info.teamName || teamKey,
+                        manager: info.manager || '',
+                        logo: fixTeamLogo(info.logo || ''),
+                        players: posPlayers,
+                        totalPts,
+                        isUser: teamKey === userKey
+                    });
+                });
+                teamPosData.sort((a, b) => b.totalPts - a.totalPts);
+
+                html += `<div class="mock-draft-pos-rank-card">
+                    <div class="pos-rank-header">${group.label}</div>`;
+
+                teamPosData.forEach((team, idx) => {
+                    const rank = idx + 1;
+                    const rowClass = team.isUser ? 'mock-draft-pos-rank-row user-rank' : 'mock-draft-pos-rank-row';
+                    const playerNames = team.players.map(p => p.name).join(', ') || '—';
+                    html += `<div class="${rowClass}">
+                        <span class="pos-rank-num">${rank}</span>
+                        <img src="${team.logo}" alt="" style="width:16px;height:16px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">
+                        <span class="pos-rank-team">${team.teamName}</span>
+                        <span class="pos-rank-players">${playerNames}</span>
+                        <span class="pos-rank-pts">${team.totalPts.toFixed(1)}</span>
+                    </div>`;
+                });
+
+                html += `</div>`;
+            });
+
+            html += `</div></div>`;
+            html += '</div>';
             container.innerHTML = html;
         }
 
