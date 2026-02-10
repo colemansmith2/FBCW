@@ -12692,6 +12692,430 @@
             }
         }
 
+        /* ===== MOCK DRAFT SIMULATOR STYLES ===== */
+        .mock-draft-setup-card {
+            text-align: center;
+            max-width: 600px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #faf3e0;
+            border-radius: 12px;
+            border: 3px solid #0a2351;
+        }
+        .mock-draft-logo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+            object-fit: cover;
+        }
+        .mock-draft-setup-card select {
+            width: 100%;
+            max-width: 300px;
+            padding: 0.75rem;
+            font-size: 1.1rem;
+            border: 2px solid #0a2351;
+            border-radius: 8px;
+            margin: 1rem auto;
+            display: block;
+        }
+        .mock-draft-btn-primary {
+            background: #0a2351;
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Basis33', monospace;
+            letter-spacing: 1px;
+            transition: background 0.3s;
+            margin-top: 1rem;
+        }
+        .mock-draft-btn-primary:hover:not(:disabled) { background: #1a3a6b; }
+        .mock-draft-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .mock-draft-btn-secondary {
+            background: #d4a017;
+            color: #1a1a2e;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            font-size: 0.9rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Basis33', monospace;
+            letter-spacing: 0.5px;
+            transition: background 0.3s;
+        }
+        .mock-draft-btn-secondary:hover { background: #e6b422; }
+        .mock-draft-btn-reset { background: #666; color: white; }
+        .mock-draft-btn-reset:hover { background: #888; }
+        .mock-draft-order-preview {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.5rem;
+            margin: 1.5rem 0;
+        }
+        .mock-draft-order-slot {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 60px;
+        }
+        .mock-draft-order-slot img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #0a2351;
+            object-fit: cover;
+        }
+        .mock-draft-order-slot.tbd img { opacity: 0.3; border-style: dashed; }
+        .mock-draft-order-slot.user-slot img { border-color: #2ecc71; border-width: 3px; box-shadow: 0 0 8px rgba(46,204,113,0.4); }
+        .mock-draft-order-slot .slot-pick-num {
+            font-size: 0.65rem;
+            color: #999;
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+        .mock-draft-order-slot .slot-manager {
+            font-size: 0.7rem;
+            margin-top: 2px;
+            color: #333;
+            font-weight: bold;
+        }
+        .mock-draft-order-slot.tbd .slot-manager { color: #aaa; font-style: italic; }
+
+        /* Pick Ticker */
+        .mock-draft-ticker-container {
+            overflow-x: auto;
+            background: linear-gradient(135deg, #0a2351 0%, #1a3a6b 100%);
+            border-radius: 10px;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 1rem;
+            scrollbar-width: thin;
+            scrollbar-color: #d4a017 transparent;
+        }
+        .mock-draft-ticker-container::-webkit-scrollbar { height: 6px; }
+        .mock-draft-ticker-container::-webkit-scrollbar-track { background: transparent; }
+        .mock-draft-ticker-container::-webkit-scrollbar-thumb { background: #d4a017; border-radius: 3px; }
+        .mock-draft-ticker {
+            display: flex;
+            gap: 3px;
+            min-width: max-content;
+        }
+        .mock-draft-ticker-pick {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 44px;
+            padding: 4px 3px;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.08);
+            transition: all 0.3s;
+            cursor: default;
+        }
+        .mock-draft-ticker-pick img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .mock-draft-ticker-pick .pick-label {
+            font-size: 0.55rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 2px;
+            white-space: nowrap;
+        }
+        .mock-draft-ticker-pick.current {
+            background: #d4a017;
+            transform: scale(1.15);
+            box-shadow: 0 0 12px rgba(212,160,23,0.6);
+            z-index: 2;
+        }
+        .mock-draft-ticker-pick.current .pick-label { color: #1a1a2e; font-weight: bold; }
+        .mock-draft-ticker-pick.completed { opacity: 0.35; }
+        .mock-draft-ticker-pick.completed img { filter: grayscale(50%); }
+        .mock-draft-ticker-pick.user-pick { border: 2px solid #2ecc71; }
+        .mock-draft-ticker-pick.keeper-pick { opacity: 0.2; }
+        .mock-draft-ticker-pick.keeper-pick .pick-label { text-decoration: line-through; }
+
+        /* Controls */
+        .mock-draft-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding: 0.6rem 1rem;
+            background: #faf3e0;
+            border-radius: 8px;
+            border: 1px solid #e0d5c0;
+        }
+        .mock-draft-round-label {
+            font-family: 'Basis33', monospace;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: #0a2351;
+        }
+        .mock-draft-controls-right { display: flex; gap: 0.5rem; }
+
+        /* User Turn Banner */
+        .mock-draft-user-turn-banner {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            text-align: center;
+            padding: 0.75rem;
+            font-family: 'Basis33', monospace;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            animation: mockDraftPulse 1.5s ease-in-out infinite;
+        }
+        @keyframes mockDraftPulse {
+            0%, 100% { box-shadow: 0 0 10px rgba(46,204,113,0.3); }
+            50% { box-shadow: 0 0 25px rgba(46,204,113,0.6); }
+        }
+
+        /* Main Layout */
+        .mock-draft-main {
+            display: grid;
+            grid-template-columns: 1.3fr 0.7fr;
+            gap: 1rem;
+        }
+        @media (max-width: 900px) {
+            .mock-draft-main { grid-template-columns: 1fr; }
+        }
+
+        /* Available Players Panel */
+        .mock-draft-available-panel {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        .mock-draft-available-panel.user-turn {
+            border-color: #2ecc71;
+            box-shadow: 0 0 15px rgba(46,204,113,0.2);
+        }
+        .mock-draft-filters {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .mock-draft-filters select {
+            padding: 0.4rem 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .mock-draft-filters input {
+            flex-grow: 1;
+            padding: 0.4rem 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .mock-draft-available-table-wrapper {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .mock-draft-available-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .mock-draft-available-table th {
+            position: sticky;
+            top: 0;
+            background: #0a2351;
+            color: white;
+            padding: 0.5rem 0.4rem;
+            font-size: 0.8rem;
+            text-align: left;
+            z-index: 1;
+        }
+        .mock-draft-available-table td {
+            padding: 0.35rem 0.4rem;
+            border-bottom: 1px solid #eee;
+            font-size: 0.85rem;
+        }
+        .mock-draft-available-table tbody tr:hover { background: #f0f8ff; }
+        .mock-draft-draft-btn {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 0.3rem 0.7rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Basis33', monospace;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+        .mock-draft-draft-btn:hover { background: #27ae60; }
+        .mock-draft-draft-btn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Right Panel */
+        .mock-draft-right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .mock-draft-roster-panel {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        .mock-draft-roster-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .mock-draft-roster-header select {
+            padding: 0.35rem 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .mock-draft-roster-slot {
+            display: flex;
+            align-items: center;
+            padding: 0.25rem 0.3rem;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.82rem;
+        }
+        .mock-draft-roster-slot:last-child { border-bottom: none; }
+        .mock-draft-roster-slot .slot-label {
+            font-weight: bold;
+            min-width: 32px;
+            color: #0a2351;
+            font-size: 0.75rem;
+        }
+        .mock-draft-roster-slot .slot-player { flex-grow: 1; }
+        .mock-draft-roster-slot .slot-points { color: #888; font-size: 0.75rem; }
+        .mock-draft-roster-slot.empty .slot-player { color: #ccc; font-style: italic; }
+        .mock-draft-roster-slot.keeper-slot { background: rgba(212,160,23,0.08); }
+        .mock-draft-roster-slot .keeper-tag {
+            font-size: 0.6rem;
+            background: #d4a017;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 3px;
+            margin-left: 4px;
+        }
+        .mock-draft-roster-divider {
+            font-size: 0.7rem;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.4rem 0.3rem 0.15rem;
+            border-bottom: 2px solid #0a2351;
+            margin-top: 0.3rem;
+            font-weight: bold;
+        }
+
+        /* Draft Log */
+        .mock-draft-log-panel {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        .mock-draft-log {
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 0.78rem;
+        }
+        .mock-draft-log-entry {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.2rem;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .mock-draft-log-entry:last-child { border-bottom: none; }
+        .mock-draft-log-entry img {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .mock-draft-log-entry .log-pick-num {
+            color: #999;
+            min-width: 28px;
+            font-size: 0.7rem;
+        }
+        .mock-draft-log-entry .log-player-name { flex-grow: 1; font-weight: 500; }
+        .mock-draft-log-entry .log-pos { color: #666; font-size: 0.7rem; }
+        .mock-draft-log-entry .log-pts { color: #0a2351; font-weight: bold; font-size: 0.75rem; }
+        .mock-draft-log-entry.user-pick { background: rgba(46,204,113,0.1); border-radius: 4px; }
+
+        /* Draft Report */
+        .mock-draft-report-card {
+            max-width: 750px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: #faf3e0;
+            border: 3px solid #0a2351;
+            border-radius: 12px;
+        }
+        .mock-draft-report-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+        }
+        .mock-draft-report-stat {
+            text-align: center;
+            padding: 0.75rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0d5c0;
+        }
+        .mock-draft-report-stat .stat-value {
+            font-size: 1.5rem;
+            font-family: 'Basis33', monospace;
+            color: #0a2351;
+        }
+        .mock-draft-report-stat .stat-label {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 0.25rem;
+        }
+        .mock-draft-report-picks-header {
+            font-family: 'Basis33', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            color: #0a2351;
+            border-bottom: 2px solid #0a2351;
+            padding-bottom: 0.3rem;
+            margin: 1.5rem 0 0.75rem;
+        }
+        .mock-draft-report-pick {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 0.3rem;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            font-size: 0.9rem;
+        }
+        .mock-draft-report-pick:last-child { border-bottom: none; }
+        .mock-draft-report-pick .pick-round {
+            min-width: 40px;
+            color: #888;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .mock-draft-report-pick .pick-pos {
+            min-width: 35px;
+            color: #0a2351;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        .mock-draft-report-pick .pick-name { flex-grow: 1; }
+        .mock-draft-report-pick .pick-team { color: #888; font-size: 0.8rem; min-width: 35px; }
+        .mock-draft-report-pick .pick-pts { font-weight: bold; color: #0a2351; }
+
         /* Bylaws Section Styles */
         .bylaws-container {
             max-width: 1000px;
@@ -14812,6 +15236,10 @@
                 <img src="data/page_logos/sportsbook_logo.png" alt="Sportsbook">
                 <span>Sportsbook</span>
             </div>
+            <div class="mobile-menu-item" onclick="showSection('mockdraft'); closeMobileMenu();">
+                <img src="data/page_logos/mock_drafter_logo.png" alt="Mock Draft">
+                <span>Mock Draft</span>
+            </div>
             <div class="mobile-menu-item" onclick="showSection('bylaws'); closeMobileMenu();">
                 <img src="data/page_logos/bylaws_logo.png" alt="Bylaws">
                 <span>Bylaws</span>
@@ -14830,6 +15258,7 @@
         <button onclick="showSection('preseason')" class="nav-btn">Preseason Tools</button>
         <button onclick="showSection('valuesuite')" class="nav-btn">Value Suite</button>
         <button onclick="showSection('sportsbook')" class="nav-btn">Sportsbook</button>
+        <button onclick="showSection('mockdraft')" class="nav-btn">Mock Draft</button>
         <button onclick="showSection('bylaws')" class="nav-btn">Bylaws</button>
     </nav>
 
@@ -14876,6 +15305,10 @@
         <div class="side-nav-item" onclick="showSection('sportsbook')">
             <img src="data/page_logos/sportsbook_logo.png" alt="Sportsbook" loading="lazy" decoding="async">
             <span class="side-nav-tooltip">Sportsbook</span>
+        </div>
+        <div class="side-nav-item" onclick="showSection('mockdraft')">
+            <img src="data/page_logos/mock_drafter_logo.png" alt="Mock Draft" loading="lazy" decoding="async">
+            <span class="side-nav-tooltip">Mock Draft</span>
         </div>
         <div class="side-nav-item" onclick="showSection('bylaws')">
             <img src="data/page_logos/bylaws_logo.png" alt="Bylaws" loading="lazy" decoding="async">
@@ -16334,6 +16767,113 @@
                     </div>
                     <div id="bet-history-empty" style="display: none; text-align: center; padding: 2rem; color: #666;">
                         No bets placed yet. Head to the Sportsbook to place your first wager!
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mock Draft Section -->
+        <div id="mockdraft" class="section">
+            <h2>Mock Draft Simulator</h2>
+
+            <!-- Phase 1: Setup -->
+            <div id="mock-draft-setup">
+                <div class="mock-draft-setup-card">
+                    <img src="data/page_logos/mock_drafter_logo.png" alt="Mock Draft" class="mock-draft-logo">
+                    <h3>2026 Mock Draft</h3>
+                    <p style="color: #666; margin-bottom: 1rem;">Select your team and run a mock draft against AI opponents.</p>
+                    <select id="mock-draft-team-select" onchange="onMockDraftTeamSelect()">
+                        <option value="">-- Choose Your Team --</option>
+                    </select>
+                    <div id="mock-draft-order-preview" class="mock-draft-order-preview"></div>
+                    <button id="mock-draft-start-btn" class="mock-draft-btn-primary" onclick="startMockDraft()" disabled>
+                        Start Mock Draft
+                    </button>
+                </div>
+            </div>
+
+            <!-- Phase 2: Active Draft -->
+            <div id="mock-draft-active" style="display: none;">
+                <!-- Pick Ticker -->
+                <div class="mock-draft-ticker-container">
+                    <div class="mock-draft-ticker" id="mock-draft-ticker"></div>
+                </div>
+
+                <!-- Controls -->
+                <div class="mock-draft-controls">
+                    <span id="mock-draft-round-display" class="mock-draft-round-label">Round 1 — Pick 1</span>
+                    <div class="mock-draft-controls-right">
+                        <button id="mock-draft-pause-btn" class="mock-draft-btn-secondary" onclick="toggleMockDraftPause()">⏸ Pause</button>
+                        <button class="mock-draft-btn-secondary mock-draft-btn-reset" onclick="resetMockDraft()">↺ New Draft</button>
+                    </div>
+                </div>
+
+                <!-- User Turn Banner -->
+                <div id="mock-draft-user-turn-banner" class="mock-draft-user-turn-banner" style="display:none;">
+                    🏆 YOUR PICK! Select a player from the board below.
+                </div>
+
+                <!-- Main Draft Area -->
+                <div class="mock-draft-main">
+                    <!-- Left: Best Available -->
+                    <div class="mock-draft-available-panel" id="mock-draft-available-panel">
+                        <h3 style="margin-top:0;">Best Available</h3>
+                        <div class="mock-draft-filters">
+                            <select id="mock-draft-pos-filter" onchange="filterMockDraftAvailable()">
+                                <option value="all">All Positions</option>
+                                <option value="C">C</option>
+                                <option value="1B">1B</option>
+                                <option value="2B">2B</option>
+                                <option value="3B">3B</option>
+                                <option value="SS">SS</option>
+                                <option value="OF">OF</option>
+                                <option value="DH">DH</option>
+                                <option value="SP">SP</option>
+                                <option value="RP">RP</option>
+                            </select>
+                            <input type="text" id="mock-draft-search" placeholder="Search player..." oninput="filterMockDraftAvailable()">
+                        </div>
+                        <div class="mock-draft-available-table-wrapper">
+                            <table class="mock-draft-available-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Player</th>
+                                        <th>Pos</th>
+                                        <th>Team</th>
+                                        <th>Pts</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mock-draft-available-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Roster + Log -->
+                    <div class="mock-draft-right-panel">
+                        <div class="mock-draft-roster-panel">
+                            <div class="mock-draft-roster-header">
+                                <h3 style="margin:0;">Team Roster</h3>
+                                <select id="mock-draft-roster-team" onchange="renderMockDraftRoster()"></select>
+                            </div>
+                            <div id="mock-draft-roster-body"></div>
+                        </div>
+                        <div class="mock-draft-log-panel">
+                            <h3 style="margin-top:0;">Draft Log</h3>
+                            <div class="mock-draft-log" id="mock-draft-log"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase 3: Draft Report -->
+            <div id="mock-draft-report" style="display: none;">
+                <div class="mock-draft-report-card">
+                    <h3 style="text-align:center; margin-top:0;">📋 Draft Report</h3>
+                    <div id="mock-draft-report-content"></div>
+                    <div style="text-align:center; margin-top:1.5rem;">
+                        <button class="mock-draft-btn-primary" onclick="resetMockDraft()">Run Another Mock</button>
                     </div>
                 </div>
             </div>
@@ -23504,6 +24044,7 @@
                 'preseason': 'Preseason Tools',
                 'valuesuite': 'Value Suite',
                 'sportsbook': 'Sportsbook',
+                'mockdraft': 'Mock Draft',
                 'bylaws': 'Bylaws'
             };
 
@@ -23559,7 +24100,8 @@
                 'valuesuite': 7,
                 'prospects': 8,
                 'sportsbook': 9,
-                'bylaws': 10
+                'mockdraft': 10,
+                'bylaws': 11
             };
             const index = sectionToIndex[sectionId];
             if (index !== undefined) {
@@ -23654,6 +24196,15 @@
                 }
                 // Load prospects data
                 initProspectsOnVisible();
+            }
+            else if (sectionId === 'mockdraft') {
+                if (!mockDraftInitialized) {
+                    if (!keeperConfig) {
+                        await initializeKeeperManagement();
+                    }
+                    await initializeTradeManagement();
+                    await initializeMockDraft();
+                }
             }
         }
 
@@ -37501,6 +38052,966 @@
             if (prospectsData.length === 0) {
                 loadProspects();
             }
+        }
+
+        // ===== MOCK DRAFT SIMULATOR =====
+        let mockDraftInitialized = false;
+        let mockDraftConfig = null;
+        let mockDraftState = {
+            phase: 'setup',
+            userTeamKey: null,
+            userManagerName: null,
+            draftOrder: [],
+            pickSequence: [],
+            currentPickIndex: 0,
+            availablePlayers: [],
+            draftedPlayers: [],
+            teamRosters: {},
+            teamInfo: {},
+            paused: false,
+            draftTimeout: null,
+            aiPickDelay: 600,
+            isUserTurn: false,
+            keeperConsumedPicks: {}
+        };
+
+        const MOCK_DRAFT_ROSTER_SLOTS = [
+            { pos: 'C', count: 1, type: 'batter' },
+            { pos: '1B', count: 1, type: 'batter' },
+            { pos: '2B', count: 1, type: 'batter' },
+            { pos: '3B', count: 1, type: 'batter' },
+            { pos: 'SS', count: 1, type: 'batter' },
+            { pos: 'OF', count: 3, type: 'batter' },
+            { pos: 'Util', count: 3, type: 'batter' },
+            { pos: 'SP', count: 3, type: 'pitcher' },
+            { pos: 'RP', count: 1, type: 'pitcher' },
+            { pos: 'P', count: 2, type: 'pitcher' },
+            { pos: 'BN', count: 4, type: 'pitcher' }
+        ];
+
+        const MOCK_PROJECTION_SYSTEMS = ['steamer', 'zipsdc', 'thebat', 'thebatx', 'atc', 'depthcharts', 'oopsy'];
+
+        async function initializeMockDraft() {
+            try {
+                const resp = await fetch('data/mock_draft_config.json');
+                if (resp.ok) mockDraftConfig = await resp.json();
+            } catch (e) {
+                console.warn('Could not load mock draft config:', e);
+            }
+            if (!mockDraftConfig) {
+                mockDraftConfig = { draft_order: new Array(12).fill(null), rounds: 22, snake: true };
+            }
+
+            // Build team info lookup from keeperConfig
+            if (keeperConfig && keeperConfig.teams) {
+                Object.entries(keeperConfig.teams).forEach(([key, team]) => {
+                    mockDraftState.teamInfo[key] = {
+                        teamKey: key,
+                        teamName: team.team_name,
+                        manager: team.manager,
+                        logo: fixTeamLogo(team.team_logo)
+                    };
+                });
+            }
+
+            populateMockDraftTeamSelect();
+            renderDraftOrderPreview();
+            mockDraftInitialized = true;
+        }
+
+        function mockDraftResolveManagerToTeamKey(managerName) {
+            if (!managerName || !keeperConfig || !keeperConfig.teams) return null;
+            const lower = managerName.toLowerCase();
+            for (const [key, team] of Object.entries(keeperConfig.teams)) {
+                if (team.manager.toLowerCase() === lower) return key;
+            }
+            return null;
+        }
+
+        function populateMockDraftTeamSelect() {
+            const sel = document.getElementById('mock-draft-team-select');
+            if (!sel || !keeperConfig) return;
+            sel.innerHTML = '<option value="">-- Choose Your Team --</option>';
+            const teams = Object.entries(keeperConfig.teams)
+                .map(([key, t]) => ({ key, name: t.team_name, manager: t.manager }))
+                .sort((a, b) => a.manager.localeCompare(b.manager));
+            teams.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.key;
+                opt.textContent = `${t.manager} — ${t.name}`;
+                sel.appendChild(opt);
+            });
+        }
+
+        function onMockDraftTeamSelect() {
+            const sel = document.getElementById('mock-draft-team-select');
+            const btn = document.getElementById('mock-draft-start-btn');
+            mockDraftState.userTeamKey = sel.value || null;
+            if (sel.value && keeperConfig.teams[sel.value]) {
+                mockDraftState.userManagerName = keeperConfig.teams[sel.value].manager;
+            }
+            btn.disabled = !sel.value;
+            renderDraftOrderPreview();
+        }
+
+        function renderDraftOrderPreview() {
+            const container = document.getElementById('mock-draft-order-preview');
+            if (!container || !mockDraftConfig) return;
+            let html = '';
+            mockDraftConfig.draft_order.forEach((mgr, i) => {
+                const teamKey = mgr ? mockDraftResolveManagerToTeamKey(mgr) : null;
+                const info = teamKey ? mockDraftState.teamInfo[teamKey] : null;
+                const isTBD = !mgr;
+                const isUser = teamKey && teamKey === mockDraftState.userTeamKey;
+                const cls = `mock-draft-order-slot${isTBD ? ' tbd' : ''}${isUser ? ' user-slot' : ''}`;
+                const logo = info ? info.logo : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwIiB5PSI2MCIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+PzwvdGV4dD48L3N2Zz4=';
+                const name = isTBD ? 'TBD' : (info ? info.manager : mgr);
+                html += `<div class="${cls}">
+                    <span class="slot-pick-num">#${i + 1}</span>
+                    <img src="${logo}" alt="${name}" onerror="this.style.opacity='0.3'">
+                    <span class="slot-manager">${name}</span>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function mockDraftParsePositions(posStr, playerType) {
+            if (!posStr) return playerType === 'pitcher' ? ['SP'] : ['DH'];
+            const parts = posStr.split(',').map(s => s.trim()).filter(s => s && s !== 'Util');
+            const positions = [];
+            parts.forEach(p => {
+                p.split('/').forEach(sub => {
+                    const s = sub.trim();
+                    if (s && s !== 'Util' && s !== 'DH') positions.push(s);
+                });
+            });
+            if (positions.length === 0) {
+                return playerType === 'pitcher' ? ['SP'] : ['DH'];
+            }
+            return positions;
+        }
+
+        async function buildMockDraftPlayerPool() {
+            const playerMap = {};
+            let systemsLoaded = 0;
+
+            for (const sys of MOCK_PROJECTION_SYSTEMS) {
+                try {
+                    const resp = await fetch(`data/projections/projections_${sys}.json`);
+                    if (!resp.ok) continue;
+                    const data = await resp.json();
+                    const allPlayers = [...(data.batters || []), ...(data.pitchers || [])];
+                    allPlayers.forEach(p => {
+                        const normName = p.name.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        const key = normName + '|' + (p.type || (data.batters?.includes(p) ? 'batter' : 'pitcher'));
+                        if (!playerMap[key]) {
+                            playerMap[key] = {
+                                name: p.name,
+                                normName: normName,
+                                type: p.type || (data.batters?.includes(p) ? 'batter' : 'pitcher'),
+                                position: p.position || '',
+                                mlbTeam: p.team || '',
+                                points: [],
+                                headshot_url: p.headshot_url || ''
+                            };
+                        }
+                        if (p.projected_points && p.projected_points > 0) {
+                            playerMap[key].points.push(p.projected_points);
+                        }
+                        // Keep the most complete position string
+                        if (p.position && p.position.length > playerMap[key].position.length) {
+                            playerMap[key].position = p.position;
+                        }
+                    });
+                    systemsLoaded++;
+                } catch (e) { /* skip */ }
+            }
+
+            // Average points and build final pool
+            const pool = [];
+            Object.values(playerMap).forEach(p => {
+                if (p.points.length === 0) return;
+                const avg = p.points.reduce((a, b) => a + b, 0) / p.points.length;
+                if (avg <= 0) return;
+                pool.push({
+                    name: p.name,
+                    normName: p.normName,
+                    type: p.type,
+                    position: p.position,
+                    positions: mockDraftParsePositions(p.position, p.type),
+                    mlbTeam: p.mlbTeam,
+                    avgPoints: Math.round(avg * 10) / 10,
+                    headshot_url: p.headshot_url
+                });
+            });
+
+            pool.sort((a, b) => b.avgPoints - a.avgPoints);
+            return pool;
+        }
+
+        function buildMockDraftPickSequence() {
+            const config = mockDraftConfig;
+            const numTeams = 12;
+            const rounds = config.rounds || 22;
+
+            // Resolve draft order: manager names to team keys, TBD slots randomly assigned
+            const resolvedOrder = [];
+            const assignedKeys = new Set();
+
+            config.draft_order.forEach(mgr => {
+                if (mgr) {
+                    const key = mockDraftResolveManagerToTeamKey(mgr);
+                    resolvedOrder.push(key);
+                    if (key) assignedKeys.add(key);
+                } else {
+                    resolvedOrder.push(null);
+                }
+            });
+
+            // Fill TBD slots with remaining teams randomly
+            const allTeamKeys = Object.keys(keeperConfig.teams);
+            const unassigned = allTeamKeys.filter(k => !assignedKeys.has(k));
+            // Shuffle unassigned
+            for (let i = unassigned.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [unassigned[i], unassigned[j]] = [unassigned[j], unassigned[i]];
+            }
+            let uIdx = 0;
+            for (let i = 0; i < resolvedOrder.length; i++) {
+                if (!resolvedOrder[i] && uIdx < unassigned.length) {
+                    resolvedOrder[i] = unassigned[uIdx++];
+                }
+            }
+
+            mockDraftState.draftOrder = resolvedOrder;
+
+            // Build pick ownership map from trades
+            // For each round, track which team owns which original-owner's pick
+            const pickOwnership = {}; // { round: { originalOwnerKey: currentOwnerKey } }
+            for (let r = 1; r <= rounds; r++) {
+                pickOwnership[r] = {};
+                resolvedOrder.forEach(tk => {
+                    if (tk) pickOwnership[r][tk] = tk; // default: each team owns their own pick
+                });
+            }
+
+            // Apply trades
+            if (tradeData && tradeData.trades && tradeData.trades.length > 0) {
+                tradeData.trades.forEach(trade => {
+                    // Process assets going from A to B
+                    (trade.assetsA || []).forEach(asset => {
+                        if (asset.type === 'pick' && asset.round) {
+                            const origOwner = asset.originalOwner || asset.fromTeam || trade.teamA;
+                            if (pickOwnership[asset.round] && pickOwnership[asset.round][origOwner]) {
+                                pickOwnership[asset.round][origOwner] = trade.teamB;
+                            }
+                        }
+                    });
+                    // Process assets going from B to A
+                    (trade.assetsB || []).forEach(asset => {
+                        if (asset.type === 'pick' && asset.round) {
+                            const origOwner = asset.originalOwner || asset.fromTeam || trade.teamB;
+                            if (pickOwnership[asset.round] && pickOwnership[asset.round][origOwner]) {
+                                pickOwnership[asset.round][origOwner] = trade.teamA;
+                            }
+                        }
+                    });
+                });
+            }
+
+            // Identify keeper-consumed picks
+            const keeperConsumed = {}; // { teamKey: Set of consumed rounds }
+            if (keeperSelections) {
+                Object.entries(keeperSelections).forEach(([teamKey, keepers]) => {
+                    if (!keepers || !Array.isArray(keepers) || keepers.length === 0) return;
+                    keeperConsumed[teamKey] = new Set();
+                    keepers.forEach(k => {
+                        const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
+                        if (roundCost) keeperConsumed[teamKey].add(roundCost);
+                    });
+                });
+            }
+            mockDraftState.keeperConsumedPicks = keeperConsumed;
+
+            // Build pick sequence
+            const sequence = [];
+            let overallPick = 0;
+
+            for (let round = 1; round <= rounds; round++) {
+                const orderForRound = (config.snake && round % 2 === 0)
+                    ? [...resolvedOrder].reverse()
+                    : [...resolvedOrder];
+
+                orderForRound.forEach((originalSlotTeam, slotIdx) => {
+                    if (!originalSlotTeam) return;
+
+                    // Who owns this pick after trades?
+                    const pickOwner = pickOwnership[round][originalSlotTeam] || originalSlotTeam;
+
+                    // Is this pick consumed by a keeper?
+                    const consumed = keeperConsumed[pickOwner] && keeperConsumed[pickOwner].has(round);
+
+                    overallPick++;
+                    sequence.push({
+                        overallPick,
+                        round,
+                        pickInRound: slotIdx + 1,
+                        teamKey: pickOwner,
+                        originalSlotTeam,
+                        isKeeper: consumed
+                    });
+                });
+            }
+
+            mockDraftState.pickSequence = sequence;
+        }
+
+        function initMockDraftTeamRosters() {
+            const rosters = {};
+            Object.keys(keeperConfig.teams).forEach(tk => {
+                rosters[tk] = {
+                    players: [],
+                    slots: { C: 0, '1B': 0, '2B': 0, '3B': 0, SS: 0, OF: 0, Util: 0, SP: 0, RP: 0, P: 0, BN: 0 },
+                    totalBatters: 0,
+                    totalPitchers: 0,
+                    totalPlayers: 0,
+                    hasCatcher: false
+                };
+            });
+
+            // Pre-populate with keepers
+            if (keeperSelections) {
+                Object.entries(keeperSelections).forEach(([teamKey, keepers]) => {
+                    if (!keepers || !Array.isArray(keepers) || !rosters[teamKey]) return;
+                    keepers.forEach(k => {
+                        const normName = k.name ? k.name.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
+                        // Find this player in the pool to get position info
+                        const poolPlayer = mockDraftState.availablePlayers.find(p => p.normName === normName);
+                        const player = poolPlayer || {
+                            name: k.name || 'Unknown',
+                            normName: normName,
+                            type: k.position_type === 'P' ? 'pitcher' : 'batter',
+                            position: k.position || '',
+                            positions: mockDraftParsePositions(k.position || '', k.position_type === 'P' ? 'pitcher' : 'batter'),
+                            mlbTeam: '',
+                            avgPoints: k.projected_points || 0
+                        };
+
+                        const slot = mockDraftAssignSlot(player, rosters[teamKey]);
+                        rosters[teamKey].players.push({ ...player, assignedSlot: slot, isKeeper: true });
+
+                        // Remove from available pool
+                        const idx = mockDraftState.availablePlayers.findIndex(p => p.normName === normName);
+                        if (idx >= 0) mockDraftState.availablePlayers.splice(idx, 1);
+                    });
+                });
+            }
+
+            mockDraftState.teamRosters = rosters;
+        }
+
+        function mockDraftAssignSlot(player, roster) {
+            const isP = player.type === 'pitcher';
+            const positions = player.positions || [];
+
+            if (!isP) {
+                // Batter assignment priority
+                const slotOrder = ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util'];
+                for (const slot of slotOrder) {
+                    const maxForSlot = MOCK_DRAFT_ROSTER_SLOTS.find(s => s.pos === slot);
+                    if (!maxForSlot) continue;
+                    if (roster.slots[slot] >= maxForSlot.count) continue;
+
+                    if (slot === 'Util') {
+                        // Util: any batter except don't put catcher here if already have one
+                        if (positions.length === 1 && positions[0] === 'C' && roster.hasCatcher) continue;
+                        roster.slots[slot]++;
+                        roster.totalBatters++;
+                        roster.totalPlayers++;
+                        return slot;
+                    }
+                    if (positions.includes(slot)) {
+                        roster.slots[slot]++;
+                        roster.totalBatters++;
+                        roster.totalPlayers++;
+                        if (slot === 'C') roster.hasCatcher = true;
+                        return slot;
+                    }
+                }
+                // BN fallback for batter
+                const bnMax = MOCK_DRAFT_ROSTER_SLOTS.find(s => s.pos === 'BN');
+                if (bnMax && roster.slots.BN < bnMax.count) {
+                    roster.slots.BN++;
+                    roster.totalBatters++;
+                    roster.totalPlayers++;
+                    return 'BN';
+                }
+            } else {
+                // Pitcher assignment priority
+                const slotOrder = ['SP', 'RP', 'P', 'BN'];
+                for (const slot of slotOrder) {
+                    const maxForSlot = MOCK_DRAFT_ROSTER_SLOTS.find(s => s.pos === slot);
+                    if (!maxForSlot) continue;
+                    if (roster.slots[slot] >= maxForSlot.count) continue;
+
+                    if (slot === 'SP' && positions.includes('SP')) {
+                        roster.slots.SP++;
+                        roster.totalPitchers++;
+                        roster.totalPlayers++;
+                        return 'SP';
+                    }
+                    if (slot === 'RP' && positions.includes('RP')) {
+                        roster.slots.RP++;
+                        roster.totalPitchers++;
+                        roster.totalPlayers++;
+                        return 'RP';
+                    }
+                    if (slot === 'P') {
+                        roster.slots.P++;
+                        roster.totalPitchers++;
+                        roster.totalPlayers++;
+                        return 'P';
+                    }
+                    if (slot === 'BN') {
+                        roster.slots.BN++;
+                        roster.totalPitchers++;
+                        roster.totalPlayers++;
+                        return 'BN';
+                    }
+                }
+            }
+            // Absolute fallback
+            roster.totalPlayers++;
+            return 'BN';
+        }
+
+        // AI Scoring
+        function mockDraftScorePlayer(player, roster, round) {
+            let score = player.avgPoints;
+            const positions = player.positions || [];
+            const isP = player.type === 'pitcher';
+
+            // Position scarcity multipliers
+            const scarcityMult = { C: 1.25, SS: 1.10, RP: 1.10, '2B': 1.05, '3B': 1.05, SP: 1.05, '1B': 1.0, OF: 1.0 };
+            const primaryPos = positions[0] || (isP ? 'SP' : 'DH');
+            score *= (scarcityMult[primaryPos] || 1.0);
+
+            // Need boost: unfilled core positions
+            let needBoost = 0;
+            if (!isP) {
+                const coreSlots = ['C', '1B', '2B', '3B', 'SS', 'OF'];
+                for (const pos of positions) {
+                    const slotDef = MOCK_DRAFT_ROSTER_SLOTS.find(s => s.pos === pos);
+                    if (!slotDef) continue;
+                    const needed = slotDef.count - (roster.slots[pos] || 0);
+                    if (needed > 0) {
+                        needBoost += 30 * needed;
+                        if (pos === 'C') needBoost += 40;
+                        if (pos === 'SS') needBoost += 15;
+                    }
+                }
+            } else {
+                if (positions.includes('SP') && roster.slots.SP < 3) needBoost += 25;
+                if (positions.includes('RP') && roster.slots.RP < 1) needBoost += 35;
+                if (roster.slots.P < 2) needBoost += 15;
+            }
+            score += needBoost;
+
+            // Anti-catcher-doubling: NEVER draft 2 catchers
+            if (roster.hasCatcher && positions.length === 1 && positions[0] === 'C') {
+                return -Infinity;
+            }
+
+            // Bench strategy: after core slots (~17) filled, prefer pitchers
+            const coreSlotsTotal = 17; // C+1B+2B+3B+SS+OF*3+SP*3+RP+P*2 = 17
+            if (roster.totalPlayers >= coreSlotsTotal) {
+                if (isP) score += 50;
+                else score -= 100;
+            }
+
+            // Late-round Util filling: if most batters are filled, slight penalty for more batters
+            if (!isP && roster.totalBatters >= 10) score -= 20;
+
+            return score;
+        }
+
+        function mockDraftAIPick(teamKey) {
+            const roster = mockDraftState.teamRosters[teamKey];
+            if (!roster) return mockDraftState.availablePlayers[0];
+
+            const currentPick = mockDraftState.pickSequence[mockDraftState.currentPickIndex];
+            const round = currentPick ? currentPick.round : 1;
+
+            const scored = mockDraftState.availablePlayers
+                .map(player => ({ player, score: mockDraftScorePlayer(player, roster, round) }))
+                .filter(s => s.score > -Infinity)
+                .sort((a, b) => b.score - a.score);
+
+            if (scored.length === 0) return mockDraftState.availablePlayers[0];
+
+            // Weighted random from top N
+            const poolSize = round <= 3 ? 3 : round <= 8 ? 5 : round <= 15 ? 7 : 10;
+            const topN = scored.slice(0, Math.min(poolSize, scored.length));
+
+            const minScore = topN[topN.length - 1].score;
+            const weights = topN.map(s => Math.pow(Math.max(s.score - minScore + 1, 1), 2));
+            const totalWeight = weights.reduce((sum, w) => sum + w, 0);
+
+            let rand = Math.random() * totalWeight;
+            for (let i = 0; i < topN.length; i++) {
+                rand -= weights[i];
+                if (rand <= 0) return topN[i].player;
+            }
+            return topN[0].player;
+        }
+
+        function mockDraftExecutePick(teamKey, player, isUser) {
+            const pick = mockDraftState.pickSequence[mockDraftState.currentPickIndex];
+            if (!pick) return;
+
+            // Remove from pool
+            const idx = mockDraftState.availablePlayers.findIndex(p => p.normName === player.normName && p.type === player.type);
+            if (idx >= 0) mockDraftState.availablePlayers.splice(idx, 1);
+
+            // Assign to roster
+            const roster = mockDraftState.teamRosters[teamKey];
+            const slot = mockDraftAssignSlot(player, roster);
+            roster.players.push({ ...player, assignedSlot: slot, isKeeper: false });
+
+            // Record pick
+            mockDraftState.draftedPlayers.push({
+                overallPick: pick.overallPick,
+                round: pick.round,
+                pickInRound: pick.pickInRound,
+                teamKey,
+                player,
+                isUser,
+                slot
+            });
+
+            // Update UI
+            addMockDraftLogEntry(pick, teamKey, player, isUser);
+            updateMockDraftTicker();
+            renderMockDraftRoster();
+
+            // Advance
+            mockDraftState.currentPickIndex++;
+        }
+
+        async function startMockDraft() {
+            // Show loading state
+            document.getElementById('mock-draft-start-btn').disabled = true;
+            document.getElementById('mock-draft-start-btn').textContent = 'Loading...';
+
+            // Build player pool
+            mockDraftState.availablePlayers = await buildMockDraftPlayerPool();
+
+            // Build pick sequence (resolves TBD slots, applies trades, marks keeper picks)
+            buildMockDraftPickSequence();
+
+            // Init rosters (pre-populate keepers)
+            initMockDraftTeamRosters();
+
+            // Populate roster team dropdown
+            const rosterSel = document.getElementById('mock-draft-roster-team');
+            rosterSel.innerHTML = '';
+            mockDraftState.draftOrder.forEach(tk => {
+                if (!tk) return;
+                const info = mockDraftState.teamInfo[tk];
+                if (!info) return;
+                const opt = document.createElement('option');
+                opt.value = tk;
+                opt.textContent = `${info.manager} — ${info.teamName}`;
+                if (tk === mockDraftState.userTeamKey) opt.selected = true;
+                rosterSel.appendChild(opt);
+            });
+
+            // Reset state
+            mockDraftState.currentPickIndex = 0;
+            mockDraftState.draftedPlayers = [];
+            mockDraftState.phase = 'drafting';
+            mockDraftState.paused = false;
+            mockDraftState.isUserTurn = false;
+
+            // Switch UI phase
+            document.getElementById('mock-draft-setup').style.display = 'none';
+            document.getElementById('mock-draft-active').style.display = 'block';
+            document.getElementById('mock-draft-report').style.display = 'none';
+
+            // Render initial state
+            renderMockDraftTicker();
+            renderMockDraftAvailableTable();
+            renderMockDraftRoster();
+            document.getElementById('mock-draft-log').innerHTML = '';
+
+            // Start the loop
+            mockDraftRunLoop();
+        }
+
+        function mockDraftRunLoop() {
+            if (mockDraftState.paused || mockDraftState.phase !== 'drafting') return;
+
+            // Skip keeper picks
+            while (mockDraftState.currentPickIndex < mockDraftState.pickSequence.length) {
+                const pick = mockDraftState.pickSequence[mockDraftState.currentPickIndex];
+                if (pick.isKeeper) {
+                    // Mark in log as keeper
+                    addMockDraftKeeperLogEntry(pick);
+                    mockDraftState.currentPickIndex++;
+                    updateMockDraftTicker();
+                    continue;
+                }
+                break;
+            }
+
+            // Check if draft is done
+            if (mockDraftState.currentPickIndex >= mockDraftState.pickSequence.length) {
+                finishMockDraft();
+                return;
+            }
+
+            const pick = mockDraftState.pickSequence[mockDraftState.currentPickIndex];
+            updateMockDraftRoundDisplay(pick);
+            updateMockDraftTicker();
+
+            // Check if it's the user's turn
+            if (pick.teamKey === mockDraftState.userTeamKey) {
+                mockDraftState.isUserTurn = true;
+                document.getElementById('mock-draft-user-turn-banner').style.display = 'block';
+                document.getElementById('mock-draft-available-panel').classList.add('user-turn');
+                renderMockDraftAvailableTable();
+                // Auto-switch roster view to user's team
+                document.getElementById('mock-draft-roster-team').value = mockDraftState.userTeamKey;
+                renderMockDraftRoster();
+                return; // Wait for user input
+            }
+
+            // AI pick
+            mockDraftState.isUserTurn = false;
+            document.getElementById('mock-draft-user-turn-banner').style.display = 'none';
+            document.getElementById('mock-draft-available-panel').classList.remove('user-turn');
+
+            const aiPlayer = mockDraftAIPick(pick.teamKey);
+            if (aiPlayer) {
+                mockDraftExecutePick(pick.teamKey, aiPlayer, false);
+            } else {
+                mockDraftState.currentPickIndex++;
+            }
+
+            renderMockDraftAvailableTable();
+
+            // Continue loop
+            mockDraftState.draftTimeout = setTimeout(() => mockDraftRunLoop(), mockDraftState.aiPickDelay);
+        }
+
+        function userMockDraftPick(playerIdx) {
+            if (!mockDraftState.isUserTurn) return;
+            const player = mockDraftState.availablePlayers[playerIdx];
+            if (!player) return;
+
+            const pick = mockDraftState.pickSequence[mockDraftState.currentPickIndex];
+            mockDraftExecutePick(pick.teamKey, player, true);
+
+            mockDraftState.isUserTurn = false;
+            document.getElementById('mock-draft-user-turn-banner').style.display = 'none';
+            document.getElementById('mock-draft-available-panel').classList.remove('user-turn');
+            renderMockDraftAvailableTable();
+
+            // Continue draft
+            mockDraftState.draftTimeout = setTimeout(() => mockDraftRunLoop(), mockDraftState.aiPickDelay);
+        }
+
+        function toggleMockDraftPause() {
+            mockDraftState.paused = !mockDraftState.paused;
+            const btn = document.getElementById('mock-draft-pause-btn');
+            if (mockDraftState.paused) {
+                btn.textContent = '▶ Resume';
+                if (mockDraftState.draftTimeout) clearTimeout(mockDraftState.draftTimeout);
+            } else {
+                btn.textContent = '⏸ Pause';
+                mockDraftRunLoop();
+            }
+        }
+
+        function resetMockDraft() {
+            if (mockDraftState.draftTimeout) clearTimeout(mockDraftState.draftTimeout);
+            mockDraftState.phase = 'setup';
+            mockDraftState.currentPickIndex = 0;
+            mockDraftState.draftedPlayers = [];
+            mockDraftState.availablePlayers = [];
+            mockDraftState.teamRosters = {};
+            mockDraftState.paused = false;
+            mockDraftState.isUserTurn = false;
+            mockDraftState.pickSequence = [];
+
+            document.getElementById('mock-draft-setup').style.display = 'block';
+            document.getElementById('mock-draft-active').style.display = 'none';
+            document.getElementById('mock-draft-report').style.display = 'none';
+            document.getElementById('mock-draft-start-btn').disabled = false;
+            document.getElementById('mock-draft-start-btn').textContent = 'Start Mock Draft';
+            document.getElementById('mock-draft-user-turn-banner').style.display = 'none';
+            document.getElementById('mock-draft-pause-btn').textContent = '⏸ Pause';
+            renderDraftOrderPreview();
+        }
+
+        function finishMockDraft() {
+            mockDraftState.phase = 'complete';
+            if (mockDraftState.draftTimeout) clearTimeout(mockDraftState.draftTimeout);
+            document.getElementById('mock-draft-active').style.display = 'none';
+            document.getElementById('mock-draft-report').style.display = 'block';
+            renderMockDraftReport();
+        }
+
+        // Rendering functions
+        function renderMockDraftTicker() {
+            const container = document.getElementById('mock-draft-ticker');
+            if (!container) return;
+            let html = '';
+            mockDraftState.pickSequence.forEach((pick, i) => {
+                const info = mockDraftState.teamInfo[pick.teamKey];
+                const logo = info ? info.logo : '';
+                const isUser = pick.teamKey === mockDraftState.userTeamKey;
+                const isCurrent = i === mockDraftState.currentPickIndex;
+                const isCompleted = i < mockDraftState.currentPickIndex;
+                const isKeeper = pick.isKeeper;
+                let cls = 'mock-draft-ticker-pick';
+                if (isCurrent) cls += ' current';
+                if (isCompleted) cls += ' completed';
+                if (isUser) cls += ' user-pick';
+                if (isKeeper) cls += ' keeper-pick';
+                html += `<div class="${cls}" id="ticker-pick-${i}">
+                    <img src="${logo}" alt="" onerror="this.style.display='none'">
+                    <span class="pick-label">${pick.round}.${pick.pickInRound}</span>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function updateMockDraftTicker() {
+            const container = document.getElementById('mock-draft-ticker');
+            if (!container) return;
+            const picks = container.querySelectorAll('.mock-draft-ticker-pick');
+            picks.forEach((el, i) => {
+                el.classList.remove('current', 'completed');
+                if (i < mockDraftState.currentPickIndex) el.classList.add('completed');
+                if (i === mockDraftState.currentPickIndex) el.classList.add('current');
+            });
+            // Scroll current into view
+            const currentEl = document.getElementById(`ticker-pick-${mockDraftState.currentPickIndex}`);
+            if (currentEl) currentEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
+        function updateMockDraftRoundDisplay(pick) {
+            const el = document.getElementById('mock-draft-round-display');
+            if (!el || !pick) return;
+            const info = mockDraftState.teamInfo[pick.teamKey];
+            const teamName = info ? info.manager : 'Unknown';
+            el.textContent = `Round ${pick.round} — Pick ${pick.pickInRound} (${teamName})`;
+        }
+
+        function renderMockDraftAvailableTable() {
+            const tbody = document.getElementById('mock-draft-available-tbody');
+            if (!tbody) return;
+
+            const posFilter = document.getElementById('mock-draft-pos-filter').value;
+            const search = (document.getElementById('mock-draft-search').value || '').toLowerCase().trim();
+
+            let filtered = mockDraftState.availablePlayers;
+            if (posFilter !== 'all') {
+                filtered = filtered.filter(p => {
+                    if (posFilter === 'DH') return p.type === 'batter';
+                    return p.positions.includes(posFilter);
+                });
+            }
+            if (search) {
+                filtered = filtered.filter(p =>
+                    p.name.toLowerCase().includes(search) || p.mlbTeam.toLowerCase().includes(search)
+                );
+            }
+
+            const top100 = filtered.slice(0, 100);
+            let html = '';
+            top100.forEach((player, dispIdx) => {
+                // Find actual index in availablePlayers for drafting
+                const realIdx = mockDraftState.availablePlayers.indexOf(player);
+                const posStr = player.positions.join('/');
+                const draftDisabled = !mockDraftState.isUserTurn ? 'disabled' : '';
+                html += `<tr>
+                    <td>${dispIdx + 1}</td>
+                    <td>${player.name}</td>
+                    <td>${posStr}</td>
+                    <td>${player.mlbTeam}</td>
+                    <td><strong>${player.avgPoints}</strong></td>
+                    <td><button class="mock-draft-draft-btn" onclick="userMockDraftPick(${realIdx})" ${draftDisabled}>Draft</button></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align:center;color:#999;">No players match filter</td></tr>';
+        }
+
+        function filterMockDraftAvailable() {
+            renderMockDraftAvailableTable();
+        }
+
+        function renderMockDraftRoster() {
+            const body = document.getElementById('mock-draft-roster-body');
+            const sel = document.getElementById('mock-draft-roster-team');
+            if (!body || !sel) return;
+            const teamKey = sel.value;
+            const roster = mockDraftState.teamRosters[teamKey];
+            if (!roster) { body.innerHTML = '<p style="color:#999;">No roster data</p>'; return; }
+
+            const slotOrder = [
+                { label: 'Batters', slots: [
+                    { pos: 'C', max: 1 }, { pos: '1B', max: 1 }, { pos: '2B', max: 1 },
+                    { pos: '3B', max: 1 }, { pos: 'SS', max: 1 },
+                    { pos: 'OF', max: 3 }, { pos: 'Util', max: 3 }
+                ]},
+                { label: 'Pitchers', slots: [
+                    { pos: 'SP', max: 3 }, { pos: 'RP', max: 1 }, { pos: 'P', max: 2 }
+                ]},
+                { label: 'Bench', slots: [
+                    { pos: 'BN', max: 4 }
+                ]}
+            ];
+
+            let html = '';
+            slotOrder.forEach(group => {
+                html += `<div class="mock-draft-roster-divider">${group.label}</div>`;
+                group.slots.forEach(slotDef => {
+                    const playersInSlot = roster.players.filter(p => p.assignedSlot === slotDef.pos);
+                    for (let i = 0; i < slotDef.max; i++) {
+                        const p = playersInSlot[i];
+                        if (p) {
+                            const keeperTag = p.isKeeper ? '<span class="keeper-tag">K</span>' : '';
+                            html += `<div class="mock-draft-roster-slot${p.isKeeper ? ' keeper-slot' : ''}">
+                                <span class="slot-label">${slotDef.pos}</span>
+                                <span class="slot-player">${p.name}${keeperTag}</span>
+                                <span class="slot-points">${p.avgPoints}</span>
+                            </div>`;
+                        } else {
+                            html += `<div class="mock-draft-roster-slot empty">
+                                <span class="slot-label">${slotDef.pos}</span>
+                                <span class="slot-player">Empty</span>
+                                <span class="slot-points">—</span>
+                            </div>`;
+                        }
+                    }
+                });
+            });
+            body.innerHTML = html;
+        }
+
+        function addMockDraftLogEntry(pick, teamKey, player, isUser) {
+            const log = document.getElementById('mock-draft-log');
+            if (!log) return;
+            const info = mockDraftState.teamInfo[teamKey];
+            const logo = info ? info.logo : '';
+            const cls = isUser ? 'mock-draft-log-entry user-pick' : 'mock-draft-log-entry';
+            const entry = document.createElement('div');
+            entry.className = cls;
+            entry.innerHTML = `
+                <span class="log-pick-num">${pick.round}.${pick.pickInRound}</span>
+                <img src="${logo}" alt="" onerror="this.style.display='none'">
+                <span class="log-player-name">${player.name}</span>
+                <span class="log-pos">${player.positions.join('/')}</span>
+                <span class="log-pts">${player.avgPoints}</span>
+            `;
+            // Prepend (newest first)
+            log.insertBefore(entry, log.firstChild);
+        }
+
+        function addMockDraftKeeperLogEntry(pick) {
+            const log = document.getElementById('mock-draft-log');
+            if (!log) return;
+            const info = mockDraftState.teamInfo[pick.teamKey];
+            const logo = info ? info.logo : '';
+            // Find the keeper player for this team/round
+            const roster = mockDraftState.teamRosters[pick.teamKey];
+            let keeperName = 'Keeper';
+            if (roster) {
+                const kp = roster.players.find(p => p.isKeeper);
+                if (kp) keeperName = kp.name;
+            }
+            const entry = document.createElement('div');
+            entry.className = 'mock-draft-log-entry';
+            entry.style.opacity = '0.5';
+            entry.innerHTML = `
+                <span class="log-pick-num">${pick.round}.${pick.pickInRound}</span>
+                <img src="${logo}" alt="" onerror="this.style.display='none'">
+                <span class="log-player-name" style="font-style:italic;">🔒 Keeper</span>
+                <span class="log-pos"></span>
+                <span class="log-pts"></span>
+            `;
+            log.insertBefore(entry, log.firstChild);
+        }
+
+        function renderMockDraftReport() {
+            const container = document.getElementById('mock-draft-report-content');
+            if (!container) return;
+
+            const userPicks = mockDraftState.draftedPlayers.filter(p => p.isUser);
+            const totalPoints = userPicks.reduce((sum, p) => sum + p.player.avgPoints, 0);
+            const batters = userPicks.filter(p => p.player.type === 'batter');
+            const pitchers = userPicks.filter(p => p.player.type === 'pitcher');
+
+            // Team info
+            const userInfo = mockDraftState.teamInfo[mockDraftState.userTeamKey];
+            const teamName = userInfo ? userInfo.teamName : 'Your Team';
+            const teamLogo = userInfo ? userInfo.logo : '';
+
+            let html = `
+                <div style="text-align:center; margin-bottom:1rem;">
+                    <img src="${teamLogo}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">
+                    <h4 style="margin:0.5rem 0 0;">${teamName}</h4>
+                </div>
+                <div class="mock-draft-report-summary">
+                    <div class="mock-draft-report-stat">
+                        <div class="stat-value">${Math.round(totalPoints)}</div>
+                        <div class="stat-label">Total Proj. Pts</div>
+                    </div>
+                    <div class="mock-draft-report-stat">
+                        <div class="stat-value">${userPicks.length}</div>
+                        <div class="stat-label">Picks Made</div>
+                    </div>
+                    <div class="mock-draft-report-stat">
+                        <div class="stat-value">${batters.length}</div>
+                        <div class="stat-label">Batters</div>
+                    </div>
+                    <div class="mock-draft-report-stat">
+                        <div class="stat-value">${pitchers.length}</div>
+                        <div class="stat-label">Pitchers</div>
+                    </div>
+                </div>
+                <div class="mock-draft-report-picks-header">YOUR DRAFT PICKS</div>
+            `;
+
+            // Also include keepers
+            const keeperPlayers = mockDraftState.teamRosters[mockDraftState.userTeamKey]?.players.filter(p => p.isKeeper) || [];
+            if (keeperPlayers.length > 0) {
+                html += `<div style="font-size:0.8rem;color:#888;margin-bottom:0.5rem;font-style:italic;">Keepers</div>`;
+                keeperPlayers.forEach(p => {
+                    html += `<div class="mock-draft-report-pick" style="opacity:0.7;">
+                        <span class="pick-round">🔒</span>
+                        <span class="pick-pos">${p.positions ? p.positions.join('/') : p.assignedSlot}</span>
+                        <span class="pick-name">${p.name}</span>
+                        <span class="pick-team">${p.mlbTeam || ''}</span>
+                        <span class="pick-pts">${p.avgPoints}</span>
+                    </div>`;
+                });
+                html += `<div style="font-size:0.8rem;color:#888;margin:0.75rem 0 0.5rem;font-style:italic;">Draft Picks</div>`;
+            }
+
+            userPicks.forEach(dp => {
+                html += `<div class="mock-draft-report-pick">
+                    <span class="pick-round">Rd ${dp.round}</span>
+                    <span class="pick-pos">${dp.player.positions.join('/')}</span>
+                    <span class="pick-name">${dp.player.name}</span>
+                    <span class="pick-team">${dp.player.mlbTeam || ''}</span>
+                    <span class="pick-pts">${dp.player.avgPoints}</span>
+                </div>`;
+            });
+
+            container.innerHTML = html;
         }
 
         // ===== INITIALIZE ON PAGE LOAD =====
