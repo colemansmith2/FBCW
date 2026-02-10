@@ -38438,8 +38438,10 @@
             { pos: 'SP', count: 3, type: 'pitcher' },
             { pos: 'RP', count: 1, type: 'pitcher' },
             { pos: 'P', count: 2, type: 'pitcher' },
-            { pos: 'BN', count: 4, type: 'pitcher' }
+            { pos: 'BN', count: 99, type: 'any' }
         ];
+        const MOCK_DRAFT_MAX_BATTERS = 13;
+        const MOCK_DRAFT_MAX_PITCHERS = 10;
 
         const MOCK_PROJECTION_SYSTEMS = ['steamer', 'zipsdc', 'thebat', 'thebatx', 'atc', 'depthcharts', 'oopsy'];
 
@@ -38987,6 +38989,9 @@
                 }
             }
             // Absolute fallback
+            roster.slots.BN = (roster.slots.BN || 0) + 1;
+            if (isP) roster.totalPitchers++;
+            else roster.totalBatters++;
             roster.totalPlayers++;
             return 'BN';
         }
@@ -38997,6 +39002,15 @@
             const positions = player.positions || [];
             const isP = player.type === 'pitcher';
 
+            // Hard roster limits: NEVER exceed max batters or pitchers
+            if (isP && roster.totalPitchers >= MOCK_DRAFT_MAX_PITCHERS) return -Infinity;
+            if (!isP && roster.totalBatters >= MOCK_DRAFT_MAX_BATTERS) return -Infinity;
+
+            // Anti-catcher-doubling: NEVER draft 2 catchers
+            if (roster.hasCatcher && positions.length === 1 && positions[0] === 'C') {
+                return -Infinity;
+            }
+
             // Position scarcity multipliers
             const scarcityMult = { C: 1.25, SS: 1.10, RP: 1.10, '2B': 1.05, '3B': 1.05, SP: 1.05, '1B': 1.0, OF: 1.0 };
             const primaryPos = positions[0] || (isP ? 'SP' : 'DH');
@@ -39005,16 +39019,22 @@
             // Need boost: unfilled core positions
             let needBoost = 0;
             if (!isP) {
-                const coreSlots = ['C', '1B', '2B', '3B', 'SS', 'OF'];
                 for (const pos of positions) {
                     const slotDef = MOCK_DRAFT_ROSTER_SLOTS.find(s => s.pos === pos);
-                    if (!slotDef) continue;
+                    if (!slotDef || slotDef.pos === 'BN') continue;
                     const needed = slotDef.count - (roster.slots[pos] || 0);
                     if (needed > 0) {
                         needBoost += 30 * needed;
                         if (pos === 'C') needBoost += 40;
                         if (pos === 'SS') needBoost += 15;
                     }
+                }
+                // Util need: 3 util slots available for any batter
+                const utilNeeded = 3 - (roster.slots.Util || 0);
+                const coreFilledBatters = (roster.slots.C || 0) + (roster.slots['1B'] || 0) + (roster.slots['2B'] || 0) +
+                    (roster.slots['3B'] || 0) + (roster.slots.SS || 0) + (roster.slots.OF || 0);
+                if (coreFilledBatters >= 10 && utilNeeded > 0) {
+                    needBoost += 20;
                 }
             } else {
                 if (positions.includes('SP') && roster.slots.SP < 3) needBoost += 25;
@@ -39023,20 +39043,33 @@
             }
             score += needBoost;
 
-            // Anti-catcher-doubling: NEVER draft 2 catchers
-            if (roster.hasCatcher && positions.length === 1 && positions[0] === 'C') {
-                return -Infinity;
-            }
+            // Balance enforcement: push toward filling both batter and pitcher starting slots
+            const batterStartingSlots = 13; // C+1B+2B+3B+SS+OF*3+Util*3
+            const pitcherStartingSlots = 6; // SP*3+RP+P*2
+            const battersFilled = roster.totalBatters;
+            const pitchersFilled = roster.totalPitchers;
+            const batterPct = battersFilled / batterStartingSlots;
+            const pitcherPct = pitchersFilled / pitcherStartingSlots;
 
-            // Bench strategy: after core slots (~17) filled, prefer pitchers
-            const coreSlotsTotal = 17; // C+1B+2B+3B+SS+OF*3+SP*3+RP+P*2 = 17
-            if (roster.totalPlayers >= coreSlotsTotal) {
-                if (isP) score += 50;
-                else score -= 100;
-            }
+            // If one type is falling behind, boost it
+            if (!isP && batterPct < pitcherPct - 0.15) score += 40;
+            if (isP && pitcherPct < batterPct - 0.15) score += 40;
 
-            // Late-round Util filling: if most batters are filled, slight penalty for more batters
-            if (!isP && roster.totalBatters >= 10) score -= 20;
+            // Once starting lineup is filled, slight penalty for drafting more of same type
+            if (!isP && battersFilled >= batterStartingSlots) score -= 30;
+            if (isP && pitchersFilled >= pitcherStartingSlots) score -= 30;
+
+            // Approaching roster limits: increasing penalty as you get close
+            if (isP) {
+                const pitchersRemaining = MOCK_DRAFT_MAX_PITCHERS - roster.totalPitchers;
+                if (pitchersRemaining <= 2) score -= 50;
+                if (pitchersRemaining <= 1) score -= 100;
+            }
+            if (!isP) {
+                const battersRemaining = MOCK_DRAFT_MAX_BATTERS - roster.totalBatters;
+                if (battersRemaining <= 2) score -= 50;
+                if (battersRemaining <= 1) score -= 100;
+            }
 
             return score;
         }
@@ -39459,9 +39492,6 @@
                 ]},
                 { label: 'Pitchers', slots: [
                     { pos: 'SP', max: 3 }, { pos: 'RP', max: 1 }, { pos: 'P', max: 2 }
-                ]},
-                { label: 'Bench', slots: [
-                    { pos: 'BN', max: 4 }
                 ]}
             ];
 
@@ -39489,6 +39519,27 @@
                     }
                 });
             });
+
+            // Bench: show ALL bench players dynamically
+            const benchPlayers = roster.players.filter(p => p.assignedSlot === 'BN');
+            if (benchPlayers.length > 0) {
+                html += `<div class="mock-draft-roster-divider">Bench (${benchPlayers.length})</div>`;
+                benchPlayers.forEach(p => {
+                    const keeperTag = p.isKeeper ? '<span class="keeper-tag">K</span>' : '';
+                    html += `<div class="mock-draft-roster-slot${p.isKeeper ? ' keeper-slot' : ''}">
+                        <span class="slot-label"><span class="position-badge pos-BN">BN</span></span>
+                        <span class="slot-player">${p.name}${keeperTag}</span>
+                        <span class="slot-points">${p.avgPoints}</span>
+                    </div>`;
+                });
+            } else {
+                html += `<div class="mock-draft-roster-divider">Bench</div>`;
+                html += `<div class="mock-draft-roster-slot empty">
+                    <span class="slot-label"><span class="position-badge pos-BN">BN</span></span>
+                    <span class="slot-player">Empty</span>
+                    <span class="slot-points">—</span>
+                </div>`;
+            }
 
             // Show top 6 NA keepers at the bottom, sorted by projected points
             const naPlayers = roster.players.filter(p => p.assignedSlot === 'NA')
@@ -39793,11 +39844,33 @@
                 ]},
                 { label: 'PITCHERS', slots: [
                     { pos: 'SP', max: 3 }, { pos: 'RP', max: 1 }, { pos: 'P', max: 2 }
-                ]},
-                { label: 'BENCH', slots: [
-                    { pos: 'BN', max: 4 }
                 ]}
             ];
+
+            function renderFullRosterRow(p, slotLabel, playerRoundMap) {
+                const roundInfo = playerRoundMap[p.name];
+                const roundLabel = roundInfo ? `${roundInfo.round}.${roundInfo.pickInRound}` : '—';
+                const isKeeper = roundInfo?.isKeeper || p.isKeeper;
+                const mlbDisplay = formatMLBTeamDisplay(p.mlbTeam || '');
+                const mlbLogoUrl = getMLBTeamLogo(p.mlbTeam || '');
+                const mlbLogoHtml = mlbLogoUrl
+                    ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">`
+                    : '';
+                const headshotHtml = p.headshot_url
+                    ? `<img src="${p.headshot_url}" alt="" class="roster-headshot" onerror="this.style.display='none'">`
+                    : `<div class="roster-headshot" style="background:#e8e8e8;"></div>`;
+
+                return `<div class="mock-draft-roster-row${isKeeper ? ' keeper-row' : ''}">
+                    <span class="roster-pos"><span class="position-badge pos-${slotLabel}">${slotLabel}</span></span>
+                    ${headshotHtml}
+                    <span class="roster-player">
+                        <div style="font-weight:500;">${p.name}</div>
+                        <span class="player-mlb-team">${mlbLogoHtml}${mlbDisplay}</span>
+                    </span>
+                    <span class="roster-pts">${p.avgPoints || 0}</span>
+                    <span class="roster-round" style="${isKeeper ? 'color:#b8860b;' : ''}">${roundLabel}</span>
+                </div>`;
+            }
 
             slotOrder.forEach(group => {
                 html += `<div class="mock-draft-roster-section-label">${group.label}</div>`;
@@ -39806,28 +39879,7 @@
                     for (let i = 0; i < slotDef.max; i++) {
                         const p = playersInSlot[i];
                         if (p) {
-                            const roundInfo = playerRoundMap[p.name];
-                            const roundLabel = roundInfo ? `${roundInfo.round}.${roundInfo.pickInRound}` : '—';
-                            const isKeeper = roundInfo?.isKeeper || p.isKeeper;
-                            const mlbDisplay = formatMLBTeamDisplay(p.mlbTeam || '');
-                            const mlbLogoUrl = getMLBTeamLogo(p.mlbTeam || '');
-                            const mlbLogoHtml = mlbLogoUrl
-                                ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">`
-                                : '';
-                            const headshotHtml = p.headshot_url
-                                ? `<img src="${p.headshot_url}" alt="" class="roster-headshot" onerror="this.style.display='none'">`
-                                : `<div class="roster-headshot" style="background:#e8e8e8;"></div>`;
-
-                            html += `<div class="mock-draft-roster-row${isKeeper ? ' keeper-row' : ''}">
-                                <span class="roster-pos"><span class="position-badge pos-${slotDef.pos}">${slotDef.pos}</span></span>
-                                ${headshotHtml}
-                                <span class="roster-player">
-                                    <div style="font-weight:500;">${p.name}</div>
-                                    <span class="player-mlb-team">${mlbLogoHtml}${mlbDisplay}</span>
-                                </span>
-                                <span class="roster-pts">${p.avgPoints || 0}</span>
-                                <span class="roster-round" style="${isKeeper ? 'color:#b8860b;' : ''}">${roundLabel}</span>
-                            </div>`;
+                            html += renderFullRosterRow(p, slotDef.pos, playerRoundMap);
                         } else {
                             html += `<div class="mock-draft-roster-row empty-row">
                                 <span class="roster-pos"><span class="position-badge pos-${slotDef.pos}">${slotDef.pos}</span></span>
@@ -39840,6 +39892,15 @@
                     }
                 });
             });
+
+            // Bench: show ALL bench players dynamically
+            const benchPlayers = roster.players.filter(p => p.assignedSlot === 'BN');
+            if (benchPlayers.length > 0) {
+                html += `<div class="mock-draft-roster-section-label">BENCH (${benchPlayers.length})</div>`;
+                benchPlayers.forEach(p => {
+                    html += renderFullRosterRow(p, 'BN', playerRoundMap);
+                });
+            }
 
             // NA prospects
             const naPlayers = roster.players.filter(p => p.assignedSlot === 'NA')
