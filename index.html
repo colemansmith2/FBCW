@@ -33263,44 +33263,107 @@
 
             // Build labels and data arrays
             const labels = [];
-            const barData = [];       // main bar values
+            const barData = [];       // main bar values (actual or clamped)
+            const realValues = [];    // true point values (before clamping)
             const sdBandData = [];    // floating bar: [low, high] or null
             const barColors = [];
             const barBorderColors = [];
-            const projectedIndices = []; // track projected bars for whiskers
+            const projectedIndices = []; // track projected bars for bands
+            const outlierInfo = [];   // per-bar: null or { type: 'prospect'|'injury'|'covid', value: number }
 
             const historicalColor = '#0048ba';
             const projectedColor = '#d4a017';
             const projectedColorLight = 'rgba(212, 160, 23, 0.3)';
             const projectedBorderColor = '#b8860b';
+            const prospectColor = '#17a2b8';
+            const injuryColor = '#dc3545';
+            const covidColor = '#4caf50';
+            const covidBgColor = 'rgba(76, 175, 80, 0.15)';
+
+            // --- Outlier detection ---
+            // Collect all non-zero historical point values for median calculation
+            const historicalPoints = historicalSeasons.map(s => s.points).filter(p => p > 0);
+            const allProjectedPts = [avg2026, pts2027, pts2028].filter(p => p > 0);
+            const allNonZeroPts = [...historicalPoints, ...allProjectedPts];
+
+            // Compute median of all values
+            let median = 0;
+            if (allNonZeroPts.length > 0) {
+                const sorted = [...allNonZeroPts].sort((a, b) => a - b);
+                const mid = Math.floor(sorted.length / 2);
+                median = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+            }
+
+            // Outlier threshold: below 45% of median
+            const outlierThreshold = median * 0.45;
+
+            // Classify historical seasons
+            const historicalCount = historicalSeasons.length;
+            const seasonOutliers = historicalSeasons.map((s, i) => {
+                if (s.points <= 0) return null;
+                if (s.points >= outlierThreshold) return null;
+
+                // 2020 is always COVID (takes precedence)
+                if (s.year === 2020) return { type: 'covid', value: s.points };
+
+                // First 1-2 years = prospect
+                if (i === 0 || (i === 1 && historicalSeasons[0].points < outlierThreshold)) {
+                    return { type: 'prospect', value: s.points };
+                }
+
+                // Middle years = injury
+                return { type: 'injury', value: s.points };
+            });
 
             // Historical bars
-            historicalSeasons.forEach(s => {
+            historicalSeasons.forEach((s, i) => {
                 labels.push(String(s.year));
-                barData.push(s.points);
+                realValues.push(s.points);
+                barData.push(s.points); // will be clamped later after y-axis is computed
                 sdBandData.push(null);
-                barColors.push(historicalColor);
-                barBorderColors.push(historicalColor);
+
+                const outlier = seasonOutliers[i];
+                if (outlier) {
+                    outlierInfo.push(outlier);
+                    if (outlier.type === 'covid') {
+                        barColors.push(covidColor);
+                        barBorderColors.push(covidColor);
+                    } else if (outlier.type === 'prospect') {
+                        barColors.push(prospectColor);
+                        barBorderColors.push(prospectColor);
+                    } else {
+                        barColors.push(injuryColor);
+                        barBorderColors.push(injuryColor);
+                    }
+                } else {
+                    outlierInfo.push(null);
+                    barColors.push(historicalColor);
+                    barBorderColors.push(historicalColor);
+                }
             });
 
             // 2026 projected — band spans from min to max system value
             const idx2026 = labels.length;
             labels.push('2026');
             barData.push(avg2026);
+            realValues.push(avg2026);
             sdBandData.push((min2026 !== max2026) ? [min2026, max2026] : null);
             barColors.push(projectedColor);
             barBorderColors.push(projectedBorderColor);
             projectedIndices.push({ index: idx2026 });
+            outlierInfo.push(null);
 
             // 2027 projected — band spans ±1 stdDev from 2026
             if (pts2027 > 0) {
                 const idx2027 = labels.length;
                 labels.push('2027');
                 barData.push(pts2027);
+                realValues.push(pts2027);
                 sdBandData.push(sd2026 > 0 ? [pts2027 - sd2026, pts2027 + sd2026] : null);
                 barColors.push(projectedColor);
                 barBorderColors.push(projectedBorderColor);
                 projectedIndices.push({ index: idx2027 });
+                outlierInfo.push(null);
             }
 
             // 2028 projected — band spans ±1 stdDev from 2026
@@ -33308,10 +33371,12 @@
                 const idx2028 = labels.length;
                 labels.push('2028');
                 barData.push(pts2028);
+                realValues.push(pts2028);
                 sdBandData.push(sd2026 > 0 ? [pts2028 - sd2026, pts2028 + sd2026] : null);
                 barColors.push(projectedColor);
                 barBorderColors.push(projectedBorderColor);
                 projectedIndices.push({ index: idx2028 });
+                outlierInfo.push(null);
             }
 
             // If no data at all, show empty state
@@ -33320,14 +33385,64 @@
                 return;
             }
 
-            // Custom plugin: draw SD band rectangles + whisker lines for projected bars
-            const sdBandPlugin = {
-                id: 'sdBand',
+            // --- Compute y-axis from non-outlier values only ---
+            const coreValues = [];
+            barData.forEach((val, i) => {
+                if (!outlierInfo[i] && val > 0) coreValues.push(val);
+            });
+            sdBandData.forEach((band, i) => {
+                if (band && !outlierInfo[i]) { coreValues.push(band[0], band[1]); }
+            });
+
+            const coreMin = coreValues.length > 0 ? Math.min(...coreValues) : 0;
+            const coreMax = coreValues.length > 0 ? Math.max(...coreValues) : 100;
+            const yMin = Math.max(0, Math.floor(coreMin / 25) * 25 - 15);
+            const yMax = Math.ceil(coreMax / 25) * 25 + 15;
+
+            // Clamp outlier bars to yMin so they appear as small slivers at the bottom
+            barData.forEach((val, i) => {
+                if (outlierInfo[i]) {
+                    barData[i] = yMin + (yMax - yMin) * 0.04; // 4% of chart height
+                }
+            });
+
+            // Custom plugin: draw COVID column background, SD bands, and outlier value labels
+            const chartOverlayPlugin = {
+                id: 'chartOverlay',
+                // Draw COVID background BEFORE bars
+                beforeDatasetsDraw: function(chart) {
+                    const drawCtx = chart.ctx;
+                    const mainMeta = chart.getDatasetMeta(0);
+                    const xScale = chart.scales.x;
+                    const yScale = chart.scales.y;
+                    const chartArea = chart.chartArea;
+
+                    // Draw COVID green column backgrounds
+                    outlierInfo.forEach((info, i) => {
+                        if (!info || info.type !== 'covid') return;
+                        const bar = mainMeta.data[i];
+                        if (!bar) return;
+                        const barWidth = bar.width || 20;
+                        const colHalfW = barWidth * 0.9;
+
+                        drawCtx.save();
+                        drawCtx.fillStyle = covidBgColor;
+                        drawCtx.fillRect(
+                            bar.x - colHalfW,
+                            chartArea.top,
+                            colHalfW * 2,
+                            chartArea.bottom - chartArea.top
+                        );
+                        drawCtx.restore();
+                    });
+                },
+                // Draw SD bands and outlier labels AFTER bars
                 afterDatasetsDraw: function(chart) {
                     const drawCtx = chart.ctx;
                     const mainMeta = chart.getDatasetMeta(0);
                     const yScale = chart.scales.y;
 
+                    // Draw SD band rectangles with border
                     projectedIndices.forEach(info => {
                         const bar = mainMeta.data[info.index];
                         if (!bar) return;
@@ -33336,21 +33451,52 @@
 
                         const x = bar.x;
                         const barWidth = bar.width || 20;
-                        const bandHalfW = barWidth * 0.65; // slightly wider than bar
+                        const bandHalfW = barWidth * 0.65;
 
                         const bandTopPx = yScale.getPixelForValue(bandRaw[1]);
                         const bandBottomPx = yScale.getPixelForValue(bandRaw[0]);
 
-                        // Draw band rectangle (no outline, just fill, on top of bar)
                         drawCtx.save();
+                        // Fill
                         drawCtx.fillStyle = projectedColorLight;
                         drawCtx.fillRect(x - bandHalfW, bandTopPx, bandHalfW * 2, bandBottomPx - bandTopPx);
+                        // Border
+                        drawCtx.strokeStyle = projectedBorderColor;
+                        drawCtx.lineWidth = 1;
+                        drawCtx.strokeRect(x - bandHalfW, bandTopPx, bandHalfW * 2, bandBottomPx - bandTopPx);
+                        drawCtx.restore();
+                    });
+
+                    // Draw outlier value labels on clamped bars
+                    outlierInfo.forEach((info, i) => {
+                        if (!info) return;
+                        const bar = mainMeta.data[i];
+                        if (!bar) return;
+
+                        const realVal = realValues[i];
+                        const label = Math.round(realVal).toString();
+
+                        drawCtx.save();
+                        drawCtx.font = 'bold 9px sans-serif';
+                        drawCtx.textAlign = 'center';
+                        drawCtx.textBaseline = 'bottom';
+
+                        if (info.type === 'covid') {
+                            drawCtx.fillStyle = covidColor;
+                        } else if (info.type === 'prospect') {
+                            drawCtx.fillStyle = prospectColor;
+                        } else {
+                            drawCtx.fillStyle = injuryColor;
+                        }
+
+                        // Place label just above the clamped bar
+                        drawCtx.fillText(label, bar.x, bar.y - 3);
                         drawCtx.restore();
                     });
                 }
             };
 
-            // Single dataset: main bars (SD bands + whiskers drawn by plugin)
+            // Single dataset: main bars
             const datasets = [{
                 label: 'Fantasy Points',
                 data: barData,
@@ -33361,14 +33507,17 @@
                 categoryPercentage: 0.85
             }];
 
-            // Compute y-axis range including band extents
-            const allValues = [...barData];
-            sdBandData.forEach(band => {
-                if (band) { allValues.push(band[0], band[1]); }
+            // Build label colors array for x-axis
+            const labelColors = labels.map((lbl, i) => {
+                const info = outlierInfo[i];
+                if (info) {
+                    if (info.type === 'covid') return covidColor;
+                    if (info.type === 'prospect') return prospectColor;
+                    return injuryColor;
+                }
+                const yr = parseInt(lbl);
+                return yr >= 2026 ? projectedColor : historicalColor;
             });
-            const positiveValues = allValues.filter(v => v > 0);
-            const yMin = positiveValues.length > 0 ? Math.max(0, Math.floor(Math.min(...positiveValues) / 25) * 25 - 15) : 0;
-            const yMax = Math.ceil(Math.max(...allValues) / 25) * 25 + 15;
 
             projectionHistoryChart = new Chart(ctx, {
                 type: 'bar',
@@ -33383,10 +33532,17 @@
                             callbacks: {
                                 title: function(context) { return context[0].label; },
                                 label: function(context) {
+                                    const idx = context.dataIndex;
+                                    const realVal = Math.round(realValues[idx]);
                                     const yr = parseInt(context.label);
-                                    const pts = Math.round(context.raw);
-                                    if (yr >= 2026) return `Projected: ${pts} pts`;
-                                    return `Actual: ${pts} pts`;
+                                    const info = outlierInfo[idx];
+                                    if (info) {
+                                        if (info.type === 'covid') return `COVID Season: ${realVal} pts`;
+                                        if (info.type === 'prospect') return `Prospect/Callup: ${realVal} pts`;
+                                        return `Injury Season: ${realVal} pts`;
+                                    }
+                                    if (yr >= 2026) return `Projected: ${realVal} pts`;
+                                    return `Actual: ${realVal} pts`;
                                 }
                             }
                         }
@@ -33409,15 +33565,22 @@
                                 maxRotation: 45,
                                 minRotation: 45,
                                 font: { size: 10, weight: 'bold' },
+                                padding: 2,
                                 color: function(context) {
-                                    const yr = parseInt(labels[context.index]);
-                                    return yr >= 2026 ? projectedColor : historicalColor;
+                                    return labelColors[context.index] || historicalColor;
                                 }
+                            },
+                            afterTickToLabelConversion: function(scale) {
+                                // Shift labels slightly right by prepending a small space
+                                scale.ticks = scale.ticks.map(tick => ({
+                                    ...tick,
+                                    label: '  ' + tick.label
+                                }));
                             }
                         }
                     }
                 },
-                plugins: [sdBandPlugin]
+                plugins: [chartOverlayPlugin]
             });
         }
 
