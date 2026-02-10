@@ -39031,9 +39031,8 @@
                 }
                 // Util need: 3 util slots available for any batter
                 const utilNeeded = 3 - (roster.slots.Util || 0);
-                const coreFilledBatters = (roster.slots.C || 0) + (roster.slots['1B'] || 0) + (roster.slots['2B'] || 0) +
-                    (roster.slots['3B'] || 0) + (roster.slots.SS || 0) + (roster.slots.OF || 0);
-                if (coreFilledBatters >= 10 && utilNeeded > 0) {
+                if (utilNeeded > 0 && needBoost === 0) {
+                    // No specific positional need met, but util is open
                     needBoost += 20;
                 }
             } else {
@@ -39043,33 +39042,35 @@
             }
             score += needBoost;
 
-            // Balance enforcement: push toward filling both batter and pitcher starting slots
-            const batterStartingSlots = 13; // C+1B+2B+3B+SS+OF*3+Util*3
-            const pitcherStartingSlots = 6; // SP*3+RP+P*2
-            const battersFilled = roster.totalBatters;
-            const pitchersFilled = roster.totalPitchers;
-            const batterPct = battersFilled / batterStartingSlots;
-            const pitcherPct = pitchersFilled / pitcherStartingSlots;
+            // Count unfilled batter starting slots
+            const unfilledBatterSlots = Math.max(0, 1 - (roster.slots.C || 0))
+                + Math.max(0, 1 - (roster.slots['1B'] || 0))
+                + Math.max(0, 1 - (roster.slots['2B'] || 0))
+                + Math.max(0, 1 - (roster.slots['3B'] || 0))
+                + Math.max(0, 1 - (roster.slots.SS || 0))
+                + Math.max(0, 3 - (roster.slots.OF || 0))
+                + Math.max(0, 3 - (roster.slots.Util || 0));
 
-            // If one type is falling behind, boost it
-            if (!isP && batterPct < pitcherPct - 0.15) score += 40;
-            if (isP && pitcherPct < batterPct - 0.15) score += 40;
+            // Count unfilled pitcher starting slots
+            const unfilledPitcherSlots = Math.max(0, 3 - (roster.slots.SP || 0))
+                + Math.max(0, 1 - (roster.slots.RP || 0))
+                + Math.max(0, 2 - (roster.slots.P || 0));
 
-            // Once starting lineup is filled, slight penalty for drafting more of same type
-            if (!isP && battersFilled >= batterStartingSlots) score -= 30;
-            if (isP && pitchersFilled >= pitcherStartingSlots) score -= 30;
+            // If batter lineup slots are still open, boost batters
+            if (!isP && unfilledBatterSlots > 0) score += 20;
 
-            // Approaching roster limits: increasing penalty as you get close
-            if (isP) {
-                const pitchersRemaining = MOCK_DRAFT_MAX_PITCHERS - roster.totalPitchers;
-                if (pitchersRemaining <= 2) score -= 50;
-                if (pitchersRemaining <= 1) score -= 100;
+            // If pitcher lineup slots are still open, boost pitchers
+            if (isP && unfilledPitcherSlots > 0) score += 20;
+
+            // Bench strategy: once starting lineup is mostly filled, prefer pitchers for bench
+            // This is the normal draft preference — pitchers are more valuable bench pieces
+            const totalStartingUnfilled = unfilledBatterSlots + unfilledPitcherSlots;
+            if (totalStartingUnfilled <= 2) {
+                if (isP) score += 40;
             }
-            if (!isP) {
-                const battersRemaining = MOCK_DRAFT_MAX_BATTERS - roster.totalBatters;
-                if (battersRemaining <= 2) score -= 50;
-                if (battersRemaining <= 1) score -= 100;
-            }
+
+            // BUT: if batter lineup spots are still open, penalize pitchers to fill the lineup first
+            if (isP && unfilledBatterSlots >= 3) score -= 40;
 
             return score;
         }
