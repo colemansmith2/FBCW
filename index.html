@@ -38384,23 +38384,43 @@
                 Object.entries(keeperSelections).forEach(([teamKey, keepers]) => {
                     if (!keepers || !Array.isArray(keepers) || !rosters[teamKey]) return;
                     keepers.forEach(k => {
-                        const normName = k.name ? k.name.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
-                        // Find this player in the pool to get position info
+                        // Keeper objects use player_name, not name
+                        const keeperName = k.player_name || k.name || '';
+                        const normName = keeperName.toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                        if (!normName) return;
+
+                        // Find this player in the pool to get full position/projection info
                         const poolPlayer = mockDraftState.availablePlayers.find(p => p.normName === normName);
+
+                        // Determine player type from keeper position field
+                        const keeperPos = k.position || '';
+                        const isPitcher = ['SP', 'RP', 'P'].includes(keeperPos);
+                        const playerType = isPitcher ? 'pitcher' : 'batter';
+
                         const player = poolPlayer || {
-                            name: k.name || 'Unknown',
+                            name: keeperName,
                             normName: normName,
-                            type: k.position_type === 'P' ? 'pitcher' : 'batter',
-                            position: k.position || '',
-                            positions: mockDraftParsePositions(k.position || '', k.position_type === 'P' ? 'pitcher' : 'batter'),
+                            type: playerType,
+                            position: keeperPos,
+                            positions: mockDraftParsePositions(keeperPos, playerType),
                             mlbTeam: '',
-                            avgPoints: k.projected_points || 0
+                            avgPoints: k.fantasy_points_2025 || 0
                         };
 
-                        const slot = mockDraftAssignSlot(player, rosters[teamKey]);
-                        rosters[teamKey].players.push({ ...player, assignedSlot: slot, isKeeper: true });
+                        // NA/prospect keepers with low projections: track them but don't fill roster slots
+                        const isNAKeeper = k.isProspect === true;
+                        const projectedPts = poolPlayer ? poolPlayer.avgPoints : (k.fantasy_points_2025 || 0);
+                        const naNoSlot = isNAKeeper && projectedPts < 300;
 
-                        // Remove from available pool
+                        if (naNoSlot) {
+                            // Add to roster for display but don't consume a roster slot
+                            rosters[teamKey].players.push({ ...player, assignedSlot: 'NA', isKeeper: true, isNAKeeper: true });
+                        } else {
+                            const slot = mockDraftAssignSlot(player, rosters[teamKey]);
+                            rosters[teamKey].players.push({ ...player, assignedSlot: slot, isKeeper: true, isNAKeeper: isNAKeeper });
+                        }
+
+                        // Remove from available pool so they can't be drafted again
                         const idx = mockDraftState.availablePlayers.findIndex(p => p.normName === normName);
                         if (idx >= 0) mockDraftState.availablePlayers.splice(idx, 1);
                     });
@@ -38898,6 +38918,19 @@
                     }
                 });
             });
+
+            // Show NA keepers at the bottom
+            const naPlayers = roster.players.filter(p => p.assignedSlot === 'NA');
+            if (naPlayers.length > 0) {
+                html += `<div class="mock-draft-roster-divider">NA (Not Active)</div>`;
+                naPlayers.forEach(p => {
+                    html += `<div class="mock-draft-roster-slot keeper-slot" style="opacity:0.6;">
+                        <span class="slot-label">NA</span>
+                        <span class="slot-player">${p.name}<span class="keeper-tag">K</span></span>
+                        <span class="slot-points">${p.avgPoints}</span>
+                    </div>`;
+                });
+            }
             body.innerHTML = html;
         }
 
@@ -38925,12 +38958,19 @@
             if (!log) return;
             const info = mockDraftState.teamInfo[pick.teamKey];
             const logo = info ? info.logo : '';
-            // Find the keeper player for this team/round
-            const roster = mockDraftState.teamRosters[pick.teamKey];
+            // Find the keeper player for this team/round by matching roundCost
             let keeperName = 'Keeper';
-            if (roster) {
-                const kp = roster.players.find(p => p.isKeeper);
-                if (kp) keeperName = kp.name;
+            let keeperPos = '';
+            if (keeperSelections && keeperSelections[pick.teamKey]) {
+                const teamKeepers = keeperSelections[pick.teamKey];
+                const matchingKeeper = teamKeepers.find(k => {
+                    const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
+                    return roundCost === pick.round;
+                });
+                if (matchingKeeper) {
+                    keeperName = matchingKeeper.player_name || matchingKeeper.name || 'Keeper';
+                    keeperPos = matchingKeeper.position || '';
+                }
             }
             const entry = document.createElement('div');
             entry.className = 'mock-draft-log-entry';
@@ -38938,8 +38978,8 @@
             entry.innerHTML = `
                 <span class="log-pick-num">${pick.round}.${pick.pickInRound}</span>
                 <img src="${logo}" alt="" onerror="this.style.display='none'">
-                <span class="log-player-name" style="font-style:italic;">🔒 Keeper</span>
-                <span class="log-pos"></span>
+                <span class="log-player-name" style="font-style:italic;">🔒 ${keeperName}</span>
+                <span class="log-pos">${keeperPos}</span>
                 <span class="log-pts"></span>
             `;
             log.insertBefore(entry, log.firstChild);
