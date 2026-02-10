@@ -38422,6 +38422,7 @@
             isUserTurn: false,
             keeperConsumedPicks: {},
             keeperPickMap: {},
+            resolvedKeeperCosts: {},
             typeFilter: 'all',
             sortField: 'avg'
         };
@@ -38673,21 +38674,40 @@
             }
 
             // Count keeper-consumed picks per team per round
+            // Use calculateTeamKeeperRoundCosts() to get ACTUAL resolved round costs
+            // (handles bumping when multiple keepers share the same base round cost)
             const keeperRoundCounts = {}; // { teamKey: { round: count } }
+            const resolvedKeeperCosts = {}; // { teamKey: { playerNameLower: actualRoundCost } }
             if (keeperSelections) {
                 Object.entries(keeperSelections).forEach(([teamKey, keepers]) => {
                     if (!keepers || !Array.isArray(keepers) || keepers.length === 0) return;
                     keeperRoundCounts[teamKey] = {};
-                    keepers.forEach(k => {
-                        if (k.isProspect) return; // Prospects don't consume picks
-                        const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
-                        if (roundCost) {
-                            keeperRoundCounts[teamKey][roundCost] = (keeperRoundCounts[teamKey][roundCost] || 0) + 1;
-                        }
-                    });
+                    resolvedKeeperCosts[teamKey] = {};
+
+                    // Use the existing resolution function if available
+                    if (typeof calculateTeamKeeperRoundCosts === 'function') {
+                        const resolved = calculateTeamKeeperRoundCosts(teamKey) || [];
+                        resolved.forEach(rc => {
+                            if (rc.actualRoundCost) {
+                                resolvedKeeperCosts[teamKey][rc.player_name.toLowerCase()] = rc.actualRoundCost;
+                                keeperRoundCounts[teamKey][rc.actualRoundCost] = (keeperRoundCounts[teamKey][rc.actualRoundCost] || 0) + 1;
+                            }
+                        });
+                    } else {
+                        // Fallback: use raw roundCost if resolution function isn't available
+                        keepers.forEach(k => {
+                            if (k.isProspect) return;
+                            const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
+                            if (roundCost) {
+                                resolvedKeeperCosts[teamKey][(k.player_name || '').toLowerCase()] = roundCost;
+                                keeperRoundCounts[teamKey][roundCost] = (keeperRoundCounts[teamKey][roundCost] || 0) + 1;
+                            }
+                        });
+                    }
                 });
             }
             mockDraftState.keeperConsumedPicks = keeperRoundCounts;
+            mockDraftState.resolvedKeeperCosts = resolvedKeeperCosts;
 
             // Build pick sequence (without keeper flags first)
             const sequence = [];
@@ -38839,10 +38859,12 @@
                         }
 
                         // Build keeper pick map for ticker/log lookup
-                        const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
-                        if (roundCost && !isNAKeeper) {
+                        // Use resolved actual round cost from calculateTeamKeeperRoundCosts
+                        const resolvedCosts = mockDraftState.resolvedKeeperCosts?.[teamKey] || {};
+                        const actualRound = resolvedCosts[keeperName.toLowerCase()] || k.roundCost || k.round_cost || k.cost || k.round;
+                        if (actualRound && !isNAKeeper) {
                             if (!keeperPickMap[teamKey]) keeperPickMap[teamKey] = {};
-                            keeperPickMap[teamKey][roundCost] = {
+                            keeperPickMap[teamKey][actualRound] = {
                                 name: player.name,
                                 normName: player.normName,
                                 positions: player.positions || [],
@@ -39202,6 +39224,7 @@
             mockDraftState.isUserTurn = false;
             mockDraftState.pickSequence = [];
             mockDraftState.keeperPickMap = {};
+            mockDraftState.resolvedKeeperCosts = {};
             mockDraftState.typeFilter = 'all';
             mockDraftState.sortField = 'avg';
 
