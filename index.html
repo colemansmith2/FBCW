@@ -33325,7 +33325,7 @@
                 id: 'sdBandWhiskers',
                 afterDatasetsDraw: function(chart) {
                     const drawCtx = chart.ctx;
-                    const mainMeta = chart.getDatasetMeta(0); // main bar dataset (only 1 dataset now)
+                    const mainMeta = chart.getDatasetMeta(0);
                     const yScale = chart.scales.y;
 
                     projectedIndices.forEach(info => {
@@ -33336,54 +33336,37 @@
 
                         const x = bar.x;
                         const barWidth = bar.width || 20;
-                        const bandHalfW = barWidth * 0.5;
-                        const capHalfW = barWidth * 0.25;
+                        const bandHalfW = barWidth * 0.65; // slightly wider than bar
 
                         const sdTopPx = yScale.getPixelForValue(bandRaw[1]);
                         const sdBottomPx = yScale.getPixelForValue(bandRaw[0]);
 
-                        // Draw SD band rectangle
+                        // Draw SD band rectangle (no outline, just fill, on top of bar)
                         drawCtx.save();
                         drawCtx.fillStyle = projectedColorLight;
-                        drawCtx.strokeStyle = projectedBorderColor;
-                        drawCtx.lineWidth = 1;
                         drawCtx.fillRect(x - bandHalfW, sdTopPx, bandHalfW * 2, sdBottomPx - sdTopPx);
-                        drawCtx.strokeRect(x - bandHalfW, sdTopPx, bandHalfW * 2, sdBottomPx - sdTopPx);
 
-                        // Draw whiskers (dotted lines from SD band to min/max)
+                        // Draw whisker lines: horizontal dotted blue lines at max/min
                         const whiskerTopPx = yScale.getPixelForValue(info.max);
                         const whiskerBottomPx = yScale.getPixelForValue(info.min);
 
-                        drawCtx.strokeStyle = projectedBorderColor;
+                        drawCtx.strokeStyle = historicalColor;
                         drawCtx.lineWidth = 1.5;
-                        drawCtx.setLineDash([3, 3]);
+                        drawCtx.setLineDash([4, 3]);
 
-                        // Top whisker
+                        // Top whisker (horizontal line only, same width as band)
                         if (info.max > bandRaw[1]) {
                             drawCtx.beginPath();
-                            drawCtx.moveTo(x, sdTopPx);
-                            drawCtx.lineTo(x, whiskerTopPx);
+                            drawCtx.moveTo(x - bandHalfW, whiskerTopPx);
+                            drawCtx.lineTo(x + bandHalfW, whiskerTopPx);
                             drawCtx.stroke();
-                            // Cap
-                            drawCtx.setLineDash([]);
-                            drawCtx.beginPath();
-                            drawCtx.moveTo(x - capHalfW, whiskerTopPx);
-                            drawCtx.lineTo(x + capHalfW, whiskerTopPx);
-                            drawCtx.stroke();
-                            drawCtx.setLineDash([3, 3]);
                         }
 
-                        // Bottom whisker
+                        // Bottom whisker (horizontal line only, same width as band)
                         if (info.min < bandRaw[0]) {
                             drawCtx.beginPath();
-                            drawCtx.moveTo(x, sdBottomPx);
-                            drawCtx.lineTo(x, whiskerBottomPx);
-                            drawCtx.stroke();
-                            // Cap
-                            drawCtx.setLineDash([]);
-                            drawCtx.beginPath();
-                            drawCtx.moveTo(x - capHalfW, whiskerBottomPx);
-                            drawCtx.lineTo(x + capHalfW, whiskerBottomPx);
+                            drawCtx.moveTo(x - bandHalfW, whiskerBottomPx);
+                            drawCtx.lineTo(x + bandHalfW, whiskerBottomPx);
                             drawCtx.stroke();
                         }
 
