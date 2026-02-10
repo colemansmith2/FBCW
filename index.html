@@ -38645,14 +38645,36 @@
                 mockDraftConfig = { draft_order: new Array(12).fill(null), rounds: 22, snake: true };
             }
 
-            // Build team info lookup from keeperConfig
+            // Build current-season identity lookup by manager name (preferred for names/logos)
+            const currentIdentityByManager = {};
+            try {
+                const currentTeams = await getTeamData(2026);
+                if (Array.isArray(currentTeams)) {
+                    currentTeams.forEach(team => {
+                        const normalizedManager = normalizeManagerName(team.manager || '', 2026, team.team_name, team.team_key);
+                        if (!normalizedManager) return;
+                        currentIdentityByManager[normalizedManager.toLowerCase()] = {
+                            teamName: team.team_name || '',
+                            manager: normalizedManager,
+                            logo: fixTeamLogo(team.team_logo)
+                        };
+                    });
+                }
+            } catch (e) {
+                console.warn('Could not load current-season team identities for mock draft:', e);
+            }
+
+            // Build team info lookup from keeperConfig keys, but prefer current-season identities
+            mockDraftState.teamInfo = {};
             if (keeperConfig && keeperConfig.teams) {
                 Object.entries(keeperConfig.teams).forEach(([key, team]) => {
+                    const normalizedManager = normalizeManagerName(team.manager || '', 2026, team.team_name, key);
+                    const currentIdentity = currentIdentityByManager[normalizedManager.toLowerCase()];
                     mockDraftState.teamInfo[key] = {
                         teamKey: key,
-                        teamName: team.team_name,
-                        manager: team.manager,
-                        logo: fixTeamLogo(team.team_logo)
+                        teamName: currentIdentity?.teamName || team.team_name,
+                        manager: currentIdentity?.manager || normalizedManager || team.manager,
+                        logo: currentIdentity?.logo || fixTeamLogo(team.team_logo)
                     };
                 });
             }
@@ -38663,10 +38685,21 @@
         }
 
         function mockDraftResolveManagerToTeamKey(managerName) {
-            if (!managerName || !keeperConfig || !keeperConfig.teams) return null;
-            const lower = managerName.toLowerCase();
+            if (!managerName) return null;
+            const normalizedInput = normalizeManagerName(managerName, 2026, null, null).toLowerCase();
+
+            // Prefer currently-built mock draft team info (already aligned to current season identities)
+            const teamInfoEntries = Object.entries(mockDraftState.teamInfo || {});
+            for (const [key, info] of teamInfoEntries) {
+                const normalizedInfoManager = normalizeManagerName(info.manager || '', 2026, info.teamName, key).toLowerCase();
+                if (normalizedInfoManager === normalizedInput) return key;
+            }
+
+            // Fallback to keeper config
+            if (!keeperConfig || !keeperConfig.teams) return null;
             for (const [key, team] of Object.entries(keeperConfig.teams)) {
-                if (team.manager.toLowerCase() === lower) return key;
+                const normalizedTeamManager = normalizeManagerName(team.manager || '', 2026, team.team_name, key).toLowerCase();
+                if (normalizedTeamManager === normalizedInput) return key;
             }
             return null;
         }
@@ -38675,8 +38708,8 @@
             const sel = document.getElementById('mock-draft-team-select');
             if (!sel || !keeperConfig) return;
             sel.innerHTML = '<option value="">-- Choose Your Team --</option>';
-            const teams = Object.entries(keeperConfig.teams)
-                .map(([key, t]) => ({ key, name: t.team_name, manager: t.manager }))
+            const teams = Object.entries(mockDraftState.teamInfo || {})
+                .map(([key, t]) => ({ key, name: t.teamName, manager: t.manager }))
                 .sort((a, b) => a.manager.localeCompare(b.manager));
             teams.forEach(t => {
                 const opt = document.createElement('option');
@@ -38690,8 +38723,8 @@
             const sel = document.getElementById('mock-draft-team-select');
             const btn = document.getElementById('mock-draft-start-btn');
             mockDraftState.userTeamKey = sel.value || null;
-            if (sel.value && keeperConfig.teams[sel.value]) {
-                mockDraftState.userManagerName = keeperConfig.teams[sel.value].manager;
+            if (sel.value && mockDraftState.teamInfo[sel.value]) {
+                mockDraftState.userManagerName = mockDraftState.teamInfo[sel.value].manager;
             }
             btn.disabled = !sel.value;
             renderDraftOrderPreview();
