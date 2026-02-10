@@ -32921,7 +32921,7 @@
             const historyCanvas = document.getElementById('projection-history-canvas');
             if (isHomeView && historyChartBox && historyCanvas) {
                 historyChartBox.style.display = '';
-                renderHistoryProjectionChart(player, historyCanvas);
+                await renderHistoryProjectionChart(player, historyCanvas);
             } else if (historyChartBox) {
                 historyChartBox.style.display = 'none';
             }
@@ -33207,7 +33207,27 @@
             statsSourceDisplayName: ''
         };
 
-        function renderHistoryProjectionChart(player, canvasEl) {
+        // Cache for ZiPS 2027/2028 projection data (loaded once)
+        let _zipsProjectionCache = {};
+
+        async function _loadZiPSProjectionFile(system) {
+            if (_zipsProjectionCache[system]) return _zipsProjectionCache[system];
+            try {
+                const response = await fetch(`data/projections/projections_${system}.json`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const projMap = {};
+                    [...(data.batters || []), ...(data.pitchers || [])].forEach(p => {
+                        projMap[p.name.toLowerCase().trim()] = p.projected_points || 0;
+                    });
+                    _zipsProjectionCache[system] = projMap;
+                    return projMap;
+                }
+            } catch (e) { /* silently fail */ }
+            return {};
+        }
+
+        async function renderHistoryProjectionChart(player, canvasEl) {
             // Destroy previous chart
             if (projectionHistoryChart) {
                 projectionHistoryChart.destroy();
@@ -33235,20 +33255,19 @@
             const max2026 = player.maxPoints || avg2026;
             const min2026 = player.minPoints || avg2026;
 
-            // 2027/2028 from trade analyzer ZiPS data
-            const name = playerKey;
-            const data2027 = (typeof tradeAnalyzerData !== 'undefined' && tradeAnalyzerData.zips2027) ? tradeAnalyzerData.zips2027[name] : null;
-            const data2028 = (typeof tradeAnalyzerData !== 'undefined' && tradeAnalyzerData.zips2028) ? tradeAnalyzerData.zips2028[name] : null;
-            const pts2027 = data2027 ? (data2027.points || 0) : 0;
-            const pts2028 = data2028 ? (data2028.points || 0) : 0;
+            // 2027/2028: load directly from projection files
+            const zips2027Map = await _loadZiPSProjectionFile('zips2027');
+            const zips2028Map = await _loadZiPSProjectionFile('zips2028');
+            const pts2027 = zips2027Map[playerKey] || 0;
+            const pts2028 = zips2028Map[playerKey] || 0;
 
             // Build labels and data arrays
             const labels = [];
-            const barData = [];
-            const sdBandData = []; // floating bar: [low, high] or null
+            const barData = [];       // main bar values
+            const sdBandData = [];    // floating bar: [low, high] or null
             const barColors = [];
             const barBorderColors = [];
-            const projectedIndices = []; // track which bars are projected (for whiskers)
+            const projectedIndices = []; // track projected bars for whiskers
 
             const historicalColor = '#0048ba';
             const projectedColor = '#d4a017';
@@ -33259,7 +33278,7 @@
             historicalSeasons.forEach(s => {
                 labels.push(String(s.year));
                 barData.push(s.points);
-                sdBandData.push(null); // no SD for historical
+                sdBandData.push(null);
                 barColors.push(historicalColor);
                 barBorderColors.push(historicalColor);
             });
@@ -33271,7 +33290,7 @@
             sdBandData.push(sd2026 > 0 ? [avg2026 - sd2026, avg2026 + sd2026] : null);
             barColors.push(projectedColor);
             barBorderColors.push(projectedBorderColor);
-            projectedIndices.push({ index: idx2026, min: min2026, max: max2026, sd: sd2026, points: avg2026 });
+            projectedIndices.push({ index: idx2026, min: min2026, max: max2026 });
 
             // 2027 projected
             if (pts2027 > 0) {
@@ -33281,7 +33300,7 @@
                 sdBandData.push(sd2026 > 0 ? [pts2027 - sd2026, pts2027 + sd2026] : null);
                 barColors.push(projectedColor);
                 barBorderColors.push(projectedBorderColor);
-                projectedIndices.push({ index: idx2027, min: pts2027 - sd2026 * 1.5, max: pts2027 + sd2026 * 1.5, sd: sd2026, points: pts2027 });
+                projectedIndices.push({ index: idx2027, min: pts2027 - sd2026 * 1.5, max: pts2027 + sd2026 * 1.5 });
             }
 
             // 2028 projected
@@ -33292,7 +33311,7 @@
                 sdBandData.push(sd2026 > 0 ? [pts2028 - sd2026, pts2028 + sd2026] : null);
                 barColors.push(projectedColor);
                 barBorderColors.push(projectedBorderColor);
-                projectedIndices.push({ index: idx2028, min: pts2028 - sd2026 * 1.5, max: pts2028 + sd2026 * 1.5, sd: sd2026, points: pts2028 });
+                projectedIndices.push({ index: idx2028, min: pts2028 - sd2026 * 1.5, max: pts2028 + sd2026 * 1.5 });
             }
 
             // If no data at all, show empty state
@@ -33301,100 +33320,96 @@
                 return;
             }
 
-            // Custom plugin: draw dotted whisker lines from SD band to min/max
-            const whiskerPlugin = {
-                id: 'projectionWhiskers',
+            // Custom plugin: draw SD band rectangles + whisker lines for projected bars
+            const sdBandWhiskerPlugin = {
+                id: 'sdBandWhiskers',
                 afterDatasetsDraw: function(chart) {
-                    const ctx = chart.ctx;
-                    const sdMeta = chart.getDatasetMeta(0); // SD band dataset
+                    const drawCtx = chart.ctx;
+                    const mainMeta = chart.getDatasetMeta(0); // main bar dataset (only 1 dataset now)
+                    const yScale = chart.scales.y;
 
                     projectedIndices.forEach(info => {
-                        const bar = sdMeta.data[info.index];
-                        if (!bar || !sdBandData[info.index]) return;
+                        const bar = mainMeta.data[info.index];
+                        if (!bar) return;
+                        const bandRaw = sdBandData[info.index];
+                        if (!bandRaw) return;
 
                         const x = bar.x;
                         const barWidth = bar.width || 20;
-                        const halfW = barWidth * 0.3;
+                        const bandHalfW = barWidth * 0.5;
+                        const capHalfW = barWidth * 0.25;
 
-                        // Get pixel positions for the SD band top/bottom
-                        const yScale = chart.scales.y;
-                        const sdTop = yScale.getPixelForValue(sdBandData[info.index][1]);
-                        const sdBottom = yScale.getPixelForValue(sdBandData[info.index][0]);
-                        const whiskerTop = yScale.getPixelForValue(info.max);
-                        const whiskerBottom = yScale.getPixelForValue(info.min);
+                        const sdTopPx = yScale.getPixelForValue(bandRaw[1]);
+                        const sdBottomPx = yScale.getPixelForValue(bandRaw[0]);
 
-                        ctx.save();
-                        ctx.strokeStyle = projectedBorderColor;
-                        ctx.lineWidth = 1.5;
-                        ctx.setLineDash([3, 3]);
+                        // Draw SD band rectangle
+                        drawCtx.save();
+                        drawCtx.fillStyle = projectedColorLight;
+                        drawCtx.strokeStyle = projectedBorderColor;
+                        drawCtx.lineWidth = 1;
+                        drawCtx.fillRect(x - bandHalfW, sdTopPx, bandHalfW * 2, sdBottomPx - sdTopPx);
+                        drawCtx.strokeRect(x - bandHalfW, sdTopPx, bandHalfW * 2, sdBottomPx - sdTopPx);
 
-                        // Top whisker: from SD band top to max
-                        if (info.max > sdBandData[info.index][1]) {
-                            ctx.beginPath();
-                            ctx.moveTo(x, sdTop);
-                            ctx.lineTo(x, whiskerTop);
-                            ctx.stroke();
-                            // Cap line at top
-                            ctx.beginPath();
-                            ctx.setLineDash([]);
-                            ctx.moveTo(x - halfW, whiskerTop);
-                            ctx.lineTo(x + halfW, whiskerTop);
-                            ctx.stroke();
-                            ctx.setLineDash([3, 3]);
+                        // Draw whiskers (dotted lines from SD band to min/max)
+                        const whiskerTopPx = yScale.getPixelForValue(info.max);
+                        const whiskerBottomPx = yScale.getPixelForValue(info.min);
+
+                        drawCtx.strokeStyle = projectedBorderColor;
+                        drawCtx.lineWidth = 1.5;
+                        drawCtx.setLineDash([3, 3]);
+
+                        // Top whisker
+                        if (info.max > bandRaw[1]) {
+                            drawCtx.beginPath();
+                            drawCtx.moveTo(x, sdTopPx);
+                            drawCtx.lineTo(x, whiskerTopPx);
+                            drawCtx.stroke();
+                            // Cap
+                            drawCtx.setLineDash([]);
+                            drawCtx.beginPath();
+                            drawCtx.moveTo(x - capHalfW, whiskerTopPx);
+                            drawCtx.lineTo(x + capHalfW, whiskerTopPx);
+                            drawCtx.stroke();
+                            drawCtx.setLineDash([3, 3]);
                         }
 
-                        // Bottom whisker: from SD band bottom to min
-                        if (info.min < sdBandData[info.index][0]) {
-                            ctx.beginPath();
-                            ctx.moveTo(x, sdBottom);
-                            ctx.lineTo(x, whiskerBottom);
-                            ctx.stroke();
-                            // Cap line at bottom
-                            ctx.beginPath();
-                            ctx.setLineDash([]);
-                            ctx.moveTo(x - halfW, whiskerBottom);
-                            ctx.lineTo(x + halfW, whiskerBottom);
-                            ctx.stroke();
+                        // Bottom whisker
+                        if (info.min < bandRaw[0]) {
+                            drawCtx.beginPath();
+                            drawCtx.moveTo(x, sdBottomPx);
+                            drawCtx.lineTo(x, whiskerBottomPx);
+                            drawCtx.stroke();
+                            // Cap
+                            drawCtx.setLineDash([]);
+                            drawCtx.beginPath();
+                            drawCtx.moveTo(x - capHalfW, whiskerBottomPx);
+                            drawCtx.lineTo(x + capHalfW, whiskerBottomPx);
+                            drawCtx.stroke();
                         }
 
-                        ctx.restore();
+                        drawCtx.restore();
                     });
                 }
             };
 
-            // Build datasets
-            const datasets = [];
-
-            // Dataset 0: SD band (floating bars) — only for projected years
-            datasets.push({
-                label: '±1 SD Range',
-                data: sdBandData,
-                backgroundColor: projectedColorLight,
-                borderColor: projectedBorderColor,
-                borderWidth: 1,
-                barPercentage: 0.7,
-                categoryPercentage: 0.8,
-                order: 1
-            });
-
-            // Dataset 1: Main bars (historical + projected)
-            datasets.push({
+            // Single dataset: main bars (SD bands + whiskers drawn by plugin)
+            const datasets = [{
                 label: 'Fantasy Points',
                 data: barData,
                 backgroundColor: barColors,
                 borderColor: barBorderColors,
                 borderWidth: 1,
-                barPercentage: 0.45,
-                categoryPercentage: 0.8,
-                order: 2
-            });
+                barPercentage: 0.6,
+                categoryPercentage: 0.85
+            }];
 
-            // Compute y-axis range
+            // Compute y-axis range including whisker extents
             const allValues = [...barData];
             projectedIndices.forEach(info => {
                 allValues.push(info.max, info.min);
             });
-            const yMin = Math.floor(Math.min(...allValues.filter(v => v > 0)) / 50) * 50 - 50;
+            const positiveValues = allValues.filter(v => v > 0);
+            const yMin = positiveValues.length > 0 ? Math.floor(Math.min(...positiveValues) / 50) * 50 - 50 : 0;
             const yMax = Math.ceil(Math.max(...allValues) / 50) * 50 + 50;
 
             projectionHistoryChart = new Chart(ctx, {
@@ -33408,24 +33423,13 @@
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                title: function(context) {
-                                    return context[0].label;
-                                },
+                                title: function(context) { return context[0].label; },
                                 label: function(context) {
-                                    if (context.dataset.label === '±1 SD Range') {
-                                        const raw = context.raw;
-                                        if (Array.isArray(raw)) {
-                                            return `±1σ: ${Math.round(raw[0])} – ${Math.round(raw[1])} pts`;
-                                        }
-                                        return '';
-                                    }
-                                    return `${Math.round(context.raw)} pts`;
+                                    const yr = parseInt(context.label);
+                                    const pts = Math.round(context.raw);
+                                    if (yr >= 2026) return `Projected: ${pts} pts`;
+                                    return `Actual: ${pts} pts`;
                                 }
-                            },
-                            filter: function(item) {
-                                // Hide tooltip for null SD band entries
-                                if (item.dataset.label === '±1 SD Range' && !item.raw) return false;
-                                return true;
                             }
                         }
                     },
@@ -33442,18 +33446,20 @@
                             }
                         },
                         x: {
+                            offset: true,
                             ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
                                 font: { size: 10, weight: 'bold' },
                                 color: function(context) {
-                                    const label = labels[context.index];
-                                    const yr = parseInt(label);
+                                    const yr = parseInt(labels[context.index]);
                                     return yr >= 2026 ? projectedColor : historicalColor;
                                 }
                             }
                         }
                     }
                 },
-                plugins: [whiskerPlugin]
+                plugins: [sdBandWhiskerPlugin]
             });
         }
 
