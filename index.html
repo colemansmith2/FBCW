@@ -38740,6 +38740,12 @@
 
         const MOCK_PROJECTION_SYSTEMS = ['steamer', 'zipsdc', 'thebat', 'thebatx', 'atc', 'depthcharts', 'oopsy'];
 
+        function mockDraftNormalizeTeamLogo(logoUrl, managerName, teamName, teamKey) {
+            const normalizedManager = normalizeManagerName(managerName || '', 2026, teamName, teamKey);
+            if (normalizedManager === 'Josh B') return 'data/managers/joshb_logo.png';
+            return fixTeamLogo(logoUrl);
+        }
+
         async function initializeMockDraft() {
             try {
                 const resp = await fetch('data/mock_draft_config.json');
@@ -38762,7 +38768,7 @@
                         currentIdentityByManager[normalizedManager.toLowerCase()] = {
                             teamName: team.team_name || '',
                             manager: normalizedManager,
-                            logo: fixTeamLogo(team.team_logo)
+                            logo: mockDraftNormalizeTeamLogo(team.team_logo, team.manager, team.team_name, team.team_key)
                         };
                     });
                 }
@@ -38780,7 +38786,7 @@
                         teamKey: key,
                         teamName: currentIdentity?.teamName || team.team_name,
                         manager: currentIdentity?.manager || normalizedManager || team.manager,
-                        logo: currentIdentity?.logo || fixTeamLogo(team.team_logo)
+                        logo: currentIdentity?.logo || mockDraftNormalizeTeamLogo(team.team_logo, team.manager, team.team_name, key)
                     };
                 });
             }
