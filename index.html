@@ -39390,6 +39390,13 @@
             return unfilledBatterSlots + unfilledPitcherSlots;
         }
 
+        function mockDraftCountRelieverTypePitchers(roster) {
+            if (!roster || !Array.isArray(roster.players)) return 0;
+            return roster.players.filter(p =>
+                p.type === 'pitcher' && (p.positions || []).some(pos => (pos || '').toUpperCase() === 'RP')
+            ).length;
+        }
+
         function mockDraftCanFillOpenStartingSlot(player, roster) {
             if (!player || !roster) return false;
             const positions = player.positions || [];
@@ -39441,6 +39448,10 @@
             // Hard roster limits: NEVER exceed max batters or pitchers
             if (isP && roster.totalPitchers >= MOCK_DRAFT_MAX_PITCHERS) return -Infinity;
             if (!isP && roster.totalBatters >= MOCK_DRAFT_MAX_BATTERS) return -Infinity;
+
+            // Reliever cap: do not draft more than 2 RP-eligible pitchers.
+            const isRpEligible = positions.some(pos => (pos || '').toUpperCase() === 'RP');
+            if (isP && isRpEligible && mockDraftCountRelieverTypePitchers(roster) >= 2) return -Infinity;
 
             const canFillStarter = mockDraftCanFillOpenStartingSlot(player, roster);
             if (mustFillStarter && !canFillStarter) return -Infinity;
@@ -40588,19 +40599,36 @@
             const lowProspects = roster.players
                 .filter(p => p.assignedSlot === 'NA' && (p.avgPoints || 0) < 300)
                 .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+            const allProspects = [...highProspects, ...lowProspects]
+                .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
             const usedProspects = new Set();
+
+            function deriveProspectPositions(player) {
+                const out = new Set((player.positions || []).map(pos => (pos || '').toUpperCase()));
+                const raw = (player.position || '').toUpperCase();
+                if (raw) {
+                    raw.split(',').forEach(part => {
+                        part.split('/').forEach(p => {
+                            const token = p.trim();
+                            if (token) out.add(token);
+                        });
+                    });
+                }
+                return Array.from(out);
+            }
 
             function qualifiesProspectForSlot(player, slotLabel) {
                 const slot = (slotLabel || '').toUpperCase();
-                const pPos = (player.positions || []).map(pos => (pos || '').toUpperCase());
+                const pPos = deriveProspectPositions(player);
                 if (slot === 'UTIL') return player.type === 'batter';
                 if (slot === 'OF') return pPos.some(pos => ['OF', 'LF', 'CF', 'RF'].includes(pos));
                 if (slot === 'P') return player.type === 'pitcher' || pPos.some(pos => ['SP', 'RP', 'P'].includes(pos));
                 return pPos.includes(slot);
             }
 
-            function getProspectFallbackForSlot(slotLabel) {
-                for (const p of highProspects) {
+            function getProspectFallbackForSlot(slotLabel, allowLowProjection = false) {
+                const pool = allowLowProjection ? allProspects : highProspects;
+                for (const p of pool) {
                     if (usedProspects.has(p)) continue;
                     if (!qualifiesProspectForSlot(p, slotLabel)) continue;
                     usedProspects.add(p);
@@ -40675,7 +40703,8 @@
                         if (p) {
                             sectionHtml += renderFullRosterRow(p, slotDef.pos, playerRoundMap);
                         } else {
-                            const prospectFallback = getProspectFallbackForSlot(slotDef.pos);
+                            // For truly empty starting slots, allow any prospect fallback.
+                            const prospectFallback = getProspectFallbackForSlot(slotDef.pos, true);
                             if (prospectFallback) {
                                 sectionHtml += renderFullRosterRow(
                                     prospectFallback,
