@@ -38729,7 +38729,7 @@
             { pos: '3B', count: 1, type: 'batter' },
             { pos: 'SS', count: 1, type: 'batter' },
             { pos: 'OF', count: 3, type: 'batter' },
-            { pos: 'Util', count: 3, type: 'batter' },
+            { pos: 'Util', count: 4, type: 'batter' },
             { pos: 'SP', count: 3, type: 'pitcher' },
             { pos: 'RP', count: 1, type: 'pitcher' },
             { pos: 'P', count: 2, type: 'pitcher' },
@@ -39390,7 +39390,7 @@
                 + Math.max(0, 1 - (roster.slots['3B'] || 0))
                 + Math.max(0, 1 - (roster.slots.SS || 0))
                 + Math.max(0, 3 - (roster.slots.OF || 0))
-                + Math.max(0, 3 - (roster.slots.Util || 0));
+                + Math.max(0, 4 - (roster.slots.Util || 0));
 
             // How much to weight need — very low early, ramps up mid-draft
             // Round 1: ~0.1, Round 6: ~0.35, Round 10: ~0.55, Round 15: ~0.8, Round 20+: ~1.0
@@ -39424,7 +39424,7 @@
                         if (pos === 'SS') needBoost += 15;
                     }
                 }
-                const utilNeeded = 3 - (roster.slots.Util || 0);
+                const utilNeeded = 4 - (roster.slots.Util || 0);
                 if (utilNeeded > 0 && needBoost === 0) {
                     needBoost += 20;
                 }
@@ -39922,7 +39922,7 @@
                 { label: 'Batters', slots: [
                     { pos: 'C', max: 1 }, { pos: '1B', max: 1 }, { pos: '2B', max: 1 },
                     { pos: '3B', max: 1 }, { pos: 'SS', max: 1 },
-                    { pos: 'OF', max: 3 }, { pos: 'Util', max: 3 }
+                    { pos: 'OF', max: 3 }, { pos: 'Util', max: 4 }
                 ]},
                 { label: 'Pitchers', slots: [
                     { pos: 'SP', max: 3 }, { pos: 'RP', max: 1 }, { pos: 'P', max: 2 }
@@ -40568,7 +40568,7 @@
 
             const batterSlots = [
                 { pos: 'C', max: 1 }, { pos: '1B', max: 1 }, { pos: '2B', max: 1 },
-                { pos: '3B', max: 1 }, { pos: 'SS', max: 1 }, { pos: 'OF', max: 3 }, { pos: 'Util', max: 3 }
+                { pos: '3B', max: 1 }, { pos: 'SS', max: 1 }, { pos: 'OF', max: 3 }, { pos: 'Util', max: 4 }
             ];
             const pitcherSlots = [
                 { pos: 'SP', max: 3 }, { pos: 'RP', max: 1 }, { pos: 'P', max: 2 }
