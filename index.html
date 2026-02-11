@@ -38799,6 +38799,7 @@
         function mockDraftResolveManagerToTeamKey(managerName) {
             if (!managerName) return null;
             const normalizedInput = normalizeManagerName(managerName, 2026, null, null).toLowerCase();
+            const rawInput = managerName.toLowerCase().trim();
 
             // Prefer currently-built mock draft team info (already aligned to current season identities)
             const teamInfoEntries = Object.entries(mockDraftState.teamInfo || {});
@@ -38806,12 +38807,24 @@
                 const normalizedInfoManager = normalizeManagerName(info.manager || '', 2026, info.teamName, key).toLowerCase();
                 if (normalizedInfoManager === normalizedInput) return key;
             }
+            // Fallback alias match: allow first-name / raw-name match (e.g. "Josh" -> "Josh B")
+            for (const [key, info] of teamInfoEntries) {
+                const normalizedInfoManager = normalizeManagerName(info.manager || '', 2026, info.teamName, key).toLowerCase();
+                const firstToken = normalizedInfoManager.split(' ')[0];
+                if (rawInput === normalizedInfoManager || rawInput === firstToken) return key;
+            }
 
             // Fallback to keeper config
             if (!keeperConfig || !keeperConfig.teams) return null;
             for (const [key, team] of Object.entries(keeperConfig.teams)) {
                 const normalizedTeamManager = normalizeManagerName(team.manager || '', 2026, team.team_name, key).toLowerCase();
                 if (normalizedTeamManager === normalizedInput) return key;
+            }
+            // Keeper config alias fallback as well
+            for (const [key, team] of Object.entries(keeperConfig.teams)) {
+                const normalizedTeamManager = normalizeManagerName(team.manager || '', 2026, team.team_name, key).toLowerCase();
+                const firstToken = normalizedTeamManager.split(' ')[0];
+                if (rawInput === normalizedTeamManager || rawInput === firstToken) return key;
             }
             return null;
         }
