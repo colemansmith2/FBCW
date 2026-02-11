@@ -39373,15 +39373,57 @@
             return 'BN';
         }
 
+        function mockDraftCountUnfilledStartingSlots(roster) {
+            if (!roster) return 0;
+            const unfilledBatterSlots = Math.max(0, 1 - (roster.slots.C || 0))
+                + Math.max(0, 1 - (roster.slots['1B'] || 0))
+                + Math.max(0, 1 - (roster.slots['2B'] || 0))
+                + Math.max(0, 1 - (roster.slots['3B'] || 0))
+                + Math.max(0, 1 - (roster.slots.SS || 0))
+                + Math.max(0, 3 - (roster.slots.OF || 0))
+                + Math.max(0, 4 - (roster.slots.Util || 0));
+
+            const unfilledPitcherSlots = Math.max(0, 3 - (roster.slots.SP || 0))
+                + Math.max(0, 1 - (roster.slots.RP || 0))
+                + Math.max(0, 2 - (roster.slots.P || 0));
+
+            return unfilledBatterSlots + unfilledPitcherSlots;
+        }
+
+        function mockDraftCanFillOpenStartingSlot(player, roster) {
+            if (!player || !roster) return false;
+            const positions = player.positions || [];
+            const isP = player.type === 'pitcher';
+
+            if (!isP) {
+                if (positions.includes('C') && (roster.slots.C || 0) < 1) return true;
+                if (positions.includes('1B') && (roster.slots['1B'] || 0) < 1) return true;
+                if (positions.includes('2B') && (roster.slots['2B'] || 0) < 1) return true;
+                if (positions.includes('3B') && (roster.slots['3B'] || 0) < 1) return true;
+                if (positions.includes('SS') && (roster.slots.SS || 0) < 1) return true;
+                if (positions.includes('OF') && (roster.slots.OF || 0) < 3) return true;
+                if ((roster.slots.Util || 0) < 4) {
+                    if (!(positions.length === 1 && positions[0] === 'C' && roster.hasCatcher)) return true;
+                }
+                return false;
+            }
+
+            if (positions.includes('SP') && (roster.slots.SP || 0) < 3) return true;
+            if (positions.includes('RP') && (roster.slots.RP || 0) < 1) return true;
+            if ((roster.slots.P || 0) < 2) return true;
+            return false;
+        }
+
         // AI Scoring
         // Strategy: Early rounds are BPA-driven (best player available by points).
         // As draft progresses, positional need becomes increasingly important.
         // "needWeight" scales from ~0.1 in round 1 to ~1.0 by round 15+.
-        function mockDraftScorePlayer(player, roster, round) {
+        function mockDraftScorePlayer(player, roster, round, options = {}) {
             let score = player.avgPoints;
             const positions = player.positions || [];
             const isP = player.type === 'pitcher';
             const totalRounds = 23;
+            const mustFillStarter = options.mustFillStarter === true;
 
             // Count unfilled batter starting slots
             const unfilledBatterSlots = Math.max(0, 1 - (roster.slots.C || 0))
@@ -39399,6 +39441,9 @@
             // Hard roster limits: NEVER exceed max batters or pitchers
             if (isP && roster.totalPitchers >= MOCK_DRAFT_MAX_PITCHERS) return -Infinity;
             if (!isP && roster.totalBatters >= MOCK_DRAFT_MAX_BATTERS) return -Infinity;
+
+            const canFillStarter = mockDraftCanFillOpenStartingSlot(player, roster);
+            if (mustFillStarter && !canFillStarter) return -Infinity;
 
             // Anti-catcher-doubling: NEVER draft 2 catchers
             if (roster.hasCatcher && positions.length === 1 && positions[0] === 'C') {
@@ -39444,6 +39489,11 @@
             if (!isP && unfilledBatterSlots > 0) score += 20 * needWeight;
             if (isP && unfilledPitcherSlots > 0) score += 20 * needWeight;
 
+            // If starting slots remain, discourage bench-only picks until later.
+            if (!canFillStarter && (unfilledBatterSlots + unfilledPitcherSlots) > 0) {
+                score -= 80 * needWeight;
+            }
+
             // Bench strategy: once starting lineup is mostly filled, prefer pitchers for bench
             const totalStartingUnfilled = unfilledBatterSlots + unfilledPitcherSlots;
             if (totalStartingUnfilled <= 2) {
@@ -39462,11 +39512,25 @@
 
             const currentPick = mockDraftState.pickSequence[mockDraftState.currentPickIndex];
             const round = currentPick ? currentPick.round : 1;
+            const remainingTeamPicks = mockDraftState.pickSequence
+                .slice(mockDraftState.currentPickIndex)
+                .filter(p => !p.isKeeper && p.teamKey === teamKey)
+                .length;
+            const unfilledStarters = mockDraftCountUnfilledStartingSlots(roster);
+            const mustFillStarter = unfilledStarters > 0 && remainingTeamPicks <= unfilledStarters;
 
-            const scored = mockDraftState.availablePlayers
-                .map(player => ({ player, score: mockDraftScorePlayer(player, roster, round) }))
+            let scored = mockDraftState.availablePlayers
+                .map(player => ({ player, score: mockDraftScorePlayer(player, roster, round, { mustFillStarter }) }))
                 .filter(s => s.score > -Infinity)
                 .sort((a, b) => b.score - a.score);
+
+            // Fallback safety: if strict endgame fill can't find candidates, relax and use normal scoring.
+            if (scored.length === 0 && mustFillStarter) {
+                scored = mockDraftState.availablePlayers
+                    .map(player => ({ player, score: mockDraftScorePlayer(player, roster, round, { mustFillStarter: false }) }))
+                    .filter(s => s.score > -Infinity)
+                    .sort((a, b) => b.score - a.score);
+            }
 
             if (scored.length === 0) return mockDraftState.availablePlayers[0];
 
