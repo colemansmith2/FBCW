@@ -13605,12 +13605,16 @@
             display: block;
             position: relative;
             z-index: 1;
+            background: white;
+            padding: 0 0 0.2rem;
         }
         .mock-draft-points-chart {
             display: flex;
             flex-direction: column;
             gap: 0.4rem;
-            margin-top: 0.35rem;
+            margin-top: 0.7rem;
+            position: relative;
+            z-index: 0;
         }
         .mock-draft-chart-bar-row {
             display: flex;
@@ -40513,8 +40517,12 @@
                 playerRoundMap[dp.player.name] = { round: dp.round, pickInRound: dp.pickInRound, isKeeper: false };
             });
 
-            const naProspects = roster.players
-                .filter(p => p.assignedSlot === 'NA')
+            // Prospects split: 300+ are eligible to be used in roster display, below stay in NA section.
+            const highProspects = roster.players
+                .filter(p => p.assignedSlot === 'NA' && (p.avgPoints || 0) >= 300)
+                .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+            const lowProspects = roster.players
+                .filter(p => p.assignedSlot === 'NA' && (p.avgPoints || 0) < 300)
                 .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
             const usedProspects = new Set();
 
@@ -40528,13 +40536,19 @@
             }
 
             function getProspectFallbackForSlot(slotLabel) {
-                for (const p of naProspects) {
+                for (const p of highProspects) {
                     if (usedProspects.has(p)) continue;
                     if (!qualifiesProspectForSlot(p, slotLabel)) continue;
                     usedProspects.add(p);
                     return p;
                 }
                 return null;
+            }
+
+            function getUnusedHighProspectsByType(type) {
+                return highProspects
+                    .filter(p => !usedProspects.has(p) && p.type === type)
+                    .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
             }
 
             let html = `
@@ -40589,7 +40603,9 @@
             function renderSlotList(slots) {
                 let sectionHtml = '';
                 slots.forEach(slotDef => {
-                    const playersInSlot = roster.players.filter(p => p.assignedSlot === slotDef.pos);
+                    const playersInSlot = roster.players
+                        .filter(p => p.assignedSlot === slotDef.pos)
+                        .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
                     for (let i = 0; i < slotDef.max; i++) {
                         const p = playersInSlot[i];
                         if (p) {
@@ -40618,31 +40634,48 @@
                 return sectionHtml;
             }
 
+            function renderBenchRowsForType(type) {
+                let sectionHtml = '';
+                const benchPlayers = roster.players
+                    .filter(p => p.assignedSlot === 'BN' && p.type === type)
+                    .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+
+                benchPlayers.forEach(p => {
+                    sectionHtml += renderFullRosterRow(p, 'BN', playerRoundMap);
+                });
+
+                // Add remaining high-projection prospects as BN rows in their position group.
+                const prospectBench = getUnusedHighProspectsByType(type);
+                prospectBench.forEach(p => {
+                    usedProspects.add(p);
+                    sectionHtml += renderFullRosterRow(
+                        p,
+                        'BN',
+                        playerRoundMap,
+                        { roundLabel: 'NA', isKeeper: true, isProspectFill: true }
+                    );
+                });
+
+                return sectionHtml;
+            }
+
             html += `
                 <div class="mock-draft-roster-columns">
                     <div class="mock-draft-roster-column">
                         <div class="mock-draft-roster-section-label">BATTERS</div>
                         ${renderSlotList(batterSlots)}
+                        ${renderBenchRowsForType('batter')}
                     </div>
                     <div class="mock-draft-roster-column">
                         <div class="mock-draft-roster-section-label">PITCHERS</div>
                         ${renderSlotList(pitcherSlots)}
+                        ${renderBenchRowsForType('pitcher')}
                     </div>
                 </div>
             `;
 
-            // Bench: show ALL bench players dynamically
-            const benchPlayers = roster.players.filter(p => p.assignedSlot === 'BN');
-            if (benchPlayers.length > 0) {
-                html += `<div class="mock-draft-roster-section-label">BENCH (${benchPlayers.length})</div>`;
-                benchPlayers.forEach(p => {
-                    html += renderFullRosterRow(p, 'BN', playerRoundMap);
-                });
-            }
-
             // NA prospects
-            const naPlayers = roster.players.filter(p => p.assignedSlot === 'NA' && !usedProspects.has(p))
-                .sort((a, b) => (b.avgPoints || 0) - (a.avgPoints || 0));
+            const naPlayers = lowProspects;
             if (naPlayers.length > 0) {
                 html += `<div class="mock-draft-roster-section-label">PROSPECTS (NA)</div>`;
                 naPlayers.forEach(p => {
