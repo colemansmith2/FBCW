@@ -25769,8 +25769,30 @@
             return yahooPlayerPositionsCache;
         }
 
+        // Clean Yahoo eligible_positions into display-ready array
+        // - Strips IL/NA/G statuses
+        // - Strips Util/DH unless it's the only position (Ohtani batter → DH)
+        // - Strips generic 'P' when SP or RP exists (pitchers show SP or RP, not SP,P)
+        function cleanYahooPositions(eligiblePositions, playerType) {
+            let positions = (eligiblePositions || []).filter(p =>
+                p && !['IL', 'IL+', 'DL', 'NA', 'G'].includes(p)
+            );
+            // Strip Util/DH if real positions exist
+            const nonUtilPositions = positions.filter(p => p !== 'Util' && p !== 'DH');
+            if (nonUtilPositions.length > 0) {
+                positions = nonUtilPositions;
+            } else if (positions.length === 0 && playerType === 'batter') {
+                positions = ['DH'];
+            }
+            // Strip generic 'P' if SP or RP exists (P is a flex slot, not a real position)
+            const hasSpecificPitcher = positions.some(p => p === 'SP' || p === 'RP');
+            if (hasSpecificPitcher) {
+                positions = positions.filter(p => p !== 'P');
+            }
+            return positions;
+        }
+
         // Apply Yahoo positions to an array of player objects (mutates in place)
-        // Cleans up Util: strips it unless it's the player's only position
         function applyYahooPositions(players, yahooPlayers) {
             if (!yahooPlayers || yahooPlayers.length === 0) return;
             // Build lookup by normalized name + type
@@ -25779,15 +25801,7 @@
                 const normName = (yp.name || '').replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim()
                     .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                 const type = yp.position_type === 'P' ? 'pitcher' : 'batter';
-                let positions = (yp.eligible_positions || []).filter(p =>
-                    p && !['IL', 'IL+', 'DL', 'NA', 'G'].includes(p)
-                );
-                const nonUtilPositions = positions.filter(p => p !== 'Util' && p !== 'DH');
-                if (nonUtilPositions.length > 0) {
-                    positions = nonUtilPositions;
-                } else if (positions.length === 0 && type === 'batter') {
-                    positions = ['DH'];
-                }
+                const positions = cleanYahooPositions(yp.eligible_positions, type);
                 lookup[normName + '|' + type] = positions.join(',');
             });
             // Apply to players
@@ -25951,15 +25965,7 @@
                     const type = yp.position_type === 'P' ? 'pitcher' : 'batter';
                     const playerKey = `${normName}|${type}`;
                     if (playerProjections[playerKey]) {
-                        let positions = (yp.eligible_positions || []).filter(p =>
-                            p && !['IL', 'IL+', 'DL', 'NA', 'G'].includes(p)
-                        );
-                        const nonUtilPositions = positions.filter(p => p !== 'Util' && p !== 'DH');
-                        if (nonUtilPositions.length > 0) {
-                            positions = nonUtilPositions;
-                        } else if (positions.length === 0 && type === 'batter') {
-                            positions = ['DH'];
-                        }
+                        const positions = cleanYahooPositions(yp.eligible_positions, type);
                         playerProjections[playerKey].position = positions.join(',');
                         if (yp.headshot_url && !yp.headshot_url.includes('/people/1/')) {
                             playerProjections[playerKey].headshot = yp.headshot_url;
@@ -26079,6 +26085,29 @@
 
         // Helper function to create position badge(s) with color
         // Handles multiple positions like "1B, 3B" or "1B/3B"
+        function getCleanDisplayPositions(position) {
+            const rawPositions = (position || '')
+                .split(/[,\/]/)
+                .map(p => p.trim())
+                .filter(p => p);
+
+            let positionsArray = rawPositions.filter(p => !['UTIL', 'NA', 'B'].includes(p.toUpperCase()));
+
+            // Filter out DH if there are other positions
+            const nonDHPositions = positionsArray.filter(p => p.toUpperCase() !== 'DH');
+            if (nonDHPositions.length > 0) {
+                positionsArray = nonDHPositions;
+            }
+
+            // Strip generic P if a specific pitching position exists
+            const hasSpecificPitcher = positionsArray.some(p => ['SP', 'RP'].includes(p.toUpperCase()));
+            if (hasSpecificPitcher) {
+                positionsArray = positionsArray.filter(p => p.toUpperCase() !== 'P');
+            }
+
+            return positionsArray;
+        }
+
         function getPositionBadge(position, playerName) {
             if (!position || position === '-') return '<span class="position-badge">-</span>';
 
@@ -26088,13 +26117,8 @@
             }
 
             // Parse positions
-            let positionsArray = position.split(/[,\/]/).map(p => p.trim()).filter(p => p);
-
-            // Filter out DH if there are other positions
-            const nonDHPositions = positionsArray.filter(p => p.toUpperCase() !== 'DH');
-            if (nonDHPositions.length > 0) {
-                positionsArray = nonDHPositions;
-            } else if (positionsArray.some(p => p.toUpperCase() === 'DH')) {
+            let positionsArray = getCleanDisplayPositions(position);
+            if (positionsArray.length === 0 && position.split(/[,\/]/).some(p => p.trim().toUpperCase() === 'DH')) {
                 // DH is the only position - show as Util
                 return '<span class="position-badge pos-Util">Util</span>';
             }
@@ -26501,18 +26525,10 @@
             // Format position string
             if (!position) return 'Util';
 
-            // Split by comma or slash
-            let positions = position.split(/[,\/]/)
-                .map(p => p.trim())
-                .filter(p => p && !['UTIL', 'NA', 'B'].includes(p.toUpperCase()));
-
-            // Filter out DH if there are other positions
-            const nonDHPositions = positions.filter(p => p.toUpperCase() !== 'DH');
-
-            // If there are non-DH positions, use those instead
-            if (nonDHPositions.length > 0) {
-                positions = nonDHPositions;
-            } else if (positions.some(p => p.toUpperCase() === 'DH')) {
+            // Clean positions (removes UTIL/B/NA, removes generic P when SP/RP exists)
+            const rawParts = position.split(/[,\/]/).map(p => p.trim()).filter(p => p);
+            let positions = getCleanDisplayPositions(position);
+            if (positions.length === 0 && rawParts.some(p => p.toUpperCase() === 'DH')) {
                 // DH is the only position - convert to Util
                 return 'Util';
             }
@@ -37366,7 +37382,12 @@
         function getPrimaryPosition(player) {
             const raw = player.selected_position || player.primary_position || player.position || '?';
             // Split by comma or slash and trim
-            const positions = raw.split(/[,\/]/).map(p => p.trim()).filter(p => p);
+            let positions = raw.split(/[,\/]/).map(p => p.trim()).filter(p => p);
+            // Strip generic P if specific pitching role exists
+            const hasSpecificPitcher = positions.some(p => p.toUpperCase() === 'SP' || p.toUpperCase() === 'RP');
+            if (hasSpecificPitcher) {
+                positions = positions.filter(p => p.toUpperCase() !== 'P');
+            }
             // Pick the first non-Util/non-DH position, or fall back to the first one
             return positions.find(p => p !== 'Util' && p !== 'DH' && p !== 'BN') || positions[0] || '?';
         }
@@ -38977,6 +38998,12 @@
                     if (s && s !== 'Util' && s !== 'DH') positions.push(s);
                 });
             });
+            // Remove generic pitcher slot when specific pitching role exists
+            if (positions.includes('SP') || positions.includes('RP')) {
+                for (let i = positions.length - 1; i >= 0; i--) {
+                    if (positions[i] === 'P') positions.splice(i, 1);
+                }
+            }
             if (positions.length === 0) {
                 return playerType === 'pitcher' ? ['SP'] : ['DH'];
             }
@@ -38994,16 +39021,7 @@
                 const normName = (yp.name || '').replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim()
                     .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                 const type = yp.position_type === 'P' ? 'pitcher' : 'batter';
-                let positions = (yp.eligible_positions || []).filter(p =>
-                    p && !['IL', 'IL+', 'DL', 'NA', 'G'].includes(p)
-                );
-                const nonUtilPositions = positions.filter(p => p !== 'Util' && p !== 'DH');
-                if (nonUtilPositions.length > 0) {
-                    positions = nonUtilPositions;
-                }
-                if (positions.length === 0 && type === 'batter') {
-                    positions = ['DH'];
-                }
+                const positions = cleanYahooPositions(yp.eligible_positions, type);
                 yahooPositionMap[normName + '|' + type] = {
                     positions,
                     mlbTeam: yp.mlb_team || '',
