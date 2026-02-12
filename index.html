@@ -12563,12 +12563,38 @@
             display: flex;
         }
 
-        .prospect-claim-modal {
+        .prospect-claim-modal-shell {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            max-width: 1140px;
+            width: 100%;
+        }
+
+        .prospect-claim-card-modal {
+            width: 380px;
+            flex: 0 0 380px;
             background: #f7f2e8;
             border: 3px solid var(--retro-blue);
             border-radius: 12px;
-            max-width: 980px;
-            width: 100%;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .prospect-claim-card-modal-header {
+            padding: 0.75rem 0.9rem;
+            border-bottom: 1px solid #d7cdb8;
+            color: var(--retro-blue);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .prospect-claim-action-modal {
+            flex: 1;
+            min-width: 0;
+            background: #f7f2e8;
+            border: 3px solid var(--retro-blue);
+            border-radius: 12px;
             box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
         }
 
@@ -12597,21 +12623,19 @@
         }
 
         .prospect-claim-modal-body {
-            display: grid;
-            grid-template-columns: minmax(260px, 330px) 1fr;
-            gap: 1rem;
-            padding: 1rem;
-            align-items: start;
+            padding: 0.95rem 1rem;
+            min-height: 440px;
         }
 
         .prospect-claim-player-card-wrap {
             display: flex;
             justify-content: center;
             align-items: flex-start;
+            padding: 0.8rem;
         }
 
         .prospect-claim-player-card {
-            width: 250px;
+            width: 335px;
             background: linear-gradient(180deg, #f5e8cc 0%, #ecd9b7 100%);
             border: 3px solid #8b0000;
             border-radius: 10px;
@@ -12624,10 +12648,10 @@
         }
 
         .prospect-claim-card-header {
-            background: linear-gradient(180deg, #1e5631 0%, #2d7a46 100%);
+            background: #1a5cd6;
             border: 2px solid #0d2818;
             border-radius: 8px 8px 0 0;
-            padding: 0.55rem 0.5rem 0.45rem;
+            padding: 0.6rem 0.5rem 0.5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -12639,8 +12663,8 @@
         }
 
         .prospect-claim-player-card .player-card-name {
-            color: #f7e7c8;
-            margin-bottom: 0.1rem;
+            color: #1c2c1f;
+            margin-bottom: 0.12rem;
             font-size: 0.72rem;
             max-width: 100%;
             text-align: center;
@@ -12648,6 +12672,13 @@
             overflow: hidden;
             text-overflow: ellipsis;
             letter-spacing: 0.2px;
+            background: #ffcc00;
+            border: 1px solid #0d2818;
+            border-radius: 4px;
+            padding: 0.14rem 0.45rem;
+            font-style: italic;
+            font-weight: 700;
+            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.18);
         }
 
         .prospect-claim-player-card .player-card-mlb-line {
@@ -12706,12 +12737,8 @@
             grid-column: 1 / -1;
         }
 
-        .prospect-claim-right {
-            border-left: 1px solid #d7cdb8;
-            padding-left: 1rem;
-        }
-
-        .prospect-claim-right h4 {
+        .prospect-claim-right h4,
+        #prospect-claim-auth-view h4 {
             margin: 0 0 0.5rem 0;
             font-size: 0.78rem;
             color: #556;
@@ -12796,7 +12823,7 @@
             min-height: 18px;
             color: #b91c1c;
             font-size: 0.7rem;
-            margin-bottom: 0.45rem;
+            margin-bottom: 0.6rem;
         }
 
         .prospect-claim-confirm {
@@ -13053,19 +13080,26 @@
                 padding: 0.75rem;
             }
 
-            .prospect-claim-modal-body {
-                grid-template-columns: 1fr;
+            .prospect-claim-modal-shell {
+                flex-direction: column;
+            }
+
+            .prospect-claim-card-modal {
+                width: 100%;
+                flex: 0 0 auto;
+            }
+
+            .prospect-claim-action-modal {
+                width: 100%;
+            }
+
+            .prospect-claim-player-card {
+                width: 100%;
+                max-width: 340px;
             }
 
             .prospect-claim-team-grid {
                 grid-template-columns: repeat(4, minmax(56px, 1fr));
-            }
-
-            .prospect-claim-right {
-                border-left: none;
-                border-top: 1px solid #d7cdb8;
-                padding-left: 0;
-                padding-top: 0.8rem;
             }
 
             .prospect-claim-team-list-grid {
@@ -17662,38 +17696,46 @@
 
         <!-- Prospect Claim Modal -->
         <div id="prospect-claim-modal" class="prospect-claim-modal-overlay" onclick="closeProspectClaimModal(event)">
-            <div class="prospect-claim-modal" onclick="event.stopPropagation()">
-                <div class="prospect-claim-modal-header">
-                    <div class="prospect-claim-modal-title">Claim Prospect</div>
-                    <button class="prospect-claim-modal-close" onclick="closeProspectClaimModal()">&times;</button>
-                </div>
-                <div class="prospect-claim-modal-body">
+            <div class="prospect-claim-modal-shell" onclick="event.stopPropagation()">
+                <div class="prospect-claim-card-modal">
+                    <div class="prospect-claim-card-modal-header">Prospect Card</div>
                     <div class="prospect-claim-player-card-wrap" id="prospect-claim-player-card">
                         <!-- Player card injected -->
                     </div>
-                    <div class="prospect-claim-right">
-                        <h4>Select Your Team</h4>
-                        <div class="prospect-claim-team-grid" id="prospect-claim-team-grid"></div>
-
-                        <h4>Enter Password</h4>
-                        <div class="prospect-claim-password">
-                            <input type="password" id="prospect-claim-password-input" placeholder="Password"
-                                onkeydown="if(event.key==='Enter') authenticateProspectClaimTeam()">
-                            <button type="button" onclick="authenticateProspectClaimTeam()">Verify</button>
-                        </div>
+                </div>
+                <div class="prospect-claim-action-modal">
+                    <div class="prospect-claim-modal-header">
+                        <div class="prospect-claim-modal-title">Claim Prospect</div>
+                        <button class="prospect-claim-modal-close" onclick="closeProspectClaimModal()">&times;</button>
+                    </div>
+                    <div class="prospect-claim-modal-body">
                         <div class="prospect-claim-error" id="prospect-claim-error"></div>
 
-                        <div class="prospect-claim-confirm" id="prospect-claim-confirm">
-                            <div id="prospect-claim-confirm-text"></div>
-                            <div class="prospect-claim-confirm-actions">
-                                <button type="button" onclick="submitProspectClaim()">Yes</button>
-                                <button type="button" class="btn-no" onclick="closeProspectClaimModal()">No</button>
+                        <div id="prospect-claim-auth-view">
+                            <h4>Select Your Team</h4>
+                            <div class="prospect-claim-team-grid" id="prospect-claim-team-grid"></div>
+
+                            <h4>Enter Password</h4>
+                            <div class="prospect-claim-password">
+                                <input type="password" id="prospect-claim-password-input" placeholder="Password"
+                                    onkeydown="if(event.key==='Enter') authenticateProspectClaimTeam()">
+                                <button type="button" onclick="authenticateProspectClaimTeam()">Verify</button>
                             </div>
                         </div>
 
-                        <div class="prospect-claim-team-list" id="prospect-claim-team-list">
-                            <h5>Your Prospect Roster</h5>
-                            <div id="prospect-claim-team-list-body"></div>
+                        <div id="prospect-claim-review-view" style="display:none;">
+                            <div class="prospect-claim-confirm" id="prospect-claim-confirm">
+                                <div id="prospect-claim-confirm-text"></div>
+                                <div class="prospect-claim-confirm-actions">
+                                    <button type="button" onclick="submitProspectClaim()">Yes</button>
+                                    <button type="button" class="btn-no" onclick="closeProspectClaimModal()">No</button>
+                                </div>
+                            </div>
+
+                            <div class="prospect-claim-team-list" id="prospect-claim-team-list">
+                                <h5>Your Prospect Roster</h5>
+                                <div id="prospect-claim-team-list-body"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -39276,6 +39318,14 @@
             return prospectClaimState.teams;
         }
 
+        function setProspectClaimView(view) {
+            const authView = document.getElementById('prospect-claim-auth-view');
+            const reviewView = document.getElementById('prospect-claim-review-view');
+            if (!authView || !reviewView) return;
+            authView.style.display = view === 'auth' ? '' : 'none';
+            reviewView.style.display = view === 'review' ? '' : 'none';
+        }
+
         function buildProspectClaimPlayerCard(prospect) {
             const playerCardPlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
             const headshot = prospect.headshot_url || playerCardPlaceholder;
@@ -39389,6 +39439,7 @@
             errorEl.textContent = '';
             confirmEl.classList.remove('active');
             teamListEl.classList.remove('active');
+            setProspectClaimView('auth');
 
             document.getElementById('prospect-claim-modal').classList.add('active');
             document.body.classList.add('modal-open');
@@ -39405,6 +39456,7 @@
             document.getElementById('prospect-claim-error').textContent = '';
             document.getElementById('prospect-claim-confirm').classList.remove('active');
             document.getElementById('prospect-claim-team-list').classList.remove('active');
+            setProspectClaimView('auth');
         }
 
         async function authenticateProspectClaimTeam() {
@@ -39463,6 +39515,7 @@
             confirmText.textContent = `Are you sure you want to add "${playerName}"?`;
             confirmEl.classList.add('active');
             teamListEl.classList.add('active');
+            setProspectClaimView('review');
         }
 
         async function getTeamKeepersFromFirebase(teamKey, configTeamKey = null) {
@@ -39636,6 +39689,7 @@
                 errorEl.style.color = '#b91c1c';
                 errorEl.textContent = '';
             }
+            setProspectClaimView('auth');
         }
 
         // ===== MOCK DRAFT SIMULATOR =====
