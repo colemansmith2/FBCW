@@ -12193,6 +12193,26 @@
             font-style: italic;
         }
 
+        .prospect-claim-btn {
+            width: 22px;
+            height: 22px;
+            border: none;
+            border-radius: 50%;
+            background: #22c55e;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.95rem;
+            line-height: 1;
+        }
+
+        .prospect-claim-btn:hover {
+            background: #16a34a;
+        }
+
         .prospect-loading {
             text-align: center;
             padding: 2rem;
@@ -12527,6 +12547,230 @@
             text-shadow: 1px 1px 0 #0d2818;
         }
 
+        .prospect-claim-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.78);
+            z-index: 10010;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-y: auto;
+            padding: 1.25rem;
+        }
+
+        .prospect-claim-modal-overlay.active {
+            display: flex;
+        }
+
+        .prospect-claim-modal {
+            background: #f7f2e8;
+            border: 3px solid var(--retro-blue);
+            border-radius: 12px;
+            max-width: 980px;
+            width: 100%;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .prospect-claim-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid #d7cdb8;
+        }
+
+        .prospect-claim-modal-title {
+            font-size: 0.9rem;
+            color: var(--retro-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .prospect-claim-modal-close {
+            border: none;
+            background: none;
+            color: #666;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .prospect-claim-modal-body {
+            display: grid;
+            grid-template-columns: minmax(260px, 330px) 1fr;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .prospect-claim-player-card-wrap {
+            display: flex;
+            justify-content: center;
+        }
+
+        .prospect-claim-player-card-wrap .matchup-popup-player-card {
+            width: 250px;
+            min-height: 120px;
+            cursor: default;
+        }
+
+        .prospect-claim-right h4 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.78rem;
+            color: #556;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .prospect-claim-team-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(52px, 1fr));
+            gap: 0.55rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .prospect-claim-team-btn {
+            border: 2px solid #d6d6d6;
+            border-radius: 10px;
+            padding: 0.45rem 0.25rem;
+            background: #fff;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .prospect-claim-team-btn.active {
+            border-color: var(--retro-blue);
+            background: #eef4ff;
+        }
+
+        .prospect-claim-team-btn img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .prospect-claim-team-btn span {
+            font-size: 0.58rem;
+            color: #444;
+            text-align: center;
+            line-height: 1.1;
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .prospect-claim-password {
+            display: flex;
+            gap: 0.45rem;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .prospect-claim-password input {
+            flex: 1;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 0.55rem 0.7rem;
+            font-size: 0.85rem;
+        }
+
+        .prospect-claim-password button,
+        .prospect-claim-confirm-actions button {
+            border: none;
+            border-radius: 8px;
+            padding: 0.55rem 0.8rem;
+            background: var(--retro-blue);
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .prospect-claim-password button:hover,
+        .prospect-claim-confirm-actions button:hover {
+            background: #0b3c94;
+        }
+
+        .prospect-claim-error {
+            min-height: 18px;
+            color: #b91c1c;
+            font-size: 0.7rem;
+            margin-bottom: 0.45rem;
+        }
+
+        .prospect-claim-confirm {
+            display: none;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0.6rem 0.7rem;
+            margin-bottom: 0.55rem;
+            font-size: 0.72rem;
+        }
+
+        .prospect-claim-confirm.active {
+            display: block;
+        }
+
+        .prospect-claim-confirm-actions {
+            display: flex;
+            gap: 0.45rem;
+            margin-top: 0.45rem;
+        }
+
+        .prospect-claim-confirm-actions .btn-no {
+            background: #9ca3af;
+        }
+
+        .prospect-claim-confirm-actions .btn-no:hover {
+            background: #6b7280;
+        }
+
+        .prospect-claim-team-list {
+            display: none;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 0.6rem;
+            max-height: 180px;
+            overflow-y: auto;
+        }
+
+        .prospect-claim-team-list.active {
+            display: block;
+        }
+
+        .prospect-claim-team-list h5 {
+            margin: 0 0 0.45rem 0;
+            font-size: 0.68rem;
+            color: #556;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .prospect-claim-team-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            font-size: 0.72rem;
+            padding: 0.28rem 0;
+            border-bottom: 1px solid #f2f2f2;
+        }
+
+        .prospect-claim-team-item:last-child {
+            border-bottom: none;
+        }
+
+        .prospect-claim-team-item .meta {
+            color: #666;
+            font-size: 0.65rem;
+        }
+
         /* Mobile responsive */
         @media (max-width: 768px) {
             .prospect-controls {
@@ -12651,9 +12895,27 @@
                 font-size: 0.65rem;
             }
 
+            .prospect-claim-btn {
+                width: 20px;
+                height: 20px;
+                font-size: 0.85rem;
+            }
+
             .prospect-footer {
                 font-size: 0.65rem;
                 padding: 0 0.5rem;
+            }
+
+            .prospect-claim-modal-overlay {
+                padding: 0.75rem;
+            }
+
+            .prospect-claim-modal-body {
+                grid-template-columns: 1fr;
+            }
+
+            .prospect-claim-team-grid {
+                grid-template-columns: repeat(4, minmax(56px, 1fr));
             }
         }
 
@@ -17236,6 +17498,46 @@
                 <button class="prospect-detail-close" onclick="closeProspectDetailModal()">&times;</button>
                 <div id="prospect-detail-content">
                     <!-- Content loaded dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Prospect Claim Modal -->
+        <div id="prospect-claim-modal" class="prospect-claim-modal-overlay" onclick="closeProspectClaimModal(event)">
+            <div class="prospect-claim-modal" onclick="event.stopPropagation()">
+                <div class="prospect-claim-modal-header">
+                    <div class="prospect-claim-modal-title">Claim Prospect</div>
+                    <button class="prospect-claim-modal-close" onclick="closeProspectClaimModal()">&times;</button>
+                </div>
+                <div class="prospect-claim-modal-body">
+                    <div class="prospect-claim-player-card-wrap" id="prospect-claim-player-card">
+                        <!-- Player card injected -->
+                    </div>
+                    <div class="prospect-claim-right">
+                        <h4>Select Your Team</h4>
+                        <div class="prospect-claim-team-grid" id="prospect-claim-team-grid"></div>
+
+                        <h4>Enter Password</h4>
+                        <div class="prospect-claim-password">
+                            <input type="password" id="prospect-claim-password-input" placeholder="Password"
+                                onkeydown="if(event.key==='Enter') authenticateProspectClaimTeam()">
+                            <button type="button" onclick="authenticateProspectClaimTeam()">Verify</button>
+                        </div>
+                        <div class="prospect-claim-error" id="prospect-claim-error"></div>
+
+                        <div class="prospect-claim-confirm" id="prospect-claim-confirm">
+                            <div id="prospect-claim-confirm-text"></div>
+                            <div class="prospect-claim-confirm-actions">
+                                <button type="button" onclick="submitProspectClaim()">Yes</button>
+                                <button type="button" class="btn-no" onclick="closeProspectClaimModal()">No</button>
+                            </div>
+                        </div>
+
+                        <div class="prospect-claim-team-list" id="prospect-claim-team-list">
+                            <h5>Your Prospect Roster</h5>
+                            <div id="prospect-claim-team-list-body"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -38308,6 +38610,14 @@
         // ===== PROSPECT PAVILION FUNCTIONS =====
         let prospectsData = [];
         let prospectOwnershipData = {};
+        let prospectClaimState = {
+            prospect: null,
+            teams: [],
+            selectedTeamKey: null,
+            authenticatedTeamKey: null,
+            authenticatedConfigTeamKey: null,
+            authenticatedTeamConfig: null
+        };
 
         async function loadProspects() {
             try {
@@ -38573,6 +38883,15 @@
                             <span class="prospect-owner-name">${owner.manager}</span>
                         </div>
                     `;
+                } else {
+                    const encodedName = encodeURIComponent(prospect.name || '');
+                    ownerHtml = `
+                        <div class="prospect-owner-cell">
+                            <span class="prospect-available">Available</span>
+                            <button class="prospect-claim-btn" title="Claim Prospect"
+                                onclick="event.stopPropagation(); openProspectClaimModalByName('${encodedName}')">+</button>
+                        </div>
+                    `;
                 }
 
                 // Format avg rank
@@ -38766,6 +39085,300 @@
         function initProspectsOnVisible() {
             if (prospectsData.length === 0) {
                 loadProspects();
+            }
+        }
+
+        async function ensureKeeperConfigLoaded() {
+            if (keeperConfig && keeperConfig.teams) return true;
+            try {
+                const configResponse = await fetch('data/keepers/keeper_config.json');
+                if (configResponse.ok) {
+                    keeperConfig = await configResponse.json();
+                    return true;
+                }
+            } catch (e) {
+                console.log('Could not load keeper config for prospect claims:', e);
+            }
+            return false;
+        }
+
+        async function getProspectClaimTeams() {
+            if (prospectClaimState.teams.length > 0) return prospectClaimState.teams;
+
+            const teams = await getTeamData(2026) || [];
+            prospectClaimState.teams = teams
+                .map(team => ({
+                    teamKey: team.team_key,
+                    manager: normalizeManagerName(team.manager || '', 2026, team.team_name, team.team_key),
+                    teamName: team.team_name || '',
+                    teamLogo: fixTeamLogo(team.team_logo) || 'league_logo.png'
+                }))
+                .sort((a, b) => a.manager.localeCompare(b.manager));
+
+            return prospectClaimState.teams;
+        }
+
+        function buildProspectClaimPlayerCard(prospect) {
+            const playerCardPlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+            const headshot = prospect.headshot_url || playerCardPlaceholder;
+            const mlbTeam = prospect.mlb_team || '';
+            const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
+            const pos = getCleanDisplayPositions(prospect.position || '')[0] || prospect.position || '?';
+            const points = typeof prospect.avg_points === 'number'
+                ? prospect.avg_points
+                : (typeof prospect.proj_points === 'number' ? prospect.proj_points : 0);
+            const displayName = (prospect.name || '').length > 19 ? `${prospect.name.slice(0, 18)}…` : (prospect.name || 'Unknown');
+
+            return `
+                <div class="matchup-popup-player-card">
+                    <div class="player-card-headshot-wrap">
+                        <img src="${headshot}" class="player-card-headshot" alt="" onerror="this.src='${playerCardPlaceholder}'">
+                        ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="player-card-mlb-logo" alt="" onerror="this.style.display='none'">` : ''}
+                    </div>
+                    <span class="player-card-pos-badge pos-${pos}">${pos}</span>
+                    <div class="player-card-name" title="${prospect.name || ''}">${displayName}</div>
+                    <div class="player-card-pts">${Number(points || 0).toFixed(1)}</div>
+                </div>
+            `;
+        }
+
+        async function openProspectClaimModalByName(encodedProspectName) {
+            const decodedName = decodeURIComponent(encodedProspectName || '');
+            const target = prospectsData.find(p => (p.name || '').toLowerCase().trim() === decodedName.toLowerCase().trim());
+            if (!target) return;
+
+            const normalized = normalizeProspectName(target.name);
+            if (prospectOwnershipData[normalized] || prospectOwnershipData[(target.name || '').toLowerCase().trim()]) {
+                return;
+            }
+
+            initializeFirebase();
+            const hasConfig = await ensureKeeperConfigLoaded();
+            if (!hasConfig) {
+                alert('Could not load team/password config. Please refresh and try again.');
+                return;
+            }
+
+            prospectClaimState.prospect = target;
+            prospectClaimState.selectedTeamKey = null;
+            prospectClaimState.authenticatedTeamKey = null;
+            prospectClaimState.authenticatedConfigTeamKey = null;
+            prospectClaimState.authenticatedTeamConfig = null;
+
+            const teams = await getProspectClaimTeams();
+            const teamGrid = document.getElementById('prospect-claim-team-grid');
+            const playerCardWrap = document.getElementById('prospect-claim-player-card');
+            const passwordInput = document.getElementById('prospect-claim-password-input');
+            const errorEl = document.getElementById('prospect-claim-error');
+            const confirmEl = document.getElementById('prospect-claim-confirm');
+            const teamListEl = document.getElementById('prospect-claim-team-list');
+
+            playerCardWrap.innerHTML = buildProspectClaimPlayerCard(target);
+            teamGrid.innerHTML = teams.map(team => `
+                <button class="prospect-claim-team-btn" data-team-key="${team.teamKey}" onclick="selectProspectClaimTeam('${team.teamKey}')">
+                    <img src="${team.teamLogo}" alt="${team.manager}" onerror="this.src='league_logo.png'">
+                    <span>${team.manager}</span>
+                </button>
+            `).join('');
+
+            passwordInput.value = '';
+            errorEl.style.color = '#b91c1c';
+            errorEl.textContent = '';
+            confirmEl.classList.remove('active');
+            teamListEl.classList.remove('active');
+
+            document.getElementById('prospect-claim-modal').classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function selectProspectClaimTeam(teamKey) {
+            prospectClaimState.selectedTeamKey = teamKey;
+            prospectClaimState.authenticatedTeamKey = null;
+            prospectClaimState.authenticatedConfigTeamKey = null;
+            prospectClaimState.authenticatedTeamConfig = null;
+            document.querySelectorAll('.prospect-claim-team-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.teamKey === teamKey);
+            });
+            document.getElementById('prospect-claim-error').textContent = '';
+            document.getElementById('prospect-claim-confirm').classList.remove('active');
+            document.getElementById('prospect-claim-team-list').classList.remove('active');
+        }
+
+        async function authenticateProspectClaimTeam() {
+            const passwordInput = document.getElementById('prospect-claim-password-input');
+            const errorEl = document.getElementById('prospect-claim-error');
+            const confirmEl = document.getElementById('prospect-claim-confirm');
+            const confirmText = document.getElementById('prospect-claim-confirm-text');
+            const teamListEl = document.getElementById('prospect-claim-team-list');
+
+            const teamKey = prospectClaimState.selectedTeamKey;
+            const password = passwordInput.value || '';
+            if (!teamKey || !password) {
+                errorEl.textContent = 'Select your team and enter your password.';
+                return;
+            }
+
+            const teams = prospectClaimState.teams || [];
+            const selectedTeam = teams.find(t => t.teamKey === teamKey);
+            if (!selectedTeam) {
+                errorEl.textContent = 'Team not found.';
+                return;
+            }
+
+            let teamConfig = keeperConfig?.teams?.[teamKey];
+            let configTeamKey = teamKey;
+            if (!teamConfig) {
+                const configEntry = Object.entries(keeperConfig?.teams || {}).find(([configKey, config]) => {
+                    const configManager = normalizeManagerName(config.manager || '', 2026, config.team_name, configKey);
+                    return configManager === selectedTeam.manager;
+                });
+                if (configEntry) {
+                    configTeamKey = configEntry[0];
+                    teamConfig = configEntry[1];
+                }
+            }
+
+            if (!teamConfig) {
+                errorEl.textContent = 'Team configuration not found.';
+                return;
+            }
+
+            const enteredHash = await hashPassword(password);
+            if (enteredHash !== teamConfig.password_hash) {
+                errorEl.textContent = 'Incorrect password. Hint: [YourName][YearJoined]';
+                return;
+            }
+
+            errorEl.textContent = '';
+            prospectClaimState.authenticatedTeamKey = teamKey;
+            prospectClaimState.authenticatedConfigTeamKey = configTeamKey;
+            prospectClaimState.authenticatedTeamConfig = teamConfig;
+
+            await renderProspectClaimTeamList(teamKey);
+
+            const playerName = prospectClaimState.prospect?.name || 'this player';
+            confirmText.textContent = `Are you sure you want to add "${playerName}"?`;
+            confirmEl.classList.add('active');
+            teamListEl.classList.add('active');
+        }
+
+        async function getTeamKeepersFromFirebase(teamKey, configTeamKey = null) {
+            if (!firebaseDb) return Array.isArray(keeperSelections[teamKey]) ? [...keeperSelections[teamKey]] : [];
+            const keysToTry = [teamKey];
+            if (configTeamKey && configTeamKey !== teamKey) keysToTry.push(configTeamKey);
+
+            for (const key of keysToTry) {
+                const sanitizedKey = sanitizeFirebaseKey(key);
+                const snapshot = await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).once('value');
+                const value = snapshot.val();
+                if (Array.isArray(value)) return [...value];
+                if (value && typeof value === 'object') return Object.values(value);
+            }
+            return [];
+        }
+
+        async function renderProspectClaimTeamList(teamKey) {
+            const listBody = document.getElementById('prospect-claim-team-list-body');
+            try {
+                const keepers = await getTeamKeepersFromFirebase(teamKey, prospectClaimState.authenticatedConfigTeamKey);
+                const prospects = keepers.filter(k => k && k.player_name && (k.isProspect || (k.roundCost === 0) || (k.dollarCost === 0)));
+
+                if (prospects.length === 0) {
+                    listBody.innerHTML = '<div class="prospect-claim-team-item"><span>No prospects currently claimed.</span></div>';
+                    return;
+                }
+
+                prospects.sort((a, b) => (a.player_name || '').localeCompare(b.player_name || ''));
+                listBody.innerHTML = prospects.map(p => `
+                    <div class="prospect-claim-team-item">
+                        <span>${p.player_name}</span>
+                        <span class="meta">${p.position || 'NA'}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.log('Error loading claimed prospects list:', e);
+                listBody.innerHTML = '<div class="prospect-claim-team-item"><span>Could not load team prospects.</span></div>';
+            }
+        }
+
+        async function submitProspectClaim() {
+            const errorEl = document.getElementById('prospect-claim-error');
+            const prospect = prospectClaimState.prospect;
+            const teamKey = prospectClaimState.authenticatedTeamKey;
+            const configTeamKey = prospectClaimState.authenticatedConfigTeamKey || teamKey;
+            const teamConfig = prospectClaimState.authenticatedTeamConfig;
+
+            if (!prospect || !teamKey || !teamConfig) {
+                errorEl.textContent = 'Authenticate first to claim this prospect.';
+                return;
+            }
+
+            if (!firebaseDb) {
+                errorEl.textContent = 'Database connection unavailable. Refresh and try again.';
+                return;
+            }
+
+            try {
+                await loadProspectOwnership();
+                const normalizedName = normalizeProspectName(prospect.name);
+                const currentOwner = prospectOwnershipData[normalizedName] || prospectOwnershipData[(prospect.name || '').toLowerCase().trim()];
+                if (currentOwner) {
+                    errorEl.textContent = `${prospect.name} is already owned by ${currentOwner.manager}.`;
+                    return;
+                }
+
+                const existingKeepers = await getTeamKeepersFromFirebase(teamKey, configTeamKey);
+                const alreadyOnTeam = existingKeepers.some(k => k && normalizeProspectName(k.player_name || '') === normalizedName);
+                if (alreadyOnTeam) {
+                    errorEl.textContent = `${prospect.name} is already on your roster.`;
+                    return;
+                }
+
+                const newEntry = {
+                    player_name: prospect.name,
+                    position: prospect.position || 'NA',
+                    roundCost: 0,
+                    dollarCost: 0,
+                    isProspect: true,
+                    isUndrafted: true,
+                    manager: teamConfig.manager || '',
+                    claimed_at: new Date().toISOString(),
+                    claim_source: 'prospect_pavilion'
+                };
+
+                const updatedKeepers = [...existingKeepers, newEntry];
+                const sanitizedKey = sanitizeFirebaseKey(configTeamKey);
+                await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).set(updatedKeepers);
+
+                keeperSelections[configTeamKey] = updatedKeepers;
+                await loadProspectOwnership();
+                renderProspectTable();
+                await renderProspectClaimTeamList(teamKey);
+
+                errorEl.style.color = '#15803d';
+                errorEl.textContent = `${prospect.name} added successfully.`;
+                setTimeout(() => {
+                    closeProspectClaimModal();
+                    errorEl.style.color = '#b91c1c';
+                }, 700);
+            } catch (e) {
+                console.log('Error claiming prospect:', e);
+                errorEl.textContent = 'Could not claim prospect. Please try again.';
+            }
+        }
+
+        function closeProspectClaimModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            document.getElementById('prospect-claim-modal').classList.remove('active');
+            document.body.classList.remove('modal-open');
+            prospectClaimState.selectedTeamKey = null;
+            prospectClaimState.authenticatedTeamKey = null;
+            prospectClaimState.authenticatedConfigTeamKey = null;
+            prospectClaimState.authenticatedTeamConfig = null;
+            const errorEl = document.getElementById('prospect-claim-error');
+            if (errorEl) {
+                errorEl.style.color = '#b91c1c';
+                errorEl.textContent = '';
             }
         }
 
