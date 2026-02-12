@@ -12871,6 +12871,13 @@
             margin-bottom: 0.6rem;
         }
 
+        .prospect-claim-limit-note {
+            font-size: 0.82rem;
+            color: #4b5563;
+            margin: 0 0 0.5rem 0;
+            line-height: 1.35;
+        }
+
         .prospect-claim-confirm {
             display: none;
             background: #fff;
@@ -17797,16 +17804,19 @@
                         </div>
 
                         <div id="prospect-claim-review-view" style="display:none;">
+                            <div class="prospect-claim-limit-note">
+                                Teams may roster up to 12 prospects at a time. Adding a player here does NOT put them on your Yahoo roster.
+                            </div>
                             <div class="prospect-claim-confirm" id="prospect-claim-confirm">
                                 <div id="prospect-claim-confirm-text"></div>
                                 <div class="prospect-claim-confirm-actions">
-                                    <button type="button" onclick="submitProspectClaim()">Yes</button>
+                                    <button type="button" id="prospect-claim-yes-btn" onclick="submitProspectClaim()">Yes</button>
                                     <button type="button" class="btn-no" onclick="closeProspectClaimModal()">No</button>
                                 </div>
                             </div>
 
                             <div class="prospect-claim-team-list" id="prospect-claim-team-list">
-                                <h5>Your Prospect Roster</h5>
+                                <h5 id="prospect-claim-team-list-title">Your Prospect Roster | 0/12</h5>
                                 <div id="prospect-claim-team-list-body"></div>
                             </div>
                         </div>
@@ -39417,6 +39427,29 @@
             logo.src = teamInfo.teamLogo || 'league_logo.png';
         }
 
+        function updateProspectClaimRosterCapacity(prospectCount) {
+            const limit = 12;
+            const titleEl = document.getElementById('prospect-claim-team-list-title');
+            const yesBtn = document.getElementById('prospect-claim-yes-btn');
+            const errorEl = document.getElementById('prospect-claim-error');
+            if (titleEl) {
+                titleEl.textContent = `Your Prospect Roster | ${prospectCount}/${limit}`;
+            }
+            if (yesBtn) {
+                yesBtn.disabled = prospectCount >= limit;
+                yesBtn.style.opacity = prospectCount >= limit ? '0.6' : '1';
+                yesBtn.style.cursor = prospectCount >= limit ? 'not-allowed' : 'pointer';
+            }
+            if (errorEl) {
+                if (prospectCount >= limit) {
+                    errorEl.style.color = '#b91c1c';
+                    errorEl.textContent = `Prospect limit reached (${limit}/${limit}). Drop a prospect before adding another.`;
+                } else if (errorEl.textContent && errorEl.textContent.includes('Prospect limit reached')) {
+                    errorEl.textContent = '';
+                }
+            }
+        }
+
         function buildProspectClaimPlayerCard(prospect) {
             const playerCardPlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
             const headshot = prospect.headshot_url || playerCardPlaceholder;
@@ -39631,6 +39664,7 @@
             try {
                 const keepers = await getTeamKeepersFromFirebase(teamKey, prospectClaimState.authenticatedConfigTeamKey);
                 const prospects = keepers.filter(k => k && k.player_name && (k.isProspect || (k.roundCost === 0) || (k.dollarCost === 0)));
+                updateProspectClaimRosterCapacity(prospects.length);
                 const rankByName = {};
                 prospectsData.forEach(p => {
                     if (!p || !p.name) return;
@@ -39749,6 +39783,13 @@
                 const alreadyOnTeam = existingKeepers.some(k => k && normalizeProspectName(k.player_name || '') === normalizedName);
                 if (alreadyOnTeam) {
                     errorEl.textContent = `${prospect.name} is already on your roster.`;
+                    return;
+                }
+                const existingProspects = existingKeepers.filter(k => k && k.player_name && (k.isProspect || (k.roundCost === 0) || (k.dollarCost === 0)));
+                if (existingProspects.length >= 12) {
+                    updateProspectClaimRosterCapacity(existingProspects.length);
+                    errorEl.style.color = '#b91c1c';
+                    errorEl.textContent = 'Prospect limit reached (12/12). Drop a prospect before adding another.';
                     return;
                 }
 
