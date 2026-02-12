@@ -12572,21 +12572,16 @@
         }
 
         .prospect-claim-card-modal {
-            width: 380px;
-            flex: 0 0 380px;
-            background: #f7f2e8;
-            border: 3px solid var(--retro-blue);
-            border-radius: 12px;
-            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+            width: 350px;
+            flex: 0 0 350px;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            box-shadow: none;
         }
 
         .prospect-claim-card-modal-header {
-            padding: 0.75rem 0.9rem;
-            border-bottom: 1px solid #d7cdb8;
-            color: var(--retro-blue);
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            letter-spacing: 0.8px;
+            display: none;
         }
 
         .prospect-claim-action-modal {
@@ -12613,6 +12608,38 @@
             letter-spacing: 0.8px;
         }
 
+        .prospect-claim-modal-team-chip {
+            display: none;
+            align-items: center;
+            gap: 0.45rem;
+            margin-left: auto;
+            margin-right: 0.65rem;
+            background: #eef4ff;
+            border: 1px solid #ccd9f7;
+            border-radius: 999px;
+            padding: 0.2rem 0.55rem 0.2rem 0.28rem;
+            max-width: 260px;
+        }
+
+        .prospect-claim-modal-team-chip.active {
+            display: inline-flex;
+        }
+
+        .prospect-claim-modal-team-chip img {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .prospect-claim-modal-team-chip span {
+            font-size: 0.64rem;
+            color: #244a98;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         .prospect-claim-modal-close {
             border: none;
             background: none;
@@ -12631,13 +12658,13 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            padding: 0.8rem;
+            padding: 0;
         }
 
         .prospect-claim-player-card {
             width: 335px;
-            background: linear-gradient(180deg, #f5e8cc 0%, #ecd9b7 100%);
-            border: 3px solid #8b0000;
+            background: #f2e5c9;
+            border: 3px solid var(--retro-blue);
             border-radius: 10px;
             display: flex;
             flex-direction: column;
@@ -12648,8 +12675,8 @@
         }
 
         .prospect-claim-card-header {
-            background: #1a5cd6;
-            border: 2px solid #0d2818;
+            background: var(--retro-blue);
+            border: 2px solid var(--retro-blue-dark);
             border-radius: 8px 8px 0 0;
             padding: 0.6rem 0.5rem 0.5rem;
             display: flex;
@@ -12673,7 +12700,7 @@
             text-overflow: ellipsis;
             letter-spacing: 0.2px;
             background: #ffcc00;
-            border: 1px solid #0d2818;
+            border: 1px solid #a87a00;
             border-radius: 4px;
             padding: 0.14rem 0.45rem;
             font-style: italic;
@@ -12686,7 +12713,7 @@
             align-items: center;
             gap: 0.28rem;
             font-size: 0.6rem;
-            color: rgba(255, 255, 255, 0.88);
+            color: rgba(255, 255, 255, 0.95);
         }
 
         .prospect-claim-player-card .player-card-mlb-line img {
@@ -12696,10 +12723,10 @@
         }
 
         .prospect-claim-card-body {
-            border: 2px solid #0d2818;
+            border: 2px solid var(--retro-blue-dark);
             border-top: none;
             border-radius: 0 0 8px 8px;
-            background: rgba(255, 255, 255, 0.35);
+            background: #efe2c8;
             padding: 0.45rem 0.45rem 0.4rem;
         }
 
@@ -12710,7 +12737,7 @@
         }
 
         .prospect-claim-card-stat {
-            background: rgba(255, 255, 255, 0.82);
+            background: #f7f1e2;
             border: 1px solid #d2bf9c;
             border-radius: 5px;
             padding: 0.25rem 0.32rem;
@@ -12831,9 +12858,10 @@
             background: #fff;
             border: 1px solid #ddd;
             border-radius: 8px;
-            padding: 0.6rem 0.7rem;
+            padding: 0.8rem 0.85rem;
             margin-bottom: 0.55rem;
-            font-size: 0.72rem;
+            font-size: 0.9rem;
+            line-height: 1.35;
         }
 
         .prospect-claim-confirm.active {
@@ -12847,11 +12875,19 @@
         }
 
         .prospect-claim-confirm-actions .btn-no {
-            background: #9ca3af;
+            background: #dc2626;
         }
 
         .prospect-claim-confirm-actions .btn-no:hover {
-            background: #6b7280;
+            background: #b91c1c;
+        }
+
+        .prospect-claim-confirm-actions button:first-child {
+            background: #16a34a;
+        }
+
+        .prospect-claim-confirm-actions button:first-child:hover {
+            background: #15803d;
         }
 
         .prospect-claim-team-list {
@@ -12859,8 +12895,8 @@
             background: #fff;
             border: 1px solid #ddd;
             border-radius: 8px;
-            padding: 0.6rem;
-            max-height: 180px;
+            padding: 0.8rem;
+            max-height: 320px;
             overflow-y: auto;
         }
 
@@ -12870,7 +12906,7 @@
 
         .prospect-claim-team-list h5 {
             margin: 0 0 0.45rem 0;
-            font-size: 0.68rem;
+            font-size: 0.82rem;
             color: #556;
             text-transform: uppercase;
             letter-spacing: 0.8px;
@@ -12913,7 +12949,7 @@
         }
 
         .prospect-claim-team-col-title {
-            font-size: 0.62rem;
+            font-size: 0.72rem;
             color: #556;
             text-transform: uppercase;
             letter-spacing: 0.7px;
@@ -12934,7 +12970,7 @@
         }
 
         .prospect-claim-team-player-name {
-            font-size: 0.72rem;
+            font-size: 0.86rem;
             color: #222;
             white-space: nowrap;
             overflow: hidden;
@@ -13104,6 +13140,11 @@
 
             .prospect-claim-team-list-grid {
                 display: block;
+            }
+
+            .prospect-claim-modal-team-chip {
+                max-width: 160px;
+                margin-right: 0.35rem;
             }
 
             .prospect-claim-team-list-columns {
@@ -17706,6 +17747,10 @@
                 <div class="prospect-claim-action-modal">
                     <div class="prospect-claim-modal-header">
                         <div class="prospect-claim-modal-title">Claim Prospect</div>
+                        <div class="prospect-claim-modal-team-chip" id="prospect-claim-modal-team-chip">
+                            <img id="prospect-claim-modal-team-logo" src="league_logo.png" alt="">
+                            <span id="prospect-claim-modal-team-name"></span>
+                        </div>
                         <button class="prospect-claim-modal-close" onclick="closeProspectClaimModal()">&times;</button>
                     </div>
                     <div class="prospect-claim-modal-body">
@@ -39326,6 +39371,24 @@
             reviewView.style.display = view === 'review' ? '' : 'none';
         }
 
+        function setProspectClaimHeaderTeam(teamInfo = null) {
+            const chip = document.getElementById('prospect-claim-modal-team-chip');
+            const logo = document.getElementById('prospect-claim-modal-team-logo');
+            const name = document.getElementById('prospect-claim-modal-team-name');
+            if (!chip || !logo || !name) return;
+
+            if (!teamInfo) {
+                chip.classList.remove('active');
+                name.textContent = '';
+                logo.src = 'league_logo.png';
+                return;
+            }
+
+            chip.classList.add('active');
+            name.textContent = `${teamInfo.manager} - ${teamInfo.teamName || 'Team'}`;
+            logo.src = teamInfo.teamLogo || 'league_logo.png';
+        }
+
         function buildProspectClaimPlayerCard(prospect) {
             const playerCardPlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
             const headshot = prospect.headshot_url || playerCardPlaceholder;
@@ -39385,7 +39448,7 @@
                                 <div class="prospect-claim-card-stat-label">B/T</div>
                                 <div class="prospect-claim-card-stat-value">${prospect.bats_throws || '-'}</div>
                             </div>
-                            <div class="prospect-claim-card-stat full">
+                            <div class="prospect-claim-card-stat">
                                 <div class="prospect-claim-card-stat-label">${acquisitionLabel}</div>
                                 <div class="prospect-claim-card-stat-value">${acquisitionValue}</div>
                             </div>
@@ -39440,6 +39503,7 @@
             confirmEl.classList.remove('active');
             teamListEl.classList.remove('active');
             setProspectClaimView('auth');
+            setProspectClaimHeaderTeam(null);
 
             document.getElementById('prospect-claim-modal').classList.add('active');
             document.body.classList.add('modal-open');
@@ -39457,6 +39521,7 @@
             document.getElementById('prospect-claim-confirm').classList.remove('active');
             document.getElementById('prospect-claim-team-list').classList.remove('active');
             setProspectClaimView('auth');
+            setProspectClaimHeaderTeam(null);
         }
 
         async function authenticateProspectClaimTeam() {
@@ -39516,6 +39581,7 @@
             confirmEl.classList.add('active');
             teamListEl.classList.add('active');
             setProspectClaimView('review');
+            setProspectClaimHeaderTeam(selectedTeam);
         }
 
         async function getTeamKeepersFromFirebase(teamKey, configTeamKey = null) {
@@ -39690,6 +39756,7 @@
                 errorEl.textContent = '';
             }
             setProspectClaimView('auth');
+            setProspectClaimHeaderTeam(null);
         }
 
         // ===== MOCK DRAFT SIMULATOR =====
