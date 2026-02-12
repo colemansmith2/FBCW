@@ -25750,6 +25750,58 @@
         let averageProjectionsMap = {}; // { playerName: { avgPoints, systems: [...], headshot } }
         let averageProjectionsLoaded = false;
 
+        // Cached Yahoo position data — shared across all projection views
+        let yahooPlayerPositionsCache = null; // null = not loaded, [] = loaded but empty
+        async function getYahooPlayerPositions() {
+            if (yahooPlayerPositionsCache !== null) return yahooPlayerPositionsCache;
+            try {
+                const resp = await fetch('data/yahoo_player_positions.json');
+                if (resp.ok) {
+                    const data = await resp.json();
+                    yahooPlayerPositionsCache = data.players || [];
+                    console.log(`Cached ${yahooPlayerPositionsCache.length} Yahoo player positions`);
+                } else {
+                    yahooPlayerPositionsCache = [];
+                }
+            } catch (e) {
+                yahooPlayerPositionsCache = [];
+            }
+            return yahooPlayerPositionsCache;
+        }
+
+        // Apply Yahoo positions to an array of player objects (mutates in place)
+        // Cleans up Util: strips it unless it's the player's only position
+        function applyYahooPositions(players, yahooPlayers) {
+            if (!yahooPlayers || yahooPlayers.length === 0) return;
+            // Build lookup by normalized name + type
+            const lookup = {};
+            yahooPlayers.forEach(yp => {
+                const normName = (yp.name || '').replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const type = yp.position_type === 'P' ? 'pitcher' : 'batter';
+                let positions = (yp.eligible_positions || []).filter(p =>
+                    p && !['IL', 'IL+', 'DL', 'NA', 'G'].includes(p)
+                );
+                const nonUtilPositions = positions.filter(p => p !== 'Util' && p !== 'DH');
+                if (nonUtilPositions.length > 0) {
+                    positions = nonUtilPositions;
+                } else if (positions.length === 0 && type === 'batter') {
+                    positions = ['DH'];
+                }
+                lookup[normName + '|' + type] = positions.join(',');
+            });
+            // Apply to players
+            players.forEach(p => {
+                const normName = (p.name || '').replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const type = p.type || (p.position_type === 'P' ? 'pitcher' : 'batter');
+                const yahooPos = lookup[normName + '|' + type];
+                if (yahooPos) {
+                    p.position = yahooPos;
+                }
+            });
+        }
+
         // Detailed home projections data for the Home view
         let homeProjectionsBatters = [];
         let homeProjectionsPitchers = [];
@@ -25887,6 +25939,38 @@
                 } catch (e) {
                     console.log(`Could not load ${system} projections for averaging:`, e);
                 }
+            }
+
+            // Override positions with Yahoo's official 2026 position eligibility if available
+            const yahooPlayers = await getYahooPlayerPositions();
+            if (yahooPlayers.length > 0) {
+                let matched = 0;
+                yahooPlayers.forEach(yp => {
+                    const normName = (yp.name || '').replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim()
+                        .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    const type = yp.position_type === 'P' ? 'pitcher' : 'batter';
+                    const playerKey = `${normName}|${type}`;
+                    if (playerProjections[playerKey]) {
+                        let positions = (yp.eligible_positions || []).filter(p =>
+                            p && !['IL', 'IL+', 'DL', 'NA', 'G'].includes(p)
+                        );
+                        const nonUtilPositions = positions.filter(p => p !== 'Util' && p !== 'DH');
+                        if (nonUtilPositions.length > 0) {
+                            positions = nonUtilPositions;
+                        } else if (positions.length === 0 && type === 'batter') {
+                            positions = ['DH'];
+                        }
+                        playerProjections[playerKey].position = positions.join(',');
+                        if (yp.headshot_url && !yp.headshot_url.includes('/people/1/')) {
+                            playerProjections[playerKey].headshot = yp.headshot_url;
+                        }
+                        if (yp.mlb_team) {
+                            playerProjections[playerKey].mlb_team = yp.mlb_team;
+                        }
+                        matched++;
+                    }
+                });
+                console.log(`Yahoo positions (avg projections): matched ${matched}/${yahooPlayers.length} players`);
             }
 
             // Calculate averages and detailed stats
@@ -26143,6 +26227,13 @@
                         }
                     }
                 });
+
+                // Override positions with Yahoo's official eligibility
+                const yahooPos = await getYahooPlayerPositions();
+                allProjectionBatters.forEach(p => { p.type = p.type || 'batter'; });
+                allProjectionPitchers.forEach(p => { p.type = p.type || 'pitcher'; });
+                applyYahooPositions(allProjectionBatters, yahooPos);
+                applyYahooPositions(allProjectionPitchers, yahooPos);
 
                 // Pre-calculate games and PPG for sorting
                 allProjectionBatters.forEach(p => {
@@ -38896,6 +38987,30 @@
             const playerMap = {};
             let systemsLoaded = 0;
 
+            // Load Yahoo official positions (uses shared cache)
+            const yahooPlayersRaw = await getYahooPlayerPositions();
+            const yahooPositionMap = {}; // normName|type -> { positions, mlbTeam, headshot_url }
+            yahooPlayersRaw.forEach(yp => {
+                const normName = (yp.name || '').replace(/\s*\(.*?\)\s*/g, '').toLowerCase().trim()
+                    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const type = yp.position_type === 'P' ? 'pitcher' : 'batter';
+                let positions = (yp.eligible_positions || []).filter(p =>
+                    p && !['IL', 'IL+', 'DL', 'NA', 'G'].includes(p)
+                );
+                const nonUtilPositions = positions.filter(p => p !== 'Util' && p !== 'DH');
+                if (nonUtilPositions.length > 0) {
+                    positions = nonUtilPositions;
+                }
+                if (positions.length === 0 && type === 'batter') {
+                    positions = ['DH'];
+                }
+                yahooPositionMap[normName + '|' + type] = {
+                    positions,
+                    mlbTeam: yp.mlb_team || '',
+                    headshot_url: yp.headshot_url || ''
+                };
+            });
+
             for (const sys of MOCK_PROJECTION_SYSTEMS) {
                 try {
                     const resp = await fetch(`data/projections/projections_${sys}.json`);
@@ -38934,17 +39049,33 @@
                 if (p.points.length === 0) return;
                 const avg = p.points.reduce((a, b) => a + b, 0) / p.points.length;
                 if (avg <= 0) return;
+
+                // Use Yahoo positions if available, fallback to FanGraphs
+                const yahooKey = p.normName + '|' + p.type;
+                const yahoo = yahooPositionMap[yahooKey];
+                let positions, mlbTeam, headshot;
+
+                if (yahoo && yahoo.positions.length > 0) {
+                    positions = yahoo.positions;
+                    mlbTeam = yahoo.mlbTeam || p.mlbTeam;
+                    headshot = yahoo.headshot_url || p.headshot_url;
+                } else {
+                    positions = mockDraftParsePositions(p.position, p.type);
+                    mlbTeam = p.mlbTeam;
+                    headshot = p.headshot_url;
+                }
+
                 pool.push({
                     name: p.name,
                     normName: p.normName,
                     type: p.type,
                     position: p.position,
-                    positions: mockDraftParsePositions(p.position, p.type),
-                    mlbTeam: p.mlbTeam,
+                    positions: positions,
+                    mlbTeam: mlbTeam,
                     avgPoints: Math.round(avg * 10) / 10,
                     minPoints: Math.round(Math.min(...p.points) * 10) / 10,
                     maxPoints: Math.round(Math.max(...p.points) * 10) / 10,
-                    headshot_url: p.headshot_url
+                    headshot_url: headshot
                 });
             });
 
