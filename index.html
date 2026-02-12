@@ -39558,10 +39558,12 @@
             return unfilledBatterSlots + unfilledPitcherSlots;
         }
 
-        function mockDraftCountRelieverTypePitchers(roster) {
+        function mockDraftCountRpExclusivePitchers(roster) {
             if (!roster || !Array.isArray(roster.players)) return 0;
             return roster.players.filter(p =>
-                p.type === 'pitcher' && (p.positions || []).some(pos => (pos || '').toUpperCase() === 'RP')
+                p.type === 'pitcher' &&
+                (p.positions || []).some(pos => (pos || '').toUpperCase() === 'RP') &&
+                !(p.positions || []).some(pos => (pos || '').toUpperCase() === 'SP')
             ).length;
         }
 
@@ -39617,9 +39619,11 @@
             if (isP && roster.totalPitchers >= MOCK_DRAFT_MAX_PITCHERS) return -Infinity;
             if (!isP && roster.totalBatters >= MOCK_DRAFT_MAX_BATTERS) return -Infinity;
 
-            // Reliever cap: do not draft more than 2 RP-eligible pitchers.
-            const isRpEligible = positions.some(pos => (pos || '').toUpperCase() === 'RP');
-            if (isP && isRpEligible && mockDraftCountRelieverTypePitchers(roster) >= 2) return -Infinity;
+            // RP-exclusive cap: do not draft more than 1 RP-only pitcher.
+            const hasRP = positions.some(pos => (pos || '').toUpperCase() === 'RP');
+            const hasSP = positions.some(pos => (pos || '').toUpperCase() === 'SP');
+            const isRpExclusive = hasRP && !hasSP;
+            if (isP && isRpExclusive && mockDraftCountRpExclusivePitchers(roster) >= 1) return -Infinity;
 
             const canFillStarter = mockDraftCanFillOpenStartingSlot(player, roster);
             if (mustFillStarter && !canFillStarter) return -Infinity;
