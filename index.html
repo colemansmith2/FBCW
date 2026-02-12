@@ -12572,8 +12572,8 @@
         }
 
         .prospect-claim-card-modal {
-            width: 350px;
-            flex: 0 0 350px;
+            width: 400px;
+            flex: 0 0 400px;
             background: transparent;
             border: none;
             border-radius: 0;
@@ -12611,14 +12611,14 @@
         .prospect-claim-modal-team-chip {
             display: none;
             align-items: center;
-            gap: 0.45rem;
+            gap: 0.6rem;
             margin-left: auto;
             margin-right: 0.65rem;
             background: #eef4ff;
             border: 1px solid #ccd9f7;
             border-radius: 999px;
-            padding: 0.2rem 0.55rem 0.2rem 0.28rem;
-            max-width: 260px;
+            padding: 0.3rem 0.85rem 0.3rem 0.4rem;
+            max-width: 360px;
         }
 
         .prospect-claim-modal-team-chip.active {
@@ -12626,14 +12626,15 @@
         }
 
         .prospect-claim-modal-team-chip img {
-            width: 20px;
-            height: 20px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             object-fit: cover;
         }
 
         .prospect-claim-modal-team-chip span {
-            font-size: 0.64rem;
+            font-size: 0.82rem;
+            font-weight: 600;
             color: #244a98;
             white-space: nowrap;
             overflow: hidden;
@@ -12662,14 +12663,14 @@
         }
 
         .prospect-claim-player-card {
-            width: 335px;
+            width: 390px;
             background: #f2e5c9;
             border: 3px solid var(--retro-blue);
-            border-radius: 10px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: stretch;
-            padding: 0.55rem;
+            padding: 0.75rem;
             box-sizing: border-box;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
         }
@@ -12677,32 +12678,54 @@
         .prospect-claim-card-header {
             background: var(--retro-blue);
             border: 2px solid var(--retro-blue-dark);
-            border-radius: 8px 8px 0 0;
-            padding: 0.6rem 0.5rem 0.5rem;
+            border-radius: 10px 10px 0 0;
+            padding: 0.85rem 0.75rem 0.7rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.28rem;
+            gap: 0.4rem;
         }
 
         .prospect-claim-player-card .player-card-headshot-wrap {
-            margin-bottom: 0.1rem;
+            margin-bottom: 0.12rem;
+            width: 66px;
+            height: 66px;
+        }
+
+        .prospect-claim-player-card .player-card-headshot {
+            width: 66px;
+            height: 66px;
+        }
+
+        .prospect-claim-player-card .player-card-mlb-logo {
+            width: 26px;
+            height: 26px;
+            right: -6px;
+            bottom: -2px;
+        }
+
+        .prospect-claim-player-card .player-card-pos-badge {
+            font-size: 0.8rem;
+            padding: 0.16rem 0.48rem;
+            border-radius: 5px;
+            min-width: 30px;
+            margin-bottom: 0.2rem;
         }
 
         .prospect-claim-player-card .player-card-name {
             color: #1c2c1f;
-            margin-bottom: 0.12rem;
-            font-size: 0.72rem;
+            margin-bottom: 0.18rem;
+            font-size: 1rem;
             max-width: 100%;
             text-align: center;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            letter-spacing: 0.2px;
+            letter-spacing: 0.25px;
             background: #ffcc00;
             border: 1px solid #a87a00;
-            border-radius: 4px;
-            padding: 0.14rem 0.45rem;
+            border-radius: 6px;
+            padding: 0.2rem 0.65rem;
             font-style: italic;
             font-weight: 700;
             box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.18);
@@ -12711,48 +12734,43 @@
         .prospect-claim-player-card .player-card-mlb-line {
             display: flex;
             align-items: center;
-            gap: 0.28rem;
-            font-size: 0.6rem;
+            gap: 0.35rem;
+            font-size: 0.95rem;
+            font-weight: 700;
             color: rgba(255, 255, 255, 0.95);
-        }
-
-        .prospect-claim-player-card .player-card-mlb-line img {
-            width: 13px;
-            height: 13px;
-            object-fit: contain;
         }
 
         .prospect-claim-card-body {
             border: 2px solid var(--retro-blue-dark);
             border-top: none;
-            border-radius: 0 0 8px 8px;
+            border-radius: 0 0 10px 10px;
             background: #efe2c8;
-            padding: 0.45rem 0.45rem 0.4rem;
+            padding: 0.62rem 0.62rem 0.56rem;
         }
 
         .prospect-claim-card-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.28rem;
+            gap: 0.42rem;
         }
 
         .prospect-claim-card-stat {
             background: #f7f1e2;
             border: 1px solid #d2bf9c;
-            border-radius: 5px;
-            padding: 0.25rem 0.32rem;
+            border-radius: 6px;
+            padding: 0.3rem 0.4rem;
         }
 
         .prospect-claim-card-stat-label {
-            font-size: 0.5rem;
+            font-size: 0.64rem;
             color: #7b5b33;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.02rem;
+            letter-spacing: 0.55px;
+            margin-bottom: 0.08rem;
         }
 
         .prospect-claim-card-stat-value {
-            font-size: 0.65rem;
+            font-size: 1rem;
             color: #1f2f22;
             font-weight: 600;
             white-space: nowrap;
@@ -12977,6 +12995,16 @@
             text-overflow: ellipsis;
         }
 
+        .prospect-claim-team-player-rank {
+            margin-left: auto;
+            min-width: 24px;
+            text-align: right;
+            font-size: 0.78rem;
+            color: #6b7280;
+            font-weight: 700;
+            padding-left: 0.4rem;
+        }
+
         /* Mobile responsive */
         @media (max-width: 768px) {
             .prospect-controls {
@@ -13131,7 +13159,7 @@
 
             .prospect-claim-player-card {
                 width: 100%;
-                max-width: 340px;
+                max-width: 360px;
             }
 
             .prospect-claim-team-grid {
@@ -13143,7 +13171,7 @@
             }
 
             .prospect-claim-modal-team-chip {
-                max-width: 160px;
+                max-width: 220px;
                 margin-right: 0.35rem;
             }
 
@@ -39422,7 +39450,6 @@
                         <span class="player-card-pos-badge pos-${pos}">${pos}</span>
                         <div class="player-card-name" title="${prospect.name || ''}">${prospect.name || 'Unknown'}</div>
                         <div class="player-card-mlb-line">
-                            ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="" onerror="this.style.display='none'">` : ''}
                             <span>${mlbTeamDisplay || 'FA'}</span>
                         </div>
                     </div>
@@ -39577,7 +39604,7 @@
             await renderProspectClaimTeamList(teamKey);
 
             const playerName = prospectClaimState.prospect?.name || 'this player';
-            confirmText.textContent = `Are you sure you want to add "${playerName}"?`;
+            confirmText.textContent = `Are you sure you want to add ${playerName}?`;
             confirmEl.classList.add('active');
             teamListEl.classList.add('active');
             setProspectClaimView('review');
@@ -39604,6 +39631,20 @@
             try {
                 const keepers = await getTeamKeepersFromFirebase(teamKey, prospectClaimState.authenticatedConfigTeamKey);
                 const prospects = keepers.filter(k => k && k.player_name && (k.isProspect || (k.roundCost === 0) || (k.dollarCost === 0)));
+                const rankByName = {};
+                prospectsData.forEach(p => {
+                    if (!p || !p.name) return;
+                    const parsedRank = Number(p.rank);
+                    const storedRank = Number.isFinite(parsedRank) ? parsedRank : null;
+                    const normalized = normalizeProspectName(p.name);
+                    rankByName[normalized] = storedRank;
+                    rankByName[p.name.toLowerCase().trim()] = storedRank;
+                });
+                const getProspectRankLabel = (playerName) => {
+                    const normalized = normalizeProspectName(playerName || '');
+                    const rankValue = rankByName[normalized] ?? rankByName[(playerName || '').toLowerCase().trim()];
+                    return rankValue != null ? rankValue : '-';
+                };
 
                 if (prospects.length === 0) {
                     listBody.innerHTML = '<div class="prospect-claim-team-item"><span>No prospects currently claimed.</span></div>';
@@ -39652,6 +39693,7 @@
                                         <div class="prospect-claim-team-player">
                                             <span class="position-badge pos-${p.displayPos}">${p.displayPos}</span>
                                             <span class="prospect-claim-team-player-name">${p.player_name || ''}</span>
+                                            <span class="prospect-claim-team-player-rank">${getProspectRankLabel(p.player_name || '')}</span>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -39663,6 +39705,7 @@
                                         <div class="prospect-claim-team-player">
                                             <span class="position-badge pos-${p.displayPos}">${p.displayPos}</span>
                                             <span class="prospect-claim-team-player-name">${p.player_name || ''}</span>
+                                            <span class="prospect-claim-team-player-rank">${getProspectRankLabel(p.player_name || '')}</span>
                                         </div>
                                     </div>
                                 `).join('')}
