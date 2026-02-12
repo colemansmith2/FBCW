@@ -37724,17 +37724,10 @@
             tbody.innerHTML = '<tr><td colspan="2" class="homepage-placeholder">Loading projections...</td></tr>';
 
             try {
-                const response = await fetch('data/projections/projections_atc.json');
-                if (!response.ok) throw new Error('Could not load projections');
-
-                const data = await response.json();
-                const batters = data.batters || [];
-                const pitchers = data.pitchers || [];
-
-                console.log('Loaded projections - batters:', batters.length, 'pitchers:', pitchers.length);
-                if (batters.length > 0) {
-                    console.log('Sample batter positions:', batters.slice(0, 10).map(b => b.position));
-                }
+                // Use the same averaged projection systems as Preseason Tools Home view
+                await loadAverageProjections();
+                const batters = [...homeProjectionsBatters];
+                const pitchers = [...homeProjectionsPitchers];
 
                 // Positions to show (one player each)
                 const positions = ['C', '1B', '2B', '3B', 'SS', 'OF', 'SP', 'RP'];
@@ -37743,25 +37736,23 @@
                 for (const pos of positions) {
                     let candidates;
                     if (pos === 'SP' || pos === 'RP') {
-                        candidates = pitchers.filter(p => p.position === pos);
+                        candidates = pitchers.filter(p => getCleanDisplayPositions(p.position).includes(pos));
                     } else if (pos === 'OF') {
                         // OF can be OF, LF, CF, RF, or contain OF
                         candidates = batters.filter(p => {
-                            const playerPos = (p.position || '').toUpperCase();
-                            return playerPos === 'OF' || playerPos === 'LF' || playerPos === 'CF' || playerPos === 'RF' || playerPos.includes('OF');
+                            const positionsArray = getCleanDisplayPositions(p.position).map(x => x.toUpperCase());
+                            return positionsArray.includes('OF') || positionsArray.includes('LF') || positionsArray.includes('CF') || positionsArray.includes('RF');
                         });
                     } else {
                         // Match position exactly or check if it's included (e.g., "1B/DH" contains "1B")
                         candidates = batters.filter(p => {
-                            const playerPos = (p.position || '').toUpperCase();
-                            return playerPos === pos || playerPos.includes(pos);
+                            const positionsArray = getCleanDisplayPositions(p.position).map(x => x.toUpperCase());
+                            return positionsArray.includes(pos);
                         });
                     }
 
-                    console.log(`Position ${pos}: found ${candidates.length} candidates`);
-
                     // Sort by projected points and take the top one
-                    candidates.sort((a, b) => (b.projected_points || 0) - (a.projected_points || 0));
+                    candidates.sort((a, b) => (b.avgPoints || b.projected_points || 0) - (a.avgPoints || a.projected_points || 0));
                     if (candidates.length > 0) {
                         topByPosition.push({ ...candidates[0], display_position: pos });
                     }
@@ -37791,7 +37782,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="projected-pts">${(player.projected_points || 0).toFixed(0)}*</td>
+                            <td class="projected-pts">${(player.avgPoints || player.projected_points || 0).toFixed(0)}*</td>
                         </tr>
                     `;
                 }).join('');
@@ -37969,29 +37960,17 @@
             const keeperPlayers = [];
 
             try {
-                // First, try to load ATC projection data for headshots
-                let projBatters = [];
-                let projPitchers = [];
+                await loadAverageProjections();
 
-                // Check if projections are already loaded (from preseason tools)
-                if (typeof allProjectionBatters !== 'undefined' && allProjectionBatters.length > 0) {
-                    projBatters = allProjectionBatters;
-                    projPitchers = allProjectionPitchers || [];
-                } else {
-                    // Load ATC projections for headshots
-                    try {
-                        const projResponse = await fetch('data/projections/projections_atc.json');
-                        if (projResponse.ok) {
-                            const projData = await projResponse.json();
-                            projBatters = projData.batters || [];
-                            projPitchers = projData.pitchers || [];
-                        }
-                    } catch (e) {
-                        console.log('Could not load ATC projections for roster modal');
-                    }
+                function findAvgProjection(playerName, keeperPosition) {
+                    const nameLower = (playerName || '').toLowerCase().trim();
+                    const posList = getCleanDisplayPositions(keeperPosition).map(p => p.toUpperCase());
+                    const guessedType = posList.some(p => ['SP', 'RP', 'P'].includes(p)) ? 'pitcher' : 'batter';
+
+                    const typed = averageProjectionsMap[`${nameLower}|${guessedType}`];
+                    if (typed) return typed;
+                    return averageProjectionsMap[nameLower] || null;
                 }
-
-                const allProj = [...projBatters, ...projPitchers];
 
                 // Initialize Firebase if not already done
                 if (typeof firebase !== 'undefined' && !firebaseInitialized) {
@@ -38076,35 +38055,22 @@
                             for (const keeper of keepersArray) {
                                 if (!keeper || !keeper.player_name) continue;
 
-                                // Find projection data for headshot, position, and MLB team
-                                const projData = allProj.find(p =>
-                                    p.name && keeper.player_name &&
-                                    p.name.toLowerCase().trim() === keeper.player_name.toLowerCase().trim()
-                                );
-
-                                // Debug logging
-                                if (projData) {
-                                    console.log('Found projection for', keeper.player_name, '- mlb_team:', projData.mlb_team, '- team:', projData.team, '- Team:', projData.Team);
-                                } else {
-                                    console.log('No projection found for', keeper.player_name);
-                                }
-
-                                const position = keeper.position || projData?.position || '';
-                                const isPitcher = ['SP', 'RP', 'P'].includes(position);
-                                const projectedPoints = projData?.projected_points || 0;
-                                // Try multiple possible field names for MLB team
-                                const mlbTeam = projData?.mlb_team || projData?.team || projData?.Team || '';
+                                const avgProj = findAvgProjection(keeper.player_name, keeper.position);
+                                const position = keeper.position || avgProj?.position || '';
+                                const isPitcher = getCleanDisplayPositions(position).some(p => ['SP', 'RP', 'P'].includes(p.toUpperCase()));
+                                const projectedPoints = avgProj?.avgPoints || 0;
+                                const mlbTeam = avgProj?.mlb_team || '';
 
                                 keeperPlayers.push({
                                     name: keeper.player_name,
                                     primary_position: position,
                                     position_type: isPitcher ? 'P' : 'B',
                                     eligible_positions: [position],
-                                    headshot_url: projData?.headshot_url || '',
+                                    headshot_url: avgProj?.headshot || '',
                                     mlb_team: mlbTeam,
                                     acquisition_type: 'Keeper',
                                     fantasy_points: 0,  // Actual points (0 until season starts)
-                                    projected_points: projectedPoints,  // ATC projected points
+                                    projected_points: projectedPoints,  // Average projected points
                                     position_rank: null,
                                     isKeeper: true,
                                     isProspect: projectedPoints === 0  // Flag prospects
@@ -38120,23 +38086,18 @@
                     for (const keeper of teamKeepers) {
                         if (!keeper || !keeper.player_name) continue;
 
-                        const projData = allProj.find(p =>
-                            p.name && keeper.player_name &&
-                            p.name.toLowerCase().trim() === keeper.player_name.toLowerCase().trim()
-                        );
-
-                        const position = keeper.position || projData?.position || '';
-                        const isPitcher = ['SP', 'RP', 'P'].includes(position);
-                        const projectedPoints = projData?.projected_points || 0;
-                        // Try multiple possible field names for MLB team
-                        const mlbTeam = projData?.mlb_team || projData?.team || projData?.Team || '';
+                        const avgProj = findAvgProjection(keeper.player_name, keeper.position);
+                        const position = keeper.position || avgProj?.position || '';
+                        const isPitcher = getCleanDisplayPositions(position).some(p => ['SP', 'RP', 'P'].includes(p.toUpperCase()));
+                        const projectedPoints = avgProj?.avgPoints || 0;
+                        const mlbTeam = avgProj?.mlb_team || '';
 
                         keeperPlayers.push({
                             name: keeper.player_name,
                             primary_position: position,
                             position_type: isPitcher ? 'P' : 'B',
                             eligible_positions: [position],
-                            headshot_url: projData?.headshot_url || '',
+                            headshot_url: avgProj?.headshot || '',
                             mlb_team: mlbTeam,
                             acquisition_type: 'Keeper',
                             fantasy_points: 0,
