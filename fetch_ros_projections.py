@@ -5,7 +5,7 @@ Saves projections to data/projections/ros/ for use in the Trade Analyzer during 
 
 These are separate from the preseason projections in data/projections/ which remain untouched.
 
-Supported ROS projection systems (7 total):
+Supported ROS projection systems (7 total, all include batters and pitchers):
 - OOPSY DC (roopsydc)
 - ZiPS DC (rzipsdc)
 - Steamer (steamerr)
@@ -42,9 +42,6 @@ ROS_PROJECTION_SYSTEMS = {
     'ros_thebat':      'rthebat',
     'ros_thebatx':     'rthebatx',
 }
-
-# Systems that are batters-only
-BATTERS_ONLY_SYSTEMS = {'rthebatx'}
 
 # Your league's scoring settings (same as preseason)
 BATTING_SCORING = {
@@ -288,16 +285,9 @@ def fetch_and_save_ros_projections(output_name, api_type):
     print(f"Fetching {output_name.upper()} ROS Projections")
     print(f"{'='*50}")
 
-    is_batters_only = api_type in BATTERS_ONLY_SYSTEMS
-
     # Fetch raw data
     batters_raw = fetch_fangraphs_projections(api_type, "bat")
-
-    if is_batters_only:
-        pitchers_raw = []
-        print(f"  ℹ️  {output_name.upper()} is a batters-only projection system")
-    else:
-        pitchers_raw = fetch_fangraphs_projections(api_type, "pit")
+    pitchers_raw = fetch_fangraphs_projections(api_type, "pit")
 
     if not batters_raw and not pitchers_raw:
         print(f"\n⚠ No data fetched for {output_name}. API may be unavailable or season hasn't started.")
@@ -323,9 +313,6 @@ def fetch_and_save_ros_projections(output_name, api_type):
         'batters': batters,
         'pitchers': pitchers
     }
-
-    if is_batters_only:
-        output['note'] = 'This ROS projection system only provides batting projections'
 
     # Create output directory if needed
     os.makedirs(OUTPUT_DIR, exist_ok=True)

@@ -6,13 +6,16 @@ Saves projections to JSON files for use in the Preseason Tools tab.
 Supported projection systems:
 - Steamer
 - ZiPS
+- ZiPS DC (with playing time - preferred for 2026)
+- ZiPS 2027/2028 (multi-year forecasts)
 - Depth Charts (fangraphsdc)
 - The BAT (thebat)
 - The BAT X (thebatx)
 
-Usage: 
+Usage:
     python fetch_projections.py           # Fetch all projection systems
     python fetch_projections.py steamer   # Fetch specific system
+    python fetch_projections.py zipsdc    # Fetch ZiPS DC (playing time projections)
     python fetch_projections.py thebatx   # Fetch The BAT X only
 """
 
@@ -32,11 +35,19 @@ OUTPUT_DIR = "data/projections"
 # Key = output filename, Value = Fangraphs API type parameter
 PROJECTION_SYSTEMS = {
     'steamer': 'steamer',
-    'zips': 'zips', 
+    'zips': 'zips',
+    'zipsdc': 'zipsdc',    # ZiPS DC - with playing time projections (preferred for 2026)
+    'zips2027': 'zipsp1',  # ZiPS +1 year projection (2027)
+    'zips2028': 'zipsp2',  # ZiPS +2 year projection (2028)
     'depthcharts': 'fangraphsdc',
     'thebat': 'thebat',
-    'thebatx': 'thebatx'
+    'thebatx': 'thebatx',
+    'oopsy': 'oopsy',
+    'atc': 'atc'
 }
+
+# Systems that should include all players (no truncation)
+FULL_PLAYER_LIST_SYSTEMS = {'zips', 'zipsdc', 'zips2027', 'zips2028'}
 
 # Your league's scoring settings
 BATTING_SCORING = {
@@ -157,10 +168,18 @@ def process_batter_projections(raw_data):
             if not team or team == '- - -':
                 team = 'FA'
             
-            # Get position
-            position = player.get('ShortName', player.get('POS', 'Util'))
-            if not position or position == '-':
+            # Get position - Fangraphs API uses 'minpos' for position
+            position = player.get('minpos', 'Util')
+            
+            # Clean up position
+            if position:
+                position = str(position).strip()
+            if not position or position == '-' or position == 'nan':
                 position = 'Util'
+            
+            # Add ,Util suffix to match Yahoo format (e.g., "OF,Util", "SS,Util")
+            if position and position not in ['Util', 'P', 'SP', 'RP']:
+                position = f"{position},Util"
             
             # Calculate singles
             h = int(player.get('H', 0) or 0)
@@ -190,8 +209,8 @@ def process_batter_projections(raw_data):
             # Calculate fantasy points
             points = calculate_batting_points(stats)
             
-            # Get headshot URL (falls back to generic placeholder if no MLB ID)
-            mlb_id = player.get('mlbamid', player.get('MLBAMID', None))
+            # Get headshot URL - xMLBAMID is the MLB player ID from Fangraphs
+            mlb_id = player.get('xMLBAMID') or player.get('mlbamid') or player.get('MLBAMID')
             headshot_url = get_headshot_url(mlb_id)
             
             processed = {
@@ -259,8 +278,8 @@ def process_pitcher_projections(raw_data):
             # Calculate fantasy points
             points = calculate_pitching_points(stats)
             
-            # Get headshot URL (falls back to generic placeholder if no MLB ID)
-            mlb_id = player.get('mlbamid', player.get('MLBAMID', None))
+            # Get headshot URL - xMLBAMID is the MLB player ID from Fangraphs
+            mlb_id = player.get('xMLBAMID') or player.get('mlbamid') or player.get('MLBAMID')
             headshot_url = get_headshot_url(mlb_id)
             
             processed = {
@@ -290,45 +309,51 @@ def process_pitcher_projections(raw_data):
 def fetch_and_save_projections(output_name, api_type):
     """
     Fetch both batting and pitching projections and save to JSON.
-    
+
     Args:
-        output_name: Name for output file (e.g., 'steamer', 'thebatx')
-        api_type: Fangraphs API type parameter (e.g., 'steamer', 'thebatx')
+        output_name: Name for output file (e.g., 'steamer', 'thebat')
+        api_type: Fangraphs API type parameter (e.g., 'steamer', 'thebat')
     """
     print(f"\n{'='*50}")
     print(f"Fetching {output_name.upper()} Projections")
     print(f"{'='*50}")
-    
-    # The BAT X is a batters-only projection system
-    is_batters_only = (api_type == 'thebatx')
-    
+
+    # Determine if this system should include all players (no truncation)
+    include_all_players = output_name in FULL_PLAYER_LIST_SYSTEMS
+
     # Fetch raw data
     batters_raw = fetch_fangraphs_projections(api_type, "bat")
-    
-    if is_batters_only:
-        pitchers_raw = []
-        print(f"  ℹ️  {output_name.upper()} is a batters-only projection system")
-    else:
-        pitchers_raw = fetch_fangraphs_projections(api_type, "pit")
-    
+    pitchers_raw = fetch_fangraphs_projections(api_type, "pit")
+
     if not batters_raw and not pitchers_raw:
         print(f"\n⚠ No data fetched for {output_name}. API may be unavailable.")
         return False
-    
+
     # Process data
     batters = process_batter_projections(batters_raw)
     pitchers = process_pitcher_projections(pitchers_raw) if pitchers_raw else []
-    
-    # Truncate to top 400 each (already sorted by projected points)
-    batters = batters[:400]
-    pitchers = pitchers[:400]
-    
+
+    # Truncate to top 400 each (already sorted by projected points) unless it's a full-list system
+    if not include_all_players:
+        batters = batters[:400]
+        pitchers = pitchers[:400]
+    else:
+        print(f"  ℹ️  Including all players for {output_name.upper()} (no truncation)")
+
     print(f"\n  Processed {len(batters)} batters and {len(pitchers)} pitchers")
-    
+
+    # Determine projection year based on system
+    if output_name == 'zips2027':
+        projection_year = 2027
+    elif output_name == 'zips2028':
+        projection_year = 2028
+    else:
+        projection_year = 2026
+
     # Build output matching existing JSON format
     output = {
         'generated_at': datetime.now().isoformat(),
-        'year': 2025,  # Update this as needed
+        'year': projection_year,
         'projection_type': output_name,
         'scoring': {
             'batting': BATTING_SCORING,
@@ -337,10 +362,10 @@ def fetch_and_save_projections(output_name, api_type):
         'batters': batters,
         'pitchers': pitchers
     }
-    
-    # Add note for batters-only systems
-    if is_batters_only:
-        output['note'] = 'This projection system only provides batting projections'
+
+    # Add note for multi-year ZiPS projections
+    if output_name in ['zips2027', 'zips2028']:
+        output['note'] = f'ZiPS {projection_year} projection (multi-year forecast)'
     
     # Create output directory if needed
     os.makedirs(OUTPUT_DIR, exist_ok=True)
