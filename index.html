@@ -17329,11 +17329,7 @@
 
             <div id="proj-loading" class="loading" style="display: none;">Loading projections...</div>
             <div id="proj-error" class="error" style="display: none;"></div>
-            <div id="proj-batx-notice"
-                style="display: none; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; color: #856404;">
-                <strong>ℹ️ Note:</strong> The BAT X only provides batting projections. Pitcher data is not available for
-                this system.
-            </div>
+            <!-- BAT X notice removed - now has full projections -->
             <div id="proj-no-data" style="text-align: center; padding: 2rem; color: #666;">
                 <p style="font-size: 1.1rem; margin-bottom: 1rem;">No projection data available yet.</p>
                 <p>Run <code
@@ -17418,11 +17414,7 @@
                     </div>
                 </div>
 
-                <div id="lineup-batx-notice"
-                    style="display: none; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; color: #856404;">
-                    <strong>ℹ️ Note:</strong> The BAT X only provides batting projections. Pitcher projections shown as
-                    "—".
-                </div>
+                <!-- BAT X notice removed - now has full projections -->
 
                 <div class="lineup-ticker-wrapper">
                     <button class="lineup-ticker-nav-btn" onclick="navigateLineupTicker(-1)">‹</button>
@@ -26792,9 +26784,7 @@
             containerEl.style.display = 'none';
             if (noDataEl) noDataEl.style.display = 'none';
 
-            // Hide any previous BAT X notice
-            const batxNotice = document.getElementById('proj-batx-notice');
-            if (batxNotice) batxNotice.style.display = 'none';
+            // BAT X now has full projections — no notice needed
 
             // Load average projections first (for headshot fallbacks and Home view)
             await loadAverageProjections();
@@ -26855,10 +26845,7 @@
 
                 console.log(`Loaded ${allProjectionBatters.length} batters and ${allProjectionPitchers.length} pitchers`);
 
-                // Show toast popup if The BAT X (batters only)
-                if (projectionType === 'thebatx' && allProjectionPitchers.length === 0) {
-                    showBatXToast();
-                }
+                // BAT X now has full projections — no toast needed
 
                 // Handle Shohei Ohtani specially - normalize position to Util for batter, SP for pitcher
                 allProjectionBatters.forEach(p => {
@@ -26941,42 +26928,7 @@
             }
         }
 
-        // Toast notification for BAT X
-        function showBatXToast() {
-            // Remove existing toast if any
-            const existingToast = document.getElementById('batx-toast');
-            if (existingToast) existingToast.remove();
-
-            const toast = document.createElement('div');
-            toast.id = 'batx-toast';
-            toast.innerHTML = 'The BAT X only projects batters, choose another projection to see pitchers';
-            toast.style.cssText = `
-                position: fixed;
-                top: 20px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: var(--retro-blue);
-                color: white;
-                padding: 12px 24px;
-                border-radius: 8px;
-                font-size: 14px;
-                font-weight: 500;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                z-index: 10000;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-            `;
-            document.body.appendChild(toast);
-
-            // Fade in
-            setTimeout(() => toast.style.opacity = '1', 10);
-
-            // Fade out and remove after 2 seconds
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => toast.remove(), 300);
-            }, 2000);
-        }
+        // showBatXToast removed — BAT X now has full projections
 
         function calculateProjectionPositionRanks() {
             // Combine all players for ranking
@@ -29574,12 +29526,6 @@
             // Load the selected projection type
             const projType = document.getElementById('lineup-projection-type')?.value || 'thebat';
 
-            // Show/hide BAT X notice
-            const batxNotice = document.getElementById('lineup-batx-notice');
-            if (batxNotice) {
-                batxNotice.style.display = projType === 'thebatx' ? 'block' : 'none';
-            }
-
             await loadLineupProjections(projType);
 
             // Load fresh 2026 team data for updated logos (using normalized manager names)
@@ -30032,12 +29978,6 @@
 
         async function updateLineupProjections() {
             const projType = document.getElementById('lineup-projection-type')?.value || 'thebat';
-
-            // Show/hide BAT X notice
-            const batxNotice = document.getElementById('lineup-batx-notice');
-            if (batxNotice) {
-                batxNotice.style.display = projType === 'thebatx' ? 'block' : 'none';
-            }
 
             await loadLineupProjections(projType);
             renderLineupTicker();
