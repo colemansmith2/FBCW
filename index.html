@@ -13637,6 +13637,12 @@
             font-size: 0.85rem;
         }
         .mock-draft-available-table tbody tr:hover { background: #f0f8ff; }
+        .mock-draft-available-table .mock-draft-col-2025 {
+            border-left: 2px solid #ccc;
+        }
+        .mock-draft-available-table .mock-draft-col-rank {
+            border-right: 2px solid #ccc;
+        }
         .mock-draft-draft-btn {
             background: #2ecc71;
             color: white;
@@ -18090,11 +18096,11 @@
                                     <tr>
                                         <th>#</th>
                                         <th>Player</th>
+                                        <th class="mock-draft-col-2025">2025</th>
+                                        <th class="mock-draft-col-rank">Rank</th>
+                                        <th class="mock-draft-sortable" data-sort="min" onclick="mockDraftSortAvailable('min', this)">Min</th>
                                         <th class="mock-draft-sortable active" data-sort="avg" onclick="mockDraftSortAvailable('avg', this)">Proj ▼</th>
                                         <th class="mock-draft-sortable" data-sort="max" onclick="mockDraftSortAvailable('max', this)">Max</th>
-                                        <th class="mock-draft-sortable" data-sort="min" onclick="mockDraftSortAvailable('min', this)">Min</th>
-                                        <th>2025</th>
-                                        <th>Rank</th>
                                         <th></th>
                                     </tr>
                                 </thead>
@@ -41224,11 +41230,11 @@
                             <span class="player-mlb-team">${mlbLogoHtml}${mlbDisplay} ${posBadges}</span>
                         </div>
                     </div></td>
+                    <td class="mock-draft-col-2025" style="color:#666;font-size:0.8rem;">${pts2025Display}</td>
+                    <td class="mock-draft-col-rank" style="color:#888;font-size:0.75rem;">${rank2025Display}</td>
+                    <td style="color:#999;font-size:0.8rem;">${player.minPoints}</td>
                     <td><strong>${player.avgPoints}</strong></td>
                     <td style="color:#888;font-size:0.8rem;">${player.maxPoints}</td>
-                    <td style="color:#999;font-size:0.8rem;">${player.minPoints}</td>
-                    <td style="color:#666;font-size:0.8rem;">${pts2025Display}</td>
-                    <td style="color:#888;font-size:0.75rem;">${rank2025Display}</td>
                     <td><button class="mock-draft-draft-btn" onclick="userMockDraftPick(${realIdx})" ${draftDisabled}>Draft</button></td>
                 </tr>`;
             });
