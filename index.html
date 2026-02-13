@@ -13249,73 +13249,6 @@
             margin: 1rem auto;
             display: block;
         }
-        .mock-draft-team-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 0.75rem;
-            margin: 1.5rem auto;
-            max-width: 480px;
-        }
-        .mock-draft-team-grid-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.3rem;
-            padding: 0.6rem 0.3rem;
-            border-radius: 10px;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            background: rgba(255,255,255,0.5);
-        }
-        .mock-draft-team-grid-item:hover {
-            border-color: var(--retro-blue);
-            background: rgba(26,26,46,0.05);
-            transform: translateY(-2px);
-            box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-        }
-        .mock-draft-team-grid-item.selected {
-            border-color: #2ecc71;
-            background: rgba(46,204,113,0.1);
-            box-shadow: 0 0 0 3px rgba(46,204,113,0.2);
-        }
-        .mock-draft-team-grid-item img {
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #e0e0e0;
-            transition: border-color 0.15s;
-        }
-        .mock-draft-team-grid-item.selected img {
-            border-color: #2ecc71;
-        }
-        .mock-draft-team-grid-item .grid-manager {
-            font-size: 0.72rem;
-            font-weight: 600;
-            color: #555;
-            text-align: center;
-            line-height: 1.2;
-        }
-        .mock-draft-team-grid-item .grid-team-name {
-            font-size: 0.6rem;
-            color: #999;
-            text-align: center;
-            line-height: 1.1;
-            max-width: 90px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        .mock-draft-team-grid-item.selected .grid-manager {
-            color: #27ae60;
-        }
-        @media (max-width: 500px) {
-            .mock-draft-team-grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 0.5rem;
-            }
-        }
         .mock-draft-btn-primary {
             background: var(--retro-blue);
             color: white;
@@ -13372,6 +13305,17 @@
             align-items: center;
             width: 60px;
         }
+        .mock-draft-order-slot.selectable {
+            cursor: pointer;
+            padding: 0.3rem;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            transition: all 0.15s ease;
+        }
+        .mock-draft-order-slot.selectable:hover {
+            border-color: var(--retro-blue);
+            background: rgba(26,26,46,0.05);
+        }
         .mock-draft-order-slot img {
             width: 40px;
             height: 40px;
@@ -13381,6 +13325,7 @@
         }
         .mock-draft-order-slot.tbd img { opacity: 0.3; border-style: dashed; }
         .mock-draft-order-slot.user-slot img { border-color: #2ecc71; border-width: 3px; box-shadow: 0 0 8px rgba(46,204,113,0.4); }
+        .mock-draft-order-slot.user-slot.selectable { border-color: #2ecc71; background: rgba(46,204,113,0.08); }
         .mock-draft-order-slot .slot-pick-num {
             font-size: 0.65rem;
             color: #999;
@@ -18078,7 +18023,6 @@
                     <img src="data/page_logos/mock_drafter_logo.png" alt="Mock Draft" class="mock-draft-logo">
                     <h3>2026 Mock Draft</h3>
                     <p style="color: #666; margin-bottom: 1rem;">Choose your team to begin.</p>
-                    <div id="mock-draft-team-grid" class="mock-draft-team-grid"></div>
                     <div id="mock-draft-order-preview" class="mock-draft-order-preview"></div>
                     <button id="mock-draft-start-btn" class="mock-draft-btn-primary" onclick="startMockDraft()" disabled>
                         Choose Team
@@ -40039,25 +39983,13 @@
         }
 
         function populateMockDraftTeamSelect() {
-            const grid = document.getElementById('mock-draft-team-grid');
-            if (!grid || !keeperConfig) return;
-            const teams = Object.entries(mockDraftState.teamInfo || {})
-                .map(([key, t]) => ({ key, name: t.teamName, manager: t.manager, logo: t.logo }))
-                .sort((a, b) => a.manager.localeCompare(b.manager));
-            let html = '';
-            teams.forEach(t => {
-                html += `<div class="mock-draft-team-grid-item" data-team-key="${t.key}" onclick="onMockDraftTeamSelect('${t.key}')">
-                    <img src="${t.logo}" alt="${t.manager}" onerror="this.style.opacity='0.3'">
-                    <span class="grid-manager">${t.manager}</span>
-                    <span class="grid-team-name">${t.name}</span>
-                </div>`;
-            });
-            grid.innerHTML = html;
+            // Team selection is now handled by clicking logos in the draft order preview
+            // Just ensure the preview is rendered
+            renderDraftOrderPreview();
         }
 
         function onMockDraftTeamSelect(teamKey) {
             const btn = document.getElementById('mock-draft-start-btn');
-            const grid = document.getElementById('mock-draft-team-grid');
 
             // Toggle selection: deselect if clicking the already-selected team
             if (mockDraftState.userTeamKey === teamKey) {
@@ -40070,11 +40002,6 @@
                 }
             }
 
-            // Update grid selection highlight
-            grid.querySelectorAll('.mock-draft-team-grid-item').forEach(el => {
-                el.classList.toggle('selected', el.dataset.teamKey === mockDraftState.userTeamKey);
-            });
-
             btn.disabled = !mockDraftState.userTeamKey;
             renderDraftOrderPreview();
         }
@@ -40082,16 +40009,19 @@
         function renderDraftOrderPreview() {
             const container = document.getElementById('mock-draft-order-preview');
             if (!container || !mockDraftConfig) return;
+            const isSetup = mockDraftState.phase === 'setup' || !mockDraftState.phase;
             let html = '';
             mockDraftConfig.draft_order.forEach((mgr, i) => {
                 const teamKey = mgr ? mockDraftResolveManagerToTeamKey(mgr) : null;
                 const info = teamKey ? mockDraftState.teamInfo[teamKey] : null;
                 const isTBD = !mgr;
                 const isUser = teamKey && teamKey === mockDraftState.userTeamKey;
-                const cls = `mock-draft-order-slot${isTBD ? ' tbd' : ''}${isUser ? ' user-slot' : ''}`;
+                const canSelect = isSetup && !isTBD && teamKey;
+                const cls = `mock-draft-order-slot${isTBD ? ' tbd' : ''}${isUser ? ' user-slot' : ''}${canSelect ? ' selectable' : ''}`;
                 const logo = info ? info.logo : 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwIiB5PSI2MCIgZm9udC1zaXplPSI0MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzk5OSI+PzwvdGV4dD48L3N2Zz4=';
                 const name = isTBD ? 'TBD' : (info ? info.manager : mgr);
-                html += `<div class="${cls}">
+                const clickHandler = canSelect ? ` onclick="onMockDraftTeamSelect('${teamKey}')"` : '';
+                html += `<div class="${cls}"${clickHandler}>
                     <span class="slot-pick-num">#${i + 1}</span>
                     <img src="${logo}" alt="${name}" onerror="this.style.opacity='0.3'">
                     <span class="slot-manager">${name}</span>
@@ -41125,9 +41055,6 @@
             document.getElementById('mock-draft-start-btn').disabled = true;
             document.getElementById('mock-draft-start-btn').textContent = 'Choose Team';
             document.getElementById('mock-draft-user-turn-banner').style.display = 'none';
-            // Clear grid selection
-            const grid = document.getElementById('mock-draft-team-grid');
-            if (grid) grid.querySelectorAll('.mock-draft-team-grid-item').forEach(el => el.classList.remove('selected'));
             const resetPauseBtn = document.getElementById('mock-draft-pause-btn');
             resetPauseBtn.textContent = '⏸ Pause';
             resetPauseBtn.className = 'mock-draft-btn-secondary';
