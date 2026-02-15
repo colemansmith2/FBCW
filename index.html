@@ -14785,6 +14785,285 @@
             }
         }
 
+        /* ===== HISTORICAL KEEPERS STYLES ===== */
+        .hist-keeper-tabs {
+            display: flex;
+            gap: 0.4rem;
+        }
+        .hist-keeper-tab {
+            padding: 0.45rem 1rem;
+            border: 2px solid var(--retro-blue);
+            border-radius: 8px;
+            background: white;
+            color: var(--retro-blue);
+            font-family: 'Basis33', monospace;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .hist-keeper-tab:hover { background: #f0f4ff; }
+        .hist-keeper-tab.active {
+            background: var(--retro-blue);
+            color: white;
+        }
+        .hist-keeper-year-section {
+            margin-bottom: 1.5rem;
+        }
+        .hist-keeper-year-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            background: var(--retro-blue);
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .hist-keeper-year-header:hover { background: var(--retro-blue-light); }
+        .hist-keeper-year-header .year-label {
+            font-family: 'Basis33', monospace;
+            font-size: 1.05rem;
+            letter-spacing: 1px;
+        }
+        .hist-keeper-year-header .year-count {
+            background: rgba(255,255,255,0.2);
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+        .hist-keeper-year-header .year-chevron {
+            margin-left: auto;
+            font-size: 0.9rem;
+            transition: transform 0.2s;
+        }
+        .hist-keeper-year-header.collapsed .year-chevron {
+            transform: rotate(-90deg);
+        }
+        .hist-keeper-year-body {
+            padding: 0.75rem 0;
+        }
+        .hist-keeper-year-body.collapsed {
+            display: none;
+        }
+        .hist-keeper-team-group {
+            margin-bottom: 1rem;
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .hist-keeper-team-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: #faf3e0;
+            border-bottom: 1px solid #e8e8e8;
+        }
+        .hist-keeper-team-header img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .hist-keeper-team-header .team-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #333;
+        }
+        .hist-keeper-team-header .team-manager {
+            font-size: 0.75rem;
+            color: #888;
+        }
+        .hist-keeper-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.75rem;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.82rem;
+        }
+        .hist-keeper-row:last-child { border-bottom: none; }
+        .hist-keeper-row .hk-headshot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            background: #f0f0f0;
+        }
+        .hist-keeper-row .hk-headshot.placeholder {
+            background: #e8e8e8;
+        }
+        .hist-keeper-row .hk-player-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .hist-keeper-row .hk-player-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .hist-keeper-row .hk-player-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-top: 1px;
+        }
+        .hist-keeper-row .hk-player-meta .position-badge {
+            font-size: 0.55rem;
+            padding: 0.05rem 0.25rem;
+            min-width: 18px;
+        }
+        .hist-keeper-row .hk-round {
+            font-size: 0.72rem;
+            color: #888;
+            white-space: nowrap;
+            min-width: 38px;
+            text-align: center;
+        }
+        .hist-keeper-row .hk-points {
+            font-weight: bold;
+            color: var(--retro-blue);
+            font-size: 0.8rem;
+            min-width: 45px;
+            text-align: right;
+        }
+        .hist-keeper-row .hk-points.no-data {
+            color: #ccc;
+            font-weight: 400;
+        }
+
+        /* By Team View */
+        .hist-keeper-manager-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .hist-keeper-manager-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 0.75rem;
+            background: #faf3e0;
+            border-bottom: 2px solid #e0d5c0;
+            cursor: pointer;
+            user-select: none;
+        }
+        .hist-keeper-manager-header:hover { background: #f5edda; }
+        .hist-keeper-manager-header img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .hist-keeper-manager-header .mgr-name {
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: var(--retro-blue);
+        }
+        .hist-keeper-manager-header .mgr-count {
+            font-size: 0.7rem;
+            color: #888;
+        }
+        .hist-keeper-manager-header .mgr-chevron {
+            margin-left: auto;
+            font-size: 0.9rem;
+            color: #888;
+            transition: transform 0.2s;
+        }
+        .hist-keeper-manager-header.collapsed .mgr-chevron {
+            transform: rotate(-90deg);
+        }
+        .hist-keeper-manager-body {
+            padding: 0.5rem 0;
+        }
+        .hist-keeper-manager-body.collapsed {
+            display: none;
+        }
+        .hist-keeper-manager-year-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.75rem;
+            font-family: 'Basis33', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            color: var(--retro-blue);
+            border-bottom: 1px solid rgba(10,35,81,0.15);
+            margin-top: 0.3rem;
+        }
+        .hist-keeper-manager-year-label:first-child { margin-top: 0; }
+        .hist-keeper-manager-year-label img {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .hist-keeper-manager-year-label .year-team-name {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 0.72rem;
+            color: #888;
+            letter-spacing: 0;
+        }
+
+        /* Historical Keepers Mobile */
+        @media (max-width: 768px) {
+            .hist-keeper-tabs {
+                gap: 0.3rem;
+            }
+            .hist-keeper-tab {
+                padding: 0.35rem 0.7rem;
+                font-size: 0.75rem;
+            }
+            .hist-keeper-year-header {
+                padding: 0.5rem 0.6rem;
+            }
+            .hist-keeper-year-header .year-label {
+                font-size: 0.9rem;
+            }
+            .hist-keeper-team-header {
+                padding: 0.4rem 0.5rem;
+            }
+            .hist-keeper-team-header img {
+                width: 24px;
+                height: 24px;
+            }
+            .hist-keeper-team-header .team-name {
+                font-size: 0.78rem;
+            }
+            .hist-keeper-row {
+                gap: 0.35rem;
+                padding: 0.35rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            .hist-keeper-row .hk-headshot {
+                width: 24px;
+                height: 24px;
+            }
+            .hist-keeper-row .hk-round {
+                font-size: 0.65rem;
+                min-width: 32px;
+            }
+            .hist-keeper-row .hk-points {
+                font-size: 0.72rem;
+                min-width: 38px;
+            }
+            .hist-keeper-manager-header img {
+                width: 28px;
+                height: 28px;
+            }
+            .hist-keeper-manager-header .mgr-name {
+                font-size: 0.85rem;
+            }
+        }
+
         /* Bylaws Section Styles */
         .bylaws-container {
             max-width: 1000px;
@@ -17917,6 +18196,19 @@
                 <div class="lineup-ticker-dots" id="lineup-ticker-dots">
                     <!-- Team logo dots will be populated by JavaScript -->
                 </div>
+            </div>
+
+            <!-- Historical Keepers Section -->
+            <div style="margin-top: 3rem; border-top: 2px solid #e0e0e0; padding-top: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                    <h3 style="color: var(--retro-blue); margin: 0;">Historical Keepers</h3>
+                    <div class="hist-keeper-tabs">
+                        <button class="hist-keeper-tab active" onclick="toggleHistKeeperView('year')">By Year</button>
+                        <button class="hist-keeper-tab" onclick="toggleHistKeeperView('team')">By Team</button>
+                    </div>
+                </div>
+                <div id="hist-keeper-loading" style="text-align:center;color:#888;padding:2rem;">Loading keeper history...</div>
+                <div id="hist-keeper-content"></div>
             </div>
 
             <!-- Trade Management Section -->
@@ -25909,6 +26201,8 @@
                     displayLeagueKeepers();
                     // Initialize projected lineups after keeper data is ready
                     initProjectedLineups();
+                    // Load historical keepers section
+                    loadHistoricalKeepers();
                 }
 
                 // Load projections if not already loaded
@@ -30466,6 +30760,351 @@
 
             await loadLineupProjections(projType);
             renderLineupTicker();
+        }
+
+        // ===== HISTORICAL KEEPERS =====
+        let historicalKeepersData = null;
+        let histKeeperView = 'year';
+
+        // Map keepers.json manager names → display names (and for matching to teams.json)
+        const KEEPER_MGR_DISPLAY = {
+            'Bob': 'Robert', 'Red': 'Red', 'Josh B': 'Josh B', 'Josh S': 'Josh S',
+            'Rich': 'Rich', 'Riley': 'Riley', 'John': 'John', 'Tyler': 'Tyler',
+            'Logan C': 'Logan C', 'Logan S': 'Logan S', 'Dylan': 'Dylan',
+            'Ryan': 'Ryan', 'Coleman': 'Coleman', 'Nate': 'Nate', 'Dalton': 'Dalton'
+        };
+
+        function normalizeKeeperPlayerName(name) {
+            if (!name) return '';
+            return name
+                .replace(/\s*\(Batter\)\s*/i, '')
+                .replace(/\s*\(Pitcher\)\s*/i, '')
+                .toLowerCase()
+                .replace(/[.']/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function findPlayerInStats(playerName, statsArray) {
+            if (!statsArray || !playerName) return null;
+            const normName = normalizeKeeperPlayerName(playerName);
+            // Exact normalized match first
+            let match = statsArray.find(p => normalizeKeeperPlayerName(p.name) === normName);
+            if (match) return match;
+            // Fuzzy: try startsWith for suffix issues (Jr vs Jr.)
+            match = statsArray.find(p => {
+                const pNorm = normalizeKeeperPlayerName(p.name);
+                return pNorm.startsWith(normName) || normName.startsWith(pNorm);
+            });
+            return match || null;
+        }
+
+        async function loadHistoricalKeepers() {
+            if (historicalKeepersData) {
+                renderHistoricalKeepers(histKeeperView);
+                return;
+            }
+            const loadingEl = document.getElementById('hist-keeper-loading');
+            try {
+                // Fetch keepers.json
+                const keepersResp = await fetch('data/keepers.json');
+                const keepersJson = await keepersResp.json();
+
+                const result = {}; // { year: [ { playerName, displayName, manager, round, teamName, teamLogo, headshot, position, points } ] }
+                const years = Object.keys(keepersJson).sort((a, b) => b - a); // newest first
+
+                // Process each year in keepers.json (2022-2025)
+                for (const year of years) {
+                    const yearNum = parseInt(year);
+                    const yearKeepers = keepersJson[year];
+
+                    // Load teams and player stats for this year
+                    let teamsData = [];
+                    let playerStats = [];
+                    try {
+                        const [teamsResp, statsResp] = await Promise.all([
+                            fetch(`data/historical/${year}/teams.json`),
+                            fetch(`data/historical/${year}/player_stats.json`)
+                        ]);
+                        if (teamsResp.ok) teamsData = await teamsResp.json();
+                        if (statsResp.ok) playerStats = await statsResp.json();
+                    } catch (e) {
+                        console.log(`Could not load data for ${year}:`, e);
+                    }
+
+                    // Build normalized manager → team info map
+                    const mgrTeamMap = {};
+                    teamsData.forEach(team => {
+                        const normMgr = normalizeManagerName(team.manager, yearNum, team.team_name, team.team_key);
+                        mgrTeamMap[normMgr] = {
+                            teamName: team.team_name,
+                            teamLogo: fixTeamLogo(team.team_logo),
+                            teamKey: team.team_key
+                        };
+                    });
+
+                    const entries = [];
+                    for (const [playerName, info] of Object.entries(yearKeepers)) {
+                        const keeperMgr = info.manager; // e.g. "Bob"
+                        const displayMgr = KEEPER_MGR_DISPLAY[keeperMgr] || keeperMgr;
+
+                        // Find team info by matching display manager to normalized teams.json manager
+                        const teamInfo = mgrTeamMap[displayMgr] || {};
+
+                        // Find player stats
+                        const playerMatch = findPlayerInStats(playerName, playerStats);
+
+                        entries.push({
+                            playerName: playerName,
+                            displayName: playerName,
+                            manager: displayMgr,
+                            round: info.round,
+                            teamName: teamInfo.teamName || '',
+                            teamLogo: teamInfo.teamLogo || '',
+                            headshot: playerMatch ? playerMatch.headshot_url : '',
+                            position: playerMatch ? playerMatch.primary_position : '',
+                            points: playerMatch ? (playerMatch.fantasy_points || playerMatch.full_season_fantasy_points || null) : null
+                        });
+                    }
+                    result[year] = entries;
+                }
+
+                // Process 2026 keepers from Firebase / keeperConfig
+                const entries2026 = [];
+                try {
+                    let config2026 = keeperConfig;
+                    if (!config2026) {
+                        const cfgResp = await fetch('data/keepers/keeper_config.json');
+                        if (cfgResp.ok) config2026 = await cfgResp.json();
+                    }
+
+                    if (config2026 && config2026.teams) {
+                        for (const [teamKey, teamInfo] of Object.entries(config2026.teams)) {
+                            const normMgr = normalizeManagerName(teamInfo.manager, 2026, teamInfo.team_name, teamKey);
+                            const teamLogo = fixTeamLogo(teamInfo.team_logo);
+
+                            // Get keepers from Firebase cache
+                            const teamKeepers = keeperSelections ? keeperSelections[teamKey] : null;
+                            if (teamKeepers && Array.isArray(teamKeepers)) {
+                                teamKeepers.forEach(k => {
+                                    if (k.isProspect) return; // Skip prospects, only show keepers
+                                    entries2026.push({
+                                        playerName: k.player_name || k.playerName || '',
+                                        displayName: k.player_name || k.playerName || '',
+                                        manager: normMgr,
+                                        round: k.roundCost || k.round || '?',
+                                        teamName: teamInfo.team_name,
+                                        teamLogo: teamLogo,
+                                        headshot: k.headshot_url || '',
+                                        position: k.position || '',
+                                        points: null // Season not played
+                                    });
+                                });
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log('Could not load 2026 keepers:', e);
+                }
+                if (entries2026.length > 0) {
+                    result['2026'] = entries2026;
+                }
+
+                historicalKeepersData = result;
+                if (loadingEl) loadingEl.style.display = 'none';
+                renderHistoricalKeepers(histKeeperView);
+            } catch (e) {
+                console.error('Error loading historical keepers:', e);
+                if (loadingEl) loadingEl.textContent = 'Failed to load keeper history.';
+            }
+        }
+
+        function toggleHistKeeperView(view) {
+            histKeeperView = view;
+            document.querySelectorAll('.hist-keeper-tab').forEach(t => t.classList.remove('active'));
+            document.querySelector(`.hist-keeper-tab[onclick*="${view}"]`)?.classList.add('active');
+            renderHistoricalKeepers(view);
+        }
+
+        function toggleHistKeeperYear(yearEl) {
+            yearEl.classList.toggle('collapsed');
+            yearEl.nextElementSibling.classList.toggle('collapsed');
+        }
+
+        function toggleHistKeeperManager(mgrEl) {
+            mgrEl.classList.toggle('collapsed');
+            mgrEl.nextElementSibling.classList.toggle('collapsed');
+        }
+
+        const HK_PLACEHOLDER_IMG = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+
+        function renderHistKeeperRow(entry) {
+            const headshot = entry.headshot
+                ? `<img src="${entry.headshot}" class="hk-headshot" alt="" onerror="this.src='${HK_PLACEHOLDER_IMG}'">`
+                : `<div class="hk-headshot placeholder"></div>`;
+            const posBadge = entry.position
+                ? `<span class="position-badge pos-${entry.position}">${entry.position}</span>`
+                : '';
+            const ptsDisplay = entry.points !== null
+                ? `<span class="hk-points">${Math.round(entry.points)}</span>`
+                : `<span class="hk-points no-data">—</span>`;
+
+            return `
+                <div class="hist-keeper-row">
+                    ${headshot}
+                    <div class="hk-player-info">
+                        <div class="hk-player-name">${entry.displayName}</div>
+                        <div class="hk-player-meta">${posBadge}</div>
+                    </div>
+                    <span class="hk-round">Rd ${entry.round}</span>
+                    ${ptsDisplay}
+                </div>
+            `;
+        }
+
+        function renderHistoricalKeepers(view) {
+            const container = document.getElementById('hist-keeper-content');
+            if (!container || !historicalKeepersData) return;
+
+            if (view === 'team') {
+                renderHistKeepersByTeam(container);
+            } else {
+                renderHistKeepersByYear(container);
+            }
+        }
+
+        function renderHistKeepersByYear(container) {
+            const years = Object.keys(historicalKeepersData).sort((a, b) => b - a);
+            let html = '';
+
+            years.forEach(year => {
+                const entries = historicalKeepersData[year];
+                if (!entries || entries.length === 0) return;
+
+                // Group by manager
+                const byManager = {};
+                entries.forEach(e => {
+                    if (!byManager[e.manager]) {
+                        byManager[e.manager] = { teamName: e.teamName, teamLogo: e.teamLogo, keepers: [] };
+                    }
+                    byManager[e.manager].keepers.push(e);
+                });
+
+                // Sort managers alphabetically
+                const managers = Object.keys(byManager).sort();
+
+                html += `
+                    <div class="hist-keeper-year-section">
+                        <div class="hist-keeper-year-header" onclick="toggleHistKeeperYear(this)">
+                            <span class="year-label">${year} Season</span>
+                            <span class="year-count">${entries.length} keepers</span>
+                            <span class="year-chevron">▼</span>
+                        </div>
+                        <div class="hist-keeper-year-body">
+                `;
+
+                managers.forEach(mgr => {
+                    const group = byManager[mgr];
+                    // Sort keepers by round ascending
+                    group.keepers.sort((a, b) => a.round - b.round);
+
+                    const logoHtml = group.teamLogo
+                        ? `<img src="${group.teamLogo}" alt="" onerror="this.style.display='none'">`
+                        : '';
+
+                    html += `
+                        <div class="hist-keeper-team-group">
+                            <div class="hist-keeper-team-header">
+                                ${logoHtml}
+                                <span class="team-name">${group.teamName || 'Unknown'}</span>
+                                <span class="team-manager">— ${mgr}</span>
+                            </div>
+                            ${group.keepers.map(k => renderHistKeeperRow(k)).join('')}
+                        </div>
+                    `;
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderHistKeepersByTeam(container) {
+            // Collect all keepers grouped by manager across all years
+            const byManager = {};
+            const years = Object.keys(historicalKeepersData).sort((a, b) => b - a);
+
+            years.forEach(year => {
+                const entries = historicalKeepersData[year];
+                if (!entries) return;
+                entries.forEach(e => {
+                    if (!byManager[e.manager]) {
+                        byManager[e.manager] = { years: {} };
+                    }
+                    if (!byManager[e.manager].years[year]) {
+                        byManager[e.manager].years[year] = { teamName: e.teamName, teamLogo: e.teamLogo, keepers: [] };
+                    }
+                    byManager[e.manager].years[year].keepers.push(e);
+                });
+            });
+
+            // Sort managers alphabetically
+            const managers = Object.keys(byManager).sort();
+            let html = '';
+
+            managers.forEach(mgr => {
+                const mgrData = byManager[mgr];
+                const mgrYears = Object.keys(mgrData.years).sort((a, b) => b - a);
+                const totalKeepers = mgrYears.reduce((sum, y) => sum + mgrData.years[y].keepers.length, 0);
+
+                // Use most recent team logo
+                const latestYear = mgrYears[0];
+                const latestLogo = mgrData.years[latestYear]?.teamLogo || '';
+
+                const logoHtml = latestLogo
+                    ? `<img src="${latestLogo}" alt="" onerror="this.style.display='none'">`
+                    : '';
+
+                html += `
+                    <div class="hist-keeper-manager-card">
+                        <div class="hist-keeper-manager-header" onclick="toggleHistKeeperManager(this)">
+                            ${logoHtml}
+                            <span class="mgr-name">${mgr}</span>
+                            <span class="mgr-count">${totalKeepers} keepers</span>
+                            <span class="mgr-chevron">▼</span>
+                        </div>
+                        <div class="hist-keeper-manager-body">
+                `;
+
+                mgrYears.forEach(year => {
+                    const yearData = mgrData.years[year];
+                    yearData.keepers.sort((a, b) => a.round - b.round);
+
+                    const yearLogoHtml = yearData.teamLogo
+                        ? `<img src="${yearData.teamLogo}" alt="" onerror="this.style.display='none'">`
+                        : '';
+
+                    html += `
+                        <div class="hist-keeper-manager-year-label">
+                            ${yearLogoHtml}
+                            <span>${year}</span>
+                            <span class="year-team-name">${yearData.teamName || ''}</span>
+                        </div>
+                        ${yearData.keepers.map(k => renderHistKeeperRow(k)).join('')}
+                    `;
+                });
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
         }
 
         // ===== BUDGET ADJUSTMENT =====
