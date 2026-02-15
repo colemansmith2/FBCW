@@ -14316,6 +14316,475 @@
         .mock-draft-pos-rank-row.user-rank { background: rgba(46,204,113,0.08); border-radius: 4px; padding: 0.3rem 0.3rem; }
         .mock-draft-pos-rank-row.user-rank .pos-rank-manager { color: var(--retro-blue); }
 
+        /* ===== MOCK DRAFT MOBILE RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            /* Setup Card */
+            .mock-draft-setup-card {
+                margin: 1rem auto;
+                padding: 1.25rem 1rem;
+            }
+            .mock-draft-logo {
+                width: 80px;
+                height: 80px;
+            }
+            .mock-draft-order-slot {
+                width: 50px;
+            }
+            .mock-draft-order-slot img {
+                width: 32px;
+                height: 32px;
+            }
+            .mock-draft-order-slot .slot-manager {
+                font-size: 0.6rem;
+            }
+            .mock-draft-order-slot .slot-pick-num {
+                font-size: 0.55rem;
+            }
+
+            /* Pick Ticker */
+            .mock-draft-ticker-container {
+                padding: 0.35rem 0.5rem;
+                margin-bottom: 0.5rem;
+                border-radius: 8px;
+            }
+            .mock-draft-ticker-pick {
+                min-width: 36px;
+                padding: 3px 2px;
+            }
+            .mock-draft-ticker-pick img {
+                width: 22px;
+                height: 22px;
+            }
+            .mock-draft-ticker-pick .pick-label {
+                font-size: 0.45rem;
+            }
+
+            /* Controls Bar — stack vertically */
+            .mock-draft-controls {
+                flex-direction: column;
+                gap: 0.4rem;
+                padding: 0.5rem 0.75rem;
+                align-items: stretch;
+            }
+            .mock-draft-controls-left {
+                text-align: center;
+            }
+            .mock-draft-controls-center {
+                text-align: center;
+            }
+            .mock-draft-controls-right {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.35rem;
+            }
+            .mock-draft-controls-right button {
+                font-size: 0.75rem;
+                padding: 0.35rem 0.7rem;
+            }
+            .mock-draft-round-label {
+                font-size: 0.9rem;
+            }
+
+            /* User Turn Banner */
+            .mock-draft-user-turn-banner {
+                font-size: 0.9rem;
+                padding: 0.5rem;
+                margin-bottom: 0.5rem;
+            }
+
+            /* Available Players Panel */
+            .mock-draft-available-panel {
+                padding: 0.6rem;
+            }
+            .mock-draft-available-panel h3 {
+                font-size: 1rem;
+                margin-bottom: 0.4rem;
+            }
+
+            /* Filter buttons — scroll horizontally */
+            .mock-draft-filter-buttons {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 2px;
+            }
+            .mock-draft-filter-btn {
+                white-space: nowrap;
+                flex-shrink: 0;
+                font-size: 0.7rem;
+                padding: 0.3rem 0.55rem;
+            }
+            .mock-draft-filter-row {
+                flex-direction: column;
+                gap: 0.35rem;
+            }
+            .mock-draft-filters select,
+            .mock-draft-filters input {
+                font-size: 16px; /* Prevent iOS zoom */
+                width: 100%;
+            }
+
+            /* Best Available Table — hide #, 2025, Rank, Min, Max columns on mobile */
+            .mock-draft-available-table th:first-child,
+            .mock-draft-available-table td:first-child {
+                display: none; /* # column */
+            }
+            .mock-draft-available-table .mock-draft-col-2025,
+            .mock-draft-available-table .mock-draft-col-rank {
+                display: none; /* 2025 & Rank columns */
+            }
+            .mock-draft-available-table th:nth-child(5),
+            .mock-draft-available-table td:nth-child(5) {
+                display: none; /* Min column */
+            }
+            .mock-draft-available-table th:nth-child(7),
+            .mock-draft-available-table td:nth-child(7) {
+                display: none; /* Max column */
+            }
+            .mock-draft-available-table th {
+                padding: 0.4rem 0.25rem;
+                font-size: 0.7rem;
+            }
+            .mock-draft-available-table td {
+                padding: 0.3rem 0.25rem;
+                font-size: 0.8rem;
+            }
+            .mock-draft-player-headshot {
+                width: 28px;
+                height: 28px;
+            }
+            .mock-draft-player-cell .player-name {
+                font-size: 0.78rem;
+            }
+            .mock-draft-player-cell .player-mlb-team {
+                font-size: 0.6rem;
+            }
+            .mock-draft-player-cell .player-mlb-logo {
+                width: 12px;
+                height: 12px;
+            }
+            .mock-draft-player-cell .player-mlb-team .position-badge {
+                font-size: 0.5rem;
+                padding: 0.02rem 0.18rem;
+                min-width: 15px;
+            }
+            .mock-draft-draft-btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.7rem;
+            }
+
+            /* Right Panel */
+            .mock-draft-right-panel {
+                gap: 0.5rem;
+            }
+            .mock-draft-log-panel,
+            .mock-draft-roster-panel {
+                padding: 0.6rem;
+            }
+            .mock-draft-log-panel h3,
+            .mock-draft-roster-panel h3 {
+                font-size: 1rem;
+            }
+            .mock-draft-log {
+                height: 200px;
+                font-size: 0.72rem;
+            }
+            .mock-draft-log-entry {
+                gap: 0.25rem;
+                padding: 0.25rem 0.15rem;
+            }
+            .mock-draft-log-entry .log-team-logo {
+                width: 18px;
+                height: 18px;
+            }
+            .mock-draft-log-entry .log-player-headshot {
+                width: 18px;
+                height: 18px;
+            }
+            .mock-draft-log-entry .log-player-headshot.placeholder {
+                width: 18px;
+                height: 18px;
+            }
+            .mock-draft-log-entry .log-pick-num {
+                font-size: 0.6rem;
+                min-width: 22px;
+            }
+            .mock-draft-log-entry .log-player-name {
+                font-size: 0.72rem;
+            }
+            .mock-draft-log-entry .log-player-name .log-mlb-team {
+                font-size: 0.55rem;
+            }
+            .mock-draft-log-entry .log-pts {
+                font-size: 0.65rem;
+                min-width: 30px;
+            }
+
+            /* Roster Panel */
+            .mock-draft-roster-body-scroll {
+                max-height: 300px;
+            }
+            .mock-draft-roster-slot {
+                font-size: 0.75rem;
+                padding: 0.2rem 0.2rem;
+            }
+            .mock-draft-roster-slot .slot-label {
+                min-width: 30px;
+            }
+            .mock-draft-roster-slot .slot-label .position-badge {
+                font-size: 0.58rem;
+                padding: 0.05rem 0.25rem;
+                min-width: 20px;
+            }
+
+            /* Report Phase */
+            .mock-draft-report-card {
+                margin: 1rem auto;
+                padding: 1rem;
+            }
+            .mock-draft-report-tabs {
+                flex-wrap: wrap;
+                gap: 0.35rem;
+            }
+            .mock-draft-report-tab {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.75rem;
+            }
+            .mock-draft-report-summary {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+                margin: 1rem 0;
+            }
+            .mock-draft-report-stat .stat-value {
+                font-size: 1.2rem;
+            }
+            .mock-draft-report-stat .stat-label {
+                font-size: 0.65rem;
+            }
+            .mock-draft-report-pick {
+                gap: 0.35rem;
+                padding: 0.35rem 0.2rem;
+                font-size: 0.8rem;
+            }
+            .mock-draft-report-pick .pick-round {
+                min-width: 30px;
+                font-size: 0.7rem;
+            }
+            .mock-draft-report-pick .pick-headshot {
+                width: 24px;
+                height: 24px;
+            }
+            .mock-draft-report-pick .pick-name .player-mlb-team {
+                font-size: 0.62rem;
+            }
+
+            /* Draft Overview */
+            .mock-draft-overview-pick {
+                gap: 0.3rem;
+                padding: 0.3rem 0.2rem;
+                font-size: 0.75rem;
+            }
+            .mock-draft-overview-pick .ov-pick-num {
+                min-width: 24px;
+                font-size: 0.65rem;
+            }
+            .mock-draft-overview-pick .ov-team-logo {
+                width: 18px;
+                height: 18px;
+            }
+            .mock-draft-overview-pick .ov-team-name {
+                min-width: 0;
+                max-width: 70px;
+                font-size: 0.68rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .mock-draft-overview-pick .ov-headshot {
+                width: 20px;
+                height: 20px;
+            }
+            .mock-draft-overview-pick .ov-player {
+                font-size: 0.72rem;
+            }
+            .mock-draft-overview-pick .ov-player .ov-mlb {
+                font-size: 0.55rem;
+            }
+            .mock-draft-overview-pick .ov-pts {
+                font-size: 0.68rem;
+                min-width: 30px;
+            }
+
+            /* Full Roster View */
+            .mock-draft-roster-view-select {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .mock-draft-roster-team-card {
+                padding: 1rem;
+            }
+            .mock-draft-roster-team-header img {
+                width: 36px;
+                height: 36px;
+            }
+            .mock-draft-roster-team-header .team-name {
+                font-size: 1rem;
+            }
+            .mock-draft-roster-team-header .team-total .total-value {
+                font-size: 1.4rem;
+            }
+            .mock-draft-roster-row {
+                font-size: 0.78rem;
+                gap: 0.35rem;
+                padding: 0.35rem 0.2rem;
+            }
+            .mock-draft-roster-row .roster-headshot {
+                width: 22px;
+                height: 22px;
+            }
+            .mock-draft-roster-row .roster-player .player-mlb-team {
+                font-size: 0.62rem;
+            }
+            .mock-draft-roster-row .roster-pts {
+                min-width: 32px;
+                font-size: 0.78rem;
+            }
+            .mock-draft-roster-row .roster-round {
+                min-width: 35px;
+                font-size: 0.68rem;
+            }
+
+            /* Points Chart */
+            .mock-draft-insights-section {
+                padding: 1rem;
+            }
+            .mock-draft-chart-bar-row {
+                gap: 0.3rem;
+                font-size: 0.7rem;
+            }
+            .mock-draft-chart-bar-row .bar-team {
+                width: 80px;
+                min-width: 80px;
+                max-width: 80px;
+                font-size: 0.6rem;
+            }
+            .mock-draft-chart-bar-row .bar-track {
+                height: 18px;
+            }
+            .mock-draft-chart-bar-row .bar-fill {
+                font-size: 0.6rem;
+                padding-right: 4px;
+            }
+
+            /* Position Rankings */
+            .mock-draft-pos-rank-row .pos-rank-manager {
+                min-width: 50px;
+                font-size: 0.65rem;
+            }
+            .mock-draft-pos-rank-row .pos-rank-player-chip {
+                font-size: 0.62rem;
+            }
+            .mock-draft-pos-rank-row .pos-rank-player-chip img {
+                width: 14px;
+                height: 14px;
+            }
+            .mock-draft-pos-rank-row .pos-rank-pts {
+                font-size: 0.65rem;
+                min-width: 32px;
+            }
+            .mock-draft-pos-rank-row .pos-rank-team-logo {
+                width: 16px;
+                height: 16px;
+            }
+        }
+
+        /* Extra small screens (phones) */
+        @media (max-width: 480px) {
+            .mock-draft-setup-card {
+                margin: 0.5rem auto;
+                padding: 1rem 0.75rem;
+            }
+            .mock-draft-order-slot {
+                width: 44px;
+            }
+            .mock-draft-order-slot img {
+                width: 28px;
+                height: 28px;
+            }
+            .mock-draft-order-slot .slot-manager {
+                font-size: 0.5rem;
+            }
+            .mock-draft-order-preview {
+                gap: 0.3rem;
+                margin: 1rem 0;
+            }
+
+            /* Controls tighten further */
+            .mock-draft-controls {
+                padding: 0.4rem 0.5rem;
+            }
+            .mock-draft-controls-right button {
+                font-size: 0.68rem;
+                padding: 0.3rem 0.5rem;
+            }
+
+            /* Table cells even tighter */
+            .mock-draft-player-headshot {
+                width: 24px;
+                height: 24px;
+            }
+            .mock-draft-player-cell {
+                gap: 0.25rem;
+            }
+            .mock-draft-player-cell .player-name {
+                font-size: 0.72rem;
+            }
+            .mock-draft-draft-btn {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.65rem;
+            }
+
+            /* Log even smaller */
+            .mock-draft-log {
+                height: 170px;
+            }
+            .mock-draft-log-entry .log-team-logo,
+            .mock-draft-log-entry .log-player-headshot,
+            .mock-draft-log-entry .log-player-headshot.placeholder {
+                width: 16px;
+                height: 16px;
+            }
+
+            /* Overview — hide team name column to save space */
+            .mock-draft-overview-pick .ov-team-name {
+                display: none;
+            }
+
+            /* Chart bars — shrink team labels more */
+            .mock-draft-chart-bar-row .bar-team {
+                width: 60px;
+                min-width: 60px;
+                max-width: 60px;
+                font-size: 0.55rem;
+            }
+
+            /* Report tabs wrap tightly */
+            .mock-draft-report-tab {
+                padding: 0.35rem 0.6rem;
+                font-size: 0.68rem;
+            }
+
+            /* Report picks even smaller */
+            .mock-draft-report-pick .pick-headshot {
+                width: 20px;
+                height: 20px;
+            }
+            .mock-draft-report-pick .pick-pos .position-badge {
+                font-size: 0.55rem;
+                padding: 0.02rem 0.2rem;
+            }
+        }
+
         /* Bylaws Section Styles */
         .bylaws-container {
             max-width: 1000px;
