@@ -39155,9 +39155,10 @@
                 return;
             }
 
-            tbody.innerHTML = filtered.map((prospect, index) => {
+            tbody.innerHTML = filtered.map((prospect) => {
                 const owner = findOwner(prospect.name);
                 const isOwned = !!owner;
+                const originalIndex = prospectsData.indexOf(prospect);
 
                 const headshot = prospect.headshot_url || placeholderImg;
                 const mlbTeam = prospect.mlb_team || '';
@@ -39194,12 +39195,12 @@
                 const avgRank = prospect.avg_rank ? prospect.avg_rank.toFixed(1) : '-';
 
                 return `
-                    <tr class="${isOwned ? 'owned' : ''}" data-prospect-index="${index}">
+                    <tr class="${isOwned ? 'owned' : ''}" data-prospect-index="${originalIndex}">
                         <td class="prospect-col-rank">
                             <span class="prospect-rank ${rankClass}">${prospect.rank}</span>
                         </td>
                         <td class="prospect-col-player">
-                            <div class="prospect-player-cell" onclick="openProspectDetailModal(${index})">
+                            <div class="prospect-player-cell" onclick="openProspectDetailModal(${originalIndex})">
                                 <img src="${headshot}" class="prospect-headshot" alt="" onerror="this.src='${placeholderImg}'">
                                 <div class="prospect-player-info">
                                     <span class="prospect-player-name">${prospect.name}</span>
