@@ -14883,6 +14883,7 @@
             padding: 0.3rem 0.6rem;
             border-bottom: 1px solid #f5f5f5;
             font-size: 0.78rem;
+            line-height: 1.2;
         }
         .hist-keeper-row:last-child { border-bottom: none; }
         .hist-keeper-row .hk-headshot {
@@ -14932,10 +14933,19 @@
             font-size: 0.75rem;
             min-width: 36px;
             text-align: right;
+            line-height: 1;
         }
         .hist-keeper-row .hk-points.no-data {
-            color: #ccc;
-            font-weight: 400;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .hist-keeper-row .hk-points .hk-dash {
+            display: inline-block;
+            width: 10px;
+            height: 2px;
+            background: #ccc;
+            border-radius: 1px;
         }
 
         /* By Team View */
@@ -30890,7 +30900,7 @@
                             teamLogo: teamInfo.teamLogo || '',
                             headshot: playerMatch ? playerMatch.headshot_url : '',
                             position: playerMatch ? playerMatch.primary_position : '',
-                            points: playerMatch ? (playerMatch.fantasy_points || playerMatch.full_season_fantasy_points || null) : null
+                            points: playerMatch ? (playerMatch.fantasy_points != null ? playerMatch.fantasy_points : (playerMatch.full_season_fantasy_points != null ? playerMatch.full_season_fantasy_points : null)) : null
                         });
                     }
                     result[year] = entries;
@@ -30926,9 +30936,9 @@
                                     const kName = k.player_name || k.playerName || '';
                                     // Look up headshot from projections data
                                     const projMatch = projLookup[normalizeKeeperPlayerName(kName)];
-                                    const pos = k.position || '';
-                                    // Extract primary position from comma-separated list
-                                    const primaryPos = pos.split(',')[0].replace(/[^A-Z]/gi, '').trim() || '';
+                                    // Prefer projections position (reliable), fall back to Firebase position
+                                    const projPos = projMatch ? (projMatch.primary_position || '') : '';
+                                    const fbPos = (k.position || '').split(',')[0].trim();
                                     entries2026.push({
                                         playerName: kName,
                                         displayName: (projMatch && projMatch.name) ? projMatch.name : kName,
@@ -30937,7 +30947,7 @@
                                         teamName: teamInfo.team_name,
                                         teamLogo: teamLogo,
                                         headshot: projMatch ? projMatch.headshot_url : '',
-                                        position: primaryPos || (projMatch ? projMatch.primary_position || '' : ''),
+                                        position: projPos || fbPos,
                                         points: null // Season not played
                                     });
                                 });
@@ -30992,7 +31002,7 @@
                 : '';
             const ptsDisplay = entry.points !== null
                 ? `<span class="hk-points">${Math.round(entry.points)}</span>`
-                : `<span class="hk-points no-data">—</span>`;
+                : `<span class="hk-points no-data"><span class="hk-dash"></span></span>`;
 
             return `
                 <div class="hist-keeper-row">
