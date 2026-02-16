@@ -14888,13 +14888,14 @@
         .hist-keeper-row .hk-headshot {
             width: 26px;
             height: 26px;
+            min-width: 26px;
+            min-height: 26px;
+            max-width: 26px;
+            max-height: 26px;
             border-radius: 50%;
             object-fit: cover;
             flex-shrink: 0;
             background: #f0f0f0;
-        }
-        .hist-keeper-row .hk-headshot.placeholder {
-            background: #e8e8e8;
         }
         .hist-keeper-row .hk-player-info {
             flex: 1;
@@ -30869,9 +30870,20 @@
                         // Find player stats
                         const playerMatch = findPlayerInStats(playerName, playerStats);
 
+                        // Use matched player's real name (with proper accents) for display
+                        let displayName = playerName;
+                        if (playerMatch && playerMatch.name) {
+                            // Preserve (Batter)/(Pitcher) suffix if present
+                            const batterSuffix = /\s*\(Batter\)\s*$/i.test(playerName);
+                            const pitcherSuffix = /\s*\(Pitcher\)\s*$/i.test(playerName);
+                            displayName = playerMatch.name;
+                            if (batterSuffix) displayName += ' (Batter)';
+                            if (pitcherSuffix) displayName += ' (Pitcher)';
+                        }
+
                         entries.push({
                             playerName: playerName,
-                            displayName: playerName,
+                            displayName: displayName,
                             manager: displayMgr,
                             round: info.round,
                             teamName: teamInfo.teamName || '',
@@ -30919,7 +30931,7 @@
                                     const primaryPos = pos.split(',')[0].replace(/[^A-Z]/gi, '').trim() || '';
                                     entries2026.push({
                                         playerName: kName,
-                                        displayName: kName,
+                                        displayName: (projMatch && projMatch.name) ? projMatch.name : kName,
                                         manager: normMgr,
                                         round: k.roundCost || k.round || '?',
                                         teamName: teamInfo.team_name,
@@ -30974,7 +30986,7 @@
         function renderHistKeeperRow(entry) {
             const headshot = entry.headshot
                 ? `<img src="${entry.headshot}" class="hk-headshot" alt="" onerror="this.src='${HK_PLACEHOLDER_IMG}'">`
-                : `<div class="hk-headshot placeholder"></div>`;
+                : `<img src="${HK_PLACEHOLDER_IMG}" class="hk-headshot" alt="">`;
             const posBadge = entry.position
                 ? `<span class="position-badge pos-${entry.position}">${entry.position}</span>`
                 : '';
