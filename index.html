@@ -14935,6 +14935,11 @@
             text-align: right;
             line-height: 1;
         }
+        .hist-keeper-row .hk-points.projected {
+            color: #999;
+            font-weight: 500;
+            font-style: italic;
+        }
         .hist-keeper-row .hk-points.no-data {
             display: flex;
             align-items: center;
@@ -30906,14 +30911,46 @@
                     result[year] = entries;
                 }
 
-                // Process 2026 keepers from Firebase / keeperConfig
-                // Build projections lookup for headshots
+                // Build projections lookup for headshots / fallback data
                 const projLookup = {};
                 [...allProjectionBatters, ...allProjectionPitchers].forEach(p => {
-                    if (p.name && p.headshot_url) {
+                    if (p.name) {
                         projLookup[normalizeKeeperPlayerName(p.name)] = p;
                     }
                 });
+
+                // Second pass: backfill headshots for players with missing headshots (e.g. injured, 0 pts)
+                for (const year of Object.keys(result)) {
+                    result[year].forEach(entry => {
+                        if (!entry.headshot) {
+                            // Try projections lookup
+                            const normName = normalizeKeeperPlayerName(entry.playerName);
+                            const projMatch = projLookup[normName];
+                            if (projMatch && projMatch.headshot_url) {
+                                entry.headshot = projMatch.headshot_url;
+                            }
+                            // Also grab display name and position from projections if missing
+                            if (projMatch && projMatch.name && entry.displayName === entry.playerName) {
+                                entry.displayName = projMatch.name;
+                            }
+                            if (!entry.position && projMatch) {
+                                entry.position = projMatch.primary_position || '';
+                            }
+                        }
+                    });
+                }
+
+                // Process 2026 keepers from Firebase / keeperConfig
+                // Try to load live 2026 stats (available once season starts)
+                let stats2026 = [];
+                let has2026LiveStats = false;
+                try {
+                    const stats2026Resp = await fetch('data/2026/player_stats.json');
+                    if (stats2026Resp.ok) {
+                        stats2026 = await stats2026Resp.json();
+                        has2026LiveStats = stats2026.length > 0;
+                    }
+                } catch (e) { /* not available yet */ }
 
                 const entries2026 = [];
                 try {
@@ -30934,11 +30971,25 @@
                                 teamKeepers.forEach(k => {
                                     if (k.isProspect) return; // Skip prospects, only show keepers
                                     const kName = k.player_name || k.playerName || '';
-                                    // Look up headshot from projections data
                                     const projMatch = projLookup[normalizeKeeperPlayerName(kName)];
-                                    // Prefer projections position (reliable), fall back to Firebase position
                                     const projPos = projMatch ? (projMatch.primary_position || '') : '';
                                     const fbPos = (k.position || '').split(',')[0].trim();
+
+                                    // Check for live stats first, then fall back to projections
+                                    let pts = null;
+                                    let isProj = false;
+                                    if (has2026LiveStats) {
+                                        const liveMatch = findPlayerInStats(kName, stats2026);
+                                        if (liveMatch) {
+                                            pts = liveMatch.fantasy_points != null ? liveMatch.fantasy_points : (liveMatch.full_season_fantasy_points != null ? liveMatch.full_season_fantasy_points : null);
+                                        }
+                                    }
+                                    if (pts === null) {
+                                        // Use projected average points
+                                        const avgPts = getAverageProjection(kName);
+                                        if (avgPts) { pts = avgPts; isProj = true; }
+                                    }
+
                                     entries2026.push({
                                         playerName: kName,
                                         displayName: (projMatch && projMatch.name) ? projMatch.name : kName,
@@ -30948,7 +30999,8 @@
                                         teamLogo: teamLogo,
                                         headshot: projMatch ? projMatch.headshot_url : '',
                                         position: projPos || fbPos,
-                                        points: null // Season not played
+                                        points: pts,
+                                        isProjected: isProj
                                     });
                                 });
                             }
@@ -31000,9 +31052,14 @@
             const posBadge = entry.position
                 ? `<span class="position-badge pos-${entry.position}">${entry.position}</span>`
                 : '';
-            const ptsDisplay = entry.points !== null
-                ? `<span class="hk-points">${Math.round(entry.points)}</span>`
-                : `<span class="hk-points no-data"><span class="hk-dash"></span></span>`;
+            let ptsDisplay;
+            if (entry.points !== null && entry.isProjected) {
+                ptsDisplay = `<span class="hk-points projected" title="Projected">${Math.round(entry.points)}*</span>`;
+            } else if (entry.points !== null) {
+                ptsDisplay = `<span class="hk-points">${Math.round(entry.points)}</span>`;
+            } else {
+                ptsDisplay = `<span class="hk-points no-data"><span class="hk-dash"></span></span>`;
+            }
 
             return `
                 <div class="hist-keeper-row">
