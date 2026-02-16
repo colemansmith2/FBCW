@@ -28733,6 +28733,10 @@
         let showLeagueProspects = false; // Toggle state for showing prospects in league keepers (default hidden)
         const KEEPER_BUDGET = 50; // $50 per team
 
+        // Players who lost rookie eligibility via 45-day MLB roster rule
+        // despite being under the AB/IP threshold. Treated as $1 last-round keepers.
+        const ROOKIE_ELIGIBILITY_OVERRIDES = ['Marcelo Mayer'];
+
         // Password hashing function (simple SHA-256)
         async function hashPassword(password) {
             const encoder = new TextEncoder();
@@ -29349,7 +29353,9 @@
                         playerHistory.seasons.some(s => s.year < 2025 && (s.fantasy_points || 0) > 0);
 
                     // Only a prospect if undrafted, limited time, AND no previous seasons with points
-                    const isProspect = isUndrafted && hasLimitedTime && !hasPreviousSeasons;
+                    // Override: players who lost rookie eligibility via 45-day roster rule
+                    const isProspect = isUndrafted && hasLimitedTime && !hasPreviousSeasons
+                        && !ROOKIE_ELIGIBILITY_OVERRIDES.includes(player.name);
 
                     const row = document.createElement('tr');
                     row.className = isKept ? 'is-keeper' : '';
@@ -29547,7 +29553,9 @@
                     playerHistory.seasons.some(s => s.year < 2025 && (s.fantasy_points || 0) > 0);
 
                 // Only a prospect if undrafted, limited time, AND no previous seasons with points
-                const isProspect = isUndrafted && hasLimitedTime && !hasPreviousSeasons;
+                // Override: players who lost rookie eligibility via 45-day roster rule
+                const isProspect = isUndrafted && hasLimitedTime && !hasPreviousSeasons
+                    && !ROOKIE_ELIGIBILITY_OVERRIDES.includes(playerName);
 
                 // Prospects are free - no dollar or round cost
                 const dollarCost = isProspect ? 0 : (draftInfo ? draftInfo.dollarCost : 1);
