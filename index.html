@@ -38077,6 +38077,10 @@
             }
         }
 
+        // How much team value differences matter for odds (0 = everyone equal, 1 = fully proportional)
+        // Fantasy baseball is highly random, so we regress toward the mean
+        const SPORTSBOOK_PARITY_FACTOR = 0.6;
+
         function calculateOdds(team, allTeams, betType) {
             // Calculate adjusted values for all teams
             const adjustedValues = allTeams.map(t => ({
@@ -38084,19 +38088,18 @@
                 adjusted: calculateAdjustedValue(t, betType)
             }));
 
-            // Debug: log values to see what's happening
-            console.log('Team values for', betType + ':', adjustedValues.map(t => ({
-                name: t.team.teamName,
-                value: t.team.value,
-                adjusted: t.adjusted
-            })).sort((a, b) => b.adjusted - a.adjusted));
+            // Regress toward the mean to account for fantasy baseball randomness
+            const avgAdjusted = adjustedValues.reduce((sum, t) => sum + t.adjusted, 0) / adjustedValues.length;
+            adjustedValues.forEach(t => {
+                t.regressed = avgAdjusted + SPORTSBOOK_PARITY_FACTOR * (t.adjusted - avgAdjusted);
+            });
 
-            // Calculate total adjusted value
-            const totalAdjusted = adjustedValues.reduce((sum, t) => sum + t.adjusted, 0);
-            const teamAdjusted = calculateAdjustedValue(team, betType);
+            // Calculate total regressed value
+            const totalRegressed = adjustedValues.reduce((sum, t) => sum + t.regressed, 0);
+            const teamRegressed = adjustedValues.find(t => t.team === team).regressed;
 
-            // Calculate implied probability based on share of total value
-            const probability = teamAdjusted / totalAdjusted;
+            // Calculate implied probability based on share of regressed value
+            const probability = teamRegressed / totalRegressed;
 
             // Convert to American odds
             if (probability >= 0.5) {
