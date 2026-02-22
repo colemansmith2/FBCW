@@ -7918,6 +7918,15 @@
             padding: 2px 0.4rem;
             border-radius: 3px;
         }
+        .trans-player-headshot {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center top;
+            flex-shrink: 0;
+            background: #e8e8e8;
+        }
         .trans-trade-side {
             display: flex;
             align-items: flex-start;
@@ -7929,6 +7938,16 @@
             width: 16px;
             height: 16px;
             margin-top: 1px;
+        }
+        .trans-trade-player {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-top: 2px;
+        }
+        .trans-trade-player .trans-player-headshot {
+            width: 18px;
+            height: 18px;
         }
         .trans-trade-players {
             font-size: 0.65rem;
@@ -21280,16 +21299,27 @@
 
         function getMLBPlayerHeadshot(playerId) {
             if (!playerId) return '';
-            return `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_80,q_auto:best/v1/people/${playerId}/headshot/silo/current`;
+            // Intentionally avoid MLB's generic fallback image here so missing IDs fail quietly.
+            return `https://img.mlbstatic.com/mlb-photos/image/upload/w_80,q_auto:best/v1/people/${playerId}/headshot/silo/current`;
         }
 
         function getAnyAvailablePlayerHeadshot(playerData) {
             if (!playerData) return '';
-            if (playerData.player_id) {
-                return getMLBPlayerHeadshot(playerData.player_id);
+            if (playerData.headshot && String(playerData.headshot).trim()) {
+                return playerData.headshot;
             }
 
-            const normalized = (playerData.player_name || '').toLowerCase().trim();
+            if (playerData.headshot_url && String(playerData.headshot_url).trim()) {
+                return playerData.headshot_url;
+            }
+
+            const normalizeName = (name) => (name || '')
+                .toLowerCase()
+                .trim()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '');
+
+            const normalized = normalizeName(playerData.player_name);
             if (!normalized) return '';
 
             const candidates = [];
@@ -21297,8 +21327,12 @@
             if (Array.isArray(allProjectionBatters)) candidates.push(...allProjectionBatters);
             if (Array.isArray(allProjectionPitchers)) candidates.push(...allProjectionPitchers);
 
-            const match = candidates.find(p => (p?.name || '').toLowerCase().trim() === normalized);
-            return (match && match.headshot_url) ? match.headshot_url : '';
+            const match = candidates.find(p => normalizeName(p?.name) === normalized);
+            if (match?.headshot_url) return match.headshot_url;
+            if (match?.headshot) return match.headshot;
+
+            if (playerData.player_id) return getMLBPlayerHeadshot(playerData.player_id);
+            return '';
         }
 
         async function showPlayerDetail(playerName) {
