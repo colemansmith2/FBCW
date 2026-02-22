@@ -20378,6 +20378,7 @@
             if (window.currentModalPlayer) {
                 updateModalStats(window.currentModalPlayer);
             }
+            requestAnimationFrame(syncPlayerTransactionPanelHeight);
 
             // Re-calculate position ranks and re-render main table
             calculatePositionRanks();
@@ -21089,14 +21090,13 @@
 
             const sortedYears = [...yearsWithContent].sort((a, b) => b - a);
 
-            sortedYears.forEach((year, index) => {
+            sortedYears.forEach((year) => {
                 const yearTxns = transactions.filter(t => t.year === year);
                 const draft = drafts[year];
                 const totalCount = yearTxns.length + (draft ? 1 : 0);
-                const isCollapsed = index !== 0;
 
-                html += `<div class="trans-year-divider ${isCollapsed ? 'collapsed' : ''}" onclick="toggleTransYear(this)">${year} <span class="trans-year-count">(${totalCount})</span><span class="trans-year-chevron">▾</span></div>`;
-                html += `<div class="trans-year-body ${isCollapsed ? 'collapsed' : ''}">`;
+                html += `<div class="trans-year-divider" onclick="toggleTransYear(this)">${year} <span class="trans-year-count">(${totalCount})</span><span class="trans-year-chevron">▾</span></div>`;
+                html += `<div class="trans-year-body">`;
 
                 // Draft info first
                 if (draft) {
@@ -21187,8 +21187,8 @@
             const managerName = addPlayer?.destManager || dropPlayer?.sourceManager || '';
 
             // Build headshot for each player
-            const addHeadshot = addPlayer ? getMLBPlayerHeadshot(addPlayer.player_id) : '';
-            const dropHeadshot = dropPlayer ? getMLBPlayerHeadshot(dropPlayer.player_id) : '';
+            const addHeadshot = addPlayer ? getAnyAvailablePlayerHeadshot(addPlayer) : '';
+            const dropHeadshot = dropPlayer ? getAnyAvailablePlayerHeadshot(dropPlayer) : '';
 
             const addHeadshotHtml = addHeadshot
                 ? `<img src="${addHeadshot}" class="trans-player-headshot" alt="" onerror="this.style.display='none'">`
@@ -21238,7 +21238,7 @@
                     sides[srcKey].seen.add(playerKey);
                     sides[srcKey].players.push({
                         name: p.player_name,
-                        headshot: getMLBPlayerHeadshot(p.player_id)
+                        headshot: getAnyAvailablePlayerHeadshot(p)
                     });
                 }
             });
@@ -21281,6 +21281,24 @@
         function getMLBPlayerHeadshot(playerId) {
             if (!playerId) return '';
             return `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_80,q_auto:best/v1/people/${playerId}/headshot/silo/current`;
+        }
+
+        function getAnyAvailablePlayerHeadshot(playerData) {
+            if (!playerData) return '';
+            if (playerData.player_id) {
+                return getMLBPlayerHeadshot(playerData.player_id);
+            }
+
+            const normalized = (playerData.player_name || '').toLowerCase().trim();
+            if (!normalized) return '';
+
+            const candidates = [];
+            if (Array.isArray(allPlayersData)) candidates.push(...allPlayersData);
+            if (Array.isArray(allProjectionBatters)) candidates.push(...allProjectionBatters);
+            if (Array.isArray(allProjectionPitchers)) candidates.push(...allProjectionPitchers);
+
+            const match = candidates.find(p => (p?.name || '').toLowerCase().trim() === normalized);
+            return (match && match.headshot_url) ? match.headshot_url : '';
         }
 
         async function showPlayerDetail(playerName) {
@@ -21745,11 +21763,34 @@
             bodyEl.innerHTML = cardHTML;
             modal.classList.add('active');
             document.body.classList.add('modal-open');
+            requestAnimationFrame(syncPlayerTransactionPanelHeight);
 
             // Load transaction history panel
             loadPlayerTransactions(player.name).then(txns => {
                 renderTransactionPanel(txns, 'player-trans-panel');
+                requestAnimationFrame(syncPlayerTransactionPanelHeight);
             });
+        }
+
+        function syncPlayerTransactionPanelHeight() {
+            const panel = document.getElementById('player-trans-panel');
+            const cardWrapper = document.getElementById('player-modal-card-wrapper');
+            if (!panel || !cardWrapper) return;
+
+            // Keep mobile stacked modal behavior untouched
+            if (window.innerWidth <= 900) {
+                panel.style.height = '';
+                panel.style.maxHeight = '';
+                panel.style.minHeight = '';
+                return;
+            }
+
+            const targetHeight = Math.round(cardWrapper.offsetHeight || 0);
+            if (targetHeight <= 0) return;
+
+            panel.style.height = `${targetHeight}px`;
+            panel.style.maxHeight = `${targetHeight}px`;
+            panel.style.minHeight = `${targetHeight}px`;
         }
 
         function closePlayerModal() {
@@ -36593,6 +36634,7 @@
             // Load transaction history panel
             loadPlayerTransactions(playerName).then(txns => {
                 renderTransactionPanel(txns, 'projection-trans-panel');
+                requestAnimationFrame(syncProjectionTransactionPanelHeight);
             });
 
             // 3. Render Charts (Now they can see the real width)
@@ -36632,6 +36674,21 @@
                 maxSystemProjectionData: maxSystemProjectionData,
                 statsSourceDisplayName: statsSourceDisplayName
             };
+
+            requestAnimationFrame(syncProjectionTransactionPanelHeight);
+        }
+
+        function syncProjectionTransactionPanelHeight() {
+            const panel = document.getElementById('projection-trans-panel');
+            const chartsContainer = document.querySelector('.projection-charts-container');
+            if (!panel || !chartsContainer) return;
+
+            const targetHeight = Math.round(chartsContainer.offsetHeight || 0);
+            if (targetHeight <= 0) return;
+
+            panel.style.height = `${targetHeight}px`;
+            panel.style.maxHeight = `${targetHeight}px`;
+            panel.style.minHeight = `${targetHeight}px`;
         }
 
         function renderPositionRankChart(selectedPlayer, container) {
@@ -37323,6 +37380,7 @@
             }
 
             projectionBottomChartState.currentView = view;
+            requestAnimationFrame(syncProjectionTransactionPanelHeight);
         }
 
         function closeProjectionModal() {
@@ -37339,6 +37397,17 @@
         document.getElementById('projection-modal')?.addEventListener('click', function (e) {
             if (e.target === this) {
                 closeProjectionModal();
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            const projectionModal = document.getElementById('projection-modal');
+            if (projectionModal?.classList.contains('active')) {
+                requestAnimationFrame(syncProjectionTransactionPanelHeight);
+            }
+            const playerModal = document.getElementById('player-modal');
+            if (playerModal?.classList.contains('active')) {
+                requestAnimationFrame(syncPlayerTransactionPanelHeight);
             }
         });
 
