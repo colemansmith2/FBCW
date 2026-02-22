@@ -7821,13 +7821,24 @@
             font-weight: bold;
             color: #666;
             background: #e8e8e8;
-            padding: 0.2rem 0.6rem;
+            padding: 0.25rem 0.6rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             position: sticky;
             top: 0;
             z-index: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            user-select: none;
         }
+        .trans-year-divider:hover { background: #ddd; }
+        .trans-year-count { font-weight: 400; font-size: 0.62rem; color: #888; }
+        .trans-year-chevron { font-size: 0.7rem; transition: transform 0.2s; }
+        .trans-year-divider.collapsed .trans-year-chevron { transform: rotate(-90deg); }
+        .trans-year-body { overflow: hidden; }
+        .trans-year-body.collapsed { display: none; }
         .trans-entry {
             padding: 0.4rem 0.6rem;
             border-bottom: 1px solid #eee;
@@ -7857,6 +7868,26 @@
         }
         .trans-entry .trans-team-name {
             color: #555;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .trans-entry .trans-team-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.45rem;
+            margin-bottom: 3px;
+        }
+        .trans-entry .trans-team-meta {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.1;
+        }
+        .trans-entry .trans-team-manager {
+            font-size: 0.62rem;
+            color: #777;
+            margin-top: 1px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -8604,7 +8635,7 @@
 
         /* Projection Modal Styles */
         .projection-modal-content {
-            max-width: 1300px;
+            max-width: 1500px;
             width: 95vw;
             background: transparent;
             box-shadow: none;
@@ -8616,6 +8647,7 @@
             display: flex;
             gap: 1.5rem;
             align-items: flex-start;
+            justify-content: center;
         }
 
         .projection-card-container {
@@ -9117,11 +9149,12 @@
         }
 
         .projection-charts-container {
-            flex: 1;
+            flex: 0 0 480px;
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            min-width: 350px;
+            min-width: 420px;
+            max-width: 480px;
         }
 
         .projection-chart-box {
@@ -20922,171 +20955,273 @@
             if (playerTransactionCache[cacheKey]) return playerTransactionCache[cacheKey];
 
             const allTransactions = [];
+            const draftByYear = {};
             const years = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+            const nameLC = playerName.toLowerCase();
 
             // Load all years in parallel
             const fetches = years.map(async (year) => {
+                const txns = [];
                 try {
+                    // Load team data for logo resolution
+                    let teamsData = [];
+                    try { teamsData = await getTeamData(year) || []; } catch (e) {}
+                    const teamLogoMap = {};
+                    const teamNameMap = {};
+                    const teamManagerMap = {};
+                    teamsData.forEach(t => {
+                        teamLogoMap[t.team_key] = fixTeamLogo(t.team_logo);
+                        teamLogoMap[t.team_name] = fixTeamLogo(t.team_logo);
+                        teamNameMap[t.team_key] = t.team_name;
+                        teamNameMap[t.team_name] = t.team_name;
+                        teamManagerMap[t.team_key] = capitalizeManagerName(t.manager || '');
+                        teamManagerMap[t.team_name] = capitalizeManagerName(t.manager || '');
+                    });
+
+                    // Load draft data
+                    try {
+                        const draftUrl = year === 2026
+                            ? 'data/current_season/draft.json'
+                            : `data/historical/${year}/draft.json`;
+                        const draftResp = await fetch(draftUrl);
+                        if (draftResp.ok) {
+                            const draftData = await draftResp.json();
+                            const pick = draftData.find(p =>
+                                p.player_name && p.player_name.toLowerCase() === nameLC
+                            );
+                            if (pick) {
+                                draftByYear[year] = {
+                                    round: pick.round,
+                                    pick: pick.pick,
+                                    teamName: teamNameMap[pick.team_key] || pick.team_name || '',
+                                    teamLogo: teamLogoMap[pick.team_key] || ''
+                                };
+                            }
+                        }
+                    } catch (e) {}
+
+                    // Load transaction data
                     const url = year === 2026
                         ? 'data/current_season/transactions.json'
                         : `data/historical/${year}/transactions.json`;
                     const resp = await fetch(url);
-                    if (!resp.ok) return [];
+                    if (!resp.ok) return { txns: [], year };
                     const data = await resp.json();
 
-                    // Get team data for logo resolution
-                    let teamsData = [];
-                    try { teamsData = await getTeamData(year) || []; } catch (e) {}
-                    const teamLogoMap = {};
-                    teamsData.forEach(t => {
-                        teamLogoMap[t.team_key] = fixTeamLogo(t.team_logo);
-                        // Also map team name for fallback
-                        teamLogoMap[t.team_name] = fixTeamLogo(t.team_logo);
-                    });
-
-                    // Filter for transactions involving this player
-                    const nameLC = playerName.toLowerCase();
                     const matched = data.filter(t =>
                         t.players && t.players.some(p =>
                             p.player_name && p.player_name.toLowerCase() === nameLC
                         )
                     );
 
-                    return matched.map(t => {
-                        // Resolve logos for all players in this transaction
+                    matched.forEach(t => {
                         const players = t.players.map(p => ({
                             ...p,
                             sourceLogo: teamLogoMap[p.source_team_key] || '',
-                            destLogo: teamLogoMap[p.destination_team_key] || ''
+                            destLogo: teamLogoMap[p.destination_team_key] || '',
+                            sourceManager: teamManagerMap[p.source_team_key] || teamManagerMap[p.source_team_name] || '',
+                            destManager: teamManagerMap[p.destination_team_key] || teamManagerMap[p.destination_team_name] || '',
+                            headshot: '' // will be resolved from player stats if available
                         }));
-                        const date = t.timestamp
-                            ? new Date(parseInt(t.timestamp) * 1000)
-                            : null;
-                        return {
+                        const date = t.timestamp ? new Date(parseInt(t.timestamp) * 1000) : null;
+                        txns.push({
                             year,
+                            transactionKey: t.transaction_key || '',
                             timestamp: parseInt(t.timestamp) || 0,
                             date: date ? `${(date.getMonth() + 1)}/${date.getDate().toString().padStart(2, '0')}` : '',
                             type: t.type,
                             players
-                        };
+                        });
                     });
-                } catch (e) { return []; }
+                } catch (e) {}
+                return { txns, year };
             });
 
             const results = await Promise.all(fetches);
-            results.forEach(txns => allTransactions.push(...txns));
-
-            // Sort chronologically (oldest first)
+            results.forEach(r => allTransactions.push(...r.txns));
+            const dedupeMap = new Map();
+            allTransactions.forEach(txn => {
+                const fallbackPlayers = (txn.players || [])
+                    .map(p => `${p.player_id || ''}:${p.transaction_type || ''}:${p.source_team_key || ''}:${p.destination_team_key || ''}`)
+                    .sort()
+                    .join('|');
+                const key = txn.transactionKey
+                    ? `${txn.year}:${txn.transactionKey}`
+                    : `${txn.year}:${txn.timestamp}:${txn.type}:${fallbackPlayers}`;
+                if (!dedupeMap.has(key)) dedupeMap.set(key, txn);
+            });
+            allTransactions.length = 0;
+            allTransactions.push(...dedupeMap.values());
             allTransactions.sort((a, b) => a.timestamp - b.timestamp);
 
-            playerTransactionCache[cacheKey] = allTransactions;
-            return allTransactions;
+            const result = { transactions: allTransactions, drafts: draftByYear };
+            playerTransactionCache[cacheKey] = result;
+            return result;
         }
 
-        function renderTransactionPanel(transactions, containerId) {
+        function toggleTransYear(el) {
+            const body = el.nextElementSibling;
+            el.classList.toggle('collapsed');
+            body.classList.toggle('collapsed');
+        }
+
+        function renderTransactionPanel(data, containerId) {
             const container = document.getElementById(containerId);
             if (!container) return;
+
+            const transactions = data.transactions || [];
+            const drafts = data.drafts || {};
 
             let html = '<div class="trans-panel-title">Transactions</div>';
             html += '<div class="trans-panel-body">';
 
-            if (!transactions || transactions.length === 0) {
+            // Determine which years have any content (transactions or drafts)
+            const yearsWithContent = new Set();
+            transactions.forEach(t => yearsWithContent.add(t.year));
+            Object.keys(drafts).forEach(y => yearsWithContent.add(parseInt(y)));
+
+            if (yearsWithContent.size === 0) {
                 html += '<div class="trans-panel-empty">No transactions found</div>';
                 html += '</div>';
                 container.innerHTML = html;
                 return;
             }
 
-            const playerName = null; // will be set per-call
-            let currentYear = null;
+            const sortedYears = [...yearsWithContent].sort((a, b) => b - a);
 
-            transactions.forEach(txn => {
-                // Year divider
-                if (txn.year !== currentYear) {
-                    currentYear = txn.year;
-                    html += `<div class="trans-year-divider">${txn.year}</div>`;
+            sortedYears.forEach((year, index) => {
+                const yearTxns = transactions.filter(t => t.year === year);
+                const draft = drafts[year];
+                const totalCount = yearTxns.length + (draft ? 1 : 0);
+                const isCollapsed = index !== 0;
+
+                html += `<div class="trans-year-divider ${isCollapsed ? 'collapsed' : ''}" onclick="toggleTransYear(this)">${year} <span class="trans-year-count">(${totalCount})</span><span class="trans-year-chevron">▾</span></div>`;
+                html += `<div class="trans-year-body ${isCollapsed ? 'collapsed' : ''}">`;
+
+                // Draft info first
+                if (draft) {
+                    const draftLogoHtml = draft.teamLogo
+                        ? `<img src="${draft.teamLogo}" class="trans-team-logo" alt="" onerror="this.style.display='none'">`
+                        : '';
+                    html += `
+                        <div class="trans-entry trans-type-draft">
+                            <div class="trans-date">Draft</div>
+                            <div class="trans-main-row">
+                                ${draftLogoHtml}
+                                <span><span class="trans-action">Drafted</span> Rd ${draft.round}, #${draft.pick}</span>
+                            </div>
+                            <div class="trans-sub-row">${draft.teamName}</div>
+                        </div>
+                    `;
                 }
 
-                if (txn.type === 'trade') {
-                    html += renderTradeEntry(txn, containerId);
-                } else if (txn.type === 'add/drop') {
-                    html += renderAddDropEntry(txn, containerId);
-                } else if (txn.type === 'add') {
-                    html += renderSimpleEntry(txn, 'add', containerId);
-                } else if (txn.type === 'drop') {
-                    html += renderSimpleEntry(txn, 'drop', containerId);
-                }
+                // Transactions
+                yearTxns.forEach(txn => {
+                    if (txn.type === 'trade') {
+                        html += renderTradeEntry(txn);
+                    } else if (txn.type === 'add/drop') {
+                        html += renderAddDropEntry(txn);
+                    } else if (txn.type === 'add') {
+                        html += renderSimpleEntry(txn, 'add');
+                    } else if (txn.type === 'drop') {
+                        html += renderSimpleEntry(txn, 'drop');
+                    }
+                });
+
+                html += `</div>`;
             });
 
             html += '</div>';
             container.innerHTML = html;
         }
 
-        function renderSimpleEntry(txn, action, panelId) {
-            const player = txn.players[0];
-            if (!player) return '';
-            const teamName = action === 'add'
-                ? (player.destination_team_name || '')
-                : (player.source_team_name || '');
-            const logo = action === 'add'
-                ? (player.destLogo || '')
-                : (player.sourceLogo || '');
-            const logoHtml = logo
-                ? `<img src="${logo}" class="trans-team-logo" alt="" onerror="this.style.display='none'">`
+        function renderTransTeamHeader(teamLogo, teamName, managerName) {
+            const logoHtml = teamLogo
+                ? `<img src="${teamLogo}" class="trans-team-logo" alt="" onerror="this.style.display='none'">`
                 : '';
-            const label = action === 'add' ? 'Added' : 'Dropped';
-
+            const managerText = managerName ? `<div class="trans-team-manager">${managerName}</div>` : '';
             return `
-                <div class="trans-entry trans-type-${action}">
-                    <div class="trans-date">${txn.date}</div>
-                    <div class="trans-main-row">
-                        ${logoHtml}
-                        <span><span class="trans-action">${label}</span> <span class="trans-team-name">${teamName}</span></span>
+                <div class="trans-team-header">
+                    ${logoHtml}
+                    <div class="trans-team-meta">
+                        <div class="trans-team-name">${teamName || 'Unknown Team'}</div>
+                        ${managerText}
                     </div>
                 </div>
             `;
         }
 
-        function renderAddDropEntry(txn, panelId) {
-            // Identify the player being tracked by this panel
-            const panelEl = document.getElementById(panelId);
-            // Find the add and drop parts
+        function renderSimpleEntry(txn, action) {
+            const player = txn.players[0];
+            if (!player) return '';
+            const teamName = action === 'add'
+                ? (player.destination_team_name || '')
+                : (player.source_team_name || '');
+            const teamLogo = action === 'add'
+                ? (player.destLogo || '')
+                : (player.sourceLogo || '');
+            const managerName = action === 'add'
+                ? (player.destManager || '')
+                : (player.sourceManager || '');
+            const label = action === 'add' ? 'Added' : 'Dropped';
+
+            return `
+                <div class="trans-entry trans-type-${action}">
+                    <div class="trans-date">${txn.date}</div>
+                    ${renderTransTeamHeader(teamLogo, teamName, managerName)}
+                    <div class="trans-main-row">
+                        <span class="trans-action">${label}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderAddDropEntry(txn) {
             const addPlayer = txn.players.find(p => p.transaction_type === 'add');
             const dropPlayer = txn.players.find(p => p.transaction_type === 'drop');
             if (!addPlayer && !dropPlayer) return '';
 
-            const addLogo = addPlayer?.destLogo || '';
-            const addLogoHtml = addLogo
-                ? `<img src="${addLogo}" class="trans-team-logo" alt="" onerror="this.style.display='none'">`
+            // Use one team logo (it's the same team doing the add/drop)
+            const teamLogo = addPlayer?.destLogo || dropPlayer?.sourceLogo || '';
+            const teamName = addPlayer?.destination_team_name || dropPlayer?.source_team_name || '';
+            const managerName = addPlayer?.destManager || dropPlayer?.sourceManager || '';
+
+            // Build headshot for each player
+            const addHeadshot = addPlayer ? getMLBPlayerHeadshot(addPlayer.player_id) : '';
+            const dropHeadshot = dropPlayer ? getMLBPlayerHeadshot(dropPlayer.player_id) : '';
+
+            const addHeadshotHtml = addHeadshot
+                ? `<img src="${addHeadshot}" class="trans-player-headshot" alt="" onerror="this.style.display='none'">`
                 : '';
-            const dropLogo = dropPlayer?.sourceLogo || '';
-            const dropLogoHtml = dropLogo
-                ? `<img src="${dropLogo}" class="trans-team-logo" alt="" onerror="this.style.display='none'">`
+            const dropHeadshotHtml = dropHeadshot
+                ? `<img src="${dropHeadshot}" class="trans-player-headshot" alt="" onerror="this.style.display='none'">`
                 : '';
 
             return `
                 <div class="trans-entry trans-type-add-drop">
                     <div class="trans-date">${txn.date}</div>
+                    ${renderTransTeamHeader(teamLogo, teamName, managerName)}
                     ${addPlayer ? `
                     <div class="trans-add-part">
                         <div class="trans-main-row">
-                            ${addLogoHtml}
-                            <span><span class="trans-action">+</span> ${addPlayer.player_name}</span>
+                            ${addHeadshotHtml}
+                            <span class="trans-action">+</span>
+                            <span>${addPlayer.player_name}</span>
                         </div>
                     </div>` : ''}
                     ${dropPlayer ? `
                     <div class="trans-drop-part">
                         <div class="trans-main-row">
-                            ${dropLogoHtml}
-                            <span><span class="trans-action">-</span> ${dropPlayer.player_name}</span>
+                            ${dropHeadshotHtml}
+                            <span class="trans-action">-</span>
+                            <span>${dropPlayer.player_name}</span>
                         </div>
                     </div>` : ''}
                 </div>
             `;
         }
 
-        function renderTradeEntry(txn, panelId) {
-            // Group players by source team (each side of the trade)
+        function renderTradeEntry(txn) {
             const sides = {};
             txn.players.forEach(p => {
                 const srcKey = p.source_team_key || p.source_team_name;
@@ -21094,10 +21229,18 @@
                     sides[srcKey] = {
                         teamName: p.source_team_name,
                         logo: p.sourceLogo,
-                        players: []
+                        players: [],
+                        seen: new Set()
                     };
                 }
-                sides[srcKey].players.push(p.player_name);
+                const playerKey = `${p.player_id || ''}:${p.player_name || ''}`;
+                if (!sides[srcKey].seen.has(playerKey)) {
+                    sides[srcKey].seen.add(playerKey);
+                    sides[srcKey].players.push({
+                        name: p.player_name,
+                        headshot: getMLBPlayerHeadshot(p.player_id)
+                    });
+                }
             });
 
             const sideEntries = Object.values(sides);
@@ -21106,12 +21249,19 @@
                 const logoHtml = side.logo
                     ? `<img src="${side.logo}" class="trans-team-logo" alt="" onerror="this.style.display='none'">`
                     : '';
+                const playersHtml = side.players.map(p => {
+                    const hsHtml = p.headshot
+                        ? `<img src="${p.headshot}" class="trans-player-headshot" alt="" onerror="this.style.display='none'">`
+                        : '';
+                    return `<div class="trans-trade-player">${hsHtml} ${p.name}</div>`;
+                }).join('');
+
                 sidesHtml += `
                     <div class="trans-trade-side">
                         ${logoHtml}
                         <div class="trans-trade-players">
                             <div style="font-weight:600;font-size:0.65rem;color:#333;">${side.teamName || 'Unknown'}</div>
-                            ${side.players.map(name => `<div>${name}</div>`).join('')}
+                            ${playersHtml}
                         </div>
                     </div>
                 `;
@@ -21126,6 +21276,11 @@
                     ${sidesHtml}
                 </div>
             `;
+        }
+
+        function getMLBPlayerHeadshot(playerId) {
+            if (!playerId) return '';
+            return `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_80,q_auto:best/v1/people/${playerId}/headshot/silo/current`;
         }
 
         async function showPlayerDetail(playerName) {
