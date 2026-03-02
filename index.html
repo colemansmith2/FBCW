@@ -12403,25 +12403,6 @@
             font-style: italic;
         }
 
-        .prospect-claim-btn {
-            width: 22px;
-            height: 22px;
-            border: none;
-            border-radius: 50%;
-            background: #22c55e;
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.95rem;
-            line-height: 1;
-        }
-
-        .prospect-claim-btn:hover {
-            background: #16a34a;
-        }
 
         .prospect-loading {
             text-align: center;
@@ -12757,7 +12738,34 @@
             text-shadow: 1px 1px 0 #0d2818;
         }
 
-        .prospect-claim-modal-overlay {
+        /* ===== OPCOMP List Styles ===== */
+
+        .opcomp-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1.2rem;
+            background: var(--retro-blue);
+            color: var(--retro-gold);
+            border: 2px solid var(--retro-gold);
+            border-radius: 8px;
+            font-family: 'Arcade Gamer', sans-serif;
+            font-size: 0.75rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 0.75rem;
+        }
+
+        .opcomp-btn:hover {
+            background: var(--retro-blue-dark);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .opcomp-modal-overlay {
             display: none;
             position: fixed;
             inset: 0;
@@ -12769,41 +12777,24 @@
             padding: 1.25rem;
         }
 
-        .prospect-claim-modal-overlay.active {
+        .opcomp-modal-overlay.active {
             display: flex;
         }
 
-        .prospect-claim-modal-shell {
-            display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            max-width: 1140px;
-            width: 100%;
-        }
-
-        .prospect-claim-card-modal {
-            width: 400px;
-            flex: 0 0 400px;
-            background: transparent;
-            border: none;
-            border-radius: 0;
-            box-shadow: none;
-        }
-
-        .prospect-claim-card-modal-header {
-            display: none;
-        }
-
-        .prospect-claim-action-modal {
-            flex: 1;
-            min-width: 0;
+        .opcomp-modal {
             background: #f7f2e8;
             border: 3px solid var(--retro-blue);
             border-radius: 12px;
             box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+            max-width: 960px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            animation: fadeIn 0.3s;
         }
 
-        .prospect-claim-modal-header {
+        .opcomp-modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -12811,14 +12802,15 @@
             border-bottom: 1px solid #d7cdb8;
         }
 
-        .prospect-claim-modal-title {
-            font-size: 0.9rem;
+        .opcomp-modal-title {
+            font-family: 'Arcade Gamer', sans-serif;
+            font-size: 1rem;
             color: var(--retro-blue);
             text-transform: uppercase;
             letter-spacing: 0.8px;
         }
 
-        .prospect-claim-modal-team-chip {
+        .opcomp-modal-team-chip {
             display: none;
             align-items: center;
             gap: 0.6rem;
@@ -12828,21 +12820,20 @@
             border: 1px solid #ccd9f7;
             border-radius: 999px;
             padding: 0.3rem 0.85rem 0.3rem 0.4rem;
-            max-width: 360px;
         }
 
-        .prospect-claim-modal-team-chip.active {
+        .opcomp-modal-team-chip.active {
             display: inline-flex;
         }
 
-        .prospect-claim-modal-team-chip img {
+        .opcomp-modal-team-chip img {
             width: 28px;
             height: 28px;
             border-radius: 50%;
             object-fit: cover;
         }
 
-        .prospect-claim-modal-team-chip span {
+        .opcomp-modal-team-chip span {
             font-size: 0.82rem;
             font-weight: 600;
             color: #244a98;
@@ -12851,7 +12842,7 @@
             text-overflow: ellipsis;
         }
 
-        .prospect-claim-modal-close {
+        .opcomp-modal-close {
             border: none;
             background: none;
             color: #666;
@@ -12860,140 +12851,16 @@
             cursor: pointer;
         }
 
-        .prospect-claim-modal-body {
-            padding: 0.95rem 1rem;
-            min-height: 440px;
+        .opcomp-modal-close:hover {
+            color: #000;
         }
 
-        .prospect-claim-player-card-wrap {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            padding: 0;
+        /* Auth View */
+        .opcomp-auth-view {
+            padding: 1.5rem;
         }
 
-        .prospect-claim-player-card {
-            width: 390px;
-            background: #f2e5c9;
-            border: 3px solid var(--retro-blue);
-            border-radius: 12px;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            padding: 0.75rem;
-            box-sizing: border-box;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
-        }
-
-        .prospect-claim-card-header {
-            background: var(--retro-blue);
-            border: 2px solid var(--retro-blue-dark);
-            border-radius: 10px 10px 0 0;
-            padding: 0.85rem 0.75rem 0.7rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.4rem;
-        }
-
-        .prospect-claim-player-card .player-card-headshot-wrap {
-            margin-bottom: 0.12rem;
-            width: 66px;
-            height: 66px;
-        }
-
-        .prospect-claim-player-card .player-card-headshot {
-            width: 66px;
-            height: 66px;
-        }
-
-        .prospect-claim-player-card .player-card-mlb-logo {
-            width: 26px;
-            height: 26px;
-            right: -6px;
-            bottom: -2px;
-        }
-
-        .prospect-claim-player-card .player-card-pos-badge {
-            font-size: 0.8rem;
-            padding: 0.16rem 0.48rem;
-            border-radius: 5px;
-            min-width: 30px;
-            margin-bottom: 0.2rem;
-        }
-
-        .prospect-claim-player-card .player-card-name {
-            color: #1c2c1f;
-            margin-bottom: 0.18rem;
-            font-size: 1rem;
-            max-width: 100%;
-            text-align: center;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            letter-spacing: 0.25px;
-            background: #ffcc00;
-            border: 1px solid #a87a00;
-            border-radius: 6px;
-            padding: 0.2rem 0.65rem;
-            font-style: italic;
-            font-weight: 700;
-            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.18);
-        }
-
-        .prospect-claim-player-card .player-card-mlb-line {
-            display: flex;
-            align-items: center;
-            gap: 0.35rem;
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: rgba(255, 255, 255, 0.95);
-        }
-
-        .prospect-claim-card-body {
-            border: 2px solid var(--retro-blue-dark);
-            border-top: none;
-            border-radius: 0 0 10px 10px;
-            background: #efe2c8;
-            padding: 0.62rem 0.62rem 0.56rem;
-        }
-
-        .prospect-claim-card-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.42rem;
-        }
-
-        .prospect-claim-card-stat {
-            background: #f7f1e2;
-            border: 1px solid #d2bf9c;
-            border-radius: 6px;
-            padding: 0.3rem 0.4rem;
-        }
-
-        .prospect-claim-card-stat-label {
-            font-size: 0.64rem;
-            color: #7b5b33;
-            text-transform: uppercase;
-            letter-spacing: 0.55px;
-            margin-bottom: 0.08rem;
-        }
-
-        .prospect-claim-card-stat-value {
-            font-size: 1rem;
-            color: #1f2f22;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .prospect-claim-card-stat.full {
-            grid-column: 1 / -1;
-        }
-
-        .prospect-claim-right h4,
-        #prospect-claim-auth-view h4 {
+        .opcomp-auth-view h4 {
             margin: 0 0 0.5rem 0;
             font-size: 0.78rem;
             color: #556;
@@ -13001,14 +12868,14 @@
             letter-spacing: 0.8px;
         }
 
-        .prospect-claim-team-grid {
+        .opcomp-team-grid {
             display: grid;
             grid-template-columns: repeat(6, minmax(52px, 1fr));
             gap: 0.55rem;
             margin-bottom: 0.75rem;
         }
 
-        .prospect-claim-team-btn {
+        .opcomp-team-btn {
             border: 2px solid #d6d6d6;
             border-radius: 10px;
             padding: 0.45rem 0.25rem;
@@ -13018,21 +12885,27 @@
             flex-direction: column;
             align-items: center;
             gap: 0.2rem;
+            transition: all 0.2s;
         }
 
-        .prospect-claim-team-btn.active {
+        .opcomp-team-btn:hover {
+            border-color: #aab;
+            background: #f8f8ff;
+        }
+
+        .opcomp-team-btn.active {
             border-color: var(--retro-blue);
             background: #eef4ff;
         }
 
-        .prospect-claim-team-btn img {
+        .opcomp-team-btn img {
             width: 32px;
             height: 32px;
             border-radius: 50%;
             object-fit: cover;
         }
 
-        .prospect-claim-team-btn span {
+        .opcomp-team-btn span {
             font-size: 0.58rem;
             color: #444;
             text-align: center;
@@ -13043,14 +12916,14 @@
             white-space: nowrap;
         }
 
-        .prospect-claim-password {
+        .opcomp-password {
             display: flex;
             gap: 0.45rem;
             align-items: center;
             margin-bottom: 0.5rem;
         }
 
-        .prospect-claim-password input {
+        .opcomp-password input {
             flex: 1;
             border: 1px solid #ccc;
             border-radius: 8px;
@@ -13058,8 +12931,7 @@
             font-size: 0.85rem;
         }
 
-        .prospect-claim-password button,
-        .prospect-claim-confirm-actions button {
+        .opcomp-password button {
             border: none;
             border-radius: 8px;
             padding: 0.55rem 0.8rem;
@@ -13067,159 +12939,351 @@
             color: #fff;
             cursor: pointer;
             font-size: 0.75rem;
+            transition: background 0.2s;
         }
 
-        .prospect-claim-password button:hover,
-        .prospect-claim-confirm-actions button:hover {
+        .opcomp-password button:hover {
             background: #0b3c94;
         }
 
-        .prospect-claim-error {
+        .opcomp-error {
             min-height: 18px;
             color: #b91c1c;
             font-size: 0.7rem;
             margin-bottom: 0.6rem;
         }
 
-        .prospect-claim-limit-note {
-            font-size: 0.82rem;
-            color: #4b5563;
-            margin: 0 0 0.5rem 0;
-            line-height: 1.35;
+        .opcomp-hint {
+            font-size: 0.72rem;
+            color: #888;
+            margin-top: 0.3rem;
         }
 
-        .prospect-claim-confirm {
+        /* Builder View (two-panel layout) */
+        .opcomp-builder-view {
             display: none;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 0.8rem 0.85rem;
-            margin-bottom: 0.55rem;
-            font-size: 0.9rem;
-            line-height: 1.35;
+            flex: 1;
+            min-height: 0;
         }
 
-        .prospect-claim-confirm.active {
-            display: block;
-        }
-
-        .prospect-claim-confirm-actions {
+        .opcomp-builder-view.active {
             display: flex;
-            gap: 0.45rem;
-            margin-top: 0.45rem;
         }
 
-        .prospect-claim-confirm-actions .btn-no {
-            background: #dc2626;
+        .opcomp-builder-layout {
+            display: flex;
+            gap: 0;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
         }
 
-        .prospect-claim-confirm-actions .btn-no:hover {
-            background: #b91c1c;
+        /* Left panel: Available prospects */
+        .opcomp-available-panel {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #d7cdb8;
+            max-height: calc(90vh - 60px);
         }
 
-        .prospect-claim-confirm-actions button:first-child {
-            background: #16a34a;
+        .opcomp-available-header {
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid #e8dcc8;
+            background: #faf6ee;
         }
 
-        .prospect-claim-confirm-actions button:first-child:hover {
-            background: #15803d;
-        }
-
-        .prospect-claim-team-list {
-            display: none;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 0.8rem;
-            max-height: 320px;
-            overflow-y: auto;
-        }
-
-        .prospect-claim-team-list.active {
-            display: block;
-        }
-
-        .prospect-claim-team-list h5 {
-            margin: 0 0 0.45rem 0;
-            font-size: 0.82rem;
-            color: #556;
+        .opcomp-available-header h4 {
+            margin: 0 0 0.4rem 0;
+            font-size: 0.75rem;
+            color: var(--retro-blue);
             text-transform: uppercase;
-            letter-spacing: 0.8px;
+            letter-spacing: 0.6px;
         }
 
-        .prospect-claim-team-item {
-            display: grid;
-            grid-template-columns: 1fr;
+        .opcomp-search-row {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .opcomp-search-row input {
+            flex: 1;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.8rem;
+        }
+
+        .opcomp-search-row select {
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            padding: 0.4rem;
+            font-size: 0.8rem;
+        }
+
+        .opcomp-available-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.4rem 0;
+        }
+
+        .opcomp-prospect-row {
+            display: flex;
             align-items: center;
             gap: 0.5rem;
-            font-size: 0.72rem;
-            padding: 0.22rem 0;
-            border-bottom: 1px solid #f2f2f2;
+            padding: 0.4rem 0.75rem;
+            border-bottom: 1px solid #f0e8d8;
+            transition: background 0.15s;
         }
 
-        .prospect-claim-team-item:last-child {
-            border-bottom: none;
+        .opcomp-prospect-row:hover {
+            background: #f5efe3;
         }
 
-        .prospect-claim-team-item .meta {
-            color: #666;
-            font-size: 0.65rem;
-        }
-
-        .prospect-claim-team-list-grid {
-            display: block;
-        }
-
-        .prospect-claim-team-list-columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.6rem;
-        }
-
-        .prospect-claim-team-col {
-            background: #fafafa;
-            border: 1px solid #ececec;
-            border-radius: 8px;
-            padding: 0.45rem 0.45rem 0.3rem;
-        }
-
-        .prospect-claim-team-col-title {
-            font-size: 0.72rem;
-            color: #556;
-            text-transform: uppercase;
-            letter-spacing: 0.7px;
-            margin-bottom: 0.35rem;
+        .opcomp-prospect-rank {
+            width: 28px;
+            text-align: center;
             font-weight: 700;
+            font-size: 0.8rem;
+            color: #555;
         }
 
-        .prospect-claim-team-player {
-            display: flex;
-            align-items: center;
-            gap: 0.45rem;
+        .opcomp-prospect-headshot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e8e8e8;
+        }
+
+        .opcomp-prospect-info {
+            flex: 1;
             min-width: 0;
-            margin-bottom: 0.24rem;
         }
 
-        .prospect-claim-team-player:last-child {
-            margin-bottom: 0;
-        }
-
-        .prospect-claim-team-player-name {
-            font-size: 0.86rem;
+        .opcomp-prospect-name {
+            font-size: 0.82rem;
+            font-weight: 600;
             color: #222;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
-        .prospect-claim-team-player-rank {
-            margin-left: auto;
-            min-width: 24px;
-            text-align: right;
-            font-size: 0.78rem;
-            color: #6b7280;
+        .opcomp-prospect-meta {
+            font-size: 0.68rem;
+            color: #888;
+        }
+
+        .opcomp-add-btn {
+            padding: 0.3rem 0.6rem;
+            background: var(--retro-green);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+
+        .opcomp-add-btn:hover {
+            background: #27ae60;
+        }
+
+        .opcomp-add-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        /* Right panel: Priority list */
+        .opcomp-priority-panel {
+            width: 320px;
+            flex: 0 0 320px;
+            display: flex;
+            flex-direction: column;
+            max-height: calc(90vh - 60px);
+        }
+
+        .opcomp-priority-header {
+            padding: 0.6rem 0.75rem;
+            border-bottom: 1px solid #e8dcc8;
+            background: #faf6ee;
+        }
+
+        .opcomp-priority-header h4 {
+            margin: 0;
+            font-size: 0.75rem;
+            color: var(--retro-blue);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .opcomp-priority-count {
+            font-size: 0.7rem;
+            color: #888;
+            margin-top: 0.15rem;
+        }
+
+        .opcomp-priority-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .opcomp-slot {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.45rem 0.5rem;
+            margin-bottom: 0.35rem;
+            background: #fff;
+            border: 1px solid #e0d8c8;
+            border-radius: 8px;
+            min-height: 44px;
+            transition: all 0.2s;
+            cursor: grab;
+        }
+
+        .opcomp-slot.empty {
+            background: #faf8f2;
+            border-style: dashed;
+            border-color: #d0c8b8;
+            cursor: default;
+        }
+
+        .opcomp-slot.drag-over {
+            border-color: var(--retro-blue);
+            background: #eef4ff;
+            box-shadow: 0 0 0 2px rgba(0, 72, 186, 0.15);
+        }
+
+        .opcomp-slot.dragging {
+            opacity: 0.5;
+        }
+
+        .opcomp-slot-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--retro-blue);
+            color: #fff;
+            font-size: 0.72rem;
             font-weight: 700;
-            padding-left: 0.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .opcomp-slot-player {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .opcomp-slot-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #222;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .opcomp-slot-detail {
+            font-size: 0.65rem;
+            color: #888;
+        }
+
+        .opcomp-slot-empty-text {
+            flex: 1;
+            font-size: 0.75rem;
+            color: #bbb;
+            font-style: italic;
+        }
+
+        .opcomp-slot-actions {
+            display: flex;
+            gap: 0.15rem;
+            flex-shrink: 0;
+        }
+
+        .opcomp-slot-action {
+            width: 24px;
+            height: 24px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fafafa;
+            color: #666;
+            font-size: 0.7rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            padding: 0;
+        }
+
+        .opcomp-slot-action:hover {
+            background: #eee;
+            color: #333;
+        }
+
+        .opcomp-slot-action.remove:hover {
+            background: #fde8e8;
+            color: #b91c1c;
+            border-color: #f5c6c6;
+        }
+
+        .opcomp-slot-action:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .opcomp-priority-footer {
+            padding: 0.6rem 0.75rem;
+            border-top: 1px solid #e8dcc8;
+            background: #faf6ee;
+        }
+
+        .opcomp-save-btn {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--retro-blue);
+            color: var(--retro-gold);
+            border: 2px solid var(--retro-gold);
+            border-radius: 8px;
+            font-family: 'Arcade Gamer', sans-serif;
+            font-size: 0.7rem;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .opcomp-save-btn:hover {
+            background: var(--retro-blue-dark);
+        }
+
+        .opcomp-save-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .opcomp-save-status {
+            font-size: 0.72rem;
+            padding: 0.3rem 0.75rem;
+            text-align: center;
+        }
+
+        .opcomp-save-status.success {
+            color: #15803d;
+        }
+
+        .opcomp-save-status.error {
+            color: #b91c1c;
         }
 
         /* Mobile responsive */
@@ -13346,54 +13410,47 @@
                 font-size: 0.65rem;
             }
 
-            .prospect-claim-btn {
-                width: 20px;
-                height: 20px;
-                font-size: 0.85rem;
-            }
-
             .prospect-footer {
                 font-size: 0.65rem;
                 padding: 0 0.5rem;
             }
 
-            .prospect-claim-modal-overlay {
-                padding: 0.75rem;
-            }
-
-            .prospect-claim-modal-shell {
+            /* OPCOMP mobile */
+            .opcomp-builder-layout {
                 flex-direction: column;
             }
 
-            .prospect-claim-card-modal {
+            .opcomp-available-panel {
+                border-right: none;
+                border-bottom: 1px solid #d7cdb8;
+                max-height: 45vh;
+            }
+
+            .opcomp-priority-panel {
                 width: 100%;
                 flex: 0 0 auto;
+                max-height: 45vh;
             }
 
-            .prospect-claim-action-modal {
-                width: 100%;
-            }
-
-            .prospect-claim-player-card {
-                width: 100%;
-                max-width: 360px;
-            }
-
-            .prospect-claim-team-grid {
+            .opcomp-team-grid {
                 grid-template-columns: repeat(4, minmax(56px, 1fr));
             }
 
-            .prospect-claim-team-list-grid {
-                display: block;
+            .opcomp-modal {
+                max-height: 95vh;
             }
 
-            .prospect-claim-modal-team-chip {
-                max-width: 220px;
-                margin-right: 0.35rem;
+            .opcomp-btn {
+                font-size: 0.65rem;
+                padding: 0.45rem 0.9rem;
             }
 
-            .prospect-claim-team-list-columns {
-                grid-template-columns: 1fr;
+            .opcomp-password input {
+                font-size: 16px;
+            }
+
+            .opcomp-search-row input {
+                font-size: 16px;
             }
         }
 
@@ -18779,6 +18836,8 @@
         <div id="prospects" class="section">
             <h2>Prospect Pavilion</h2>
 
+            <button class="opcomp-btn" onclick="openOpcompModal()">OPCOMP List</button>
+
             <div class="prospect-controls">
                 <div class="prospect-controls-left">
                     <label class="prospect-toggle">
@@ -18845,55 +18904,76 @@
             </div>
         </div>
 
-        <!-- Prospect Claim Modal -->
-        <div id="prospect-claim-modal" class="prospect-claim-modal-overlay" onclick="closeProspectClaimModal(event)">
-            <div class="prospect-claim-modal-shell" onclick="event.stopPropagation()">
-                <div class="prospect-claim-card-modal">
-                    <div class="prospect-claim-card-modal-header">Prospect Card</div>
-                    <div class="prospect-claim-player-card-wrap" id="prospect-claim-player-card">
-                        <!-- Player card injected -->
+        <!-- OPCOMP List Modal -->
+        <div id="opcomp-modal" class="opcomp-modal-overlay" onclick="closeOpcompModal(event)">
+            <div class="opcomp-modal" onclick="event.stopPropagation()">
+                <div class="opcomp-modal-header">
+                    <span class="opcomp-modal-title">OPCOMP List</span>
+                    <div class="opcomp-modal-team-chip" id="opcomp-team-chip">
+                        <img id="opcomp-team-logo" src="league_logo.png" alt="">
+                        <span id="opcomp-team-name"></span>
                     </div>
+                    <button class="opcomp-modal-close" onclick="closeOpcompModal()">&times;</button>
                 </div>
-                <div class="prospect-claim-action-modal">
-                    <div class="prospect-claim-modal-header">
-                        <div class="prospect-claim-modal-title">Claim Prospect</div>
-                        <div class="prospect-claim-modal-team-chip" id="prospect-claim-modal-team-chip">
-                            <img id="prospect-claim-modal-team-logo" src="league_logo.png" alt="">
-                            <span id="prospect-claim-modal-team-name"></span>
-                        </div>
-                        <button class="prospect-claim-modal-close" onclick="closeProspectClaimModal()">&times;</button>
+
+                <!-- Auth View -->
+                <div id="opcomp-auth-view" class="opcomp-auth-view">
+                    <div class="opcomp-error" id="opcomp-error"></div>
+                    <h4>Select Your Team</h4>
+                    <div class="opcomp-team-grid" id="opcomp-team-grid">
+                        <!-- Populated by JS -->
                     </div>
-                    <div class="prospect-claim-modal-body">
-                        <div class="prospect-claim-error" id="prospect-claim-error"></div>
+                    <h4>Enter Password</h4>
+                    <div class="opcomp-password">
+                        <input type="password" id="opcomp-password-input" placeholder="Password"
+                            onkeydown="if(event.key==='Enter') authenticateOpcomp()">
+                        <button type="button" onclick="authenticateOpcomp()">Verify</button>
+                    </div>
+                    <div class="opcomp-hint">Hint: [YourName][YearJoined]</div>
+                </div>
 
-                        <div id="prospect-claim-auth-view">
-                            <h4>Select Your Team</h4>
-                            <div class="prospect-claim-team-grid" id="prospect-claim-team-grid"></div>
-
-                            <h4>Enter Password</h4>
-                            <div class="prospect-claim-password">
-                                <input type="password" id="prospect-claim-password-input" placeholder="Password"
-                                    onkeydown="if(event.key==='Enter') authenticateProspectClaimTeam()">
-                                <button type="button" onclick="authenticateProspectClaimTeam()">Verify</button>
-                            </div>
-                        </div>
-
-                        <div id="prospect-claim-review-view" style="display:none;">
-                            <div class="prospect-claim-limit-note">
-                                Teams may roster up to 12 prospects at a time. Adding a player here does NOT put them on your Yahoo roster.
-                            </div>
-                            <div class="prospect-claim-confirm" id="prospect-claim-confirm">
-                                <div id="prospect-claim-confirm-text"></div>
-                                <div class="prospect-claim-confirm-actions">
-                                    <button type="button" id="prospect-claim-yes-btn" onclick="submitProspectClaim()">Yes</button>
-                                    <button type="button" class="btn-no" onclick="closeProspectClaimModal()">No</button>
+                <!-- Builder View -->
+                <div id="opcomp-builder-view" class="opcomp-builder-view">
+                    <div class="opcomp-builder-layout">
+                        <!-- Left: Available Prospects -->
+                        <div class="opcomp-available-panel">
+                            <div class="opcomp-available-header">
+                                <h4>Available Prospects</h4>
+                                <div class="opcomp-search-row">
+                                    <input type="text" id="opcomp-search" placeholder="Search..."
+                                        onkeyup="filterOpcompAvailable()">
+                                    <select id="opcomp-pos-filter" onchange="filterOpcompAvailable()">
+                                        <option value="">All</option>
+                                        <option value="C">C</option>
+                                        <option value="1B">1B</option>
+                                        <option value="2B">2B</option>
+                                        <option value="3B">3B</option>
+                                        <option value="SS">SS</option>
+                                        <option value="OF">OF</option>
+                                        <option value="P">P</option>
+                                    </select>
                                 </div>
                             </div>
-
-                            <div class="prospect-claim-team-list" id="prospect-claim-team-list">
-                                <h5 id="prospect-claim-team-list-title">Your Prospect Roster | 0/12</h5>
-                                <div id="prospect-claim-team-list-body"></div>
+                            <div class="opcomp-available-list" id="opcomp-available-list">
+                                <!-- Populated by JS -->
                             </div>
+                        </div>
+
+                        <!-- Right: Priority List -->
+                        <div class="opcomp-priority-panel">
+                            <div class="opcomp-priority-header">
+                                <h4>Your Priority Rankings</h4>
+                                <div class="opcomp-priority-count" id="opcomp-priority-count">0 / 10 selected</div>
+                            </div>
+                            <div class="opcomp-priority-list" id="opcomp-priority-list">
+                                <!-- 10 slots rendered by JS -->
+                            </div>
+                            <div class="opcomp-priority-footer">
+                                <button class="opcomp-save-btn" id="opcomp-save-btn" onclick="saveOpcompList()">
+                                    Save OPCOMP List
+                                </button>
+                            </div>
+                            <div class="opcomp-save-status" id="opcomp-save-status"></div>
                         </div>
                     </div>
                 </div>
@@ -40795,15 +40875,6 @@
         // ===== PROSPECT PAVILION FUNCTIONS =====
         let prospectsData = [];
         let prospectOwnershipData = {};
-        let prospectClaimState = {
-            prospect: null,
-            teams: [],
-            selectedTeamKey: null,
-            authenticatedTeamKey: null,
-            authenticatedConfigTeamKey: null,
-            authenticatedTeamConfig: null
-        };
-
         async function loadProspects() {
             try {
                 // Load prospect rankings
@@ -41070,12 +41141,9 @@
                         </div>
                     `;
                 } else {
-                    const encodedName = encodeURIComponent(prospect.name || '');
                     ownerHtml = `
                         <div class="prospect-owner-cell">
                             <span class="prospect-available">Available</span>
-                            <button class="prospect-claim-btn" title="Claim Prospect"
-                                onclick="event.stopPropagation(); openProspectClaimModalByName('${encodedName}')">+</button>
                         </div>
                     `;
                 }
@@ -41288,11 +41356,25 @@
             return false;
         }
 
-        async function getProspectClaimTeams() {
-            if (prospectClaimState.teams.length > 0) return prospectClaimState.teams;
+        // ===== OPCOMP LIST =====
+        const OPCOMP_MAX_SLOTS = 10;
 
+        let opcompState = {
+            teams: [],
+            selectedTeamKey: null,
+            authenticatedTeamKey: null,
+            authenticatedConfigTeamKey: null,
+            authenticatedTeamConfig: null,
+            authenticatedTeamInfo: null,
+            priorityList: []
+        };
+
+        let opcompDraggedIndex = null;
+
+        async function getOpcompTeams() {
+            if (opcompState.teams.length > 0) return opcompState.teams;
             const teams = await getTeamData(2026) || [];
-            prospectClaimState.teams = teams
+            opcompState.teams = teams
                 .map(team => ({
                     teamKey: team.team_key,
                     manager: normalizeManagerName(team.manager || '', 2026, team.team_name, team.team_key),
@@ -41300,219 +41382,86 @@
                     teamLogo: fixTeamLogo(team.team_logo) || 'league_logo.png'
                 }))
                 .sort((a, b) => a.manager.localeCompare(b.manager));
-
-            return prospectClaimState.teams;
+            return opcompState.teams;
         }
 
-        function setProspectClaimView(view) {
-            const authView = document.getElementById('prospect-claim-auth-view');
-            const reviewView = document.getElementById('prospect-claim-review-view');
-            if (!authView || !reviewView) return;
-            authView.style.display = view === 'auth' ? '' : 'none';
-            reviewView.style.display = view === 'review' ? '' : 'none';
-        }
-
-        function setProspectClaimHeaderTeam(teamInfo = null) {
-            const chip = document.getElementById('prospect-claim-modal-team-chip');
-            const logo = document.getElementById('prospect-claim-modal-team-logo');
-            const name = document.getElementById('prospect-claim-modal-team-name');
-            if (!chip || !logo || !name) return;
-
-            if (!teamInfo) {
-                chip.classList.remove('active');
-                name.textContent = '';
-                logo.src = 'league_logo.png';
-                return;
-            }
-
-            chip.classList.add('active');
-            name.textContent = `${teamInfo.manager} - ${teamInfo.teamName || 'Team'}`;
-            logo.src = teamInfo.teamLogo || 'league_logo.png';
-        }
-
-        function updateProspectClaimRosterCapacity(prospectCount) {
-            const limit = 12;
-            const titleEl = document.getElementById('prospect-claim-team-list-title');
-            const yesBtn = document.getElementById('prospect-claim-yes-btn');
-            const errorEl = document.getElementById('prospect-claim-error');
-            if (titleEl) {
-                titleEl.textContent = `Your Prospect Roster | ${prospectCount}/${limit}`;
-            }
-            if (yesBtn) {
-                yesBtn.disabled = prospectCount >= limit;
-                yesBtn.style.opacity = prospectCount >= limit ? '0.6' : '1';
-                yesBtn.style.cursor = prospectCount >= limit ? 'not-allowed' : 'pointer';
-            }
-            if (errorEl) {
-                if (prospectCount >= limit) {
-                    errorEl.style.color = '#b91c1c';
-                    errorEl.textContent = `Prospect limit reached (${limit}/${limit}). Drop a prospect before adding another.`;
-                } else if (errorEl.textContent && errorEl.textContent.includes('Prospect limit reached')) {
-                    errorEl.textContent = '';
-                }
-            }
-        }
-
-        function buildProspectClaimPlayerCard(prospect) {
-            const playerCardPlaceholder = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
-            const headshot = prospect.headshot_url || playerCardPlaceholder;
-            const mlbTeam = prospect.mlb_team || '';
-            const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
-            const mlbTeamDisplay = mlbTeam ? formatMLBTeamDisplay(mlbTeam) : '';
-            const pos = getCleanDisplayPositions(prospect.position || '')[0] || prospect.position || '?';
-
-            const hw = prospect.height_weight || '';
-            const hwMatch = hw.match(/(\d+'\d+"?)\s*(\d+)/);
-            const height = hwMatch ? hwMatch[1] : '-';
-            const weight = hwMatch ? `${hwMatch[2]} lbs` : '-';
-
-            const draftValue = prospect.draft || '-';
-            const faMatch = draftValue.match(/^(\d{4})\s*FA$/i);
-            let acquisitionLabel = 'Draft';
-            let acquisitionValue = draftValue;
-            if (faMatch) {
-                const year = faMatch[1].slice(-2);
-                acquisitionLabel = 'Signed';
-                acquisitionValue = `'${year} IFA`;
-            }
-
-            return `
-                <div class="prospect-claim-player-card">
-                    <div class="prospect-claim-card-header">
-                        <div class="player-card-headshot-wrap">
-                            <img src="${headshot}" class="player-card-headshot" alt="" onerror="this.src='${playerCardPlaceholder}'">
-                            ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="player-card-mlb-logo" alt="" onerror="this.style.display='none'">` : ''}
-                        </div>
-                        <span class="player-card-pos-badge pos-${pos}">${pos}</span>
-                        <div class="player-card-name" title="${prospect.name || ''}">${prospect.name || 'Unknown'}</div>
-                        <div class="player-card-mlb-line">
-                            <span>${mlbTeamDisplay || 'FA'}</span>
-                        </div>
-                    </div>
-                    <div class="prospect-claim-card-body">
-                        <div class="prospect-claim-card-grid">
-                            <div class="prospect-claim-card-stat">
-                                <div class="prospect-claim-card-stat-label">Age</div>
-                                <div class="prospect-claim-card-stat-value">${prospect.age || '-'}</div>
-                            </div>
-                            <div class="prospect-claim-card-stat">
-                                <div class="prospect-claim-card-stat-label">Level</div>
-                                <div class="prospect-claim-card-stat-value">${prospect.highest_level || '-'}</div>
-                            </div>
-                            <div class="prospect-claim-card-stat">
-                                <div class="prospect-claim-card-stat-label">Ht</div>
-                                <div class="prospect-claim-card-stat-value">${height}</div>
-                            </div>
-                            <div class="prospect-claim-card-stat">
-                                <div class="prospect-claim-card-stat-label">Wt</div>
-                                <div class="prospect-claim-card-stat-value">${weight}</div>
-                            </div>
-                            <div class="prospect-claim-card-stat">
-                                <div class="prospect-claim-card-stat-label">B/T</div>
-                                <div class="prospect-claim-card-stat-value">${prospect.bats_throws || '-'}</div>
-                            </div>
-                            <div class="prospect-claim-card-stat">
-                                <div class="prospect-claim-card-stat-label">${acquisitionLabel}</div>
-                                <div class="prospect-claim-card-stat-value">${acquisitionValue}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        async function openProspectClaimModalByName(encodedProspectName) {
-            const decodedName = decodeURIComponent(encodedProspectName || '');
-            const target = prospectsData.find(p => (p.name || '').toLowerCase().trim() === decodedName.toLowerCase().trim());
-            if (!target) return;
-
-            const normalized = normalizeProspectName(target.name);
-            if (prospectOwnershipData[normalized] || prospectOwnershipData[(target.name || '').toLowerCase().trim()]) {
-                return;
-            }
-
+        async function openOpcompModal() {
             initializeFirebase();
             const hasConfig = await ensureKeeperConfigLoaded();
             if (!hasConfig) {
-                alert('Could not load team/password config. Please refresh and try again.');
+                alert('Could not load team configuration. Please refresh and try again.');
                 return;
             }
 
-            prospectClaimState.prospect = target;
-            prospectClaimState.selectedTeamKey = null;
-            prospectClaimState.authenticatedTeamKey = null;
-            prospectClaimState.authenticatedConfigTeamKey = null;
-            prospectClaimState.authenticatedTeamConfig = null;
+            // Reset state
+            opcompState.selectedTeamKey = null;
+            opcompState.authenticatedTeamKey = null;
+            opcompState.authenticatedConfigTeamKey = null;
+            opcompState.authenticatedTeamConfig = null;
+            opcompState.authenticatedTeamInfo = null;
+            opcompState.priorityList = [];
 
-            const teams = await getProspectClaimTeams();
-            const teamGrid = document.getElementById('prospect-claim-team-grid');
-            const playerCardWrap = document.getElementById('prospect-claim-player-card');
-            const passwordInput = document.getElementById('prospect-claim-password-input');
-            const errorEl = document.getElementById('prospect-claim-error');
-            const confirmEl = document.getElementById('prospect-claim-confirm');
-            const teamListEl = document.getElementById('prospect-claim-team-list');
-
-            playerCardWrap.innerHTML = buildProspectClaimPlayerCard(target);
-            teamGrid.innerHTML = teams.map(team => `
-                <button class="prospect-claim-team-btn" data-team-key="${team.teamKey}" onclick="selectProspectClaimTeam('${team.teamKey}')">
+            // Populate team grid
+            const teams = await getOpcompTeams();
+            const grid = document.getElementById('opcomp-team-grid');
+            grid.innerHTML = teams.map(team => `
+                <button class="opcomp-team-btn" data-team-key="${team.teamKey}"
+                    onclick="selectOpcompTeam('${team.teamKey}')">
                     <img src="${team.teamLogo}" alt="${team.manager}" onerror="this.src='league_logo.png'">
                     <span>${team.manager}</span>
                 </button>
             `).join('');
 
-            passwordInput.value = '';
-            errorEl.style.color = '#b91c1c';
-            errorEl.textContent = '';
-            confirmEl.classList.remove('active');
-            teamListEl.classList.remove('active');
-            setProspectClaimView('auth');
-            setProspectClaimHeaderTeam(null);
+            // Reset UI
+            document.getElementById('opcomp-password-input').value = '';
+            document.getElementById('opcomp-error').textContent = '';
+            document.getElementById('opcomp-save-status').textContent = '';
+            setOpcompView('auth');
+            setOpcompTeamChip(null);
 
-            document.getElementById('prospect-claim-modal').classList.add('active');
+            // Show modal
+            document.getElementById('opcomp-modal').classList.add('active');
             document.body.classList.add('modal-open');
         }
 
-        function selectProspectClaimTeam(teamKey) {
-            prospectClaimState.selectedTeamKey = teamKey;
-            prospectClaimState.authenticatedTeamKey = null;
-            prospectClaimState.authenticatedConfigTeamKey = null;
-            prospectClaimState.authenticatedTeamConfig = null;
-            document.querySelectorAll('.prospect-claim-team-btn').forEach(btn => {
+        function selectOpcompTeam(teamKey) {
+            opcompState.selectedTeamKey = teamKey;
+            document.querySelectorAll('.opcomp-team-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.teamKey === teamKey);
             });
-            document.getElementById('prospect-claim-error').textContent = '';
-            document.getElementById('prospect-claim-confirm').classList.remove('active');
-            document.getElementById('prospect-claim-team-list').classList.remove('active');
-            setProspectClaimView('auth');
-            setProspectClaimHeaderTeam(null);
+            document.getElementById('opcomp-error').textContent = '';
+
+            // Focus password on desktop
+            if (window.innerWidth > 768) {
+                setTimeout(() => {
+                    document.getElementById('opcomp-password-input').focus({ preventScroll: true });
+                }, 200);
+            }
         }
 
-        async function authenticateProspectClaimTeam() {
-            const passwordInput = document.getElementById('prospect-claim-password-input');
-            const errorEl = document.getElementById('prospect-claim-error');
-            const confirmEl = document.getElementById('prospect-claim-confirm');
-            const confirmText = document.getElementById('prospect-claim-confirm-text');
-            const teamListEl = document.getElementById('prospect-claim-team-list');
+        async function authenticateOpcomp() {
+            const errorEl = document.getElementById('opcomp-error');
+            const teamKey = opcompState.selectedTeamKey;
+            const password = document.getElementById('opcomp-password-input').value || '';
 
-            const teamKey = prospectClaimState.selectedTeamKey;
-            const password = passwordInput.value || '';
             if (!teamKey || !password) {
                 errorEl.textContent = 'Select your team and enter your password.';
                 return;
             }
 
-            const teams = prospectClaimState.teams || [];
+            const teams = opcompState.teams || [];
             const selectedTeam = teams.find(t => t.teamKey === teamKey);
             if (!selectedTeam) {
                 errorEl.textContent = 'Team not found.';
                 return;
             }
 
+            // Find team config (try direct key, fallback to manager name match)
             let teamConfig = keeperConfig?.teams?.[teamKey];
             let configTeamKey = teamKey;
             if (!teamConfig) {
-                const configEntry = Object.entries(keeperConfig?.teams || {}).find(([configKey, config]) => {
-                    const configManager = normalizeManagerName(config.manager || '', 2026, config.team_name, configKey);
+                const configEntry = Object.entries(keeperConfig?.teams || {}).find(([ck, config]) => {
+                    const configManager = normalizeManagerName(config.manager || '', 2026, config.team_name, ck);
                     return configManager === selectedTeam.manager;
                 });
                 if (configEntry) {
@@ -41532,218 +41481,353 @@
                 return;
             }
 
+            // Auth successful
             errorEl.textContent = '';
-            prospectClaimState.authenticatedTeamKey = teamKey;
-            prospectClaimState.authenticatedConfigTeamKey = configTeamKey;
-            prospectClaimState.authenticatedTeamConfig = teamConfig;
+            opcompState.authenticatedTeamKey = teamKey;
+            opcompState.authenticatedConfigTeamKey = configTeamKey;
+            opcompState.authenticatedTeamConfig = teamConfig;
+            opcompState.authenticatedTeamInfo = selectedTeam;
 
-            await renderProspectClaimTeamList(teamKey);
+            // Load existing OPCOMP list from Firebase
+            await loadOpcompListFromFirebase();
 
-            const playerName = prospectClaimState.prospect?.name || 'this player';
-            confirmText.textContent = `Are you sure you want to add ${playerName}?`;
-            confirmEl.classList.add('active');
-            teamListEl.classList.add('active');
-            setProspectClaimView('review');
-            setProspectClaimHeaderTeam(selectedTeam);
+            // Switch to builder view
+            setOpcompTeamChip(selectedTeam);
+            renderOpcompAvailableList();
+            renderOpcompPriorityList();
+            setOpcompView('builder');
         }
 
-        async function getTeamKeepersFromFirebase(teamKey, configTeamKey = null) {
-            if (!firebaseDb) return Array.isArray(keeperSelections[teamKey]) ? [...keeperSelections[teamKey]] : [];
-            const keysToTry = [teamKey];
-            if (configTeamKey && configTeamKey !== teamKey) keysToTry.push(configTeamKey);
+        function setOpcompView(view) {
+            const authView = document.getElementById('opcomp-auth-view');
+            const builderView = document.getElementById('opcomp-builder-view');
+            if (!authView || !builderView) return;
+            authView.style.display = view === 'auth' ? '' : 'none';
+            builderView.classList.toggle('active', view === 'builder');
+        }
 
-            for (const key of keysToTry) {
-                const sanitizedKey = sanitizeFirebaseKey(key);
-                const snapshot = await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).once('value');
-                const value = snapshot.val();
-                if (Array.isArray(value)) return [...value];
-                if (value && typeof value === 'object') return Object.values(value);
+        function setOpcompTeamChip(teamInfo) {
+            const chip = document.getElementById('opcomp-team-chip');
+            const logo = document.getElementById('opcomp-team-logo');
+            const name = document.getElementById('opcomp-team-name');
+            if (!chip) return;
+
+            if (!teamInfo) {
+                chip.classList.remove('active');
+                return;
             }
-            return [];
+
+            chip.classList.add('active');
+            name.textContent = teamInfo.manager;
+            logo.src = teamInfo.teamLogo || 'league_logo.png';
         }
 
-        async function renderProspectClaimTeamList(teamKey) {
-            const listBody = document.getElementById('prospect-claim-team-list-body');
-            try {
-                const keepers = await getTeamKeepersFromFirebase(teamKey, prospectClaimState.authenticatedConfigTeamKey);
-                const prospects = keepers.filter(k => k && k.player_name && (k.isProspect || (k.roundCost === 0) || (k.dollarCost === 0)));
-                updateProspectClaimRosterCapacity(prospects.length);
-                const rankByName = {};
-                prospectsData.forEach(p => {
-                    if (!p || !p.name) return;
-                    const parsedRank = Number(p.rank);
-                    const storedRank = Number.isFinite(parsedRank) ? parsedRank : null;
-                    const normalized = normalizeProspectName(p.name);
-                    rankByName[normalized] = storedRank;
-                    rankByName[p.name.toLowerCase().trim()] = storedRank;
-                });
-                const getProspectRankLabel = (playerName) => {
-                    const normalized = normalizeProspectName(playerName || '');
-                    const rankValue = rankByName[normalized] ?? rankByName[(playerName || '').toLowerCase().trim()];
-                    return rankValue != null ? rankValue : '-';
-                };
+        async function loadOpcompListFromFirebase() {
+            opcompState.priorityList = [];
+            if (!firebaseDb) return;
 
-                if (prospects.length === 0) {
-                    listBody.innerHTML = '<div class="prospect-claim-team-item"><span>No prospects currently claimed.</span></div>';
-                    return;
+            try {
+                const sanitizedKey = sanitizeFirebaseKey(opcompState.authenticatedConfigTeamKey || opcompState.authenticatedTeamKey);
+                const snapshot = await firebaseDb.ref(`opcomp_lists_2026/${sanitizedKey}`).once('value');
+                const data = snapshot.val();
+                if (data && Array.isArray(data.prospects)) {
+                    // Validate each prospect is still available (unowned) and still exists
+                    opcompState.priorityList = data.prospects.filter(p => {
+                        const normalized = normalizeProspectName(p.name);
+                        const isOwned = prospectOwnershipData[normalized] ||
+                                        prospectOwnershipData[(p.name || '').toLowerCase().trim()];
+                        const existsInData = prospectsData.some(pd =>
+                            normalizeProspectName(pd.name) === normalized
+                        );
+                        return !isOwned && existsInData;
+                    }).slice(0, OPCOMP_MAX_SLOTS);
+                }
+            } catch (e) {
+                console.log('Error loading OPCOMP list:', e);
+            }
+        }
+
+        function renderOpcompAvailableList() {
+            const container = document.getElementById('opcomp-available-list');
+            const searchTerm = (document.getElementById('opcomp-search')?.value || '').toLowerCase().trim();
+            const posFilter = document.getElementById('opcomp-pos-filter')?.value || '';
+            const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+
+            // Get names already in priority list
+            const selectedNames = new Set(opcompState.priorityList.map(p => normalizeProspectName(p.name)));
+            const isFull = opcompState.priorityList.length >= OPCOMP_MAX_SLOTS;
+
+            const available = prospectsData.filter(prospect => {
+                // Must be unowned
+                const normalized = normalizeProspectName(prospect.name);
+                const owner = prospectOwnershipData[normalized] ||
+                              prospectOwnershipData[(prospect.name || '').toLowerCase().trim()];
+                if (owner) return false;
+
+                // Already in priority list -- hide from available
+                if (selectedNames.has(normalized)) return false;
+
+                // Search filter
+                if (searchTerm) {
+                    const nameMatch = prospect.name.toLowerCase().includes(searchTerm);
+                    const teamMatch = (prospect.mlb_team || '').toLowerCase().includes(searchTerm);
+                    if (!nameMatch && !teamMatch) return false;
                 }
 
-                const batterOrder = { 'C': 0, '1B': 1, '2B': 2, 'SS': 3, '3B': 4, 'OF': 5 };
-                const pitcherOrder = { 'SP': 0, 'RP': 1, 'P': 2 };
+                // Position filter
+                if (posFilter && prospect.position !== posFilter) return false;
 
-                const normalizeRosterPos = (rawPos) => {
-                    const cleaned = getCleanDisplayPositions(rawPos || '').map(p => p.toUpperCase());
-                    let pos = cleaned[0] || (rawPos || '').toUpperCase() || 'NA';
-                    if (['LF', 'CF', 'RF'].includes(pos)) pos = 'OF';
-                    return pos;
-                };
+                return true;
+            });
 
-                const isPitcherPos = (pos) => ['SP', 'RP', 'P'].includes(pos);
+            if (available.length === 0) {
+                container.innerHTML = '<div style="padding:1rem;text-align:center;color:#888;font-size:0.8rem;">No matching prospects.</div>';
+                return;
+            }
 
-                const batterProspects = prospects
-                    .map(p => ({ ...p, displayPos: normalizeRosterPos(p.position) }))
-                    .filter(p => !isPitcherPos(p.displayPos))
-                    .sort((a, b) => {
-                        const aOrder = batterOrder[a.displayPos] ?? 99;
-                        const bOrder = batterOrder[b.displayPos] ?? 99;
-                        if (aOrder !== bOrder) return aOrder - bOrder;
-                        return (a.player_name || '').localeCompare(b.player_name || '');
-                    });
-
-                const pitcherProspects = prospects
-                    .map(p => ({ ...p, displayPos: normalizeRosterPos(p.position) }))
-                    .filter(p => isPitcherPos(p.displayPos))
-                    .sort((a, b) => {
-                        const aOrder = pitcherOrder[a.displayPos] ?? 99;
-                        const bOrder = pitcherOrder[b.displayPos] ?? 99;
-                        if (aOrder !== bOrder) return aOrder - bOrder;
-                        return (a.player_name || '').localeCompare(b.player_name || '');
-                    });
-
-                listBody.innerHTML = `
-                    <div class="prospect-claim-team-list-grid">
-                        <div class="prospect-claim-team-list-columns">
-                            <div class="prospect-claim-team-col">
-                                <div class="prospect-claim-team-col-title">Batters</div>
-                                ${batterProspects.length === 0 ? '<div class="prospect-claim-team-player-name" style="color:#888;">No batter prospects</div>' : batterProspects.map(p => `
-                                    <div class="prospect-claim-team-item">
-                                        <div class="prospect-claim-team-player">
-                                            <span class="position-badge pos-${p.displayPos}">${p.displayPos}</span>
-                                            <span class="prospect-claim-team-player-name">${p.player_name || ''}</span>
-                                            <span class="prospect-claim-team-player-rank">${getProspectRankLabel(p.player_name || '')}</span>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="prospect-claim-team-col">
-                                <div class="prospect-claim-team-col-title">Pitchers</div>
-                                ${pitcherProspects.length === 0 ? '<div class="prospect-claim-team-player-name" style="color:#888;">No pitcher prospects</div>' : pitcherProspects.map(p => `
-                                    <div class="prospect-claim-team-item">
-                                        <div class="prospect-claim-team-player">
-                                            <span class="position-badge pos-${p.displayPos}">${p.displayPos}</span>
-                                            <span class="prospect-claim-team-player-name">${p.player_name || ''}</span>
-                                            <span class="prospect-claim-team-player-rank">${getProspectRankLabel(p.player_name || '')}</span>
-                                        </div>
-                                    </div>
-                                `).join('')}
-                            </div>
+            container.innerHTML = available.map(prospect => {
+                const headshot = prospect.headshot_url || placeholderImg;
+                const mlbTeam = prospect.mlb_team || '';
+                const escapedName = prospect.name.replace(/'/g, "\\'");
+                return `
+                    <div class="opcomp-prospect-row">
+                        <span class="opcomp-prospect-rank">${prospect.rank}</span>
+                        <img src="${headshot}" class="opcomp-prospect-headshot" alt=""
+                             onerror="this.src='${placeholderImg}'">
+                        <div class="opcomp-prospect-info">
+                            <div class="opcomp-prospect-name">${prospect.name}</div>
+                            <div class="opcomp-prospect-meta">${mlbTeam} | ${prospect.position} | Age ${prospect.age || '-'} | ${prospect.highest_level || '-'}</div>
                         </div>
+                        <button class="opcomp-add-btn" ${isFull ? 'disabled' : ''}
+                            onclick="addToOpcompList('${escapedName}')">
+                            Add
+                        </button>
                     </div>
                 `;
-            } catch (e) {
-                console.log('Error loading claimed prospects list:', e);
-                listBody.innerHTML = '<div class="prospect-claim-team-item"><span>Could not load team prospects.</span></div>';
+            }).join('');
+        }
+
+        function renderOpcompPriorityList() {
+            const container = document.getElementById('opcomp-priority-list');
+            const countEl = document.getElementById('opcomp-priority-count');
+            const count = opcompState.priorityList.length;
+
+            countEl.textContent = `${count} / ${OPCOMP_MAX_SLOTS} selected`;
+
+            let html = '';
+            for (let i = 0; i < OPCOMP_MAX_SLOTS; i++) {
+                const prospect = opcompState.priorityList[i];
+                if (prospect) {
+                    html += `
+                        <div class="opcomp-slot" draggable="true"
+                             data-slot-index="${i}"
+                             ondragstart="opcompDragStart(event, ${i})"
+                             ondragover="opcompDragOver(event)"
+                             ondragenter="opcompDragEnter(event)"
+                             ondragleave="opcompDragLeave(event)"
+                             ondrop="opcompDrop(event, ${i})"
+                             ondragend="opcompDragEnd(event)">
+                            <span class="opcomp-slot-number">${i + 1}</span>
+                            <div class="opcomp-slot-player">
+                                <div class="opcomp-slot-name">${prospect.name}</div>
+                                <div class="opcomp-slot-detail">#${prospect.rank} | ${prospect.position} | ${prospect.mlb_team}</div>
+                            </div>
+                            <div class="opcomp-slot-actions">
+                                <button class="opcomp-slot-action" onclick="moveOpcompSlot(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="Move up">&#9650;</button>
+                                <button class="opcomp-slot-action" onclick="moveOpcompSlot(${i}, 1)" ${i === count - 1 ? 'disabled' : ''} title="Move down">&#9660;</button>
+                                <button class="opcomp-slot-action remove" onclick="removeFromOpcompList(${i})" title="Remove">&times;</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        <div class="opcomp-slot empty"
+                             data-slot-index="${i}"
+                             ondragover="opcompDragOver(event)"
+                             ondragenter="opcompDragEnter(event)"
+                             ondragleave="opcompDragLeave(event)"
+                             ondrop="opcompDrop(event, ${i})">
+                            <span class="opcomp-slot-number">${i + 1}</span>
+                            <span class="opcomp-slot-empty-text">Empty slot</span>
+                        </div>
+                    `;
+                }
+            }
+            container.innerHTML = html;
+        }
+
+        function addToOpcompList(prospectName) {
+            if (opcompState.priorityList.length >= OPCOMP_MAX_SLOTS) return;
+
+            const prospect = prospectsData.find(p => p.name === prospectName);
+            if (!prospect) return;
+
+            // Check not already in list
+            const normalized = normalizeProspectName(prospectName);
+            if (opcompState.priorityList.some(p => normalizeProspectName(p.name) === normalized)) return;
+
+            opcompState.priorityList.push({
+                name: prospect.name,
+                rank: prospect.rank,
+                position: prospect.position,
+                mlb_team: prospect.mlb_team || ''
+            });
+
+            renderOpcompPriorityList();
+            renderOpcompAvailableList();
+            clearOpcompSaveStatus();
+        }
+
+        function removeFromOpcompList(index) {
+            if (index < 0 || index >= opcompState.priorityList.length) return;
+            opcompState.priorityList.splice(index, 1);
+            renderOpcompPriorityList();
+            renderOpcompAvailableList();
+            clearOpcompSaveStatus();
+        }
+
+        function moveOpcompSlot(index, direction) {
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= opcompState.priorityList.length) return;
+            const list = opcompState.priorityList;
+            [list[index], list[newIndex]] = [list[newIndex], list[index]];
+            renderOpcompPriorityList();
+            clearOpcompSaveStatus();
+        }
+
+        function filterOpcompAvailable() {
+            renderOpcompAvailableList();
+        }
+
+        function clearOpcompSaveStatus() {
+            const statusEl = document.getElementById('opcomp-save-status');
+            if (statusEl) {
+                statusEl.textContent = '';
+                statusEl.className = 'opcomp-save-status';
             }
         }
 
-        async function submitProspectClaim() {
-            const errorEl = document.getElementById('prospect-claim-error');
-            const prospect = prospectClaimState.prospect;
-            const teamKey = prospectClaimState.authenticatedTeamKey;
-            const configTeamKey = prospectClaimState.authenticatedConfigTeamKey || teamKey;
-            const teamConfig = prospectClaimState.authenticatedTeamConfig;
+        // Drag-and-drop for priority list reordering
+        function opcompDragStart(event, index) {
+            opcompDraggedIndex = index;
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', index.toString());
+            setTimeout(() => {
+                event.target.classList.add('dragging');
+            }, 0);
+        }
 
-            if (!prospect || !teamKey || !teamConfig) {
-                errorEl.textContent = 'Authenticate first to claim this prospect.';
-                return;
+        function opcompDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+        }
+
+        function opcompDragEnter(event) {
+            event.preventDefault();
+            const slot = event.target.closest('.opcomp-slot');
+            if (slot) slot.classList.add('drag-over');
+        }
+
+        function opcompDragLeave(event) {
+            const slot = event.target.closest('.opcomp-slot');
+            if (slot && !slot.contains(event.relatedTarget)) {
+                slot.classList.remove('drag-over');
             }
+        }
+
+        function opcompDrop(event, targetIndex) {
+            event.preventDefault();
+            const slot = event.target.closest('.opcomp-slot');
+            if (slot) slot.classList.remove('drag-over');
+
+            if (opcompDraggedIndex === null || opcompDraggedIndex === targetIndex) return;
+
+            const list = opcompState.priorityList;
+            // Only allow reordering among filled slots
+            if (opcompDraggedIndex < list.length && targetIndex < list.length) {
+                const [moved] = list.splice(opcompDraggedIndex, 1);
+                list.splice(targetIndex, 0, moved);
+            }
+
+            opcompDraggedIndex = null;
+            renderOpcompPriorityList();
+            clearOpcompSaveStatus();
+        }
+
+        function opcompDragEnd(event) {
+            opcompDraggedIndex = null;
+            document.querySelectorAll('.opcomp-slot').forEach(s => {
+                s.classList.remove('dragging', 'drag-over');
+            });
+        }
+
+        async function saveOpcompList() {
+            const statusEl = document.getElementById('opcomp-save-status');
+            const saveBtn = document.getElementById('opcomp-save-btn');
 
             if (!firebaseDb) {
-                errorEl.textContent = 'Database connection unavailable. Refresh and try again.';
+                statusEl.textContent = 'Database unavailable. Please refresh.';
+                statusEl.className = 'opcomp-save-status error';
                 return;
             }
 
+            const teamKey = opcompState.authenticatedConfigTeamKey || opcompState.authenticatedTeamKey;
+            const teamInfo = opcompState.authenticatedTeamInfo;
+            if (!teamKey || !teamInfo) {
+                statusEl.textContent = 'Authentication required.';
+                statusEl.className = 'opcomp-save-status error';
+                return;
+            }
+
+            saveBtn.disabled = true;
+            statusEl.textContent = 'Saving...';
+            statusEl.className = 'opcomp-save-status';
+
             try {
-                await loadProspectOwnership();
-                const normalizedName = normalizeProspectName(prospect.name);
-                const currentOwner = prospectOwnershipData[normalizedName] || prospectOwnershipData[(prospect.name || '').toLowerCase().trim()];
-                if (currentOwner) {
-                    errorEl.textContent = `${prospect.name} is already owned by ${currentOwner.manager}.`;
-                    return;
-                }
-
-                const existingKeepers = await getTeamKeepersFromFirebase(teamKey, configTeamKey);
-                const alreadyOnTeam = existingKeepers.some(k => k && normalizeProspectName(k.player_name || '') === normalizedName);
-                if (alreadyOnTeam) {
-                    errorEl.textContent = `${prospect.name} is already on your roster.`;
-                    return;
-                }
-                const existingProspects = existingKeepers.filter(k => k && k.player_name && (k.isProspect || (k.roundCost === 0) || (k.dollarCost === 0)));
-                if (existingProspects.length >= 12) {
-                    updateProspectClaimRosterCapacity(existingProspects.length);
-                    errorEl.style.color = '#b91c1c';
-                    errorEl.textContent = 'Prospect limit reached (12/12). Drop a prospect before adding another.';
-                    return;
-                }
-
-                const newEntry = {
-                    player_name: prospect.name,
-                    position: prospect.position || 'NA',
-                    roundCost: 0,
-                    dollarCost: 0,
-                    isProspect: true,
-                    isUndrafted: true,
-                    manager: teamConfig.manager || '',
-                    claimed_at: new Date().toISOString(),
-                    claim_source: 'prospect_pavilion'
+                const sanitizedKey = sanitizeFirebaseKey(teamKey);
+                const data = {
+                    team_key: teamKey,
+                    manager: teamInfo.manager,
+                    prospects: opcompState.priorityList.map(p => ({
+                        name: p.name,
+                        rank: p.rank,
+                        position: p.position,
+                        mlb_team: p.mlb_team
+                    })),
+                    updated_at: new Date().toISOString()
                 };
 
-                const updatedKeepers = [...existingKeepers, newEntry];
-                const sanitizedKey = sanitizeFirebaseKey(configTeamKey);
-                await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).set(updatedKeepers);
+                await firebaseDb.ref(`opcomp_lists_2026/${sanitizedKey}`).set(data);
 
-                keeperSelections[configTeamKey] = updatedKeepers;
-                await loadProspectOwnership();
-                renderProspectTable();
-                await renderProspectClaimTeamList(teamKey);
-
-                errorEl.style.color = '#15803d';
-                errorEl.textContent = `${prospect.name} added successfully.`;
+                statusEl.textContent = 'Saved successfully!';
+                statusEl.className = 'opcomp-save-status success';
                 setTimeout(() => {
-                    closeProspectClaimModal();
-                    errorEl.style.color = '#b91c1c';
-                }, 700);
+                    statusEl.textContent = '';
+                    statusEl.className = 'opcomp-save-status';
+                }, 3000);
             } catch (e) {
-                console.log('Error claiming prospect:', e);
-                errorEl.textContent = 'Could not claim prospect. Please try again.';
+                console.log('Error saving OPCOMP list:', e);
+                statusEl.textContent = 'Error saving. Please try again.';
+                statusEl.className = 'opcomp-save-status error';
+            } finally {
+                saveBtn.disabled = false;
             }
         }
 
-        function closeProspectClaimModal(event) {
+        function closeOpcompModal(event) {
             if (event && event.target !== event.currentTarget) return;
-            document.getElementById('prospect-claim-modal').classList.remove('active');
+            document.getElementById('opcomp-modal').classList.remove('active');
             document.body.classList.remove('modal-open');
-            prospectClaimState.selectedTeamKey = null;
-            prospectClaimState.authenticatedTeamKey = null;
-            prospectClaimState.authenticatedConfigTeamKey = null;
-            prospectClaimState.authenticatedTeamConfig = null;
-            const errorEl = document.getElementById('prospect-claim-error');
-            if (errorEl) {
-                errorEl.style.color = '#b91c1c';
-                errorEl.textContent = '';
-            }
-            setProspectClaimView('auth');
-            setProspectClaimHeaderTeam(null);
+            opcompState.selectedTeamKey = null;
+            opcompState.authenticatedTeamKey = null;
+            opcompState.authenticatedConfigTeamKey = null;
+            opcompState.authenticatedTeamConfig = null;
+            opcompState.authenticatedTeamInfo = null;
+            opcompState.priorityList = [];
+            document.getElementById('opcomp-error').textContent = '';
+            document.getElementById('opcomp-save-status').textContent = '';
+            setOpcompView('auth');
+            setOpcompTeamChip(null);
         }
 
         // ===== MOCK DRAFT SIMULATOR =====
