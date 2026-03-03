@@ -13546,6 +13546,280 @@
             }
         }
 
+        /* ===== CENTRALIZED AUTH / LOGIN STYLES ===== */
+
+        .auth-login-btn {
+            background: rgba(212, 175, 55, 0.2) !important;
+            border-color: #d4af37 !important;
+        }
+
+        .auth-login-btn:hover {
+            background: rgba(212, 175, 55, 0.4) !important;
+        }
+
+        .auth-login-btn img,
+        .auth-user-chip img {
+            border-radius: 50% !important;
+            background: transparent !important;
+        }
+
+        .auth-user-chip {
+            background: rgba(76, 175, 80, 0.25) !important;
+            border-color: #4caf50 !important;
+        }
+
+        .auth-user-chip:hover {
+            background: rgba(244, 67, 54, 0.3) !important;
+            border-color: #f44336 !important;
+        }
+
+        .auth-login-btn-mobile {
+            border-top: 2px solid rgba(212, 175, 55, 0.4) !important;
+            margin-top: 0.5rem;
+        }
+
+        .auth-user-chip-mobile {
+            border-top: 2px solid rgba(76, 175, 80, 0.4) !important;
+            margin-top: 0.5rem;
+        }
+
+        .auth-user-chip-mobile:hover {
+            background: rgba(244, 67, 54, 0.2) !important;
+        }
+
+        .auth-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .auth-modal-overlay.active {
+            display: flex;
+        }
+
+        .auth-modal {
+            background: #fdf6e3;
+            border: 3px solid var(--retro-blue);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 420px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .auth-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            border-bottom: 2px solid var(--retro-blue);
+            background: var(--retro-blue);
+            color: white;
+            border-radius: 9px 9px 0 0;
+        }
+
+        .auth-modal-header h3 {
+            margin: 0;
+            font-family: 'Arcade Gamer', sans-serif;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+
+        .auth-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0 0.25rem;
+            line-height: 1;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .auth-modal-close:hover {
+            opacity: 1;
+        }
+
+        .auth-modal-body {
+            padding: 1.5rem 1.25rem;
+        }
+
+        .auth-step {
+            display: none;
+        }
+
+        .auth-step.active {
+            display: block;
+        }
+
+        .auth-step-title {
+            font-family: 'Basis33', monospace;
+            font-size: 1.2rem;
+            color: var(--retro-blue-dark);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .auth-input-group {
+            margin-bottom: 1rem;
+        }
+
+        .auth-input-group label {
+            display: block;
+            font-family: 'Basis33', monospace;
+            font-size: 0.95rem;
+            color: #333;
+            margin-bottom: 0.35rem;
+        }
+
+        .auth-input-group input {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-family: 'Basis33', monospace;
+            transition: border-color 0.2s;
+            box-sizing: border-box;
+        }
+
+        .auth-input-group input:focus {
+            border-color: var(--retro-blue);
+            outline: none;
+        }
+
+        .auth-btn {
+            display: block;
+            width: 100%;
+            padding: 0.65rem;
+            background: var(--retro-blue);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Arcade Gamer', sans-serif;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .auth-btn:hover {
+            background: var(--retro-blue-dark);
+        }
+
+        .auth-btn:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+
+        .auth-error-msg {
+            color: #d32f2f;
+            font-family: 'Basis33', monospace;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 0.75rem;
+            min-height: 1.2em;
+        }
+
+        .auth-back-link {
+            display: inline-block;
+            margin-top: 0.75rem;
+            color: var(--retro-blue);
+            font-family: 'Basis33', monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .auth-back-link:hover {
+            color: var(--retro-blue-dark);
+        }
+
+        .auth-admin-team-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .auth-admin-team-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.5rem 0.25rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .auth-admin-team-btn:hover {
+            border-color: var(--retro-blue);
+            background: rgba(0, 72, 186, 0.05);
+        }
+
+        .auth-admin-team-btn img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .auth-admin-team-btn span {
+            font-family: 'Basis33', monospace;
+            font-size: 0.75rem;
+            color: #333;
+            text-align: center;
+            line-height: 1.1;
+        }
+
+        .auth-welcome-msg {
+            text-align: center;
+            font-family: 'Basis33', monospace;
+            font-size: 1rem;
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .auth-setup-hint {
+            font-family: 'Basis33', monospace;
+            font-size: 0.8rem;
+            color: #888;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .auth-modal {
+                width: 95%;
+                max-width: none;
+                max-height: 85vh;
+            }
+
+            .auth-admin-team-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
         /* ===== MOCK DRAFT SIMULATOR STYLES ===== */
         .mock-draft-setup-card {
             text-align: center;
@@ -17544,6 +17818,16 @@
                 <img src="data/page_logos/bylaws_logo.png" alt="Bylaws">
                 <span>Bylaws</span>
             </div>
+            <!-- Auth: Login Button (logged out) -->
+            <div id="auth-mobile-login" class="mobile-menu-item auth-login-btn-mobile" onclick="openAuthModal(); closeMobileMenu();">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>Login</span>
+            </div>
+            <!-- Auth: User Chip (logged in) -->
+            <div id="auth-mobile-user" class="mobile-menu-item auth-user-chip-mobile" style="display:none;" onclick="logoutSession(); closeMobileMenu();">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span id="auth-mobile-name">Logout</span>
+            </div>
         </div>
     </aside>
 
@@ -17614,6 +17898,16 @@
         <div class="side-nav-item" onclick="showSection('bylaws')">
             <img src="data/page_logos/bylaws_logo.png" alt="Bylaws" loading="lazy" decoding="async">
             <span class="side-nav-tooltip">League Bylaws</span>
+        </div>
+        <!-- Auth: Login Button (logged out) -->
+        <div id="auth-sidebar-login" class="side-nav-item auth-login-btn" onclick="openAuthModal()" title="Login">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span class="side-nav-tooltip">Login</span>
+        </div>
+        <!-- Auth: User Chip (logged in) -->
+        <div id="auth-sidebar-user" class="side-nav-item auth-user-chip" style="display:none;" onclick="logoutSession()" title="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span class="side-nav-tooltip" id="auth-sidebar-tooltip">Logout</span>
         </div>
     </aside>
 
@@ -19040,6 +19334,69 @@
             </div>
         </div>
 
+        <!-- Auth Login Modal -->
+        <div id="auth-login-modal" class="auth-modal-overlay" onclick="closeAuthModal(event)">
+            <div class="auth-modal" onclick="event.stopPropagation()">
+                <div class="auth-modal-header">
+                    <h3>Manager Login</h3>
+                    <button class="auth-modal-close" onclick="closeAuthModal()">&times;</button>
+                </div>
+                <div class="auth-modal-body">
+                    <!-- Step 1: Username -->
+                    <div id="auth-step-username" class="auth-step active">
+                        <div class="auth-step-title">Enter Your Username</div>
+                        <div class="auth-input-group">
+                            <label for="auth-username-input">Username</label>
+                            <input type="text" id="auth-username-input" placeholder="Enter username" autocomplete="username"
+                                onkeydown="if(event.key==='Enter') checkUsername()">
+                        </div>
+                        <button class="auth-btn" onclick="checkUsername()">Continue</button>
+                    </div>
+
+                    <!-- Step 2: Password (returning user) -->
+                    <div id="auth-step-password" class="auth-step">
+                        <div class="auth-welcome-msg" id="auth-welcome-msg">Welcome back!</div>
+                        <div class="auth-input-group">
+                            <label for="auth-password-input">Password</label>
+                            <input type="password" id="auth-password-input" placeholder="Enter password"
+                                onkeydown="if(event.key==='Enter') performLogin()">
+                        </div>
+                        <button class="auth-btn" onclick="performLogin()">Login</button>
+                        <span class="auth-back-link" onclick="setAuthStep('username')">&larr; Back</span>
+                    </div>
+
+                    <!-- Step 3: First-time password setup -->
+                    <div id="auth-step-setup" class="auth-step">
+                        <div class="auth-welcome-msg" id="auth-setup-welcome">Welcome! Set your password.</div>
+                        <div class="auth-input-group">
+                            <label for="auth-setup-password">Create Password</label>
+                            <input type="password" id="auth-setup-password" placeholder="Choose a password"
+                                onkeydown="if(event.key==='Enter') document.getElementById('auth-setup-confirm').focus()">
+                        </div>
+                        <div class="auth-input-group">
+                            <label for="auth-setup-confirm">Confirm Password</label>
+                            <input type="password" id="auth-setup-confirm" placeholder="Confirm password"
+                                onkeydown="if(event.key==='Enter') performPasswordSetup()">
+                        </div>
+                        <button class="auth-btn" onclick="performPasswordSetup()">Create Password</button>
+                        <div class="auth-setup-hint">You'll use this password to log in across all features.</div>
+                        <span class="auth-back-link" onclick="setAuthStep('username')">&larr; Back</span>
+                    </div>
+
+                    <!-- Step 4: Admin team selector -->
+                    <div id="auth-step-admin" class="auth-step">
+                        <div class="auth-step-title">Select a Team to Manage</div>
+                        <div class="auth-admin-team-grid" id="auth-admin-team-grid">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Error message -->
+                    <div class="auth-error-msg" id="auth-error-msg"></div>
+                </div>
+            </div>
+        </div>
+
         <!-- Sportsbook Section -->
         <div id="sportsbook" class="section">
             <h2>King Dylan's Sportsbook</h2>
@@ -19049,7 +19406,7 @@
                 <h3>🎰 Welcome to King Dylan's Sportsbook</h3>
                 <p>Place bets on season outcomes and weekly matchups using your units!</p>
                 <button class="sportsbook-login-btn" onclick="openSportsbookLogin()">
-                    🔐 Select Your Team to Continue
+                    🔐 Login to Continue
                 </button>
             </div>
 
@@ -20199,9 +20556,9 @@
                             <span class="keeper-status" id="keeper-status">0 / 5 keepers selected</span>
                         </div>
                     </div>
-                    <!-- Switch Team button moved under close button -->
-                    <div class="keeper-header-actions">
-                        <button class="keeper-switch-btn" onclick="logoutKeeper()">Switch Team</button>
+                    <!-- Switch Team button (admin only) -->
+                    <div class="keeper-header-actions" id="keeper-switch-actions" style="display:none;">
+                        <button class="keeper-switch-btn" onclick="closeKeeperModal(); currentSession.adminActingAs = null; openKeeperModal();">Switch Team</button>
                     </div>
                 </div>
 
@@ -27029,6 +27386,8 @@
                 await initializeTradeManagement();
                 // Initialize sportsbook
                 await initializeSportsbook();
+                // Auto-login if user is already authenticated via centralized auth
+                checkSportsbookAutoLogin();
             }
             else if (sectionId === 'prospects') {
                 // Initialize Firebase if needed for ownership data
@@ -29482,6 +29841,8 @@
 
         let keeperConfig = null;
         let keeperSelections = {};
+        // currentKeeperTeam is now derived from centralized session
+        // Kept as a variable for compatibility with existing keeper code
         let currentKeeperTeam = null;
         let keeperRosterData = [];
         let keeperProjectionsMap = {};
@@ -29502,6 +29863,532 @@
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
+
+        // ===== CENTRALIZED AUTHENTICATION SYSTEM =====
+        let currentSession = null;
+        let userConfig = null;
+        let authPostLoginCallback = null; // callback after successful login
+
+        async function loadUserConfig() {
+            if (userConfig) return userConfig;
+            try {
+                const resp = await fetch('data/auth/user_config.json');
+                if (resp.ok) {
+                    userConfig = await resp.json();
+                    return userConfig;
+                }
+            } catch (e) {
+                console.error('Could not load user config:', e);
+            }
+            return null;
+        }
+
+        function openAuthModal(callback) {
+            authPostLoginCallback = callback || null;
+            const modal = document.getElementById('auth-login-modal');
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                setAuthStep('username');
+                document.getElementById('auth-error-msg').textContent = '';
+                // Clear inputs
+                document.getElementById('auth-username-input').value = '';
+                document.getElementById('auth-password-input').value = '';
+                if (document.getElementById('auth-setup-password')) document.getElementById('auth-setup-password').value = '';
+                if (document.getElementById('auth-setup-confirm')) document.getElementById('auth-setup-confirm').value = '';
+                setTimeout(() => document.getElementById('auth-username-input').focus(), 100);
+            }
+        }
+
+        function closeAuthModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('auth-login-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+            authPostLoginCallback = null;
+        }
+
+        function setAuthStep(step) {
+            ['username', 'password', 'setup', 'admin'].forEach(s => {
+                const el = document.getElementById('auth-step-' + s);
+                if (el) el.classList.toggle('active', s === step);
+            });
+            document.getElementById('auth-error-msg').textContent = '';
+            // Focus the right input
+            setTimeout(() => {
+                if (step === 'username') {
+                    const el = document.getElementById('auth-username-input');
+                    if (el) el.focus();
+                } else if (step === 'password') {
+                    const el = document.getElementById('auth-password-input');
+                    if (el) el.focus();
+                } else if (step === 'setup') {
+                    const el = document.getElementById('auth-setup-password');
+                    if (el) el.focus();
+                }
+            }, 100);
+        }
+
+        async function checkUsername() {
+            const usernameInput = document.getElementById('auth-username-input');
+            const errorEl = document.getElementById('auth-error-msg');
+            const username = (usernameInput.value || '').trim().toLowerCase();
+
+            if (!username) {
+                errorEl.textContent = 'Please enter a username.';
+                return;
+            }
+
+            // Load user config
+            const config = await loadUserConfig();
+            if (!config || !config.users) {
+                errorEl.textContent = 'Could not load user configuration.';
+                return;
+            }
+
+            const userConf = config.users[username];
+            if (!userConf) {
+                errorEl.textContent = 'Username not found. Contact your commissioner.';
+                return;
+            }
+
+            // Store username for next steps
+            usernameInput.dataset.validatedUsername = username;
+
+            // Check Firebase for existing password
+            initializeFirebase();
+            try {
+                const snapshot = await firebaseDb.ref('user_accounts/' + username).once('value');
+                const accountData = snapshot.val();
+
+                if (accountData && accountData.password_hash) {
+                    // Returning user — show password step
+                    const welcomeMsg = document.getElementById('auth-welcome-msg');
+                    if (welcomeMsg) welcomeMsg.textContent = 'Welcome back, ' + userConf.display_name + '!';
+                    setAuthStep('password');
+                } else {
+                    // First-time setup
+                    const setupWelcome = document.getElementById('auth-setup-welcome');
+                    if (setupWelcome) setupWelcome.textContent = 'Welcome, ' + userConf.display_name + '! Set your password.';
+                    setAuthStep('setup');
+                }
+            } catch (e) {
+                console.error('Firebase check error:', e);
+                errorEl.textContent = 'Connection error. Please try again.';
+            }
+        }
+
+        async function performLogin() {
+            const errorEl = document.getElementById('auth-error-msg');
+            const passwordInput = document.getElementById('auth-password-input');
+            const usernameInput = document.getElementById('auth-username-input');
+            const username = usernameInput.dataset.validatedUsername;
+            const password = passwordInput.value;
+
+            if (!password) {
+                errorEl.textContent = 'Please enter your password.';
+                return;
+            }
+
+            try {
+                const enteredHash = await hashPassword(password);
+                const snapshot = await firebaseDb.ref('user_accounts/' + username).once('value');
+                const accountData = snapshot.val();
+
+                if (!accountData || accountData.password_hash !== enteredHash) {
+                    errorEl.textContent = 'Incorrect password. Please try again.';
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                    return;
+                }
+
+                // Update last login
+                await firebaseDb.ref('user_accounts/' + username + '/last_login').set(new Date().toISOString());
+
+                // Create session
+                const config = await loadUserConfig();
+                const userConf = config.users[username];
+                await createSession(username, userConf);
+
+            } catch (e) {
+                console.error('Login error:', e);
+                errorEl.textContent = 'Login failed. Please try again.';
+            }
+        }
+
+        async function performPasswordSetup() {
+            const errorEl = document.getElementById('auth-error-msg');
+            const passwordInput = document.getElementById('auth-setup-password');
+            const confirmInput = document.getElementById('auth-setup-confirm');
+            const usernameInput = document.getElementById('auth-username-input');
+            const username = usernameInput.dataset.validatedUsername;
+            const password = passwordInput.value;
+            const confirm = confirmInput.value;
+
+            if (!password) {
+                errorEl.textContent = 'Please enter a password.';
+                return;
+            }
+
+            if (password.length < 4) {
+                errorEl.textContent = 'Password must be at least 4 characters.';
+                return;
+            }
+
+            if (password !== confirm) {
+                errorEl.textContent = 'Passwords do not match.';
+                confirmInput.value = '';
+                confirmInput.focus();
+                return;
+            }
+
+            try {
+                const passwordHash = await hashPassword(password);
+
+                // Write to Firebase
+                await firebaseDb.ref('user_accounts/' + username).set({
+                    password_hash: passwordHash,
+                    created_at: new Date().toISOString(),
+                    last_login: new Date().toISOString()
+                });
+
+                // Create session
+                const config = await loadUserConfig();
+                const userConf = config.users[username];
+                await createSession(username, userConf);
+
+            } catch (e) {
+                console.error('Password setup error:', e);
+                errorEl.textContent = 'Could not save password. Please try again.';
+            }
+        }
+
+        async function resolveUserTeamIdentity(managerName) {
+            // Given a manager name, find their current-season team key and keeper_config team key
+            const result = { teamKey: null, configTeamKey: null, teamName: null, teamLogo: null };
+
+            try {
+                // Get current season teams
+                const teams = await getTeamData(2026);
+                if (teams) {
+                    for (const team of teams) {
+                        const mgr = normalizeManagerName(
+                            team.managers?.[0]?.manager?.nickname || team.managers?.[0]?.manager?.name || '',
+                            2026, team.team_name || team.name, team.team_key
+                        );
+                        if (mgr.toLowerCase() === managerName.toLowerCase()) {
+                            result.teamKey = team.team_key;
+                            result.teamName = team.team_name || team.name;
+                            result.teamLogo = fixTeamLogo(team.team_logos?.[0]?.url || team.team_logo || '');
+                            break;
+                        }
+                    }
+                }
+
+                // Get keeper_config team key (may differ from current season key)
+                await ensureKeeperConfigLoaded();
+                if (keeperConfig && keeperConfig.teams) {
+                    // Try direct current-season key first
+                    if (result.teamKey && keeperConfig.teams[result.teamKey]) {
+                        result.configTeamKey = result.teamKey;
+                    } else {
+                        // Fall back to manager name search
+                        for (const [configKey, configTeam] of Object.entries(keeperConfig.teams)) {
+                            if (configTeam.manager && configTeam.manager.toLowerCase() === managerName.toLowerCase()) {
+                                result.configTeamKey = configKey;
+                                // If we didn't get team info from teams.json, use config info
+                                if (!result.teamName) result.teamName = configTeam.team_name;
+                                if (!result.teamLogo) result.teamLogo = fixTeamLogo(configTeam.team_logo || '');
+                                break;
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Error resolving team identity:', e);
+            }
+
+            return result;
+        }
+
+        async function createSession(username, userConf) {
+            if (userConf.role === 'admin') {
+                currentSession = {
+                    username: username,
+                    displayName: userConf.display_name,
+                    managerName: null,
+                    role: 'admin',
+                    teamKey: null,
+                    configTeamKey: null,
+                    teamName: null,
+                    teamLogo: null,
+                    adminActingAs: null
+                };
+            } else {
+                const teamIdentity = await resolveUserTeamIdentity(userConf.manager_name);
+                currentSession = {
+                    username: username,
+                    displayName: userConf.display_name,
+                    managerName: userConf.manager_name,
+                    role: 'manager',
+                    teamKey: teamIdentity.teamKey,
+                    configTeamKey: teamIdentity.configTeamKey,
+                    teamName: teamIdentity.teamName,
+                    teamLogo: teamIdentity.teamLogo,
+                    adminActingAs: null
+                };
+            }
+
+            // Persist to localStorage
+            localStorage.setItem('fcw_session', JSON.stringify({
+                username: username,
+                timestamp: Date.now()
+            }));
+
+            const pendingPostLoginCallback = authPostLoginCallback;
+            updateAuthUI();
+            closeAuthModal();
+
+            // If admin, show team selector; otherwise execute callback
+            if (currentSession.role === 'admin' && pendingPostLoginCallback) {
+                // Admin needs to pick a team first for feature-specific callbacks
+                showAdminTeamSelector(pendingPostLoginCallback);
+            } else if (pendingPostLoginCallback) {
+                pendingPostLoginCallback();
+            }
+            authPostLoginCallback = null;
+        }
+
+        async function restoreSession() {
+            try {
+                const stored = localStorage.getItem('fcw_session');
+                if (!stored) return;
+
+                const parsed = JSON.parse(stored);
+                if (!parsed.username) return;
+
+                // Session expiry: 30 days
+                const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+                if (Date.now() - parsed.timestamp > thirtyDays) {
+                    localStorage.removeItem('fcw_session');
+                    return;
+                }
+
+                const config = await loadUserConfig();
+                if (!config || !config.users || !config.users[parsed.username]) {
+                    localStorage.removeItem('fcw_session');
+                    return;
+                }
+
+                const userConf = config.users[parsed.username];
+
+                // Initialize Firebase to verify the account still exists
+                initializeFirebase();
+
+                if (userConf.role === 'admin') {
+                    currentSession = {
+                        username: parsed.username,
+                        displayName: userConf.display_name,
+                        managerName: null,
+                        role: 'admin',
+                        teamKey: null,
+                        configTeamKey: null,
+                        teamName: null,
+                        teamLogo: null,
+                        adminActingAs: null
+                    };
+                } else {
+                    const teamIdentity = await resolveUserTeamIdentity(userConf.manager_name);
+                    currentSession = {
+                        username: parsed.username,
+                        displayName: userConf.display_name,
+                        managerName: userConf.manager_name,
+                        role: 'manager',
+                        teamKey: teamIdentity.teamKey,
+                        configTeamKey: teamIdentity.configTeamKey,
+                        teamName: teamIdentity.teamName,
+                        teamLogo: teamIdentity.teamLogo,
+                        adminActingAs: null
+                    };
+                }
+
+                updateAuthUI();
+                console.log('Session restored for', currentSession.displayName);
+            } catch (e) {
+                console.error('Error restoring session:', e);
+                localStorage.removeItem('fcw_session');
+            }
+        }
+
+        function logoutSession() {
+            if (typeof logoutSportsbook === 'function') {
+                logoutSportsbook();
+            }
+
+            const keeperModal = document.getElementById('keeper-modal');
+            if (keeperModal && keeperModal.classList.contains('active') && typeof closeKeeperModal === 'function') {
+                closeKeeperModal();
+            }
+
+            const opcompModal = document.getElementById('opcomp-modal');
+            if (opcompModal && opcompModal.classList.contains('active') && typeof closeOpcompModal === 'function') {
+                closeOpcompModal();
+            }
+
+            const authModal = document.getElementById('auth-login-modal');
+            if (authModal && authModal.classList.contains('active')) {
+                closeAuthModal();
+            }
+
+            currentSession = null;
+            localStorage.removeItem('fcw_session');
+            updateAuthUI();
+            console.log('Session logged out');
+        }
+
+        function updateAuthUI() {
+            const sidebarLogin = document.getElementById('auth-sidebar-login');
+            const sidebarUser = document.getElementById('auth-sidebar-user');
+            const sidebarTooltip = document.getElementById('auth-sidebar-tooltip');
+            const mobileLogin = document.getElementById('auth-mobile-login');
+            const mobileUser = document.getElementById('auth-mobile-user');
+            const mobileName = document.getElementById('auth-mobile-name');
+
+            if (currentSession) {
+                // Logged in
+                if (sidebarLogin) sidebarLogin.style.display = 'none';
+                if (sidebarUser) sidebarUser.style.display = 'flex';
+                if (sidebarTooltip) sidebarTooltip.textContent = currentSession.displayName + ' (Logout)';
+                if (mobileLogin) mobileLogin.style.display = 'none';
+                if (mobileUser) mobileUser.style.display = 'flex';
+                if (mobileName) mobileName.textContent = currentSession.displayName + ' (Logout)';
+            } else {
+                // Logged out
+                if (sidebarLogin) sidebarLogin.style.display = 'flex';
+                if (sidebarUser) sidebarUser.style.display = 'none';
+                if (mobileLogin) mobileLogin.style.display = 'flex';
+                if (mobileUser) mobileUser.style.display = 'none';
+            }
+        }
+
+        function getSessionTeamKey() {
+            if (!currentSession) return null;
+            if (currentSession.role === 'admin' && currentSession.adminActingAs) {
+                return currentSession.adminActingAs.teamKey;
+            }
+            return currentSession.teamKey;
+        }
+
+        function getSessionConfigTeamKey() {
+            if (!currentSession) return null;
+            if (currentSession.role === 'admin' && currentSession.adminActingAs) {
+                return currentSession.adminActingAs.configTeamKey;
+            }
+            return currentSession.configTeamKey;
+        }
+
+        function getSessionManagerName() {
+            if (!currentSession) return null;
+            if (currentSession.role === 'admin' && currentSession.adminActingAs) {
+                return currentSession.adminActingAs.managerName;
+            }
+            return currentSession.managerName;
+        }
+
+        function getSessionTeamName() {
+            if (!currentSession) return null;
+            if (currentSession.role === 'admin' && currentSession.adminActingAs) {
+                return currentSession.adminActingAs.teamName;
+            }
+            return currentSession.teamName;
+        }
+
+        function getSessionTeamLogo() {
+            if (!currentSession) return null;
+            if (currentSession.role === 'admin' && currentSession.adminActingAs) {
+                return currentSession.adminActingAs.teamLogo;
+            }
+            return currentSession.teamLogo;
+        }
+
+        function isAuthenticated() {
+            return currentSession !== null;
+        }
+
+        function isAdmin() {
+            return currentSession?.role === 'admin';
+        }
+
+        async function showAdminTeamSelector(callback) {
+            const grid = document.getElementById('auth-admin-team-grid');
+            if (!grid) return;
+
+            // Load teams
+            await ensureKeeperConfigLoaded();
+            const teams = await getTeamData(2026);
+
+            grid.innerHTML = '';
+
+            if (keeperConfig && keeperConfig.teams) {
+                for (const [configKey, configTeam] of Object.entries(keeperConfig.teams)) {
+                    // Try to find current-season team for logo
+                    let logo = fixTeamLogo(configTeam.team_logo || '');
+                    let teamKey = configKey;
+                    let teamName = configTeam.team_name;
+
+                    if (teams) {
+                        for (const t of teams) {
+                            const mgr = normalizeManagerName(
+                                t.managers?.[0]?.manager?.nickname || t.managers?.[0]?.manager?.name || '',
+                                2026, t.team_name || t.name, t.team_key
+                            );
+                            if (mgr.toLowerCase() === configTeam.manager.toLowerCase()) {
+                                teamKey = t.team_key;
+                                teamName = t.team_name || t.name;
+                                logo = fixTeamLogo(t.team_logos?.[0]?.url || t.team_logo || logo);
+                                break;
+                            }
+                        }
+                    }
+
+                    const btn = document.createElement('div');
+                    btn.className = 'auth-admin-team-btn';
+                    btn.innerHTML = `<img src="${logo}" alt="${configTeam.manager}"><span>${configTeam.manager}</span>`;
+                    btn.onclick = () => selectAdminTeam(teamKey, configKey, teamName, logo, configTeam.manager, callback);
+                    grid.appendChild(btn);
+                }
+            }
+
+            // Show admin step in modal
+            const modal = document.getElementById('auth-login-modal');
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+                setAuthStep('admin');
+            }
+        }
+
+        function selectAdminTeam(teamKey, configKey, teamName, logo, managerName, callback) {
+            if (!currentSession || currentSession.role !== 'admin') return;
+
+            currentSession.adminActingAs = {
+                teamKey: teamKey,
+                configTeamKey: configKey,
+                teamName: teamName,
+                teamLogo: logo,
+                managerName: managerName
+            };
+
+            closeAuthModal();
+
+            if (callback) {
+                callback();
+            }
+        }
+
+        // ===== END CENTRALIZED AUTH =====
 
         // Calculate dollar cost based on draft round
         function getKeeperDollarCost(draftRound) {
@@ -29856,36 +30743,16 @@
             }
         }
 
-        async function authenticateKeeper() {
-            const teamKey = document.getElementById('keeper-team-select').value;
-            const password = document.getElementById('keeper-password').value;
-            const errorEl = document.getElementById('keeper-auth-error');
-
-            if (!teamKey || !password) {
-                errorEl.textContent = 'Please select a team and enter your password.';
-                errorEl.style.display = 'block';
-                return;
-            }
+        // authenticateKeeper is now handled by centralized auth
+        // This function is called after centralized login to set up the keeper modal view
+        async function enterKeeperAsSession() {
+            const teamKey = getSessionConfigTeamKey();
+            if (!teamKey) return;
 
             const teamInfo = keeperConfig.teams[teamKey];
-            if (!teamInfo) {
-                errorEl.textContent = 'Invalid team selection.';
-                errorEl.style.display = 'block';
-                return;
-            }
+            if (!teamInfo) return;
 
-            // Hash the entered password and compare
-            const enteredHash = await hashPassword(password);
-
-            if (enteredHash !== teamInfo.password_hash) {
-                errorEl.textContent = 'Incorrect password. Hint: [YourName][YearJoined]';
-                errorEl.style.display = 'block';
-                return;
-            }
-
-            // Authentication successful
             currentKeeperTeam = teamKey;
-            errorEl.style.display = 'none';
 
             // Hide auth section, show selection section
             document.getElementById('keeper-modal-auth').style.display = 'none';
@@ -29913,6 +30780,10 @@
                 logoEl.style.display = 'none';
             }
 
+            // Show switch team button for admin only
+            const switchActions = document.getElementById('keeper-switch-actions');
+            if (switchActions) switchActions.style.display = isAdmin() ? '' : 'none';
+
             // Load roster and display
             await loadKeeperRoster(teamKey);
             updateKeeperStatus();
@@ -29923,10 +30794,6 @@
             currentKeeperTeam = null;
             document.getElementById('keeper-modal-auth').style.display = 'block';
             document.getElementById('keeper-modal-selection').style.display = 'none';
-            document.getElementById('keeper-team-select').value = '';
-            document.getElementById('keeper-password-field').style.display = 'none';
-            document.getElementById('keeper-password').value = '';
-            document.getElementById('keeper-auth-error').style.display = 'none';
 
             // Add auth-view class back for smaller modal
             document.querySelector('.keeper-modal-content').classList.add('auth-view');
@@ -29938,26 +30805,38 @@
                 initializeKeeperManagement();
             }
 
-            // Reset to auth view
-            document.getElementById('keeper-modal-auth').style.display = 'block';
-            document.getElementById('keeper-modal-selection').style.display = 'none';
-            document.getElementById('keeper-team-select').value = '';
-            document.getElementById('keeper-password-field').style.display = 'none';
-            document.getElementById('keeper-password').value = '';
-            document.getElementById('keeper-auth-error').style.display = 'none';
+            if (!isAuthenticated()) {
+                // Not logged in — open auth modal with callback to open keeper after
+                openAuthModal(() => openKeeperModal());
+                return;
+            }
 
-            // Add auth-view class for smaller modal
-            document.querySelector('.keeper-modal-content').classList.add('auth-view');
+            if (isAdmin() && !currentSession.adminActingAs) {
+                // Admin needs to pick a team first
+                showAdminTeamSelector(() => openKeeperModal());
+                return;
+            }
+
+            // Logged in — skip auth, go directly to selection
+            document.getElementById('keeper-modal-auth').style.display = 'none';
+            document.getElementById('keeper-modal-selection').style.display = 'none';
 
             // Show modal and prevent background scroll
             document.getElementById('keeper-modal').classList.add('active');
             document.body.classList.add('keeper-modal-open');
+
+            // Enter as session user
+            enterKeeperAsSession();
         }
 
         function closeKeeperModal() {
             document.getElementById('keeper-modal').classList.remove('active');
             document.body.classList.remove('keeper-modal-open');
-            logoutKeeper();
+            currentKeeperTeam = null;
+            // Reset views
+            document.getElementById('keeper-modal-auth').style.display = 'block';
+            document.getElementById('keeper-modal-selection').style.display = 'none';
+            document.querySelector('.keeper-modal-content').classList.add('auth-view');
         }
 
         // Close keeper modal on outside click
@@ -37586,6 +38465,8 @@
         });
 
         // ===== SPORTSBOOK FUNCTIONS =====
+        // sportsbookUser is now derived from centralized session
+        // Kept as a variable for compatibility with existing sportsbook code
         let sportsbookUser = null;
         let sportsbookTeamData = [];
         let sportsbookBetSlip = [];
@@ -37615,29 +38496,42 @@
         }
 
         function openSportsbookLogin() {
-            const modal = document.getElementById('sportsbook-login-modal');
-            const grid = document.getElementById('sportsbook-team-grid');
+            if (!isAuthenticated()) {
+                // Not logged in — open centralized auth modal with callback
+                openAuthModal(() => openSportsbookLogin());
+                return;
+            }
 
-            // Populate team grid
-            grid.innerHTML = sportsbookTeamData.map(team => `
-                <div class="sportsbook-team-option" 
-                     onclick="selectSportsbookTeam('${team.team_key}')"
-                     data-team-key="${team.team_key}"
-                     data-tooltip="${team.team_name} - ${normalizeManagerName(team.manager, 2026, team.team_name, team.team_key)}">
-                    <img src="${fixTeamLogo(team.team_logo) || 'league_logo.png'}" alt="${team.team_name}">
-                    <span class="team-name">${normalizeManagerName(team.manager, 2026, team.team_name, team.team_key)}</span>
-                </div>
-            `).join('');
+            if (isAdmin() && !currentSession.adminActingAs) {
+                // Admin needs to pick a team first
+                showAdminTeamSelector(() => openSportsbookLogin());
+                return;
+            }
 
-            // Reset state
-            document.getElementById('sportsbook-password-section').classList.remove('active');
-            document.getElementById('sportsbook-login-error').style.display = 'none';
+            // Logged in — set up sportsbookUser from session and enter
+            enterSportsbookAsSession();
+        }
 
-            modal.classList.add('active');
+        async function enterSportsbookAsSession() {
+            const managerName = getSessionManagerName();
+            const teamKey = getSessionTeamKey();
+            const teamLogo = getSessionTeamLogo();
+            const teamName = getSessionTeamName();
+
+            sportsbookUser = {
+                visitorId: managerName,
+                teamKey: teamKey,
+                teamName: teamName || 'Unknown',
+                teamLogo: teamLogo || 'league_logo.png',
+                manager: managerName
+            };
+
+            await loadSportsbookData();
+            showSportsbookLoggedIn();
         }
 
         function closeSportsbookLogin() {
-            document.getElementById('sportsbook-login-modal').classList.remove('active');
+            // No-op: sportsbook login modal removed, but keep function for compatibility
         }
 
         // ===== BETTING STATS MODAL =====
@@ -38159,72 +39053,8 @@
             document.getElementById('sportsbook-login-error').style.display = 'none';
         }
 
-        async function authenticateSportsbook() {
-            if (!selectedSportsbookTeam) {
-                return;
-            }
-
-            if (!keeperConfig) {
-                document.getElementById('sportsbook-login-error').textContent = 'Configuration not loaded. Please try again.';
-                document.getElementById('sportsbook-login-error').style.display = 'block';
-                return;
-            }
-
-            const password = document.getElementById('sportsbook-password').value;
-
-            // Find team from current season data
-            const team = sportsbookTeamData.find(t => t.team_key === selectedSportsbookTeam);
-            if (!team) {
-                document.getElementById('sportsbook-login-error').textContent = 'Team not found.';
-                document.getElementById('sportsbook-login-error').style.display = 'block';
-                return;
-            }
-
-            const managerName = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key);
-
-            // Find team config by manager name (works across season key changes)
-            // First try direct key lookup, then fall back to manager name search
-            let teamConfig = keeperConfig.teams?.[selectedSportsbookTeam];
-
-            if (!teamConfig) {
-                // Search by manager name in keeperConfig.teams
-                const configEntry = Object.entries(keeperConfig.teams || {}).find(([key, config]) => {
-                    const configManager = normalizeManagerName(config.manager, 2026, config.team_name, key);
-                    return configManager === managerName;
-                });
-                if (configEntry) {
-                    teamConfig = configEntry[1];
-                }
-            }
-
-            if (!teamConfig) {
-                document.getElementById('sportsbook-login-error').textContent = 'Team configuration not found. Please contact the commissioner.';
-                document.getElementById('sportsbook-login-error').style.display = 'block';
-                return;
-            }
-
-            // Hash the entered password and compare (same as keeper system)
-            const enteredHash = await hashPassword(password);
-
-            if (enteredHash !== teamConfig.password_hash) {
-                document.getElementById('sportsbook-login-error').textContent = 'Incorrect password. Hint: [YourName][YearJoined]';
-                document.getElementById('sportsbook-login-error').style.display = 'block';
-                return;
-            }
-
-            // Authentication successful
-            sportsbookUser = {
-                visitorId: managerName, // Use manager name as primary identifier (persists across seasons)
-                teamKey: selectedSportsbookTeam, // Current season team key (for display only)
-                teamName: team?.team_name || 'Unknown',
-                teamLogo: fixTeamLogo(team?.team_logo) || 'league_logo.png',
-                manager: managerName
-            };
-
-            closeSportsbookLogin();
-            await loadSportsbookData();
-            showSportsbookLoggedIn();
-        }
+        // authenticateSportsbook is now handled by centralized auth
+        // The function enterSportsbookAsSession() replaces this flow
 
         async function loadSportsbookData() {
             if (!sportsbookUser || !firebaseDb) return;
@@ -38268,6 +39098,17 @@
 
             document.getElementById('sportsbook-not-logged-in').style.display = 'block';
             document.getElementById('sportsbook-logged-in').style.display = 'none';
+        }
+
+        // Auto-enter sportsbook if user is already authenticated when section is shown
+        function checkSportsbookAutoLogin() {
+            if (isAuthenticated() && !sportsbookUser) {
+                if (isAdmin() && !currentSession.adminActingAs) {
+                    // Admin needs to pick team — don't auto-enter
+                    return;
+                }
+                enterSportsbookAsSession();
+            }
         }
 
         function switchSportsbookTab(tab) {
@@ -41420,32 +42261,25 @@
         const OPCOMP_MAX_SLOTS = 10;
 
         let opcompState = {
-            teams: [],
-            selectedTeamKey: null,
-            authenticatedTeamKey: null,
-            authenticatedConfigTeamKey: null,
-            authenticatedTeamConfig: null,
-            authenticatedTeamInfo: null,
+            // Auth properties removed — now derived from centralized session
             priorityList: []
         };
 
         let opcompDraggedIndex = null;
 
-        async function getOpcompTeams() {
-            if (opcompState.teams.length > 0) return opcompState.teams;
-            const teams = await getTeamData(2026) || [];
-            opcompState.teams = teams
-                .map(team => ({
-                    teamKey: team.team_key,
-                    manager: normalizeManagerName(team.manager || '', 2026, team.team_name, team.team_key),
-                    teamName: team.team_name || '',
-                    teamLogo: fixTeamLogo(team.team_logo) || 'league_logo.png'
-                }))
-                .sort((a, b) => a.manager.localeCompare(b.manager));
-            return opcompState.teams;
-        }
+        // getOpcompTeams, selectOpcompTeam, authenticateOpcomp removed — centralized auth handles this
 
         async function openOpcompModal() {
+            if (!isAuthenticated()) {
+                openAuthModal(() => openOpcompModal());
+                return;
+            }
+
+            if (isAdmin() && !currentSession.adminActingAs) {
+                showAdminTeamSelector(() => openOpcompModal());
+                return;
+            }
+
             initializeFirebase();
             const hasConfig = await ensureKeeperConfigLoaded();
             if (!hasConfig) {
@@ -41453,110 +42287,63 @@
                 return;
             }
 
-            // Reset state
-            opcompState.selectedTeamKey = null;
-            opcompState.authenticatedTeamKey = null;
-            opcompState.authenticatedConfigTeamKey = null;
-            opcompState.authenticatedTeamConfig = null;
-            opcompState.authenticatedTeamInfo = null;
+            const sessionTeamKey = getSessionTeamKey();
+            const sessionConfigTeamKey = getSessionConfigTeamKey() || sessionTeamKey;
+            const sessionManager = getSessionManagerName();
+            const sessionTeamName = getSessionTeamName();
+            const sessionTeamLogo = getSessionTeamLogo() || 'league_logo.png';
+            const sessionTeamConfig = keeperConfig?.teams?.[sessionConfigTeamKey] || null;
+
+            if (!sessionTeamKey || !sessionConfigTeamKey || !sessionManager) {
+                alert('Could not resolve your team identity. Please refresh and try again.');
+                return;
+            }
+
+            if (prospectsData.length === 0) {
+                await loadProspects();
+            } else if (Object.keys(prospectOwnershipData).length === 0) {
+                await loadProspectOwnership();
+            }
+
+            opcompState.authenticatedTeamKey = sessionTeamKey;
+            opcompState.authenticatedConfigTeamKey = sessionConfigTeamKey;
+            opcompState.authenticatedTeamConfig = sessionTeamConfig;
+            opcompState.authenticatedTeamInfo = {
+                manager: sessionManager,
+                team_name: sessionTeamName || sessionTeamConfig?.team_name || '',
+                teamLogo: sessionTeamLogo
+            };
+
+            // Reset priority list
             opcompState.priorityList = [];
 
-            // Populate team grid
-            const teams = await getOpcompTeams();
-            const grid = document.getElementById('opcomp-team-grid');
-            grid.innerHTML = teams.map(team => `
-                <button class="opcomp-team-btn" data-team-key="${team.teamKey}"
-                    onclick="selectOpcompTeam('${team.teamKey}')">
-                    <img src="${team.teamLogo}" alt="${team.manager}" onerror="this.src='league_logo.png'">
-                    <span>${team.manager}</span>
-                </button>
-            `).join('');
-
             // Reset UI
-            document.getElementById('opcomp-password-input').value = '';
-            document.getElementById('opcomp-error').textContent = '';
             document.getElementById('opcomp-save-status').textContent = '';
-            setOpcompView('auth');
-            setOpcompTeamChip(null);
 
-            // Show modal
-            document.getElementById('opcomp-modal').classList.add('active');
-            document.body.classList.add('modal-open');
-        }
+            // Set team chip from session
+            const teamInfo = {
+                manager: opcompState.authenticatedTeamInfo.manager,
+                teamLogo: opcompState.authenticatedTeamInfo.teamLogo
+            };
+            setOpcompTeamChip(teamInfo);
 
-        function selectOpcompTeam(teamKey) {
-            opcompState.selectedTeamKey = teamKey;
-            document.querySelectorAll('.opcomp-team-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.teamKey === teamKey);
-            });
-            document.getElementById('opcomp-error').textContent = '';
-
-            // Focus password on desktop
-            if (window.innerWidth > 768) {
-                setTimeout(() => {
-                    document.getElementById('opcomp-password-input').focus({ preventScroll: true });
-                }, 200);
-            }
-        }
-
-        async function authenticateOpcomp() {
-            const errorEl = document.getElementById('opcomp-error');
-            const teamKey = opcompState.selectedTeamKey;
-            const password = document.getElementById('opcomp-password-input').value || '';
-
-            if (!teamKey || !password) {
-                errorEl.textContent = 'Select your team and enter your password.';
-                return;
-            }
-
-            const teams = opcompState.teams || [];
-            const selectedTeam = teams.find(t => t.teamKey === teamKey);
-            if (!selectedTeam) {
-                errorEl.textContent = 'Team not found.';
-                return;
-            }
-
-            // Find team config (try direct key, fallback to manager name match)
-            let teamConfig = keeperConfig?.teams?.[teamKey];
-            let configTeamKey = teamKey;
-            if (!teamConfig) {
-                const configEntry = Object.entries(keeperConfig?.teams || {}).find(([ck, config]) => {
-                    const configManager = normalizeManagerName(config.manager || '', 2026, config.team_name, ck);
-                    return configManager === selectedTeam.manager;
-                });
-                if (configEntry) {
-                    configTeamKey = configEntry[0];
-                    teamConfig = configEntry[1];
-                }
-            }
-
-            if (!teamConfig) {
-                errorEl.textContent = 'Team configuration not found.';
-                return;
-            }
-
-            const enteredHash = await hashPassword(password);
-            if (enteredHash !== teamConfig.password_hash) {
-                errorEl.textContent = 'Incorrect password. Hint: [YourName][YearJoined]';
-                return;
-            }
-
-            // Auth successful
-            errorEl.textContent = '';
-            opcompState.authenticatedTeamKey = teamKey;
-            opcompState.authenticatedConfigTeamKey = configTeamKey;
-            opcompState.authenticatedTeamConfig = teamConfig;
-            opcompState.authenticatedTeamInfo = selectedTeam;
+            // Hide auth view, go directly to builder
+            const authView = document.getElementById('opcomp-auth-view');
+            const builderView = document.getElementById('opcomp-builder-view');
+            if (authView) authView.style.display = 'none';
+            if (builderView) builderView.classList.add('active');
 
             // Load existing OPCOMP list from Firebase
             await loadOpcompListFromFirebase();
 
-            // Switch to builder view
-            setOpcompTeamChip(selectedTeam);
+            // Populate and render
             populateOpcompTeamFilter();
             renderOpcompAvailableList();
             renderOpcompPriorityList();
-            setOpcompView('builder');
+
+            // Show modal
+            document.getElementById('opcomp-modal').classList.add('active');
+            document.body.classList.add('modal-open');
         }
 
         function setOpcompView(view) {
@@ -41588,7 +42375,9 @@
             if (!firebaseDb) return;
 
             try {
-                const sanitizedKey = sanitizeFirebaseKey(opcompState.authenticatedConfigTeamKey || opcompState.authenticatedTeamKey);
+                const teamKey = opcompState.authenticatedConfigTeamKey || opcompState.authenticatedTeamKey;
+                if (!teamKey) return;
+                const sanitizedKey = sanitizeFirebaseKey(teamKey);
                 const snapshot = await firebaseDb.ref(`opcomp_lists_2026/${sanitizedKey}`).once('value');
                 const data = snapshot.val();
                 if (data && Array.isArray(data.prospects)) {
@@ -44268,6 +45057,9 @@
 
         // ===== INITIALIZE ON PAGE LOAD =====
         window.addEventListener('DOMContentLoaded', async () => {
+            // Restore auth session from localStorage
+            restoreSession();
+
             // Initialize season selectors (detect available seasons)
             await initializeSeasonSelectors();
 
