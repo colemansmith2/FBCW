@@ -30528,12 +30528,36 @@
 
         // Calculate the actual round costs for a team's keepers, handling multiple last-round picks
         // This now considers traded picks - if you traded for extra round 22 picks, you can use them
+        function isProspectKeeperEntry(keeper) {
+            if (!keeper) return false;
+            if (keeper.isProspect === true) return true;
+
+            // Backward compatibility for older saved keeper data that may not include isProspect.
+            const dollarCost = Number(keeper.dollarCost);
+            const roundCost = Number(keeper.roundCost);
+            if (Number.isFinite(dollarCost) && dollarCost === 0) return true;
+            if (Number.isFinite(roundCost) && roundCost === 0) return true;
+
+            return false;
+        }
+
         function calculateTeamKeeperRoundCosts(teamKey) {
             const allKeepers = keeperSelections[teamKey] || [];
             if (allKeepers.length === 0) return [];
 
-            // Filter out prospects - they don't use draft picks
-            const keepers = allKeepers.filter(k => !k.isProspect);
+            // Filter out prospects - they don't use draft picks.
+            // Also dedupe by player name to guard against duplicate legacy entries.
+            const seenKeeperKeys = new Set();
+            const keepers = allKeepers.filter(k => {
+                if (isProspectKeeperEntry(k)) return false;
+                const normalizedName = String(k.player_name || '').toLowerCase().trim();
+                if (!normalizedName) return false;
+                const normalizedPos = String(k.position || '').toUpperCase().trim();
+                const keeperKey = `${normalizedName}|${normalizedPos}`;
+                if (seenKeeperKeys.has(keeperKey)) return false;
+                seenKeeperKeys.add(keeperKey);
+                return true;
+            });
             if (keepers.length === 0) return [];
 
             const totalRounds = getTotalDraftRounds();
@@ -30557,7 +30581,7 @@
             // Get base round costs for each keeper (excluding prospects)
             let roundCosts = keepers.map(k => ({
                 player_name: k.player_name,
-                baseRoundCost: k.roundCost || totalRounds,
+                baseRoundCost: Number.isFinite(Number(k.roundCost)) && Number(k.roundCost) > 0 ? Number(k.roundCost) : totalRounds,
                 isUndrafted: k.isUndrafted || false
             }));
 
@@ -30645,7 +30669,7 @@
             const keepers = keeperSelections[teamKey] || [];
             // Only count non-prospect keepers, and use 0 for prospects
             return keepers.reduce((total, k) => {
-                if (k.isProspect) return total; // Prospects are free
+                if (isProspectKeeperEntry(k)) return total; // Prospects are free
                 return total + (k.dollarCost !== undefined ? k.dollarCost : 1);
             }, 0);
         }
@@ -31323,7 +31347,7 @@
         // Check if a player can be kept given their round cost and current keeper selections
         function canKeepPlayerWithPick(playerName, requiredRound) {
             const teamPicks = getTeamPicks(currentKeeperTeam);
-            const currentKeepers = (keeperSelections[currentKeeperTeam] || []).filter(k => !k.isProspect);
+            const currentKeepers = (keeperSelections[currentKeeperTeam] || []).filter(k => !isProspectKeeperEntry(k));
 
             console.log('canKeepPlayerWithPick:', playerName, 'requiredRound:', requiredRound);
             console.log('Current keepers for team:', currentKeepers.map(k => `${k.player_name} (Rd ${k.roundCost})`));
@@ -31413,8 +31437,8 @@
             const budgetRemaining = teamTotalBudget - budgetUsed;
 
             // Count prospects vs regular keepers
-            const prospectCount = teamKeepers.filter(k => k.isProspect).length;
-            const regularCount = teamKeepers.filter(k => !k.isProspect).length;
+            const prospectCount = teamKeepers.filter(k => isProspectKeeperEntry(k)).length;
+            const regularCount = teamKeepers.filter(k => !isProspectKeeperEntry(k)).length;
 
             // Update status text to show budget and prospect count
             let statusText = `$${budgetUsed} / $${teamTotalBudget} used (${regularCount} keeper${regularCount !== 1 ? 's' : ''})`;
@@ -31548,8 +31572,8 @@
             const teamKeepers = keeperSelections[currentKeeperTeam] || [];
 
             // Separate prospects from regular keepers
-            const regularKeepers = teamKeepers.filter(k => !k.isProspect);
-            const prospects = teamKeepers.filter(k => k.isProspect);
+            const regularKeepers = teamKeepers.filter(k => !isProspectKeeperEntry(k));
+            const prospects = teamKeepers.filter(k => isProspectKeeperEntry(k));
 
             // Calculate which rounds are used by regular keepers (not prospects)
             const roundCosts = calculateTeamKeeperRoundCosts(currentKeeperTeam);
@@ -31673,7 +31697,7 @@
                 summaryEl.innerHTML = '<span class="no-selection">No keepers selected. Check the boxes next to players you want to keep.</span>';
             } else {
                 const totalCost = calculateTeamBudgetUsed(currentKeeperTeam);
-                const prospectCount = teamKeepers.filter(k => k.isProspect).length;
+                const prospectCount = teamKeepers.filter(k => isProspectKeeperEntry(k)).length;
 
                 // Calculate actual round costs (handling multiple last-round picks) - excludes prospects
                 const roundCosts = calculateTeamKeeperRoundCosts(currentKeeperTeam);
@@ -31686,7 +31710,7 @@
                 let summaryHtml = `<div class="keeper-summary-header">${headerText}</div>`;
                 summaryHtml += '<div class="keeper-summary-list">';
                 summaryHtml += teamKeepers.map(k => {
-                    const isProspect = k.isProspect || false;
+                    const isProspect = isProspectKeeperEntry(k);
 
                     if (isProspect) {
                         // Prospect display - no round cost, $0
@@ -31741,8 +31765,8 @@
             }
 
             // Separate prospects from regular keepers
-            const regularKeepers = teamKeepers.filter(k => !k.isProspect);
-            const prospects = teamKeepers.filter(k => k.isProspect);
+            const regularKeepers = teamKeepers.filter(k => !isProspectKeeperEntry(k));
+            const prospects = teamKeepers.filter(k => isProspectKeeperEntry(k));
 
             // Calculate total cost and actual round costs
             const totalCost = calculateTeamBudgetUsed(currentKeeperTeam);
@@ -31862,7 +31886,7 @@
                     // Filter out prospects if toggle is off
                     let displayKeepers = showLeagueProspects
                         ? [...teamKeepers]
-                        : teamKeepers.filter(k => !k.isProspect);
+                        : teamKeepers.filter(k => !isProspectKeeperEntry(k));
 
                     const budgetUsed = teamKeepers.reduce((sum, k) => sum + (k.dollarCost || 0), 0);
                     const teamTotalBudget = getTeamBudget ? getTeamBudget(teamKey) : KEEPER_BUDGET;
@@ -31872,8 +31896,8 @@
 
                     // Sort keepers: regular keepers first (by round asc, then proj pts desc), then prospects (by proj pts desc, then position)
                     displayKeepers.sort((a, b) => {
-                        const aIsProspect = a.isProspect || false;
-                        const bIsProspect = b.isProspect || false;
+                        const aIsProspect = isProspectKeeperEntry(a);
+                        const bIsProspect = isProspectKeeperEntry(b);
 
                         // Regular keepers come before prospects
                         if (aIsProspect !== bIsProspect) {
@@ -31923,7 +31947,7 @@
                         keepersHtml = displayKeepers.map(k => {
                             const projPts = getAverageProjection(k.player_name);
                             const projDisplay = projPts > 0 ? projPts.toFixed(0) : '-';
-                            const isProspect = k.isProspect || false;
+                            const isProspect = isProspectKeeperEntry(k);
 
                             // Find the actual round cost for this keeper
                             const roundInfo = roundCosts.find(rc => rc.player_name === k.player_name);
@@ -31957,8 +31981,8 @@
                     }
 
                     // Count prospects vs regular keepers
-                    const prospectCount = teamKeepers.filter(k => k.isProspect).length;
-                    const regularCount = teamKeepers.filter(k => !k.isProspect).length;
+                    const prospectCount = teamKeepers.filter(k => isProspectKeeperEntry(k)).length;
+                    const regularCount = teamKeepers.filter(k => !isProspectKeeperEntry(k)).length;
 
                     // Calculate budget bar - width proportional to team's total budget relative to default
                     const maxBudgetForWidth = Math.max(KEEPER_BUDGET, teamTotalBudget);
@@ -32184,8 +32208,8 @@
 
         function buildTeamLineup(teamData) {
             const keepers = teamData.keepers || [];
-            const regularKeepers = keepers.filter(k => !k.isProspect);
-            const prospects = keepers.filter(k => k.isProspect);
+            const regularKeepers = keepers.filter(k => !isProspectKeeperEntry(k));
+            const prospects = keepers.filter(k => isProspectKeeperEntry(k));
 
             // Create lineup structure
             const lineup = {
@@ -32688,7 +32712,7 @@
                             const teamKeepers = keeperSelections ? keeperSelections[teamKey] : null;
                             if (teamKeepers && Array.isArray(teamKeepers)) {
                                 teamKeepers.forEach(k => {
-                                    if (k.isProspect) return; // Skip prospects, only show keepers
+                                    if (isProspectKeeperEntry(k)) return; // Skip prospects, only show keepers
                                     const kName = k.player_name || k.playerName || '';
                                     const projMatch = projLookup[normalizeKeeperPlayerName(kName)];
                                     const projPos = projMatch ? (projMatch.primary_position || '') : '';
@@ -33754,13 +33778,13 @@
                     const mlbTeam = zips2026.mlb_team || zips2027.mlb_team || zips2028.mlb_team || avgProjData?.mlb_team || '';
                     const headshot = keeper.headshot_url || zips2026.headshot_url || zips2027.headshot_url || zips2028.headshot_url || avgProjData?.headshot || '';
 
-                    players.push({
-                        type: 'player',
-                        name: keeper.player_name,
-                        position: keeper.position || 'UT',
-                        isProspect: keeper.isProspect || false,
-                        roundCost: keeper.roundCost || 20,
-                        dollarCost: keeper.dollarCost || 1,
+                        players.push({
+                            type: 'player',
+                            name: keeper.player_name,
+                            position: keeper.position || 'UT',
+                            isProspect: isProspectKeeperEntry(keeper),
+                            roundCost: keeper.roundCost || 20,
+                            dollarCost: keeper.dollarCost || 1,
                         headshot: headshot,
                         mlbTeam: mlbTeam,
                         value: valueResult.value,
@@ -35443,7 +35467,7 @@
                     // Use average projection across all systems
                     const projectedPts = getAverageProjection(keeper.player_name);
 
-                    const isProspect = keeper.isProspect || false;
+                    const isProspect = isProspectKeeperEntry(keeper);
                     // Use actual round cost (after bumping) instead of base round cost
                     const baseRoundCost = keeper.roundCost || 0;
                     const actualRoundCost = actualRoundMap[keeper.player_name.toLowerCase()] ?? baseRoundCost;
@@ -36241,7 +36265,7 @@
                 const lookupKey = team.keeper_config_key || team.team_key;
                 const teamPicks = getTeamPicks(lookupKey) || [];
                 const teamKeepers = keeperSelections[lookupKey] || [];
-                const nonProspectKeepers = teamKeepers.filter(k => !k.isProspect);
+                const nonProspectKeepers = teamKeepers.filter(k => !isProspectKeeperEntry(k));
 
                 // Calculate which rounds are used by keepers
                 const usedRounds = {};
@@ -43212,7 +43236,7 @@
                     } else {
                         // Fallback: use raw roundCost if resolution function isn't available
                         keepers.forEach(k => {
-                            if (k.isProspect) return;
+                            if (isProspectKeeperEntry(k)) return;
                             const roundCost = k.roundCost || k.round_cost || k.cost || k.round;
                             if (roundCost) {
                                 resolvedKeeperCosts[teamKey][(k.player_name || '').toLowerCase()] = roundCost;
