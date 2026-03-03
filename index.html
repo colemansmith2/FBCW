@@ -29743,11 +29743,15 @@
                 if (typeof firebase === 'undefined') {
                     console.error('Firebase SDK not loaded');
                     updateFirebaseStatus(false);
-                    return;
+                    return false;
                 }
 
                 if (!firebaseInitialized) {
-                    firebaseApp = firebase.initializeApp(firebaseConfig);
+                    if (firebase.apps && firebase.apps.length > 0) {
+                        firebaseApp = firebase.app();
+                    } else {
+                        firebaseApp = firebase.initializeApp(firebaseConfig);
+                    }
                     firebaseDb = firebase.database();
                     firebaseInitialized = true;
                     console.log('Firebase initialized successfully');
@@ -29762,10 +29766,38 @@
                     // Set up real-time listener for keeper selections
                     setupKeeperListener();
                 }
+                return !!firebaseDb;
             } catch (e) {
+                if (e && e.code === 'app/duplicate-app') {
+                    try {
+                        firebaseApp = firebase.app();
+                        firebaseDb = firebase.database();
+                        firebaseInitialized = true;
+                        return true;
+                    } catch (reuseErr) {
+                        console.error('Firebase app reuse error:', reuseErr);
+                    }
+                }
                 console.error('Firebase initialization error:', e);
                 updateFirebaseStatus(false);
+                return false;
             }
+        }
+
+        function getFirebaseUserFacingError(e, fallbackMessage) {
+            const code = (e && e.code ? String(e.code) : '').toLowerCase();
+            const msg = (e && e.message ? String(e.message) : '').toLowerCase();
+
+            if (code.includes('permission') || msg.includes('permission_denied') || msg.includes('permission denied')) {
+                return 'Login service is denying access (Firebase rules). Check database permissions.';
+            }
+            if (code.includes('unavailable') || msg.includes('network') || msg.includes('offline')) {
+                return 'Could not reach login service. Please check your connection and try again.';
+            }
+            if (code.includes('app/no-app') || code.includes('app/invalid-app') || msg.includes('firebase sdk')) {
+                return 'Login service failed to initialize. Refresh the page and try again.';
+            }
+            return fallbackMessage;
         }
 
         // Listen for real-time keeper updates from Firebase
@@ -29958,7 +29990,11 @@
             usernameInput.dataset.validatedUsername = username;
 
             // Check Firebase for existing password
-            initializeFirebase();
+            const firebaseReady = initializeFirebase();
+            if (!firebaseReady || !firebaseDb) {
+                errorEl.textContent = 'Login service unavailable. Refresh and try again.';
+                return;
+            }
             try {
                 const snapshot = await firebaseDb.ref('user_accounts/' + username).once('value');
                 const accountData = snapshot.val();
@@ -29976,7 +30012,7 @@
                 }
             } catch (e) {
                 console.error('Firebase check error:', e);
-                errorEl.textContent = 'Connection error. Please try again.';
+                errorEl.textContent = getFirebaseUserFacingError(e, 'Connection error. Please try again.');
             }
         }
 
@@ -29989,6 +30025,12 @@
 
             if (!password) {
                 errorEl.textContent = 'Please enter your password.';
+                return;
+            }
+
+            const firebaseReady = initializeFirebase();
+            if (!firebaseReady || !firebaseDb) {
+                errorEl.textContent = 'Login service unavailable. Refresh and try again.';
                 return;
             }
 
@@ -30014,7 +30056,7 @@
 
             } catch (e) {
                 console.error('Login error:', e);
-                errorEl.textContent = 'Login failed. Please try again.';
+                errorEl.textContent = getFirebaseUserFacingError(e, 'Login failed. Please try again.');
             }
         }
 
@@ -30044,6 +30086,12 @@
                 return;
             }
 
+            const firebaseReady = initializeFirebase();
+            if (!firebaseReady || !firebaseDb) {
+                errorEl.textContent = 'Login service unavailable. Refresh and try again.';
+                return;
+            }
+
             try {
                 const passwordHash = await hashPassword(password);
 
@@ -30061,7 +30109,7 @@
 
             } catch (e) {
                 console.error('Password setup error:', e);
-                errorEl.textContent = 'Could not save password. Please try again.';
+                errorEl.textContent = getFirebaseUserFacingError(e, 'Could not save password. Please try again.');
             }
         }
 
@@ -30070,15 +30118,36 @@
             const result = { teamKey: null, configTeamKey: null, teamName: null, teamLogo: null };
 
             try {
+                const targetManager = normalizeManagerName(managerName || '', 2026, '', '').toLowerCase().trim();
+                const targetFirst = targetManager.split(' ')[0];
+
                 // Get current season teams
                 const teams = await getTeamData(2026);
                 if (teams) {
                     for (const team of teams) {
-                        const mgr = normalizeManagerName(
-                            team.managers?.[0]?.manager?.nickname || team.managers?.[0]?.manager?.name || '',
-                            2026, team.team_name || team.name, team.team_key
+                        const rawManager = team.manager
+                            || team.managers?.[0]?.manager?.nickname
+                            || team.managers?.[0]?.manager?.name
+                            || '';
+                        const normalizedManager = normalizeManagerName(
+                            rawManager,
+                            2026,
+                            team.team_name || team.name,
+                            team.team_key
                         );
-                        if (mgr.toLowerCase() === managerName.toLowerCase()) {
+                        const rawLower = rawManager.toLowerCase().trim();
+                        const normalizedLower = normalizedManager.toLowerCase().trim();
+                        const managerMatches =
+                            normalizedLower === targetManager
+                            || rawLower === targetManager
+                            || (targetFirst && (
+                                normalizedLower === targetFirst
+                                || rawLower === targetFirst
+                                || normalizedLower.startsWith(targetFirst + ' ')
+                                || rawLower.startsWith(targetFirst + ' ')
+                            ));
+
+                        if (managerMatches) {
                             result.teamKey = team.team_key;
                             result.teamName = team.team_name || team.name;
                             result.teamLogo = fixTeamLogo(team.team_logos?.[0]?.url || team.team_logo || '');
@@ -31750,6 +31819,12 @@
                 if (!keeperConfig || !keeperConfig.teams) {
                     grid.innerHTML = '<p style="color: #888;">Keeper data not available.</p>';
                     return;
+                }
+
+                // Keeper/value displays depend on pick ownership from trades.
+                // Ensure trade data is initialized before any pick-based calculations run.
+                if (!tradeManagementReady) {
+                    await initializeTradeManagement();
                 }
 
                 grid.innerHTML = '';
@@ -36689,48 +36764,65 @@
         let teamPicksOwned = {}; // Track which picks each team owns
         let teamBudgets = {}; // Track each team's budget
         let tradesLoadedFromServer = false; // Track if we loaded from server
+        let tradeManagementReady = false;
+        let tradeManagementInitPromise = null;
 
         async function initializeTradeManagement() {
-            // Load manual budget adjustments (now async to check server first)
-            await loadManualBudgetAdjustments();
-
-            // First, try to load trades from the server JSON file
-            try {
-                const response = await fetch('data/keepers/trades_2026.json');
-                if (response.ok) {
-                    const serverTrades = await response.json();
-                    tradeData = serverTrades;
-                    tradesLoadedFromServer = true;
-                    console.log(`Loaded ${tradeData.trades?.length || 0} trades from server`);
-                }
-            } catch (e) {
-                console.log('No server trades file found, checking localStorage');
+            if (tradeManagementReady) return;
+            if (tradeManagementInitPromise) {
+                await tradeManagementInitPromise;
+                return;
             }
 
-            // If no server trades, check localStorage for commissioner's working copy
-            if (!tradesLoadedFromServer || !tradeData.trades || tradeData.trades.length === 0) {
-                const storedTrades = localStorage.getItem('keeper_trades_2026');
-                if (storedTrades) {
-                    const localTrades = JSON.parse(storedTrades);
-                    // Merge: keep server trades and add any new local trades
-                    if (localTrades.trades && localTrades.trades.length > 0) {
-                        const serverIds = new Set((tradeData.trades || []).map(t => t.id));
-                        const newLocalTrades = localTrades.trades.filter(t => !serverIds.has(t.id));
-                        tradeData.trades = [...(tradeData.trades || []), ...newLocalTrades];
+            tradeManagementInitPromise = (async () => {
+                // Load manual budget adjustments (now async to check server first)
+                await loadManualBudgetAdjustments();
+
+                // First, try to load trades from the server JSON file
+                try {
+                    const response = await fetch('data/keepers/trades_2026.json');
+                    if (response.ok) {
+                        const serverTrades = await response.json();
+                        tradeData = serverTrades;
+                        tradesLoadedFromServer = true;
+                        console.log(`Loaded ${tradeData.trades?.length || 0} trades from server`);
+                    }
+                } catch (e) {
+                    console.log('No server trades file found, checking localStorage');
+                }
+
+                // If no server trades, check localStorage for commissioner's working copy
+                if (!tradesLoadedFromServer || !tradeData.trades || tradeData.trades.length === 0) {
+                    const storedTrades = localStorage.getItem('keeper_trades_2026');
+                    if (storedTrades) {
+                        const localTrades = JSON.parse(storedTrades);
+                        // Merge: keep server trades and add any new local trades
+                        if (localTrades.trades && localTrades.trades.length > 0) {
+                            const serverIds = new Set((tradeData.trades || []).map(t => t.id));
+                            const newLocalTrades = localTrades.trades.filter(t => !serverIds.has(t.id));
+                            tradeData.trades = [...(tradeData.trades || []), ...newLocalTrades];
+                        }
                     }
                 }
+
+                // Ensure trades array exists
+                if (!tradeData.trades) {
+                    tradeData.trades = [];
+                }
+
+                // Initialize team budgets and picks
+                await initializeTeamAssets();
+
+                // Display existing trades
+                displayTrades();
+                tradeManagementReady = true;
+            })();
+
+            try {
+                await tradeManagementInitPromise;
+            } finally {
+                tradeManagementInitPromise = null;
             }
-
-            // Ensure trades array exists
-            if (!tradeData.trades) {
-                tradeData.trades = [];
-            }
-
-            // Initialize team budgets and picks
-            await initializeTeamAssets();
-
-            // Display existing trades
-            displayTrades();
         }
 
         async function initializeTeamAssets() {
@@ -36758,6 +36850,20 @@
         }
 
         function applyTradesToAssets() {
+            function movePick(fromTeam, toTeam, asset) {
+                const fromPicks = teamPicksOwned[fromTeam];
+                const toPicks = teamPicksOwned[toTeam];
+                if (!fromPicks || !toPicks) return;
+
+                const pickIndex = fromPicks.findIndex(p =>
+                    p.round === asset.round && p.originalOwner === asset.originalOwner
+                );
+                if (pickIndex === -1) return;
+
+                const pick = fromPicks.splice(pickIndex, 1)[0];
+                toPicks.push(pick);
+            }
+
             // Reset to defaults first
             const totalRounds = getTotalDraftRounds();
 
@@ -36776,20 +36882,18 @@
 
             // Apply each trade
             tradeData.trades.forEach(trade => {
+                if (!teamPicksOwned[trade.teamA] || !teamPicksOwned[trade.teamB]) {
+                    console.warn('Skipping trade with unknown team key(s):', trade);
+                    return;
+                }
+
                 // Process assets Team A gave to Team B
                 trade.assetsA.forEach(asset => {
                     if (asset.type === 'money') {
                         teamBudgets[trade.teamA] -= asset.amount;
                         teamBudgets[trade.teamB] += asset.amount;
                     } else if (asset.type === 'pick') {
-                        // Remove pick from Team A
-                        const pickIndex = teamPicksOwned[trade.teamA].findIndex(p =>
-                            p.round === asset.round && p.originalOwner === asset.originalOwner
-                        );
-                        if (pickIndex !== -1) {
-                            const pick = teamPicksOwned[trade.teamA].splice(pickIndex, 1)[0];
-                            teamPicksOwned[trade.teamB].push(pick);
-                        }
+                        movePick(trade.teamA, trade.teamB, asset);
                     }
                 });
 
@@ -36799,14 +36903,7 @@
                         teamBudgets[trade.teamB] -= asset.amount;
                         teamBudgets[trade.teamA] += asset.amount;
                     } else if (asset.type === 'pick') {
-                        // Remove pick from Team B
-                        const pickIndex = teamPicksOwned[trade.teamB].findIndex(p =>
-                            p.round === asset.round && p.originalOwner === asset.originalOwner
-                        );
-                        if (pickIndex !== -1) {
-                            const pick = teamPicksOwned[trade.teamB].splice(pickIndex, 1)[0];
-                            teamPicksOwned[trade.teamA].push(pick);
-                        }
+                        movePick(trade.teamB, trade.teamA, asset);
                     }
                 });
             });
@@ -36831,7 +36928,7 @@
 
         function displayTrades() {
             const container = document.getElementById('trades-list');
-            const noTradesMsg = document.getElementById('no-trades-msg');
+            if (!container) return;
 
             if (!tradeData.trades || tradeData.trades.length === 0) {
                 container.innerHTML = '<p class="no-trades" id="no-trades-msg">No trades recorded yet. Click "New Trade" to add one.</p>';
@@ -42287,14 +42384,14 @@
                 return;
             }
 
-            const sessionTeamKey = getSessionTeamKey();
-            const sessionConfigTeamKey = getSessionConfigTeamKey() || sessionTeamKey;
+            const sessionConfigTeamKey = getSessionConfigTeamKey();
+            const sessionTeamKey = getSessionTeamKey() || sessionConfigTeamKey;
             const sessionManager = getSessionManagerName();
             const sessionTeamName = getSessionTeamName();
             const sessionTeamLogo = getSessionTeamLogo() || 'league_logo.png';
             const sessionTeamConfig = keeperConfig?.teams?.[sessionConfigTeamKey] || null;
 
-            if (!sessionTeamKey || !sessionConfigTeamKey || !sessionManager) {
+            if (!sessionConfigTeamKey || !sessionManager) {
                 alert('Could not resolve your team identity. Please refresh and try again.');
                 return;
             }
