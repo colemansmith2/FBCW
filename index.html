@@ -12746,9 +12746,9 @@
             gap: 0.5rem;
             padding: 0.55rem 1.2rem;
             background: var(--retro-blue);
-            color: var(--retro-gold);
-            border: 2px solid var(--retro-gold);
-            border-radius: 8px;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
             font-family: 'Arcade Gamer', sans-serif;
             font-size: 0.75rem;
             letter-spacing: 1px;
@@ -12782,7 +12782,7 @@
         }
 
         .opcomp-modal {
-            background: #f7f2e8;
+            background: #ffffff;
             border: 3px solid var(--retro-blue);
             border-radius: 12px;
             box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
@@ -12799,7 +12799,7 @@
             justify-content: space-between;
             align-items: center;
             padding: 0.85rem 1rem;
-            border-bottom: 1px solid #d7cdb8;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         .opcomp-modal-title {
@@ -12933,12 +12933,13 @@
 
         .opcomp-password button {
             border: none;
-            border-radius: 8px;
+            border-radius: 4px;
             padding: 0.55rem 0.8rem;
             background: var(--retro-blue);
             color: #fff;
             cursor: pointer;
             font-size: 0.75rem;
+            font-weight: 600;
             transition: background 0.2s;
         }
 
@@ -12984,14 +12985,14 @@
             min-width: 0;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid #d7cdb8;
+            border-right: 1px solid #e0e0e0;
             max-height: calc(90vh - 60px);
         }
 
         .opcomp-available-header {
             padding: 0.6rem 0.75rem;
-            border-bottom: 1px solid #e8dcc8;
-            background: #faf6ee;
+            border-bottom: 1px solid #e0e0e0;
+            background: #f8f8f8;
         }
 
         .opcomp-available-header h4 {
@@ -13000,26 +13001,6 @@
             color: var(--retro-blue);
             text-transform: uppercase;
             letter-spacing: 0.6px;
-        }
-
-        .opcomp-search-row {
-            display: flex;
-            gap: 0.4rem;
-        }
-
-        .opcomp-search-row input {
-            flex: 1;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 0.4rem 0.6rem;
-            font-size: 0.8rem;
-        }
-
-        .opcomp-search-row select {
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            padding: 0.4rem;
-            font-size: 0.8rem;
         }
 
         .opcomp-available-list {
@@ -13033,12 +13014,12 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.4rem 0.75rem;
-            border-bottom: 1px solid #f0e8d8;
+            border-bottom: 1px solid #f0f0f0;
             transition: background 0.15s;
         }
 
         .opcomp-prospect-row:hover {
-            background: #f5efe3;
+            background: #f5f5ff;
         }
 
         .opcomp-prospect-rank {
@@ -13071,17 +13052,12 @@
             text-overflow: ellipsis;
         }
 
-        .opcomp-prospect-meta {
-            font-size: 0.68rem;
-            color: #888;
-        }
-
         .opcomp-add-btn {
             padding: 0.3rem 0.6rem;
             background: var(--retro-green);
             color: #fff;
             border: none;
-            border-radius: 6px;
+            border-radius: 4px;
             font-size: 0.7rem;
             font-weight: 600;
             cursor: pointer;
@@ -13109,8 +13085,8 @@
 
         .opcomp-priority-header {
             padding: 0.6rem 0.75rem;
-            border-bottom: 1px solid #e8dcc8;
-            background: #faf6ee;
+            border-bottom: 1px solid #e0e0e0;
+            background: #f8f8f8;
         }
 
         .opcomp-priority-header h4 {
@@ -13140,7 +13116,7 @@
             padding: 0.45rem 0.5rem;
             margin-bottom: 0.35rem;
             background: #fff;
-            border: 1px solid #e0d8c8;
+            border: 1px solid #e0e0e0;
             border-radius: 8px;
             min-height: 44px;
             transition: all 0.2s;
@@ -13148,9 +13124,9 @@
         }
 
         .opcomp-slot.empty {
-            background: #faf8f2;
+            background: #f9f9f9;
             border-style: dashed;
-            border-color: #d0c8b8;
+            border-color: #ddd;
             cursor: default;
         }
 
@@ -13190,11 +13166,6 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-        }
-
-        .opcomp-slot-detail {
-            font-size: 0.65rem;
-            color: #888;
         }
 
         .opcomp-slot-empty-text {
@@ -13244,17 +13215,17 @@
 
         .opcomp-priority-footer {
             padding: 0.6rem 0.75rem;
-            border-top: 1px solid #e8dcc8;
-            background: #faf6ee;
+            border-top: 1px solid #e0e0e0;
+            background: #f8f8f8;
         }
 
         .opcomp-save-btn {
             width: 100%;
             padding: 0.6rem;
-            background: var(--retro-blue);
-            color: var(--retro-gold);
-            border: 2px solid var(--retro-gold);
-            border-radius: 8px;
+            background: var(--retro-green);
+            color: #fff;
+            border: none;
+            border-radius: 4px;
             font-family: 'Arcade Gamer', sans-serif;
             font-size: 0.7rem;
             letter-spacing: 0.5px;
@@ -13264,7 +13235,7 @@
         }
 
         .opcomp-save-btn:hover {
-            background: var(--retro-blue-dark);
+            background: #3dd87a;
         }
 
         .opcomp-save-btn:disabled {
@@ -13284,6 +13255,92 @@
 
         .opcomp-save-status.error {
             color: #b91c1c;
+        }
+
+        /* OPCOMP MLB logo and position badge in rows */
+        .opcomp-prospect-mlb-logo {
+            width: 14px;
+            height: 14px;
+            object-fit: contain;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .opcomp-prospect-team {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .opcomp-prospect-meta {
+            font-size: 0.68rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        .opcomp-prospect-avgrank {
+            font-weight: 600;
+            font-size: 0.68rem;
+            color: #666;
+        }
+
+        .opcomp-prospect-meta .position-badge {
+            font-size: 0.6rem;
+            padding: 0.1rem 0.3rem;
+        }
+
+        /* OPCOMP slot inline badges */
+        .opcomp-slot-detail {
+            font-size: 0.65rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .opcomp-slot-detail .position-badge {
+            font-size: 0.55rem;
+            padding: 0.08rem 0.25rem;
+        }
+
+        .opcomp-slot-mlb-logo {
+            width: 12px;
+            height: 12px;
+            object-fit: contain;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .opcomp-slot-team {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.15rem;
+        }
+
+        /* OPCOMP filter row with multiple dropdowns */
+        .opcomp-search-row {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .opcomp-search-row input {
+            flex: 1;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 0.4rem 0.6rem;
+            font-size: 0.8rem;
+        }
+
+        .opcomp-search-row select {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 0.4rem;
+            font-size: 0.8rem;
+            max-width: 90px;
         }
 
         /* Mobile responsive */
@@ -18943,7 +19000,7 @@
                                     <input type="text" id="opcomp-search" placeholder="Search..."
                                         onkeyup="filterOpcompAvailable()">
                                     <select id="opcomp-pos-filter" onchange="filterOpcompAvailable()">
-                                        <option value="">All</option>
+                                        <option value="">Pos</option>
                                         <option value="C">C</option>
                                         <option value="1B">1B</option>
                                         <option value="2B">2B</option>
@@ -18951,6 +19008,9 @@
                                         <option value="SS">SS</option>
                                         <option value="OF">OF</option>
                                         <option value="P">P</option>
+                                    </select>
+                                    <select id="opcomp-team-filter" onchange="filterOpcompAvailable()">
+                                        <option value="">Team</option>
                                     </select>
                                 </div>
                             </div>
@@ -41493,6 +41553,7 @@
 
             // Switch to builder view
             setOpcompTeamChip(selectedTeam);
+            populateOpcompTeamFilter();
             renderOpcompAvailableList();
             renderOpcompPriorityList();
             setOpcompView('builder');
@@ -41540,6 +41601,15 @@
                             normalizeProspectName(pd.name) === normalized
                         );
                         return !isOwned && existsInData;
+                    }).map(p => {
+                        // Enrich with latest avg_rank from prospectsData if not saved
+                        if (!p.avg_rank) {
+                            const match = prospectsData.find(pd =>
+                                normalizeProspectName(pd.name) === normalizeProspectName(p.name)
+                            );
+                            if (match) p.avg_rank = match.avg_rank || null;
+                        }
+                        return p;
                     }).slice(0, OPCOMP_MAX_SLOTS);
                 }
             } catch (e) {
@@ -41551,6 +41621,7 @@
             const container = document.getElementById('opcomp-available-list');
             const searchTerm = (document.getElementById('opcomp-search')?.value || '').toLowerCase().trim();
             const posFilter = document.getElementById('opcomp-pos-filter')?.value || '';
+            const teamFilter = document.getElementById('opcomp-team-filter')?.value || '';
             const placeholderImg = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
 
             // Get names already in priority list
@@ -41577,6 +41648,9 @@
                 // Position filter
                 if (posFilter && prospect.position !== posFilter) return false;
 
+                // MLB team filter
+                if (teamFilter && (prospect.mlb_team || '') !== teamFilter) return false;
+
                 return true;
             });
 
@@ -41588,6 +41662,8 @@
             container.innerHTML = available.map(prospect => {
                 const headshot = prospect.headshot_url || placeholderImg;
                 const mlbTeam = prospect.mlb_team || '';
+                const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
+                const avgRank = prospect.avg_rank ? prospect.avg_rank.toFixed(1) : '-';
                 const escapedName = prospect.name.replace(/'/g, "\\'");
                 return `
                     <div class="opcomp-prospect-row">
@@ -41596,7 +41672,11 @@
                              onerror="this.src='${placeholderImg}'">
                         <div class="opcomp-prospect-info">
                             <div class="opcomp-prospect-name">${prospect.name}</div>
-                            <div class="opcomp-prospect-meta">${mlbTeam} | ${prospect.position} | Age ${prospect.age || '-'} | ${prospect.highest_level || '-'}</div>
+                            <div class="opcomp-prospect-meta">
+                                <span class="opcomp-prospect-team">${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="opcomp-prospect-mlb-logo" alt="${mlbTeam}" onerror="this.style.display='none'">` : ''}${mlbTeam}</span>
+                                <span class="position-badge pos-${prospect.position}">${prospect.position}</span>
+                                <span>Avg: <span class="opcomp-prospect-avgrank">${avgRank}</span></span>
+                            </div>
                         </div>
                         <button class="opcomp-add-btn" ${isFull ? 'disabled' : ''}
                             onclick="addToOpcompList('${escapedName}')">
@@ -41618,6 +41698,8 @@
             for (let i = 0; i < OPCOMP_MAX_SLOTS; i++) {
                 const prospect = opcompState.priorityList[i];
                 if (prospect) {
+                    const mlbLogoUrl = prospect.mlb_team ? getMLBTeamLogo(prospect.mlb_team) : '';
+                    const avgRank = prospect.avg_rank ? prospect.avg_rank.toFixed(1) : '-';
                     html += `
                         <div class="opcomp-slot" draggable="true"
                              data-slot-index="${i}"
@@ -41630,7 +41712,11 @@
                             <span class="opcomp-slot-number">${i + 1}</span>
                             <div class="opcomp-slot-player">
                                 <div class="opcomp-slot-name">${prospect.name}</div>
-                                <div class="opcomp-slot-detail">#${prospect.rank} | ${prospect.position} | ${prospect.mlb_team}</div>
+                                <div class="opcomp-slot-detail">
+                                    <span class="position-badge pos-${prospect.position}">${prospect.position}</span>
+                                    <span class="opcomp-slot-team">${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="opcomp-slot-mlb-logo" alt="${prospect.mlb_team}" onerror="this.style.display='none'">` : ''}${prospect.mlb_team}</span>
+                                    <span>Avg: ${avgRank}</span>
+                                </div>
                             </div>
                             <div class="opcomp-slot-actions">
                                 <button class="opcomp-slot-action" onclick="moveOpcompSlot(${i}, -1)" ${i === 0 ? 'disabled' : ''} title="Move up">&#9650;</button>
@@ -41670,7 +41756,8 @@
                 name: prospect.name,
                 rank: prospect.rank,
                 position: prospect.position,
-                mlb_team: prospect.mlb_team || ''
+                mlb_team: prospect.mlb_team || '',
+                avg_rank: prospect.avg_rank || null
             });
 
             renderOpcompPriorityList();
@@ -41697,6 +41784,15 @@
 
         function filterOpcompAvailable() {
             renderOpcompAvailableList();
+        }
+
+        function populateOpcompTeamFilter() {
+            const select = document.getElementById('opcomp-team-filter');
+            if (!select) return;
+            // Get unique MLB teams from all prospects, sorted alphabetically
+            const teams = [...new Set(prospectsData.map(p => p.mlb_team).filter(Boolean))].sort();
+            select.innerHTML = '<option value="">Team</option>' +
+                teams.map(t => `<option value="${t}">${t}</option>`).join('');
         }
 
         function clearOpcompSaveStatus() {
@@ -41792,7 +41888,8 @@
                         name: p.name,
                         rank: p.rank,
                         position: p.position,
-                        mlb_team: p.mlb_team
+                        mlb_team: p.mlb_team,
+                        avg_rank: p.avg_rank || null
                     })),
                     updated_at: new Date().toISOString()
                 };
@@ -41806,8 +41903,9 @@
                     statusEl.className = 'opcomp-save-status';
                 }, 3000);
             } catch (e) {
-                console.log('Error saving OPCOMP list:', e);
-                statusEl.textContent = 'Error saving. Please try again.';
+                console.error('Error saving OPCOMP list:', e);
+                const errMsg = e?.message || e?.code || 'Unknown error';
+                statusEl.textContent = `Error saving: ${errMsg}`;
                 statusEl.className = 'opcomp-save-status error';
             } finally {
                 saveBtn.disabled = false;
