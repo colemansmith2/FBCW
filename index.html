@@ -36877,18 +36877,12 @@
             function movePick(fromTeam, toTeam, asset) {
                 const fromPicks = teamPicksOwned[fromTeam];
                 const toPicks = teamPicksOwned[toTeam];
-                if (!fromPicks || !toPicks) {
-                    console.warn(`[movePick] SKIP: Missing picks array for ${!fromPicks ? fromTeam : toTeam}`);
-                    return;
-                }
+                if (!fromPicks || !toPicks) return;
 
                 const pickIndex = fromPicks.findIndex(p =>
                     p.round === asset.round && p.originalOwner === asset.originalOwner
                 );
-                if (pickIndex === -1) {
-                    console.warn(`[movePick] FAILED: Could not find Rd ${asset.round} (orig: ${asset.originalOwner}) in ${fromTeam}'s ${fromPicks.length} picks. Moving to ${toTeam}. Available at that round:`, fromPicks.filter(p => p.round === asset.round).map(p => `orig:${p.originalOwner}`));
-                    return;
-                }
+                if (pickIndex === -1) return;
 
                 const pick = fromPicks.splice(pickIndex, 1)[0];
                 toPicks.push(pick);
@@ -36942,14 +36936,6 @@
             for (const teamKey of Object.keys(teamPicksOwned)) {
                 teamPicksOwned[teamKey].sort((a, b) => a.round - b.round);
             }
-
-            // Debug: log Coleman's picks after all trades
-            const colemanKey = '458.l.4156.t.3';
-            if (teamPicksOwned[colemanKey]) {
-                console.log(`[TRADE DEBUG] Coleman (${colemanKey}) has ${teamPicksOwned[colemanKey].length} picks after trades:`,
-                    teamPicksOwned[colemanKey].map(p => `Rd${p.round}(orig:${p.originalOwner})`).join(', '));
-            }
-            console.log(`[TRADE DEBUG] Total trades processed: ${tradeData.trades.length}`);
         }
 
         function getTeamBudget(teamKey) {
@@ -42379,15 +42365,38 @@
         }
 
         async function ensureKeeperConfigLoaded() {
-            if (keeperConfig && keeperConfig.teams) return true;
+            if (keeperConfig && keeperConfig.teams) {
+                // Config already loaded, but also ensure draft data is loaded
+                // (needed for getTotalDraftRounds to return correct value)
+                if (!keeperDraftData || !keeperDraftData.length) {
+                    try {
+                        const draftResponse = await fetch('data/historical/2025/draft.json');
+                        if (draftResponse.ok) {
+                            keeperDraftData = await draftResponse.json();
+                        }
+                    } catch (e) {
+                        console.log('Could not load draft data:', e);
+                    }
+                }
+                return true;
+            }
             try {
                 const configResponse = await fetch('data/keepers/keeper_config.json');
                 if (configResponse.ok) {
                     keeperConfig = await configResponse.json();
+                    // Also load draft data for round calculations
+                    try {
+                        const draftResponse = await fetch('data/historical/2025/draft.json');
+                        if (draftResponse.ok) {
+                            keeperDraftData = await draftResponse.json();
+                        }
+                    } catch (e) {
+                        console.log('Could not load draft data:', e);
+                    }
                     return true;
                 }
             } catch (e) {
-                console.log('Could not load keeper config for prospect claims:', e);
+                console.log('Could not load keeper config:', e);
             }
             return false;
         }
