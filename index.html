@@ -12855,6 +12855,21 @@
             color: #000;
         }
 
+        .opcomp-switch-btn {
+            padding: 0.3rem 0.6rem;
+            background: var(--retro-blue);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Basis33', monospace;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+        .opcomp-switch-btn:hover {
+            background: #003a8c;
+        }
+
         /* Auth View */
         .opcomp-auth-view {
             padding: 1.5rem;
@@ -13816,6 +13831,76 @@
             }
 
             .auth-admin-team-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* Admin Inline Team Switcher Dropdown */
+        .admin-team-switcher-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .admin-team-switcher {
+            background: #fdf6e3;
+            border: 2px solid var(--retro-blue);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .admin-team-switcher-title {
+            font-family: 'Basis33', monospace;
+            font-size: 1.1rem;
+            color: var(--retro-blue);
+            text-align: center;
+            margin-bottom: 0.75rem;
+        }
+        .admin-team-switcher-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+        .admin-team-switcher-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.5rem 0.25rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .admin-team-switcher-btn:hover {
+            border-color: var(--retro-blue);
+            background: rgba(0, 72, 186, 0.05);
+        }
+        .admin-team-switcher-btn.active-team {
+            border-color: var(--retro-gold);
+            background: rgba(218, 165, 32, 0.1);
+        }
+        .admin-team-switcher-btn img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .admin-team-switcher-btn span {
+            font-family: 'Basis33', monospace;
+            font-size: 0.75rem;
+            color: #333;
+            text-align: center;
+            line-height: 1.1;
+        }
+        @media (max-width: 768px) {
+            .admin-team-switcher-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
@@ -19264,6 +19349,7 @@
                         <img id="opcomp-team-logo" src="league_logo.png" alt="">
                         <span id="opcomp-team-name"></span>
                     </div>
+                    <button class="opcomp-switch-btn" id="opcomp-switch-btn" style="display:none;" onclick="switchOpcompTeam()">Switch Team</button>
                     <button class="opcomp-modal-close" onclick="closeOpcompModal()">&times;</button>
                 </div>
 
@@ -19426,7 +19512,7 @@
                             <span class="sportsbook-balance-amount" id="sportsbook-balance">0</span>
                             <span class="sportsbook-balance-label">units</span>
                         </div>
-                        <button class="sportsbook-logout-btn" onclick="logoutSportsbook()">Switch Team</button>
+                        <button class="sportsbook-logout-btn" id="sportsbook-switch-btn" onclick="switchSportsbookTeam()">Switch Team</button>
                     </div>
                 </div>
 
@@ -20558,7 +20644,7 @@
                     </div>
                     <!-- Switch Team button (admin only) -->
                     <div class="keeper-header-actions" id="keeper-switch-actions" style="display:none;">
-                        <button class="keeper-switch-btn" onclick="closeKeeperModal(); currentSession.adminActingAs = null; openKeeperModal();">Switch Team</button>
+                        <button class="keeper-switch-btn" onclick="showAdminTeamSwitcher(() => enterKeeperAsSession())">Switch Team</button>
                     </div>
                 </div>
 
@@ -30457,6 +30543,79 @@
             }
         }
 
+        // Inline admin team switcher — shows a floating team grid for switching teams within a feature
+        async function showAdminTeamSwitcher(callback) {
+            if (!isAdmin()) return;
+
+            // Remove any existing switcher
+            const existing = document.getElementById('admin-team-switcher-overlay');
+            if (existing) existing.remove();
+
+            await ensureKeeperConfigLoaded();
+            const teams = await getTeamData(2026);
+
+            const overlay = document.createElement('div');
+            overlay.id = 'admin-team-switcher-overlay';
+            overlay.className = 'admin-team-switcher-overlay';
+            overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+            const switcher = document.createElement('div');
+            switcher.className = 'admin-team-switcher';
+
+            const title = document.createElement('div');
+            title.className = 'admin-team-switcher-title';
+            title.textContent = 'Switch Team';
+            switcher.appendChild(title);
+
+            const grid = document.createElement('div');
+            grid.className = 'admin-team-switcher-grid';
+
+            const currentConfigKey = currentSession.adminActingAs?.configTeamKey;
+
+            if (keeperConfig && keeperConfig.teams) {
+                for (const [configKey, configTeam] of Object.entries(keeperConfig.teams)) {
+                    let logo = fixTeamLogo(configTeam.team_logo || '');
+                    let teamKey = configKey;
+                    let teamName = configTeam.team_name;
+
+                    if (teams) {
+                        for (const t of teams) {
+                            const mgr = normalizeManagerName(
+                                t.managers?.[0]?.manager?.nickname || t.managers?.[0]?.manager?.name || '',
+                                2026, t.team_name || t.name, t.team_key
+                            );
+                            if (mgr.toLowerCase() === configTeam.manager.toLowerCase()) {
+                                teamKey = t.team_key;
+                                teamName = t.team_name || t.name;
+                                logo = fixTeamLogo(t.team_logos?.[0]?.url || t.team_logo || logo);
+                                break;
+                            }
+                        }
+                    }
+
+                    const btn = document.createElement('div');
+                    btn.className = 'admin-team-switcher-btn' + (configKey === currentConfigKey ? ' active-team' : '');
+                    btn.innerHTML = `<img src="${logo}" alt="${configTeam.manager}"><span>${configTeam.manager}</span>`;
+                    btn.onclick = () => {
+                        currentSession.adminActingAs = {
+                            teamKey: teamKey,
+                            configTeamKey: configKey,
+                            teamName: teamName,
+                            teamLogo: logo,
+                            managerName: configTeam.manager
+                        };
+                        overlay.remove();
+                        if (callback) callback();
+                    };
+                    grid.appendChild(btn);
+                }
+            }
+
+            switcher.appendChild(grid);
+            overlay.appendChild(switcher);
+            document.body.appendChild(overlay);
+        }
+
         // ===== END CENTRALIZED AUTH =====
 
         // Calculate dollar cost based on draft round
@@ -39210,6 +39369,10 @@
             document.getElementById('sportsbook-logged-in').style.display = 'block';
 
             document.getElementById('sportsbook-user-logo').src = sportsbookUser.teamLogo;
+
+            // Show Switch Team button only for admin
+            const switchBtn = document.getElementById('sportsbook-switch-btn');
+            if (switchBtn) switchBtn.style.display = isAdmin() ? '' : 'none';
         }
 
         function logoutSportsbook() {
@@ -39219,6 +39382,14 @@
 
             document.getElementById('sportsbook-not-logged-in').style.display = 'block';
             document.getElementById('sportsbook-logged-in').style.display = 'none';
+        }
+
+        function switchSportsbookTeam() {
+            if (isAdmin()) {
+                showAdminTeamSwitcher(() => enterSportsbookAsSession());
+            } else {
+                logoutSportsbook();
+            }
         }
 
         // Auto-enter sportsbook if user is already authenticated when section is shown
@@ -42471,6 +42642,10 @@
             };
             setOpcompTeamChip(teamInfo);
 
+            // Show Switch Team button for admin only
+            const switchBtn = document.getElementById('opcomp-switch-btn');
+            if (switchBtn) switchBtn.style.display = isAdmin() ? '' : 'none';
+
             // Hide auth view, go directly to builder
             const authView = document.getElementById('opcomp-auth-view');
             const builderView = document.getElementById('opcomp-builder-view');
@@ -42488,6 +42663,40 @@
             // Show modal
             document.getElementById('opcomp-modal').classList.add('active');
             document.body.classList.add('modal-open');
+        }
+
+        function switchOpcompTeam() {
+            showAdminTeamSwitcher(async () => {
+                // Re-enter OPCOMP with the new team
+                const sessionConfigTeamKey = getSessionConfigTeamKey();
+                const sessionTeamKey = getSessionTeamKey() || sessionConfigTeamKey;
+                const sessionManager = getSessionManagerName();
+                const sessionTeamName = getSessionTeamName();
+                const sessionTeamLogo = getSessionTeamLogo() || 'league_logo.png';
+                const sessionTeamConfig = keeperConfig?.teams?.[sessionConfigTeamKey] || null;
+
+                opcompState.authenticatedTeamKey = sessionTeamKey;
+                opcompState.authenticatedConfigTeamKey = sessionConfigTeamKey;
+                opcompState.authenticatedTeamConfig = sessionTeamConfig;
+                opcompState.authenticatedTeamInfo = {
+                    manager: sessionManager,
+                    team_name: sessionTeamName || sessionTeamConfig?.team_name || '',
+                    teamLogo: sessionTeamLogo
+                };
+
+                opcompState.priorityList = [];
+                document.getElementById('opcomp-save-status').textContent = '';
+
+                setOpcompTeamChip({
+                    manager: sessionManager,
+                    teamLogo: sessionTeamLogo
+                });
+
+                await loadOpcompListFromFirebase();
+                populateOpcompTeamFilter();
+                renderOpcompAvailableList();
+                renderOpcompPriorityList();
+            });
         }
 
         function setOpcompView(view) {
