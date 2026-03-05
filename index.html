@@ -30102,7 +30102,7 @@
         async function checkUsername() {
             const usernameInput = document.getElementById('auth-username-input');
             const errorEl = document.getElementById('auth-error-msg');
-            const username = (usernameInput.value || '').trim().toLowerCase();
+            const username = (usernameInput.value || '').trim();
 
             if (!username) {
                 errorEl.textContent = 'Please enter a username.';
