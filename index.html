@@ -12870,6 +12870,24 @@
             background: #003a8c;
         }
 
+        .opcomp-na-count {
+            font-family: 'Basis33', monospace;
+            font-size: 0.8rem;
+            color: #244a98;
+            background: #eef4ff;
+            border: 1px solid #ccd9f7;
+            border-radius: 999px;
+            padding: 0.25rem 0.7rem;
+            white-space: nowrap;
+            margin-right: 0.5rem;
+        }
+        .opcomp-na-count.over-limit {
+            color: #dc2626;
+            background: #fef2f2;
+            border-color: #fca5a5;
+            font-weight: 700;
+        }
+
         /* Auth View */
         .opcomp-auth-view {
             padding: 1.5rem;
@@ -13490,18 +13508,27 @@
             /* OPCOMP mobile */
             .opcomp-builder-layout {
                 flex-direction: column;
+                overflow: visible;
+            }
+
+            .opcomp-builder-view.active {
+                overflow-y: auto;
             }
 
             .opcomp-available-panel {
                 border-right: none;
                 border-bottom: 1px solid #d7cdb8;
-                max-height: 45vh;
+                max-height: none;
             }
 
             .opcomp-priority-panel {
                 width: 100%;
                 flex: 0 0 auto;
-                max-height: 45vh;
+                max-height: none;
+            }
+
+            .opcomp-priority-footer {
+                padding-bottom: 1rem;
             }
 
             .opcomp-team-grid {
@@ -13510,6 +13537,7 @@
 
             .opcomp-modal {
                 max-height: 95vh;
+                overflow-y: auto;
             }
 
             .opcomp-btn {
@@ -19399,6 +19427,7 @@
                         <img id="opcomp-team-logo" src="league_logo.png" alt="">
                         <span id="opcomp-team-name"></span>
                     </div>
+                    <span class="opcomp-na-count" id="opcomp-na-count"></span>
                     <button class="opcomp-switch-btn" id="opcomp-switch-btn" style="display:none;" onclick="switchOpcompTeam()">Switch Team</button>
                     <button class="opcomp-modal-close" onclick="closeOpcompModal()">&times;</button>
                 </div>
@@ -30464,7 +30493,8 @@
             if (currentSession) {
                 // Logged in — show hat image for the user
                 const managerName = getSessionManagerName();
-                const hatUrl = managerName ? `data/hats/${getManagerHatFilename(managerName)}` : 'data/page_logos/login_logo.png';
+                const normalizedName = managerName ? normalizeManagerName(managerName, 2026) : null;
+                const hatUrl = normalizedName ? `data/hats/${getManagerHatFilename(normalizedName)}` : 'data/page_logos/login_logo.png';
 
                 if (sidebarLogin) sidebarLogin.style.display = 'none';
                 if (sidebarUser) {
@@ -42635,6 +42665,31 @@
 
         // ===== OPCOMP LIST =====
         const OPCOMP_MAX_SLOTS = 10;
+        const OPCOMP_NA_ROSTER_LIMIT = 10;
+
+        async function updateOpcompNaCount(configTeamKey) {
+            const el = document.getElementById('opcomp-na-count');
+            if (!el) return;
+            try {
+                // Count prospect/NA keepers from keeper selections
+                // If keeperSelections not yet loaded, read from Firebase directly
+                let keepers = keeperSelections[configTeamKey];
+                if (!keepers && firebaseDb) {
+                    const sanitizedKey = sanitizeFirebaseKey(configTeamKey);
+                    const snapshot = await firebaseDb.ref('keepers_2026/' + sanitizedKey).once('value');
+                    const data = snapshot.val();
+                    if (data) {
+                        keepers = Array.isArray(data) ? data : Object.values(data);
+                    }
+                }
+                if (!keepers) { el.textContent = ''; return; }
+                const count = keepers.filter(k => isProspectKeeperEntry(k)).length;
+                el.textContent = `${count}/${OPCOMP_NA_ROSTER_LIMIT} Prospects`;
+                el.classList.toggle('over-limit', count > OPCOMP_NA_ROSTER_LIMIT);
+            } catch (e) {
+                el.textContent = '';
+            }
+        }
 
         let opcompState = {
             // Auth properties removed — now derived from centralized session
@@ -42721,8 +42776,16 @@
             renderOpcompAvailableList();
             renderOpcompPriorityList();
 
-            // Show modal
-            document.getElementById('opcomp-modal').classList.add('active');
+            // Update NA prospect count
+            updateOpcompNaCount(sessionConfigTeamKey);
+
+            // Show modal and scroll to top
+            const modal = document.getElementById('opcomp-modal');
+            modal.classList.add('active');
+            modal.scrollTop = 0;
+            const modalInner = modal.querySelector('.opcomp-modal');
+            if (modalInner) modalInner.scrollTop = 0;
+            if (builderView) builderView.scrollTop = 0;
             document.body.classList.add('modal-open');
         }
 
@@ -42757,6 +42820,7 @@
                 populateOpcompTeamFilter();
                 renderOpcompAvailableList();
                 renderOpcompPriorityList();
+                updateOpcompNaCount(sessionConfigTeamKey);
             });
         }
 
