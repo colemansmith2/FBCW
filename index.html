@@ -13563,39 +13563,96 @@
 
         /* ===== CENTRALIZED AUTH / LOGIN STYLES ===== */
 
-        .auth-login-btn {
-            background: rgba(212, 175, 55, 0.2) !important;
-            border-color: #d4af37 !important;
+        /* Right sidebar for auth */
+        .auth-sidebar {
+            position: fixed;
+            top: 50px;
+            right: 0;
+            width: 60px;
+            z-index: 150;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 0.75rem;
         }
 
-        .auth-login-btn:hover {
-            background: rgba(212, 175, 55, 0.4) !important;
+        .auth-sidebar-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            position: relative;
         }
 
-        .auth-login-btn img,
-        .auth-user-chip img {
-            border-radius: 50% !important;
-            background: transparent !important;
+        .auth-sidebar-btn svg {
+            width: 24px;
+            height: 24px;
         }
 
-        .auth-user-chip {
-            background: rgba(76, 175, 80, 0.25) !important;
-            border-color: #4caf50 !important;
+        .auth-sidebar-btn.auth-login-btn {
+            background: rgba(212, 175, 55, 0.15);
+            border-color: rgba(212, 175, 55, 0.4);
+        }
+        .auth-sidebar-btn.auth-login-btn:hover {
+            background: rgba(212, 175, 55, 0.3);
+            border-color: #d4af37;
+        }
+        .auth-sidebar-btn.auth-login-btn svg {
+            stroke: #b8960f;
         }
 
-        .auth-user-chip:hover {
-            background: rgba(244, 67, 54, 0.3) !important;
-            border-color: #f44336 !important;
+        .auth-sidebar-btn.auth-user-chip {
+            background: rgba(76, 175, 80, 0.15);
+            border-color: rgba(76, 175, 80, 0.4);
+        }
+        .auth-sidebar-btn.auth-user-chip:hover {
+            background: rgba(244, 67, 54, 0.2);
+            border-color: #f44336;
+        }
+        .auth-sidebar-btn.auth-user-chip svg {
+            stroke: #388e3c;
+        }
+        .auth-sidebar-btn.auth-user-chip:hover svg {
+            stroke: #d32f2f;
         }
 
+        .auth-sidebar-btn .auth-sidebar-tooltip {
+            display: none;
+            position: absolute;
+            right: calc(100% + 8px);
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--retro-blue-dark);
+            color: white;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-family: 'Basis33', monospace;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+        .auth-sidebar-btn:hover .auth-sidebar-tooltip {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .auth-sidebar { display: none; }
+        }
+
+        /* Mobile auth buttons in mobile menu */
         .auth-login-btn-mobile {
-            border-top: 2px solid rgba(212, 175, 55, 0.4) !important;
-            margin-top: 0.5rem;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.4) !important;
+            margin-bottom: 0.5rem;
         }
 
         .auth-user-chip-mobile {
-            border-top: 2px solid rgba(76, 175, 80, 0.4) !important;
-            margin-top: 0.5rem;
+            border-bottom: 2px solid rgba(76, 175, 80, 0.4) !important;
+            margin-bottom: 0.5rem;
         }
 
         .auth-user-chip-mobile:hover {
@@ -13840,7 +13897,7 @@
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.4);
-            z-index: 10000;
+            z-index: 10020;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -17855,6 +17912,16 @@
             <button class="mobile-menu-close" onclick="closeMobileMenu()">&times;</button>
         </div>
         <div class="mobile-menu-items">
+            <!-- Auth: Login Button (logged out) -->
+            <div id="auth-mobile-login" class="mobile-menu-item auth-login-btn-mobile" onclick="openAuthModal(); closeMobileMenu();">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>Login</span>
+            </div>
+            <!-- Auth: User Chip (logged in) -->
+            <div id="auth-mobile-user" class="mobile-menu-item auth-user-chip-mobile" style="display:none;" onclick="logoutSession(); closeMobileMenu();">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span id="auth-mobile-name">Logout</span>
+            </div>
             <div class="mobile-menu-item" onclick="showSection('home'); closeMobileMenu();">
                 <img src="data/page_logos/home_logo.png" alt="Home">
                 <span>Home</span>
@@ -17902,16 +17969,6 @@
             <div class="mobile-menu-item" onclick="showSection('bylaws'); closeMobileMenu();">
                 <img src="data/page_logos/bylaws_logo.png" alt="Bylaws">
                 <span>Bylaws</span>
-            </div>
-            <!-- Auth: Login Button (logged out) -->
-            <div id="auth-mobile-login" class="mobile-menu-item auth-login-btn-mobile" onclick="openAuthModal(); closeMobileMenu();">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <span>Login</span>
-            </div>
-            <!-- Auth: User Chip (logged in) -->
-            <div id="auth-mobile-user" class="mobile-menu-item auth-user-chip-mobile" style="display:none;" onclick="logoutSession(); closeMobileMenu();">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                <span id="auth-mobile-name">Logout</span>
             </div>
         </div>
     </aside>
@@ -17984,15 +18041,19 @@
             <img src="data/page_logos/bylaws_logo.png" alt="Bylaws" loading="lazy" decoding="async">
             <span class="side-nav-tooltip">League Bylaws</span>
         </div>
-        <!-- Auth: Login Button (logged out) -->
-        <div id="auth-sidebar-login" class="side-nav-item auth-login-btn" onclick="openAuthModal()" title="Login">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-            <span class="side-nav-tooltip">Login</span>
+    </aside>
+
+    <!-- Right Auth Sidebar -->
+    <aside class="auth-sidebar">
+        <!-- Login Button (logged out) -->
+        <div id="auth-sidebar-login" class="auth-sidebar-btn auth-login-btn" onclick="openAuthModal()" title="Login">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span class="auth-sidebar-tooltip">Login</span>
         </div>
-        <!-- Auth: User Chip (logged in) -->
-        <div id="auth-sidebar-user" class="side-nav-item auth-user-chip" style="display:none;" onclick="logoutSession()" title="Logout">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            <span class="side-nav-tooltip" id="auth-sidebar-tooltip">Logout</span>
+        <!-- User Chip (logged in) -->
+        <div id="auth-sidebar-user" class="auth-sidebar-btn auth-user-chip" style="display:none;" onclick="logoutSession()" title="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span class="auth-sidebar-tooltip" id="auth-sidebar-tooltip">Logout</span>
         </div>
     </aside>
 
