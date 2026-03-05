@@ -13589,36 +13589,28 @@
             position: relative;
         }
 
-        .auth-sidebar-btn svg {
-            width: 24px;
-            height: 24px;
+        .auth-sidebar-btn img {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
         }
 
         .auth-sidebar-btn.auth-login-btn {
-            background: rgba(212, 175, 55, 0.15);
-            border-color: rgba(212, 175, 55, 0.4);
+            background: transparent;
+            border-color: transparent;
         }
         .auth-sidebar-btn.auth-login-btn:hover {
-            background: rgba(212, 175, 55, 0.3);
-            border-color: #d4af37;
-        }
-        .auth-sidebar-btn.auth-login-btn svg {
-            stroke: #b8960f;
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(212, 175, 55, 0.4);
         }
 
         .auth-sidebar-btn.auth-user-chip {
-            background: rgba(76, 175, 80, 0.15);
+            background: transparent;
             border-color: rgba(76, 175, 80, 0.4);
         }
         .auth-sidebar-btn.auth-user-chip:hover {
-            background: rgba(244, 67, 54, 0.2);
+            background: rgba(244, 67, 54, 0.1);
             border-color: #f44336;
-        }
-        .auth-sidebar-btn.auth-user-chip svg {
-            stroke: #388e3c;
-        }
-        .auth-sidebar-btn.auth-user-chip:hover svg {
-            stroke: #d32f2f;
         }
 
         .auth-sidebar-btn .auth-sidebar-tooltip {
@@ -17914,12 +17906,12 @@
         <div class="mobile-menu-items">
             <!-- Auth: Login Button (logged out) -->
             <div id="auth-mobile-login" class="mobile-menu-item auth-login-btn-mobile" onclick="openAuthModal(); closeMobileMenu();">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <img src="data/page_logos/login_logo.png" alt="Login">
                 <span>Login</span>
             </div>
             <!-- Auth: User Chip (logged in) -->
             <div id="auth-mobile-user" class="mobile-menu-item auth-user-chip-mobile" style="display:none;" onclick="logoutSession(); closeMobileMenu();">
-                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <img src="data/page_logos/login_logo.png" alt="Logout">
                 <span id="auth-mobile-name">Logout</span>
             </div>
             <div class="mobile-menu-item" onclick="showSection('home'); closeMobileMenu();">
@@ -18047,12 +18039,12 @@
     <aside class="auth-sidebar">
         <!-- Login Button (logged out) -->
         <div id="auth-sidebar-login" class="auth-sidebar-btn auth-login-btn" onclick="openAuthModal()" title="Login">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <img src="data/page_logos/login_logo.png" alt="Login">
             <span class="auth-sidebar-tooltip">Login</span>
         </div>
         <!-- User Chip (logged in) -->
         <div id="auth-sidebar-user" class="auth-sidebar-btn auth-user-chip" style="display:none;" onclick="logoutSession()" title="Logout">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <img src="data/page_logos/login_logo.png" alt="Logout">
             <span class="auth-sidebar-tooltip" id="auth-sidebar-tooltip">Logout</span>
         </div>
     </aside>
@@ -30473,15 +30465,26 @@
             const mobileName = document.getElementById('auth-mobile-name');
 
             if (currentSession) {
-                // Logged in
+                // Logged in — show hat image for the user
+                const managerName = getSessionManagerName();
+                const hatUrl = managerName ? `data/hats/${getManagerHatFilename(managerName)}` : 'data/page_logos/login_logo.png';
+
                 if (sidebarLogin) sidebarLogin.style.display = 'none';
-                if (sidebarUser) sidebarUser.style.display = 'flex';
+                if (sidebarUser) {
+                    sidebarUser.style.display = 'flex';
+                    const sidebarImg = sidebarUser.querySelector('img');
+                    if (sidebarImg) sidebarImg.src = hatUrl;
+                }
                 if (sidebarTooltip) sidebarTooltip.textContent = currentSession.displayName + ' (Logout)';
                 if (mobileLogin) mobileLogin.style.display = 'none';
-                if (mobileUser) mobileUser.style.display = 'flex';
+                if (mobileUser) {
+                    mobileUser.style.display = 'flex';
+                    const mobileImg = mobileUser.querySelector('img');
+                    if (mobileImg) mobileImg.src = hatUrl;
+                }
                 if (mobileName) mobileName.textContent = currentSession.displayName + ' (Logout)';
             } else {
-                // Logged out
+                // Logged out — restore login logo
                 if (sidebarLogin) sidebarLogin.style.display = 'flex';
                 if (sidebarUser) sidebarUser.style.display = 'none';
                 if (mobileLogin) mobileLogin.style.display = 'flex';
