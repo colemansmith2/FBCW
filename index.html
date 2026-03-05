@@ -13577,9 +13577,9 @@
         }
 
         .auth-sidebar-btn {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -13587,26 +13587,23 @@
             transition: all 0.2s;
             border: 2px solid transparent;
             position: relative;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .auth-sidebar-btn img {
-            width: 32px;
-            height: 32px;
+            width: 44px;
+            height: 44px;
             object-fit: contain;
+            pointer-events: none;
         }
 
-        .auth-sidebar-btn.auth-login-btn {
-            background: transparent;
-            border-color: transparent;
-        }
         .auth-sidebar-btn.auth-login-btn:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: rgba(212, 175, 55, 0.4);
+            background: rgba(255, 255, 255, 0.25);
         }
 
         .auth-sidebar-btn.auth-user-chip {
             background: transparent;
-            border-color: rgba(76, 175, 80, 0.4);
+            border-color: transparent;
         }
         .auth-sidebar-btn.auth-user-chip:hover {
             background: rgba(244, 67, 54, 0.1);
