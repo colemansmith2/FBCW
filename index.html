@@ -30619,7 +30619,7 @@
                     if (teams) {
                         for (const t of teams) {
                             const mgr = normalizeManagerName(
-                                t.managers?.[0]?.manager?.nickname || t.managers?.[0]?.manager?.name || '',
+                                t.managers?.[0]?.manager?.nickname || t.managers?.[0]?.manager?.name || t.manager || '',
                                 2026, t.team_name || t.name, t.team_key
                             );
                             if (mgr.toLowerCase() === configTeam.manager.toLowerCase()) {
@@ -30704,7 +30704,7 @@
                     if (teams) {
                         for (const t of teams) {
                             const mgr = normalizeManagerName(
-                                t.managers?.[0]?.manager?.nickname || t.managers?.[0]?.manager?.name || '',
+                                t.managers?.[0]?.manager?.nickname || t.managers?.[0]?.manager?.name || t.manager || '',
                                 2026, t.team_name || t.name, t.team_key
                             );
                             if (mgr.toLowerCase() === configTeam.manager.toLowerCase()) {
