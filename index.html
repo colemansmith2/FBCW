@@ -12194,10 +12194,29 @@
 
         .prospect-stats-bar {
             display: flex;
+            align-items: center;
             gap: 1.5rem;
             margin-bottom: 0.75rem;
             font-size: 0.8rem;
             color: #666;
+        }
+
+        .prospect-show-all-btn {
+            margin-left: auto;
+            padding: 0.3rem 0.75rem;
+            background: var(--retro-blue);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        .prospect-show-all-btn:hover {
+            background: #003a8c;
         }
 
         .prospect-table-container {
@@ -13314,6 +13333,28 @@
             flex-wrap: wrap;
         }
 
+        .opcomp-prospect-details {
+            font-size: 0.62rem;
+            color: #999;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1px;
+            flex-wrap: wrap;
+        }
+
+        .opcomp-detail-item {
+            white-space: nowrap;
+        }
+
+        .opcomp-prospect-name {
+            cursor: default;
+        }
+
+        .opcomp-prospect-headshot {
+            cursor: default;
+        }
+
         .opcomp-prospect-avgrank {
             font-weight: 600;
             font-size: 0.68rem;
@@ -13550,6 +13591,16 @@
             .opcomp-available-list {
                 max-height: 250px;
                 overflow-y: auto;
+            }
+
+            /* Hide details row on mobile, use popup instead */
+            .opcomp-prospect-details {
+                display: none;
+            }
+
+            .opcomp-prospect-name,
+            .opcomp-prospect-headshot {
+                cursor: pointer;
             }
 
             .opcomp-priority-panel {
@@ -19413,6 +19464,7 @@
             <div class="prospect-stats-bar">
                 <span id="prospect-count">Loading...</span>
                 <span id="prospect-owned-count"></span>
+                <button class="prospect-show-all-btn" id="prospect-show-all-btn" onclick="toggleFullProspectList()">Show Full List</button>
             </div>
 
             <div class="prospect-table-container">
@@ -42190,6 +42242,7 @@
 
         // ===== PROSPECT PAVILION FUNCTIONS =====
         let prospectsData = [];
+        let showFullProspectList = false;
         let prospectOwnershipData = {};
         async function loadProspects() {
             try {
@@ -42232,8 +42285,12 @@
             keeperToProspectName[prospectName] = prospectName;
         }
 
+        function stripAccents(str) {
+            return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        }
+
         function normalizeProspectName(name) {
-            const lower = name.toLowerCase().trim();
+            const lower = stripAccents(name).toLowerCase().trim();
             return keeperToProspectName[lower] || lower;
         }
 
@@ -42377,7 +42434,8 @@
             // Helper to find owner using normalized name matching
             function findOwner(prospectName) {
                 const normalized = normalizeProspectName(prospectName);
-                return prospectOwnershipData[normalized] || prospectOwnershipData[prospectName.toLowerCase().trim()];
+                const strippedLower = stripAccents(prospectName).toLowerCase().trim();
+                return prospectOwnershipData[normalized] || prospectOwnershipData[strippedLower];
             }
 
             // Helper to parse height and weight from "6'4" 225" format
@@ -42390,8 +42448,11 @@
                 return { height: '-', weight: '-' };
             }
 
+            // Base set: top 100 or full list
+            const baseProspects = showFullProspectList ? prospectsData : prospectsData.filter(p => p.rank <= 100);
+
             // Filter prospects
-            let filtered = prospectsData.filter(prospect => {
+            let filtered = baseProspects.filter(prospect => {
                 const owner = findOwner(prospect.name);
                 const isOwned = !!owner;
 
@@ -42415,15 +42476,15 @@
             let ownedCount, ownedLabel;
             if (positionFilter) {
                 // Count owned for this specific position
-                const positionProspects = prospectsData.filter(p => p.position === positionFilter);
+                const positionProspects = baseProspects.filter(p => p.position === positionFilter);
                 ownedCount = positionProspects.filter(p => findOwner(p.name)).length;
                 ownedLabel = `${ownedCount} ${positionFilter} owned`;
             } else {
                 // Count all owned
-                ownedCount = prospectsData.filter(p => findOwner(p.name)).length;
+                ownedCount = baseProspects.filter(p => findOwner(p.name)).length;
                 ownedLabel = `${ownedCount} owned`;
             }
-            document.getElementById('prospect-count').textContent = `Showing ${filtered.length} of ${prospectsData.length} prospects`;
+            document.getElementById('prospect-count').textContent = `Showing ${filtered.length} of ${baseProspects.length} prospects`;
             document.getElementById('prospect-owned-count').textContent = ownedLabel;
 
             if (filtered.length === 0) {
@@ -42534,6 +42595,13 @@
             renderProspectTable();
         }
 
+        function toggleFullProspectList() {
+            showFullProspectList = !showFullProspectList;
+            const btn = document.getElementById('prospect-show-all-btn');
+            btn.textContent = showFullProspectList ? 'Show Top 100' : 'Show Full List';
+            renderProspectTable();
+        }
+
         // Prospect Detail Modal (Mobile)
         function openProspectDetailModal(index) {
             // Only show modal on mobile
@@ -42547,7 +42615,7 @@
 
             // Find owner
             const normalized = normalizeProspectName(prospect.name);
-            const owner = prospectOwnershipData[normalized] || prospectOwnershipData[prospect.name.toLowerCase().trim()];
+            const owner = prospectOwnershipData[normalized] || prospectOwnershipData[stripAccents(prospect.name).toLowerCase().trim()];
 
             const headshot = prospect.headshot_url || placeholderImg;
             const mlbTeam = prospect.mlb_team || '';
@@ -42649,6 +42717,17 @@
             if (event && event.target !== event.currentTarget) return;
             document.getElementById('prospect-detail-modal').classList.remove('active');
             document.body.style.overflow = '';
+        }
+
+        // Open prospect detail modal from OPCOMP modal (mobile only)
+        function openOpcompProspectDetail(index) {
+            // Only show popup on mobile where details are hidden
+            if (window.innerWidth > 768) return;
+
+            const prospect = prospectsData[index];
+            if (!prospect) return;
+
+            openProspectDetailModal(index);
         }
 
         // Load prospects when section becomes visible
@@ -42931,7 +43010,7 @@
                 // Must be unowned
                 const normalized = normalizeProspectName(prospect.name);
                 const owner = prospectOwnershipData[normalized] ||
-                              prospectOwnershipData[(prospect.name || '').toLowerCase().trim()];
+                              prospectOwnershipData[stripAccents(prospect.name || '').toLowerCase().trim()];
                 if (owner) return false;
 
                 // Already in priority list -- hide from available
@@ -42964,17 +43043,30 @@
                 const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
                 const avgRank = prospect.avg_rank ? prospect.avg_rank.toFixed(1) : '-';
                 const escapedName = prospect.name.replace(/'/g, "\\'");
+                const hw = prospect.height_weight || '';
+                const hwMatch = hw.match(/(\d+'\d+"?)\s*(\d+)/);
+                const height = hwMatch ? hwMatch[1] : '-';
+                const weight = hwMatch ? hwMatch[2] : '-';
+                const prospectIndex = prospectsData.indexOf(prospect);
                 return `
                     <div class="opcomp-prospect-row">
                         <span class="opcomp-prospect-rank">${prospect.rank}</span>
                         <img src="${headshot}" class="opcomp-prospect-headshot" alt=""
-                             onerror="this.src='${placeholderImg}'">
+                             onerror="this.src='${placeholderImg}'"
+                             onclick="openOpcompProspectDetail(${prospectIndex})">
                         <div class="opcomp-prospect-info">
-                            <div class="opcomp-prospect-name">${prospect.name}</div>
+                            <div class="opcomp-prospect-name" onclick="openOpcompProspectDetail(${prospectIndex})">${prospect.name}</div>
                             <div class="opcomp-prospect-meta">
                                 <span class="opcomp-prospect-team">${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="opcomp-prospect-mlb-logo" alt="${mlbTeam}" onerror="this.style.display='none'">` : ''}${mlbTeam}</span>
                                 <span class="position-badge pos-${prospect.position}">${prospect.position}</span>
                                 <span>Avg: <span class="opcomp-prospect-avgrank">${avgRank}</span></span>
+                            </div>
+                            <div class="opcomp-prospect-details">
+                                <span class="opcomp-detail-item">Age: ${prospect.age || '-'}</span>
+                                <span class="opcomp-detail-item">Lvl: ${prospect.highest_level || '-'}</span>
+                                <span class="opcomp-detail-item">Ht: ${height}</span>
+                                <span class="opcomp-detail-item">Wt: ${weight}</span>
+                                <span class="opcomp-detail-item">Draft: ${prospect.draft || '-'}</span>
                             </div>
                         </div>
                         <button class="opcomp-add-btn" ${isFull ? 'disabled' : ''}
