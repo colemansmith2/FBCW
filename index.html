@@ -40124,8 +40124,8 @@
         }
 
         // How much team value differences matter for odds (0 = everyone equal, 1 = fully proportional)
-        // Fantasy baseball is highly random, so we regress toward the mean
-        const SPORTSBOOK_PARITY_FACTOR = 0.6;
+        // At 1.0, odds are fully driven by team value differences with no compression
+        const SPORTSBOOK_PARITY_FACTOR = 1.0;
 
         function calculateOdds(team, allTeams, betType) {
             // Calculate adjusted values for all teams
