@@ -13309,6 +13309,352 @@
             color: #b91c1c;
         }
 
+        /* OPCOMP Results Modal */
+        .opcomp-results-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10025;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-y: auto;
+            padding: 1.25rem;
+        }
+
+        .opcomp-results-modal-overlay.active {
+            display: flex;
+        }
+
+        .opcomp-results-modal {
+            width: min(1080px, 100%);
+            background: #fff;
+            border: 3px solid var(--retro-blue);
+            border-radius: 12px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+            animation: fadeIn 0.25s;
+        }
+
+        .opcomp-results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.85rem;
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid #e0e0e0;
+            background: linear-gradient(180deg, #f7fbff 0%, #edf4ff 100%);
+        }
+
+        .opcomp-results-title-wrap {
+            min-width: 0;
+        }
+
+        .opcomp-results-title {
+            display: block;
+            font-family: 'Arcade Gamer', sans-serif;
+            font-size: 0.9rem;
+            color: var(--retro-blue);
+            letter-spacing: 0.7px;
+            text-transform: uppercase;
+        }
+
+        .opcomp-results-summary {
+            font-family: 'Basis33', monospace;
+            color: #4b607e;
+            font-size: 0.75rem;
+            margin-top: 0.15rem;
+        }
+
+        .opcomp-results-close {
+            border: none;
+            background: none;
+            color: #666;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .opcomp-results-close:hover {
+            color: #111;
+        }
+
+        .opcomp-results-toolbar {
+            padding: 0.65rem 1rem;
+            border-bottom: 1px solid #ececec;
+            background: #fafafa;
+        }
+
+        .opcomp-results-search {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 0.52rem 0.7rem;
+            font-size: 0.82rem;
+            color: #1f2937;
+        }
+
+        .opcomp-results-search:focus {
+            outline: none;
+            border-color: var(--retro-blue);
+            box-shadow: 0 0 0 2px rgba(0, 72, 186, 0.15);
+        }
+
+        .opcomp-results-body {
+            overflow-y: auto;
+            padding: 0.7rem;
+            background: #f8fbff;
+        }
+
+        .opcomp-results-empty {
+            text-align: center;
+            color: #697788;
+            font-size: 0.86rem;
+            padding: 1.5rem 1rem;
+        }
+
+        .opcomp-result-row {
+            display: grid;
+            grid-template-columns: minmax(280px, 1.35fr) minmax(190px, 0.85fr) minmax(260px, 1fr);
+            gap: 0.75rem;
+            align-items: stretch;
+            padding: 0.7rem;
+            border: 1px solid #dde6f3;
+            background: #fff;
+            border-radius: 10px;
+            margin-bottom: 0.55rem;
+        }
+
+        .opcomp-result-player {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            min-width: 0;
+        }
+
+        .opcomp-result-rank {
+            min-width: 28px;
+            text-align: center;
+            font-family: 'Basis33', monospace;
+            font-size: 0.72rem;
+            color: #637389;
+        }
+
+        .opcomp-result-headshot {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e5e7eb;
+            border: 1px solid #d8dee7;
+            flex-shrink: 0;
+        }
+
+        .opcomp-result-player-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .opcomp-result-player-name {
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: #0f172a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .opcomp-result-player-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+            margin-top: 0.15rem;
+            font-size: 0.68rem;
+            color: #64748b;
+        }
+
+        .opcomp-result-player-meta .position-badge {
+            font-size: 0.56rem;
+            padding: 0.08rem 0.28rem;
+        }
+
+        .opcomp-result-team {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .opcomp-result-mlb-logo {
+            width: 13px;
+            height: 13px;
+            object-fit: contain;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .opcomp-result-winner {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.25rem;
+            padding: 0.45rem 0.6rem;
+            border-radius: 8px;
+            border: 1px solid #cfe2c2;
+            background: linear-gradient(180deg, #f6fff1 0%, #eef9e8 100%);
+        }
+
+        .opcomp-result-winner-label {
+            font-family: 'Basis33', monospace;
+            font-size: 0.63rem;
+            letter-spacing: 0.35px;
+            text-transform: uppercase;
+            color: #2f6e33;
+        }
+
+        .opcomp-result-winner-name {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #17471a;
+        }
+
+        .opcomp-result-winner-name-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .opcomp-result-winner-priority {
+            font-size: 0.68rem;
+            color: #2f6e33;
+        }
+
+        .opcomp-result-manager-logo {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid #d4dfc8;
+            background: #fff;
+            flex-shrink: 0;
+        }
+
+        .opcomp-result-bidders {
+            border: 1px solid #dce5f3;
+            border-radius: 8px;
+            background: #f9fbff;
+            overflow: hidden;
+        }
+
+        .opcomp-result-bidders summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 0.5rem 0.65rem;
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #1f3f77;
+            border-bottom: 1px solid transparent;
+        }
+
+        .opcomp-result-bidders summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .opcomp-result-bidders[open] summary {
+            border-bottom-color: #dce5f3;
+            background: #eef4ff;
+        }
+
+        .opcomp-result-claim-list {
+            max-height: 186px;
+            overflow-y: auto;
+            padding: 0.35rem 0.45rem 0.45rem;
+        }
+
+        .opcomp-result-claim {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.3rem 0.2rem;
+            border-bottom: 1px dashed #e3e8f2;
+        }
+
+        .opcomp-result-claim:last-child {
+            border-bottom: none;
+        }
+
+        .opcomp-result-claim.winner {
+            background: #f4faee;
+            border-radius: 6px;
+            border-bottom: none;
+            margin-bottom: 0.2rem;
+            padding: 0.35rem 0.35rem;
+        }
+
+        .opcomp-result-claim-priority {
+            min-width: 30px;
+            font-family: 'Basis33', monospace;
+            font-size: 0.69rem;
+            color: #314660;
+        }
+
+        .opcomp-result-claim-manager {
+            font-size: 0.74rem;
+            color: #162a4d;
+            font-weight: 600;
+        }
+
+        .opcomp-result-claim-manager-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .opcomp-result-claim.winner .opcomp-result-claim-manager {
+            color: #245e28;
+        }
+
+        @media (max-width: 900px) {
+            .opcomp-result-row {
+                grid-template-columns: 1fr;
+                gap: 0.45rem;
+            }
+
+            .opcomp-results-modal {
+                max-height: 86vh;
+                max-height: 86dvh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .opcomp-results-modal-overlay {
+                padding: 0.8rem;
+            }
+
+            .opcomp-results-header {
+                padding: 0.65rem 0.75rem;
+            }
+
+            .opcomp-results-toolbar {
+                padding: 0.5rem 0.75rem;
+            }
+
+            .opcomp-results-body {
+                padding: 0.5rem;
+            }
+
+            .opcomp-results-title {
+                font-size: 0.74rem;
+            }
+
+            .opcomp-results-summary {
+                font-size: 0.68rem;
+            }
+        }
+
         /* OPCOMP MLB logo and position badge in rows */
         .opcomp-prospect-mlb-logo {
             width: 14px;
@@ -13931,6 +14277,29 @@
             margin-top: 1rem;
         }
 
+        .auth-admin-team-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 0.85rem;
+        }
+
+        .auth-admin-secondary-btn {
+            border: 1px solid #b9c7df;
+            border-radius: 6px;
+            background: #eef4ff;
+            color: #1f4b9d;
+            padding: 0.52rem 0.85rem;
+            font-family: 'Basis33', monospace;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .auth-admin-secondary-btn:hover {
+            border-color: #8ea6d4;
+            background: #deebff;
+        }
+
         .auth-admin-team-btn {
             display: flex;
             flex-direction: column;
@@ -14022,6 +14391,29 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 0.5rem;
+        }
+
+        .admin-team-switcher-actions {
+            display: flex;
+            justify-content: center;
+            margin-top: 0.8rem;
+        }
+
+        .admin-team-switcher-secondary-btn {
+            border: 1px solid #b9c7df;
+            border-radius: 6px;
+            background: #eef4ff;
+            color: #1f4b9d;
+            padding: 0.52rem 0.85rem;
+            font-family: 'Basis33', monospace;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .admin-team-switcher-secondary-btn:hover {
+            border-color: #8ea6d4;
+            background: #deebff;
         }
         .admin-team-switcher-btn {
             display: flex;
@@ -19583,6 +19975,30 @@
             </div>
         </div>
 
+        <!-- OPCOMP Results Modal (Admin) -->
+        <div id="opcomp-results-modal" class="opcomp-results-modal-overlay" onclick="closeOpcompResultsModal(event)">
+            <div class="opcomp-results-modal" onclick="event.stopPropagation()">
+                <div class="opcomp-results-header">
+                    <div class="opcomp-results-title-wrap">
+                        <span class="opcomp-results-title">OPCOMP Results</span>
+                        <div class="opcomp-results-summary" id="opcomp-results-summary">Loading...</div>
+                    </div>
+                    <button class="opcomp-results-close" onclick="closeOpcompResultsModal()">&times;</button>
+                </div>
+                <div class="opcomp-results-toolbar">
+                    <input
+                        id="opcomp-results-search"
+                        class="opcomp-results-search"
+                        type="text"
+                        placeholder="Search player, team, or manager..."
+                        onkeyup="renderOpcompResultsRows()">
+                </div>
+                <div class="opcomp-results-body" id="opcomp-results-body">
+                    <div class="opcomp-results-empty">Loading OPCOMP results...</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Auth Login Modal -->
         <div id="auth-login-modal" class="auth-modal-overlay" onclick="closeAuthModal(event)">
             <div class="auth-modal" onclick="event.stopPropagation()">
@@ -23805,6 +24221,7 @@
             if (e.key === 'Escape') {
                 closeScheduleModal();
                 closeWeekDropdown();
+                closeOpcompResultsModal();
             }
         });
 
@@ -30033,6 +30450,11 @@
             }
         }
 
+        function ensureFirebaseReady() {
+            if (firebaseDb) return true;
+            return initializeFirebase();
+        }
+
         function getFirebaseUserFacingError(e, fallbackMessage) {
             const code = (e && e.code ? String(e.code) : '').toLowerCase();
             const msg = (e && e.message ? String(e.message) : '').toLowerCase();
@@ -30472,7 +30894,8 @@
             // If admin, show team selector; otherwise execute callback
             if (currentSession.role === 'admin' && pendingPostLoginCallback) {
                 // Admin needs to pick a team first for feature-specific callbacks
-                showAdminTeamSelector(pendingPostLoginCallback);
+                const adminSelectorOptions = pendingPostLoginCallback.adminSelectorOptions || {};
+                showAdminTeamSelector(pendingPostLoginCallback, adminSelectorOptions);
             } else if (pendingPostLoginCallback) {
                 pendingPostLoginCallback();
             }
@@ -30651,7 +31074,7 @@
             return currentSession?.role === 'admin';
         }
 
-        async function showAdminTeamSelector(callback) {
+        async function showAdminTeamSelector(callback, options = {}) {
             const grid = document.getElementById('auth-admin-team-grid');
             if (!grid) return;
 
@@ -30691,6 +31114,32 @@
                 }
             }
 
+            const adminStep = document.getElementById('auth-step-admin');
+            let actionRow = document.getElementById('auth-admin-team-actions');
+            if (!actionRow && adminStep) {
+                actionRow = document.createElement('div');
+                actionRow.id = 'auth-admin-team-actions';
+                actionRow.className = 'auth-admin-team-actions';
+                adminStep.appendChild(actionRow);
+            }
+            if (actionRow) {
+                actionRow.innerHTML = '';
+                if (options.showOpcompResultsButton && isAdmin()) {
+                    const resultsBtn = document.createElement('button');
+                    resultsBtn.type = 'button';
+                    resultsBtn.className = 'auth-admin-secondary-btn';
+                    resultsBtn.textContent = 'View OPCOMP Results';
+                    resultsBtn.onclick = async () => {
+                        closeAuthModal();
+                        await openOpcompResultsModal();
+                    };
+                    actionRow.appendChild(resultsBtn);
+                    actionRow.style.display = 'flex';
+                } else {
+                    actionRow.style.display = 'none';
+                }
+            }
+
             // Show admin step in modal
             const modal = document.getElementById('auth-login-modal');
             if (modal) {
@@ -30719,7 +31168,7 @@
         }
 
         // Inline admin team switcher — shows a floating team grid for switching teams within a feature
-        async function showAdminTeamSwitcher(callback) {
+        async function showAdminTeamSwitcher(callback, options = {}) {
             if (!isAdmin()) return;
 
             // Remove any existing switcher
@@ -30787,6 +31236,24 @@
             }
 
             switcher.appendChild(grid);
+
+            if (options.showOpcompResultsButton) {
+                const actions = document.createElement('div');
+                actions.className = 'admin-team-switcher-actions';
+
+                const resultsBtn = document.createElement('button');
+                resultsBtn.type = 'button';
+                resultsBtn.className = 'admin-team-switcher-secondary-btn';
+                resultsBtn.textContent = 'View OPCOMP Results';
+                resultsBtn.onclick = async () => {
+                    overlay.remove();
+                    await openOpcompResultsModal();
+                };
+
+                actions.appendChild(resultsBtn);
+                switcher.appendChild(actions);
+            }
+
             overlay.appendChild(switcher);
             document.body.appendChild(overlay);
         }
@@ -31011,7 +31478,7 @@
         async function initializeKeeperManagement() {
             try {
                 // Initialize Firebase first
-                initializeFirebase();
+                ensureFirebaseReady();
 
                 // Load keeper config
                 const configResponse = await fetch('data/keepers/keeper_config.json');
@@ -38933,6 +39400,9 @@
 
         // Initialize sportsbook when section is shown
         async function initializeSportsbook() {
+            // Ensure Firebase is available before binding sportsbook refs
+            ensureFirebaseReady();
+
             // Load team data from current season
             try {
                 const response = await fetch('data/current_season/teams.json');
@@ -39514,8 +39984,16 @@
         async function loadSportsbookData() {
             if (!sportsbookUser || !firebaseDb) return;
 
+            if (!sportsbookBetsRef) {
+                sportsbookBetsRef = firebaseDb.ref('sportsbook_bets');
+            }
+            if (!sportsbookBalancesRef) {
+                sportsbookBalancesRef = firebaseDb.ref('sportsbook_balances');
+            }
+            if (!sportsbookBalancesRef) return;
+
             // Load user's balance using manager name (persists across seasons)
-            const sanitizedKey = sanitizeFirebaseKey(sportsbookUser.manager);
+            const sanitizedKey = sanitizeSportsbookKey(sportsbookUser.manager);
             try {
                 const balanceSnapshot = await sportsbookBalancesRef.child(sanitizedKey).once('value');
                 let balance = balanceSnapshot.val();
@@ -40487,8 +40965,8 @@
             submitBtn.disabled = totalWager <= 0 || totalWager > balance;
         }
 
-        // Helper function to sanitize team keys for Firebase paths
-        function sanitizeFirebaseKey(key) {
+        // Helper function to sanitize manager keys for sportsbook Firebase paths
+        function sanitizeSportsbookKey(key) {
             // Replace characters not allowed in Firebase paths: . # $ [ ]
             return key.replace(/[.#$\[\]]/g, '_');
         }
@@ -40526,7 +41004,7 @@
             }
 
             // Use manager name as identifier (persists across seasons)
-            const sanitizedUserKey = sanitizeFirebaseKey(sportsbookUser.manager);
+            const sanitizedUserKey = sanitizeSportsbookKey(sportsbookUser.manager);
 
             try {
                 // Record each bet
@@ -40601,7 +41079,7 @@
 
             const tbody = document.getElementById('bet-history-body');
             const emptyEl = document.getElementById('bet-history-empty');
-            const sanitizedKey = sanitizeFirebaseKey(sportsbookUser.manager);
+            const sanitizedKey = sanitizeSportsbookKey(sportsbookUser.manager);
 
             try {
                 // Query by manager name (persists across seasons)
@@ -41907,25 +42385,8 @@
                     return averageProjectionsMap[nameLower] || null;
                 }
 
-                // Initialize Firebase if not already done
-                if (typeof firebase !== 'undefined' && !firebaseInitialized) {
-                    try {
-                        if (typeof firebaseConfig !== 'undefined') {
-                            firebaseApp = firebase.initializeApp(firebaseConfig);
-                            firebaseDb = firebase.database();
-                            firebaseInitialized = true;
-                            console.log('Firebase initialized for roster modal');
-                        }
-                    } catch (e) {
-                        // Firebase might already be initialized
-                        if (e.code === 'app/duplicate-app') {
-                            firebaseDb = firebase.database();
-                            firebaseInitialized = true;
-                        } else {
-                            console.log('Firebase init error:', e);
-                        }
-                    }
-                }
+                // Use centralized Firebase bootstrap
+                ensureFirebaseReady();
 
                 // Try to get keepers from Firebase - match by manager name since team_keys changed between seasons
                 if (typeof firebaseDb !== 'undefined' && firebaseDb) {
@@ -42295,6 +42756,10 @@
         }
 
         async function loadProspectOwnership() {
+            // Rebuild ownership from source-of-truth each time to avoid stale entries
+            prospectOwnershipData = {};
+            ensureFirebaseReady();
+
             // Load current season team data for logos (same source as home page)
             let currentTeamLogos = {};
             try {
@@ -42448,6 +42913,32 @@
                 return { height: '-', weight: '-' };
             }
 
+            // Helper to find headshot from projection data (same source as Value Suite)
+            function getProspectHeadshot(prospect) {
+                // 1. Check prospect's own headshot_url first
+                if (prospect.headshot_url) return prospect.headshot_url;
+
+                // 2. Look up in averageProjectionsMap (used by Value Suite)
+                const nameLower = stripAccents(prospect.name).toLowerCase().trim();
+                const projData = averageProjectionsMap[nameLower] ||
+                                 averageProjectionsMap[nameLower + '|batter'] ||
+                                 averageProjectionsMap[nameLower + '|pitcher'];
+                if (projData?.headshot) return projData.headshot;
+
+                // 3. Search loaded projection arrays
+                const candidates = [
+                    ...(allProjectionBatters || []),
+                    ...(allProjectionPitchers || [])
+                ];
+                const match = candidates.find(p => {
+                    const pName = stripAccents(p?.name || '').toLowerCase().trim();
+                    return pName === nameLower;
+                });
+                if (match?.headshot_url) return match.headshot_url;
+
+                return '';
+            }
+
             // Base set: top 100 or full list
             const baseProspects = showFullProspectList ? prospectsData : prospectsData.filter(p => p.rank <= 100);
 
@@ -42497,7 +42988,7 @@
                 const isOwned = !!owner;
                 const originalIndex = prospectsData.indexOf(prospect);
 
-                const headshot = prospect.headshot_url || placeholderImg;
+                const headshot = getProspectHeadshot(prospect) || placeholderImg;
                 const mlbTeam = prospect.mlb_team || '';
                 const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
                 const { height, weight } = parseHeightWeight(prospect.height_weight);
@@ -42777,6 +43268,265 @@
         // ===== OPCOMP LIST =====
         const OPCOMP_MAX_SLOTS = 10;
         const OPCOMP_NA_ROSTER_LIMIT = 10;
+        const OPCOMP_HEADSHOT_PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+';
+
+        let opcompResultsState = {
+            rows: [],
+            submissionCount: 0,
+            managerCount: 0
+        };
+
+        function opcompEscapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        async function openOpcompResultsModal() {
+            if (!isAdmin()) return;
+
+            initializeFirebase();
+            const modal = document.getElementById('opcomp-results-modal');
+            const bodyEl = document.getElementById('opcomp-results-body');
+            const summaryEl = document.getElementById('opcomp-results-summary');
+            const searchEl = document.getElementById('opcomp-results-search');
+            if (!modal || !bodyEl || !summaryEl || !searchEl) return;
+
+            modal.classList.add('active');
+            bodyEl.innerHTML = '<div class="opcomp-results-empty">Loading OPCOMP results...</div>';
+            summaryEl.textContent = 'Loading...';
+            searchEl.value = '';
+            document.body.classList.add('modal-open');
+
+            try {
+                const hasConfig = await ensureKeeperConfigLoaded();
+                if (!hasConfig) throw new Error('Could not load team configuration.');
+
+                if (prospectsData.length === 0) {
+                    await loadProspects();
+                }
+                if (!firebaseDb) throw new Error('Database unavailable.');
+
+                await loadOpcompResultsFromFirebase();
+                renderOpcompResultsRows();
+            } catch (e) {
+                console.error('Error loading OPCOMP results:', e);
+                bodyEl.innerHTML = '<div class="opcomp-results-empty">Could not load OPCOMP results.</div>';
+                summaryEl.textContent = 'Load failed';
+            }
+        }
+
+        function closeOpcompResultsModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('opcomp-results-modal');
+            if (modal) modal.classList.remove('active');
+
+            const opcompModal = document.getElementById('opcomp-modal');
+            if (!opcompModal || !opcompModal.classList.contains('active')) {
+                document.body.classList.remove('modal-open');
+            }
+        }
+
+        async function loadOpcompResultsFromFirebase() {
+            const snapshot = await firebaseDb.ref('opcomp_lists_2026').once('value');
+            const allLists = snapshot.val() || {};
+            const claimsByProspect = new Map();
+            const uniqueManagers = new Set();
+
+            const currentTeams = await getTeamData(2026);
+            const currentLogosByManager = {};
+            if (Array.isArray(currentTeams)) {
+                currentTeams.forEach(team => {
+                    const normalizedManager = normalizeManagerName(
+                        team.managers?.[0]?.manager?.nickname || team.managers?.[0]?.manager?.name || team.manager || '',
+                        2026,
+                        team.team_name || team.name,
+                        team.team_key
+                    );
+                    if (!normalizedManager) return;
+                    currentLogosByManager[normalizedManager.toLowerCase()] = fixTeamLogo(team.team_logos?.[0]?.url || team.team_logo || '');
+                });
+            }
+
+            const prospectLookup = new Map();
+            prospectsData.forEach(prospect => {
+                prospectLookup.set(normalizeProspectName(prospect.name), prospect);
+            });
+
+            let submissionCount = 0;
+
+            Object.entries(allLists).forEach(([sanitizedKey, payload]) => {
+                const listData = payload || {};
+                const configKey = unsanitizeFirebaseKey(sanitizedKey);
+                const configTeam = keeperConfig?.teams?.[configKey] || null;
+                const manager = (listData.manager || configTeam?.manager || '').trim();
+                if (!manager) return;
+
+                const managerLower = manager.toLowerCase();
+                const teamLogo = currentLogosByManager[managerLower] || fixTeamLogo(configTeam?.team_logo || '');
+                const prospects = Array.isArray(listData.prospects) ? listData.prospects : [];
+                if (!prospects.length) return;
+
+                submissionCount += 1;
+                uniqueManagers.add(managerLower);
+
+                prospects.forEach((listedProspect, index) => {
+                    const listedName = String(listedProspect?.name || '').trim();
+                    if (!listedName) return;
+
+                    const normalizedName = normalizeProspectName(listedName);
+                    const canonicalProspect = prospectLookup.get(normalizedName) || null;
+                    const rankValue = Number(canonicalProspect?.rank ?? listedProspect?.rank ?? 9999);
+                    const parsedRank = Number.isFinite(rankValue) ? rankValue : 9999;
+                    const avgRankValue = Number(canonicalProspect?.avg_rank ?? listedProspect?.avg_rank);
+                    const parsedAvgRank = Number.isFinite(avgRankValue) ? avgRankValue : null;
+
+                    if (!claimsByProspect.has(normalizedName)) {
+                        claimsByProspect.set(normalizedName, {
+                            normalizedName,
+                            name: canonicalProspect?.name || listedName,
+                            rank: parsedRank,
+                            position: canonicalProspect?.position || listedProspect?.position || '',
+                            mlbTeam: canonicalProspect?.mlb_team || listedProspect?.mlb_team || '',
+                            avgRank: parsedAvgRank,
+                            headshot: canonicalProspect?.headshot_url || '',
+                            bids: []
+                        });
+                    }
+
+                    const row = claimsByProspect.get(normalizedName);
+                    const bid = {
+                        manager,
+                        managerLower,
+                        priority: index + 1,
+                        teamLogo
+                    };
+
+                    const existingBidIndex = row.bids.findIndex(existing => existing.managerLower === managerLower);
+                    if (existingBidIndex >= 0) {
+                        if (bid.priority < row.bids[existingBidIndex].priority) {
+                            row.bids[existingBidIndex] = bid;
+                        }
+                    } else {
+                        row.bids.push(bid);
+                    }
+                });
+            });
+
+            const rows = [...claimsByProspect.values()].map(row => {
+                const sortedBids = [...row.bids].sort((a, b) => {
+                    if (a.priority !== b.priority) return a.priority - b.priority;
+                    return a.manager.localeCompare(b.manager);
+                });
+                return {
+                    ...row,
+                    bids: sortedBids,
+                    winner: sortedBids[0] || null
+                };
+            }).filter(row => row.winner).sort((a, b) => {
+                if (a.rank !== b.rank) return a.rank - b.rank;
+                return a.name.localeCompare(b.name);
+            });
+
+            opcompResultsState = {
+                rows,
+                submissionCount,
+                managerCount: uniqueManagers.size
+            };
+        }
+
+        function renderOpcompResultsRows() {
+            const bodyEl = document.getElementById('opcomp-results-body');
+            const summaryEl = document.getElementById('opcomp-results-summary');
+            const searchEl = document.getElementById('opcomp-results-search');
+            if (!bodyEl || !summaryEl || !searchEl) return;
+
+            const searchTerm = searchEl.value.toLowerCase().trim();
+            const filteredRows = opcompResultsState.rows.filter(row => {
+                if (!searchTerm) return true;
+                const winnerName = row.winner?.manager || '';
+                const bidderManagers = row.bids.map(bid => bid.manager).join(' ');
+                const haystack = `${row.name} ${row.mlbTeam} ${winnerName} ${bidderManagers}`.toLowerCase();
+                return haystack.includes(searchTerm);
+            });
+
+            const baseSummary = `${opcompResultsState.rows.length} players with claims from ${opcompResultsState.submissionCount} submitted lists (${opcompResultsState.managerCount} managers)`;
+            summaryEl.textContent = searchTerm
+                ? `${filteredRows.length} filtered results (${baseSummary})`
+                : baseSummary;
+
+            if (!filteredRows.length) {
+                bodyEl.innerHTML = '<div class="opcomp-results-empty">No OPCOMP results match this filter.</div>';
+                return;
+            }
+
+            bodyEl.innerHTML = filteredRows.map(row => {
+                const headshot = row.headshot || OPCOMP_HEADSHOT_PLACEHOLDER;
+                const mlbLogoUrl = row.mlbTeam ? getMLBTeamLogo(row.mlbTeam) : '';
+                const rankDisplay = Number.isFinite(row.rank) && row.rank < 9999 ? `#${row.rank}` : 'N/A';
+                const avgRankDisplay = Number.isFinite(row.avgRank) ? row.avgRank.toFixed(1) : '-';
+                const posClass = String(row.position || '').replace(/[^A-Za-z0-9_-]/g, '');
+                const bidderCountLabel = `${row.bids.length} manager${row.bids.length === 1 ? '' : 's'} on list`;
+                const tiedWinnerCount = row.bids.filter(bid => bid.priority === row.winner.priority).length;
+                const winnerPriorityLabel = tiedWinnerCount > 1
+                    ? `Priority #${row.winner.priority} (tie broken alphabetically)`
+                    : `Priority #${row.winner.priority}`;
+
+                const claimsHtml = row.bids.map(bid => {
+                    const isWinner = bid.managerLower === row.winner.managerLower;
+                    return `
+                        <div class="opcomp-result-claim ${isWinner ? 'winner' : ''}">
+                            <span class="opcomp-result-claim-priority">#${bid.priority}</span>
+                            <span class="opcomp-result-claim-manager-wrap">
+                                ${bid.teamLogo ? `<img src="${opcompEscapeHtml(bid.teamLogo)}" class="opcomp-result-manager-logo" alt="" onerror="this.style.display='none'">` : ''}
+                                <span class="opcomp-result-claim-manager">${opcompEscapeHtml(bid.manager)}</span>
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="opcomp-result-row">
+                        <div class="opcomp-result-player">
+                            <span class="opcomp-result-rank">${rankDisplay}</span>
+                            <img
+                                src="${opcompEscapeHtml(headshot)}"
+                                class="opcomp-result-headshot"
+                                alt=""
+                                onerror="this.src='${OPCOMP_HEADSHOT_PLACEHOLDER}'">
+                            <div class="opcomp-result-player-info">
+                                <div class="opcomp-result-player-name">${opcompEscapeHtml(row.name)}</div>
+                                <div class="opcomp-result-player-meta">
+                                    <span class="opcomp-result-team">
+                                        ${mlbLogoUrl ? `<img src="${opcompEscapeHtml(mlbLogoUrl)}" class="opcomp-result-mlb-logo" alt="${opcompEscapeHtml(row.mlbTeam)}" onerror="this.style.display='none'">` : ''}
+                                        ${opcompEscapeHtml(row.mlbTeam || 'FA')}
+                                    </span>
+                                    ${row.position ? `<span class="position-badge pos-${posClass}">${opcompEscapeHtml(row.position)}</span>` : ''}
+                                    <span>Avg: ${avgRankDisplay}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="opcomp-result-winner">
+                            <span class="opcomp-result-winner-label">Winner</span>
+                            <span class="opcomp-result-winner-name-row">
+                                ${row.winner.teamLogo ? `<img src="${opcompEscapeHtml(row.winner.teamLogo)}" class="opcomp-result-manager-logo" alt="" onerror="this.style.display='none'">` : ''}
+                                <span class="opcomp-result-winner-name">${opcompEscapeHtml(row.winner.manager)}</span>
+                            </span>
+                            <span class="opcomp-result-winner-priority">${opcompEscapeHtml(winnerPriorityLabel)}</span>
+                        </div>
+                        <details class="opcomp-result-bidders">
+                            <summary>${opcompEscapeHtml(bidderCountLabel)}</summary>
+                            <div class="opcomp-result-claim-list">
+                                ${claimsHtml}
+                            </div>
+                        </details>
+                    </div>
+                `;
+            }).join('');
+        }
 
         async function updateOpcompNaCount(configTeamKey) {
             const el = document.getElementById('opcomp-na-count');
@@ -42813,12 +43563,14 @@
 
         async function openOpcompModal() {
             if (!isAuthenticated()) {
-                openAuthModal(() => openOpcompModal());
+                const postLoginCallback = () => openOpcompModal();
+                postLoginCallback.adminSelectorOptions = { showOpcompResultsButton: true };
+                openAuthModal(postLoginCallback);
                 return;
             }
 
             if (isAdmin() && !currentSession.adminActingAs) {
-                showAdminTeamSelector(() => openOpcompModal());
+                showAdminTeamSelector(() => openOpcompModal(), { showOpcompResultsButton: true });
                 return;
             }
 
@@ -42932,7 +43684,7 @@
                 renderOpcompAvailableList();
                 renderOpcompPriorityList();
                 updateOpcompNaCount(sessionConfigTeamKey);
-            });
+            }, { showOpcompResultsButton: true });
         }
 
         function setOpcompView(view) {
@@ -45659,6 +46411,9 @@
 
         // ===== INITIALIZE ON PAGE LOAD =====
         window.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Firebase early so feature entry points don't race first-use setup
+            ensureFirebaseReady();
+
             // Restore auth session from localStorage
             restoreSession();
 
