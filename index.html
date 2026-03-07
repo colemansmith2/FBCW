@@ -36316,7 +36316,7 @@
                 if (prospectMatch && prospectMatch.age) {
                     const prospectAge = parseProjectionAge(prospectMatch.age);
                     if (Number.isFinite(prospectAge)) {
-                        ages[0] = prospectAge;
+                        ages[0] = Math.round(prospectAge);
                         anchorIndex = 0;
                     }
                 }
