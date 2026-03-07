@@ -3919,11 +3919,25 @@
         .trade-card-name-bar.first-name {
             font-size: 0.9rem;
             letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.4rem;
         }
 
         .trade-card-name-bar.last-name {
             font-size: 1.15rem;
             letter-spacing: 1.5px;
+        }
+
+        .trade-card-name-age-inline {
+            margin-left: auto;
+            font-size: 0.62rem;
+            letter-spacing: 0.4px;
+            color: #ffffff;
+            font-weight: 700;
+            white-space: nowrap;
+            opacity: 0.95;
         }
 
         /* MLB logo in bottom right area of header */
@@ -3968,22 +3982,6 @@
             padding: 0.25rem 0.6rem;
             border-radius: 4px;
             border: 2px solid #1a3c6e;
-        }
-
-        .trade-card-age-tag {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: #1a3c6e;
-            color: #f5d442;
-            font-weight: 700;
-            font-size: 0.62rem;
-            letter-spacing: 0.45px;
-            text-transform: uppercase;
-            padding: 0.18rem 0.45rem;
-            border-radius: 3px;
-            border: 1px solid #0d2950;
-            z-index: 3;
         }
 
         /* Stats section */
@@ -4130,21 +4128,28 @@
             font-weight: 700;
         }
 
-        .trade-card-forecast-chart {
-            background: #f5e6c8;
+        .trade-player-chart-panel {
+            background: #f8fbff;
             border: 2px solid #1a3c6e;
             border-radius: 4px;
-            padding: 0.55rem;
-            box-shadow: inset 0 0 0 2px #dccca9;
+            padding: 0.35rem;
+            box-shadow: 0 3px 0 rgba(15, 43, 79, 0.55);
+        }
+
+        .trade-card-forecast-chart {
+            background: #f2f7ff;
+            border: 1px solid #9ab2d9;
+            border-radius: 3px;
+            padding: 0.65rem;
         }
 
         .trade-card-forecast-chart-title {
-            font-size: 0.68rem;
+            font-size: 0.8rem;
             font-weight: 700;
             color: #1a3c6e;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.5px;
             text-transform: uppercase;
-            margin-bottom: 0.45rem;
+            margin-bottom: 0.55rem;
         }
 
         .trade-card-forecast-chart-bars {
@@ -4167,7 +4172,7 @@
         }
 
         .trade-card-forecast-chart-bar-value {
-            font-size: 0.6rem;
+            font-size: 0.78rem;
             line-height: 1;
             color: #1a3c6e;
             font-weight: 700;
@@ -4195,7 +4200,7 @@
             flex: 1;
             min-width: 0;
             text-align: center;
-            font-size: 0.62rem;
+            font-size: 0.78rem;
             color: #1a3c6e;
             font-weight: 700;
         }
@@ -4203,10 +4208,10 @@
         .trade-card-forecast-chart-axis {
             margin-top: 0.28rem;
             text-align: center;
-            font-size: 0.6rem;
+            font-size: 0.74rem;
             color: #405678;
             font-weight: 700;
-            letter-spacing: 0.45px;
+            letter-spacing: 0.55px;
             text-transform: uppercase;
         }
 
@@ -36114,11 +36119,12 @@
 
                             <!-- Name bars extending from headshot -->
                             <div class="trade-card-name-section">
-                                <div class="trade-card-name-bar first-name">${firstName}</div>
+                                <div class="trade-card-name-bar first-name">
+                                    <span>${firstName}</span>
+                                    ${displayAgeLabel ? `<span class="trade-card-name-age-inline">AGE ${displayAgeLabel}</span>` : ''}
+                                </div>
                                 <div class="trade-card-name-bar last-name">${lastName}</div>
                             </div>
-
-                            ${displayAgeLabel ? `<div class="trade-card-age-tag">Age ${displayAgeLabel}</div>` : ''}
 
                             <!-- MLB logo in bottom right area -->
                             <div class="trade-card-mlb-logo ${!mlbLogoUrl ? 'fa-logo' : ''}">
@@ -36322,11 +36328,13 @@
             }).join('');
 
             return `
-                <div class="trade-card-forecast-chart">
-                    <div class="trade-card-forecast-chart-title">Projected Pts</div>
-                    <div class="trade-card-forecast-chart-bars">${bars}</div>
-                    <div class="trade-card-forecast-chart-labels">${labels}</div>
-                    <div class="trade-card-forecast-chart-axis">${hasAgeLabels ? 'Age' : 'Year'}</div>
+                <div class="trade-player-chart-panel">
+                    <div class="trade-card-forecast-chart">
+                        <div class="trade-card-forecast-chart-title">Projected Pts</div>
+                        <div class="trade-card-forecast-chart-bars">${bars}</div>
+                        <div class="trade-card-forecast-chart-labels">${labels}</div>
+                        <div class="trade-card-forecast-chart-axis">${hasAgeLabels ? 'Age' : 'Year'}</div>
+                    </div>
                 </div>
             `;
         }
