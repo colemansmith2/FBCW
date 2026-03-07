@@ -36305,7 +36305,22 @@
             ];
 
             const ages = projectionYears.map(data => parseProjectionAge(data.age ?? data.Age));
-            const anchorIndex = ages.findIndex(age => Number.isFinite(age));
+            let anchorIndex = ages.findIndex(age => Number.isFinite(age));
+
+            // Fallback: look up age from prospectsData if no projection age found
+            if (anchorIndex === -1 && typeof prospectsData !== 'undefined' && Array.isArray(prospectsData)) {
+                const prospectMatch = prospectsData.find(pr => {
+                    const prName = stripAccents(pr.name || '').toLowerCase().trim();
+                    return prName === baseName;
+                });
+                if (prospectMatch && prospectMatch.age) {
+                    const prospectAge = parseProjectionAge(prospectMatch.age);
+                    if (Number.isFinite(prospectAge)) {
+                        ages[0] = prospectAge;
+                        anchorIndex = 0;
+                    }
+                }
+            }
 
             if (anchorIndex !== -1) {
                 const anchorAge = ages[anchorIndex];
