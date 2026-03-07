@@ -3791,23 +3791,31 @@
         }
 
         .trade-player-modal {
-            /* Yellow card border like Fleer */
-            background: linear-gradient(135deg, #f5d442 0%, #e8c230 50%, #f5d442 100%);
-            border-radius: 8px;
-            max-width: 760px;
-            width: 100%;
-            max-height: 90vh;
+            background: transparent;
+            border-radius: 0;
+            width: min(640px, 96vw);
+            max-height: 92vh;
             overflow-y: auto;
             position: relative;
-            padding: 8px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            padding: 0;
+            box-shadow: none;
         }
 
         .trade-player-modal-layout {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 220px;
+            grid-template-columns: 400px 220px;
             gap: 0.7rem;
             align-items: start;
+            justify-content: center;
+        }
+
+        .trade-player-card-shell {
+            background: linear-gradient(135deg, #f5d442 0%, #e8c230 50%, #f5d442 100%);
+            border-radius: 8px;
+            padding: 8px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.42);
+            width: 400px;
+            max-width: 100%;
         }
 
         .trade-player-card-inner {
@@ -3932,7 +3940,7 @@
 
         .trade-card-name-age-inline {
             margin-left: auto;
-            font-size: 0.62rem;
+            font-size: 0.82rem;
             letter-spacing: 0.4px;
             color: #ffffff;
             font-weight: 700;
@@ -4134,6 +4142,8 @@
             border-radius: 4px;
             padding: 0.35rem;
             box-shadow: 0 3px 0 rgba(15, 43, 79, 0.55);
+            width: 220px;
+            max-width: 100%;
         }
 
         .trade-card-forecast-chart {
@@ -4253,6 +4263,16 @@
         @media (max-width: 760px) {
             .trade-player-modal-layout {
                 grid-template-columns: 1fr;
+                justify-items: stretch;
+            }
+
+            .trade-player-modal {
+                width: min(420px, 96vw);
+            }
+
+            .trade-player-card-shell,
+            .trade-player-chart-panel {
+                width: 100%;
             }
 
             .trade-card-forecast-chart-bars {
@@ -36102,73 +36122,74 @@
             // Build baseball card HTML - Fleer style
             contentEl.innerHTML = `
                 <div class="trade-player-modal-layout">
-                    <div class="trade-player-card-inner">
-                        <!-- Header Section - Fleer style -->
-                        <div class="trade-card-header-section">
-                            <!-- Headshot on left -->
-                            <div class="trade-card-headshot-wrapper">
-                                <div class="trade-card-headshot-container">
-                                    <img src="${headshot}" class="trade-card-headshot" alt="${player.name}" onerror="this.src='${placeholderImg}'">
+                    <div class="trade-player-card-shell">
+                        <div class="trade-player-card-inner">
+                            <!-- Header Section - Fleer style -->
+                            <div class="trade-card-header-section">
+                                <!-- Headshot on left -->
+                                <div class="trade-card-headshot-wrapper">
+                                    <div class="trade-card-headshot-container">
+                                        <img src="${headshot}" class="trade-card-headshot" alt="${player.name}" onerror="this.src='${placeholderImg}'">
+                                    </div>
+                                    ${fantasyTeamLogo ? `
+                                    <div class="trade-card-fantasy-logo">
+                                        <img src="${fantasyTeamLogo}" alt="">
+                                    </div>
+                                    ` : ''}
                                 </div>
-                                ${fantasyTeamLogo ? `
-                                <div class="trade-card-fantasy-logo">
-                                    <img src="${fantasyTeamLogo}" alt="">
+
+                                <!-- Name bars extending from headshot -->
+                                <div class="trade-card-name-section">
+                                    <div class="trade-card-name-bar first-name">
+                                        <span>${firstName}</span>
+                                        ${displayAgeLabel ? `<span class="trade-card-name-age-inline">AGE ${displayAgeLabel}</span>` : ''}
+                                    </div>
+                                    <div class="trade-card-name-bar last-name">${lastName}</div>
                                 </div>
-                                ` : ''}
+
+                                <!-- MLB logo in bottom right area -->
+                                <div class="trade-card-mlb-logo ${!mlbLogoUrl ? 'fa-logo' : ''}">
+                                    ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}">` : 'FA'}
+                                </div>
+
+                                <!-- Position rank in bottom right -->
+                                ${positionRank ? `<div class="trade-card-position-rank">${positionRank}</div>` : ''}
                             </div>
 
-                            <!-- Name bars extending from headshot -->
-                            <div class="trade-card-name-section">
-                                <div class="trade-card-name-bar first-name">
-                                    <span>${firstName}</span>
-                                    ${displayAgeLabel ? `<span class="trade-card-name-age-inline">AGE ${displayAgeLabel}</span>` : ''}
+                            <!-- Stats Section -->
+                            <div class="trade-card-stats-section">
+
+                                <!-- Value boxes -->
+                                <div class="trade-card-values-row">
+                                    <div class="trade-card-value-box">
+                                        <div class="trade-card-value-label">Buyer Value</div>
+                                        <div class="trade-card-value-num ${buyerClass}">${buyerResult.value > 0 ? '+' : ''}${Math.round(buyerResult.value)}</div>
+                                    </div>
+                                    <div class="trade-card-value-box">
+                                        <div class="trade-card-value-label">Default Value</div>
+                                        <div class="trade-card-value-num">${defaultValue > 0 ? '+' : ''}${Math.round(defaultValue)}</div>
+                                    </div>
+                                    <div class="trade-card-value-box">
+                                        <div class="trade-card-value-label">Seller Value</div>
+                                        <div class="trade-card-value-num ${sellerClass}">${sellerResult.value > 0 ? '+' : ''}${Math.round(sellerResult.value)}</div>
+                                    </div>
                                 </div>
-                                <div class="trade-card-name-bar last-name">${lastName}</div>
-                            </div>
 
-                            <!-- MLB logo in bottom right area -->
-                            <div class="trade-card-mlb-logo ${!mlbLogoUrl ? 'fa-logo' : ''}">
-                                ${mlbLogoUrl ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}">` : 'FA'}
-                            </div>
-
-                            <!-- Position rank in bottom right -->
-                            ${positionRank ? `<div class="trade-card-position-rank">${positionRank}</div>` : ''}
-                        </div>
-
-                        <!-- Stats Section -->
-                        <div class="trade-card-stats-section">
-
-                            <!-- Value boxes -->
-                            <div class="trade-card-values-row">
-                                <div class="trade-card-value-box">
-                                    <div class="trade-card-value-label">Buyer Value</div>
-                                    <div class="trade-card-value-num ${buyerClass}">${buyerResult.value > 0 ? '+' : ''}${Math.round(buyerResult.value)}</div>
-                                </div>
-                                <div class="trade-card-value-box">
-                                    <div class="trade-card-value-label">Default Value</div>
-                                    <div class="trade-card-value-num">${defaultValue > 0 ? '+' : ''}${Math.round(defaultValue)}</div>
-                                </div>
-                                <div class="trade-card-value-box">
-                                    <div class="trade-card-value-label">Seller Value</div>
-                                    <div class="trade-card-value-num ${sellerClass}">${sellerResult.value > 0 ? '+' : ''}${Math.round(sellerResult.value)}</div>
-                                </div>
-                            </div>
-
-                            <!-- 3-Year Forecast -->
-                            <div class="trade-card-forecast-title">3-Year Keeper Forecast</div>
-                            <table class="trade-card-forecast-table">
-                                <thead>
-                                    <tr>
-                                        <th>Year</th>
-                                        <th>Round</th>
-                                        <th>Cost</th>
-                                        <th>Exp Pts</th>
-                                        <th>Proj Pts</th>
-                                        <th>Value</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${forecast.map(year => {
+                                <!-- 3-Year Forecast -->
+                                <div class="trade-card-forecast-title">3-Year Keeper Forecast</div>
+                                <table class="trade-card-forecast-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Year</th>
+                                            <th>Round</th>
+                                            <th>Cost</th>
+                                            <th>Exp Pts</th>
+                                            <th>Proj Pts</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${forecast.map(year => {
                     const valueClass = year.value > 0 ? 'value-positive' : year.value < 0 ? 'value-negative' : 'value-neutral';
                     return `
                                         <tr>
@@ -36181,18 +36202,19 @@
                                         </tr>
                                     `;
                 }).join('')}
-                                </tbody>
-                            </table>
+                                    </tbody>
+                                </table>
 
-                            <!-- Keeper info -->
-                            <div class="trade-card-keeper-row">
-                                <div class="trade-card-keeper-info">
-                                    ${isProspect ? '<span class="trade-card-prospect-badge">PROSPECT</span>' : ''}
-                                    ${roundCost > 0 ? `<span class="trade-card-keeper-badge">R${roundCost} KEEPER</span>` : ''}
-                                    ${!isProspect && roundCost === 0 ? '<span style="color: #888;">Free Agent</span>' : ''}
-                                </div>
-                                <div style="color: #1a3c6e; font-weight: 600;">
-                                    ${isProspect ? 'NA Status' : dollarCost2026 > 0 ? `$${dollarCost2026} Cost` : 'Free'}
+                                <!-- Keeper info -->
+                                <div class="trade-card-keeper-row">
+                                    <div class="trade-card-keeper-info">
+                                        ${isProspect ? '<span class="trade-card-prospect-badge">PROSPECT</span>' : ''}
+                                        ${roundCost > 0 ? `<span class="trade-card-keeper-badge">R${roundCost} KEEPER</span>` : ''}
+                                        ${!isProspect && roundCost === 0 ? '<span style="color: #888;">Free Agent</span>' : ''}
+                                    </div>
+                                    <div style="color: #1a3c6e; font-weight: 600;">
+                                        ${isProspect ? 'NA Status' : dollarCost2026 > 0 ? `$${dollarCost2026} Cost` : 'Free'}
+                                    </div>
                                 </div>
                             </div>
                         </div>
