@@ -34492,6 +34492,17 @@
             // Load ZiPS projections for multi-year value
             await loadZiPSProjections();
 
+            // Ensure prospects data is loaded (needed for age fallback)
+            if (prospectsData.length === 0) {
+                try {
+                    const prospResp = await fetch('data/prospects/prospects.json');
+                    if (prospResp.ok) {
+                        const prospData = await prospResp.json();
+                        prospectsData = prospData.prospects || [];
+                    }
+                } catch (e) { console.log('Error preloading prospects for age data:', e); }
+            }
+
             // Load ROS projections and actual stats (in-season mode)
             await loadROSProjections();
             await loadPlayerActualStats();
