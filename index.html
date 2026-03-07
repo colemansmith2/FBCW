@@ -4049,6 +4049,17 @@
             border-bottom: 2px solid #1a3c6e;
         }
 
+        .trade-card-forecast-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 170px;
+            gap: 0.6rem;
+            align-items: end;
+        }
+
+        .trade-card-forecast-table-wrap {
+            min-width: 0;
+        }
+
         .trade-card-forecast-table {
             width: 100%;
             border-collapse: collapse;
@@ -4107,6 +4118,84 @@
             font-weight: 700;
         }
 
+        .trade-card-forecast-chart {
+            background: #f1e0bf;
+            border: 1px solid #d4c4a4;
+            border-radius: 6px;
+            padding: 0.45rem 0.5rem 0.5rem;
+        }
+
+        .trade-card-forecast-chart-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #1a3c6e;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            margin-bottom: 0.35rem;
+        }
+
+        .trade-card-forecast-chart-bars {
+            height: 118px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 0.3rem;
+            padding: 0 0.05rem 0.3rem;
+            border-bottom: 2px solid #1a3c6e;
+        }
+
+        .trade-card-forecast-chart-bar-col {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .trade-card-forecast-chart-bar-value {
+            font-size: 0.6rem;
+            line-height: 1;
+            color: #1a3c6e;
+            font-weight: 700;
+        }
+
+        .trade-card-forecast-chart-bar {
+            width: 100%;
+            max-width: 34px;
+            min-height: 8px;
+            border-radius: 4px 4px 0 0;
+            background: linear-gradient(180deg, #2f5ea8 0%, #1a3c6e 100%);
+            border: 1px solid #15345d;
+            border-bottom: none;
+        }
+
+        .trade-card-forecast-chart-labels {
+            margin-top: 0.2rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 0.3rem;
+        }
+
+        .trade-card-forecast-chart-label {
+            flex: 1;
+            min-width: 0;
+            text-align: center;
+            font-size: 0.62rem;
+            color: #1a3c6e;
+            font-weight: 700;
+        }
+
+        .trade-card-forecast-chart-axis {
+            margin-top: 0.2rem;
+            text-align: center;
+            font-size: 0.56rem;
+            color: #405678;
+            font-weight: 700;
+            letter-spacing: 0.35px;
+            text-transform: uppercase;
+        }
+
         /* Keeper info row */
         .trade-card-keeper-row {
             display: flex;
@@ -4140,6 +4229,16 @@
             font-weight: bold;
             padding: 0.15rem 0.4rem;
             border-radius: 3px;
+        }
+
+        @media (max-width: 760px) {
+            .trade-card-forecast-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .trade-card-forecast-chart-bars {
+                height: 104px;
+            }
         }
 
         /* Budget input in trade */
@@ -13327,7 +13426,7 @@
         }
 
         .opcomp-results-modal {
-            width: min(960px, 96vw);
+            width: min(900px, 96vw);
             background: #fff;
             border: 3px solid var(--retro-blue);
             border-radius: 14px;
@@ -34309,6 +34408,13 @@
         const MAX_ASSETS_PER_SIDE = 8;
         const ASSET_COUNT_PENALTY = 0.05; // 5% penalty per extra asset
 
+        function parseProjectionAge(rawAge) {
+            if (rawAge === null || rawAge === undefined || rawAge === '') return null;
+            const age = Number(rawAge);
+            if (!Number.isFinite(age) || age <= 0) return null;
+            return Math.round(age * 10) / 10;
+        }
+
         // Initialize Trade Analyzer when Value Suite loads
         async function initTradeAnalyzer() {
             console.log('Initializing Trade Analyzer...');
@@ -34382,7 +34488,8 @@
                                 points: p.projected_points || 0,
                                 mlb_team: p.mlb_team || p.team || '',
                                 headshot_url: p.headshot_url || '',
-                                mlb_id: p.mlb_id || null
+                                mlb_id: p.mlb_id || null,
+                                age: parseProjectionAge(p.age ?? p.Age ?? p.player_age ?? p.PlayerAge)
                             };
                         });
                         tradeAnalyzerData[targets[i]] = projMap;
@@ -35941,6 +36048,8 @@
 
             // Calculate 3-year forecast
             const forecast = calculatePlayerForecast(player);
+            const projectionAges = getPlayerProjectionAgeSeries(player);
+            const forecastChartHtml = renderTradeForecastAgeChart(forecast, projectionAges);
 
             // Calculate buyer and seller values
             const buyerResult = calculatePlayerTradeValue(player.rawData || player, 'buy');
@@ -36024,19 +36133,21 @@
 
                         <!-- 3-Year Forecast -->
                         <div class="trade-card-forecast-title">3-Year Keeper Forecast</div>
-                        <table class="trade-card-forecast-table">
-                            <thead>
-                                <tr>
-                                    <th>Year</th>
-                                    <th>Round</th>
-                                    <th>Cost</th>
-                                    <th>Exp Pts</th>
-                                    <th>Proj Pts</th>
-                                    <th>Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${forecast.map(year => {
+                        <div class="trade-card-forecast-layout">
+                            <div class="trade-card-forecast-table-wrap">
+                                <table class="trade-card-forecast-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Year</th>
+                                            <th>Round</th>
+                                            <th>Cost</th>
+                                            <th>Exp Pts</th>
+                                            <th>Proj Pts</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${forecast.map(year => {
                     const valueClass = year.value > 0 ? 'value-positive' : year.value < 0 ? 'value-negative' : 'value-neutral';
                     return `
                                         <tr>
@@ -36049,8 +36160,11 @@
                                         </tr>
                                     `;
                 }).join('')}
-                            </tbody>
-                        </table>
+                                    </tbody>
+                                </table>
+                            </div>
+                            ${forecastChartHtml}
+                        </div>
 
                         <!-- Keeper info -->
                         <div class="trade-card-keeper-row">
@@ -36137,6 +36251,70 @@
                 { year: 2027, round: round2027, cost: cost2027, expectedPts: Math.round(expected2027), projectedPts: Math.round(proj2027), value: value2027 },
                 { year: 2028, round: round2028, cost: cost2028, expectedPts: Math.round(expected2028), projectedPts: Math.round(proj2028), value: value2028 }
             ];
+        }
+
+        function getPlayerProjectionAgeSeries(player) {
+            const name = (player?.name || '').toLowerCase().trim();
+            const baseName = name.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+            const projectionYears = [
+                tradeAnalyzerData.zips2026[name] || tradeAnalyzerData.zips2026[baseName] || {},
+                tradeAnalyzerData.zips2027[name] || tradeAnalyzerData.zips2027[baseName] || {},
+                tradeAnalyzerData.zips2028[name] || tradeAnalyzerData.zips2028[baseName] || {}
+            ];
+
+            const ages = projectionYears.map(data => parseProjectionAge(data.age ?? data.Age));
+            const anchorIndex = ages.findIndex(age => Number.isFinite(age));
+
+            if (anchorIndex !== -1) {
+                const anchorAge = ages[anchorIndex];
+                for (let i = 0; i < ages.length; i++) {
+                    if (!Number.isFinite(ages[i])) {
+                        ages[i] = Math.round((anchorAge + (i - anchorIndex)) * 10) / 10;
+                    }
+                }
+            }
+
+            return ages;
+        }
+
+        function formatProjectionAge(age) {
+            if (!Number.isFinite(age)) return '';
+            return Number.isInteger(age) ? String(age) : age.toFixed(1);
+        }
+
+        function renderTradeForecastAgeChart(forecast, ages) {
+            const rows = Array.isArray(forecast) ? forecast : [];
+            if (rows.length === 0) return '';
+
+            const projectedValues = rows.map(row => Math.max(0, Number(row.projectedPts) || 0));
+            const maxProjected = Math.max(...projectedValues, 1);
+            const hasAgeLabels = (ages || []).some(age => Number.isFinite(age));
+
+            const bars = rows.map((row, idx) => {
+                const projected = projectedValues[idx];
+                const height = Math.max(8, Math.round((projected / maxProjected) * 90));
+
+                return `
+                    <div class="trade-card-forecast-chart-bar-col">
+                        <div class="trade-card-forecast-chart-bar-value">${Math.round(projected)}</div>
+                        <div class="trade-card-forecast-chart-bar" style="height: ${height}px;" title="${row.year}: ${Math.round(projected)} projected points"></div>
+                    </div>
+                `;
+            }).join('');
+
+            const labels = rows.map((row, idx) => {
+                const ageLabel = hasAgeLabels && Number.isFinite(ages[idx]) ? formatProjectionAge(ages[idx]) : String(row.year);
+                return `<div class="trade-card-forecast-chart-label">${ageLabel}</div>`;
+            }).join('');
+
+            return `
+                <div class="trade-card-forecast-chart">
+                    <div class="trade-card-forecast-chart-title">Projected Pts</div>
+                    <div class="trade-card-forecast-chart-bars">${bars}</div>
+                    <div class="trade-card-forecast-chart-labels">${labels}</div>
+                    <div class="trade-card-forecast-chart-axis">${hasAgeLabels ? 'Age' : 'Year'}</div>
+                </div>
+            `;
         }
 
         function getDollarCostForRound(round) {
