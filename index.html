@@ -13327,15 +13327,16 @@
         }
 
         .opcomp-results-modal {
-            width: min(1080px, 100%);
+            width: min(960px, 96vw);
             background: #fff;
             border: 3px solid var(--retro-blue);
-            border-radius: 12px;
+            border-radius: 14px;
             box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
             display: flex;
             flex-direction: column;
             max-height: 90vh;
             animation: fadeIn 0.25s;
+            overflow: hidden;
         }
 
         .opcomp-results-header {
@@ -13407,6 +13408,7 @@
             overflow-y: auto;
             padding: 0.7rem;
             background: #f8fbff;
+            border-radius: 0 0 12px 12px;
         }
 
         .opcomp-results-empty {
@@ -13544,7 +13546,7 @@
 
         .opcomp-result-bidders {
             border: 1px solid #dce5f3;
-            border-radius: 8px;
+            border-radius: 10px;
             background: #f9fbff;
             overflow: hidden;
         }
@@ -13557,6 +13559,22 @@
             font-weight: 600;
             color: #1f3f77;
             border-bottom: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.55rem;
+        }
+
+        .opcomp-result-bidders summary::after {
+            content: '';
+            width: 7px;
+            height: 7px;
+            border-right: 2px solid #2d5ca8;
+            border-bottom: 2px solid #2d5ca8;
+            transform: rotate(45deg);
+            transition: transform 0.18s ease, margin-top 0.18s ease;
+            margin-top: -2px;
+            flex-shrink: 0;
         }
 
         .opcomp-result-bidders summary::-webkit-details-marker {
@@ -13566,6 +13584,11 @@
         .opcomp-result-bidders[open] summary {
             border-bottom-color: #dce5f3;
             background: #eef4ff;
+        }
+
+        .opcomp-result-bidders[open] summary::after {
+            transform: rotate(225deg);
+            margin-top: 2px;
         }
 
         .opcomp-result-claim-list {
