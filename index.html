@@ -39621,8 +39621,9 @@
 
             const coreMin = coreValues.length > 0 ? Math.min(...coreValues) : 0;
             const coreMax = coreValues.length > 0 ? Math.max(...coreValues) : 100;
-            const yMin = Math.max(0, Math.floor(coreMin / 50) * 50);
-            const yMax = Math.ceil(coreMax / 50) * 50;
+            // Fixed y-axis: 175–600 baseline, extend to 650 only if any value reaches 600+
+            const yMin = 175;
+            const yMax = coreMax >= 600 ? 650 : 600;
 
             // Clamp outlier bars to yMin so they appear as small slivers at the bottom
             barData.forEach((val, i) => {
