@@ -45819,6 +45819,71 @@
             renderMockDraftAvailableTable();
         }
 
+        // Bipartite matching: re-assign slots optimally across all non-NA players.
+        // This ensures multi-position players (e.g. 2B/3B/SS/OF) fill whichever
+        // starting slot is most needed rather than always landing in the first slot
+        // from the fixed greedy order used during the draft.
+        function mockDraftOptimizeSlots(roster) {
+            const activePlayers = roster.players.filter(p => p.assignedSlot !== 'NA');
+
+            // Slot definitions in priority order, expanded by capacity into individual nodes
+            const slotDefs = [
+                { slot: 'C',    cap: 1, accepts: p => p.type === 'batter' && (p.positions||[]).includes('C') },
+                { slot: '1B',   cap: 1, accepts: p => p.type === 'batter' && (p.positions||[]).includes('1B') },
+                { slot: '2B',   cap: 1, accepts: p => p.type === 'batter' && (p.positions||[]).includes('2B') },
+                { slot: '3B',   cap: 1, accepts: p => p.type === 'batter' && (p.positions||[]).includes('3B') },
+                { slot: 'SS',   cap: 1, accepts: p => p.type === 'batter' && (p.positions||[]).includes('SS') },
+                { slot: 'OF',   cap: 3, accepts: p => p.type === 'batter' && (p.positions||[]).some(pos => ['OF','LF','CF','RF'].includes(pos)) },
+                { slot: 'Util', cap: 4, accepts: p => p.type === 'batter' },
+                { slot: 'SP',   cap: 3, accepts: p => p.type === 'pitcher' && (p.positions||[]).includes('SP') },
+                { slot: 'RP',   cap: 1, accepts: p => p.type === 'pitcher' && (p.positions||[]).includes('RP') },
+                { slot: 'P',    cap: 2, accepts: p => p.type === 'pitcher' },
+            ];
+
+            const expandedSlots = [];
+            slotDefs.forEach(def => {
+                for (let i = 0; i < def.cap; i++) expandedSlots.push(def);
+            });
+
+            const n = activePlayers.length;
+            const m = expandedSlots.length;
+
+            // For each player, precompute which slot nodes they can fill
+            const adj = activePlayers.map(p =>
+                expandedSlots.reduce((acc, slotDef, j) => {
+                    if (slotDef.accepts(p)) acc.push(j);
+                    return acc;
+                }, [])
+            );
+
+            // Standard augmenting-path maximum bipartite matching
+            // match[j] = index of player assigned to slot node j, or -1
+            const match = new Array(m).fill(-1);
+
+            function augment(playerIdx, visited) {
+                for (const slotIdx of adj[playerIdx]) {
+                    if (visited[slotIdx]) continue;
+                    visited[slotIdx] = true;
+                    if (match[slotIdx] === -1 || augment(match[slotIdx], visited)) {
+                        match[slotIdx] = playerIdx;
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            for (let i = 0; i < n; i++) {
+                augment(i, new Array(m).fill(false));
+            }
+
+            // Apply results: matched players get their slot, unmatched go to BN
+            const assignedSlot = new Array(n).fill('BN');
+            match.forEach((playerIdx, slotIdx) => {
+                if (playerIdx !== -1) assignedSlot[playerIdx] = expandedSlots[slotIdx].slot;
+            });
+            activePlayers.forEach((p, i) => { p.assignedSlot = assignedSlot[i]; });
+        }
+
         function renderMockDraftRoster() {
             const body = document.getElementById('mock-draft-roster-body');
             const sel = document.getElementById('mock-draft-roster-team');
@@ -45826,6 +45891,7 @@
             const teamKey = sel.value;
             const roster = mockDraftState.teamRosters[teamKey];
             if (!roster) { body.innerHTML = '<p style="color:#999;">No roster data</p>'; return; }
+            mockDraftOptimizeSlots(roster);
 
             const slotOrder = [
                 { label: 'Batters', slots: [
@@ -46512,6 +46578,7 @@
                 container.innerHTML = '<p style="text-align:center;color:#999;">No roster data</p>';
                 return;
             }
+            mockDraftOptimizeSlots(roster);
 
             // Calculate total points for the team
             const totalPts = roster.players.reduce((sum, p) => sum + (p.avgPoints || 0), 0);
