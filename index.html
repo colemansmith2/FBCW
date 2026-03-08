@@ -39294,9 +39294,14 @@
                 });
             }
 
-            // Extract projected points arrays (filter out zero/null)
-            const typeValues = allPlayers.map(p => p.projected_points || 0).filter(v => v > 0);
-            const posValues = positionPlayers.map(p => p.projected_points || 0).filter(v => v > 0);
+            // Extract projected points arrays — limit to "playable" counts for more normal curves
+            const typeLimit = isBatter ? 150 : 120;
+            const densitySpots = { ...playableSpots, 'SP': 100, 'RP': 20 };
+            const posLimit = densitySpots[posLabel] || (isBatter ? 50 : 40);
+            const typeValues = allPlayers.map(p => p.projected_points || 0).filter(v => v > 0)
+                .sort((a, b) => b - a).slice(0, typeLimit);
+            const posValues = positionPlayers.map(p => p.projected_points || 0).filter(v => v > 0)
+                .sort((a, b) => b - a).slice(0, posLimit);
 
             if (typeValues.length < 2 || posValues.length < 2) {
                 container.innerHTML = '<div style="text-align:center;color:#999;padding:2rem;">Not enough data for density plot</div>';
