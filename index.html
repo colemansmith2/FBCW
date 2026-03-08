@@ -14954,6 +14954,11 @@
             gap: 0.75rem;
             justify-content: center;
         }
+        @media (max-width: 480px) {
+            .mock-draft-pitcher-warning-actions {
+                flex-direction: column;
+            }
+        }
         .mock-draft-controls-right { display: flex; gap: 0.5rem; }
 
         /* User Turn Banner */
@@ -45180,7 +45185,7 @@
                     .filter(p => !p.isKeeper && p.teamKey === mockDraftState.userTeamKey)
                     .length;
                 const remaining = getMockDraftUserPicksRemaining();
-                el.textContent = `Your Picks Left: ${remaining} / ${totalUserPicks}`;
+                el.textContent = `Picks Remaining: ${remaining}`;
             }
 
             if (pitcherEl && mockDraftState.userTeamKey) {
