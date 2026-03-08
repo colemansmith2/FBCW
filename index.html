@@ -14929,8 +14929,11 @@
             box-shadow: 0 8px 32px rgba(0,0,0,0.25);
             text-align: center;
         }
-        .mock-draft-pitcher-warning-icon {
-            font-size: 2.2rem;
+        .mock-draft-pitcher-warning-tag {
+            font-family: 'Arcade Gamer', monospace;
+            font-size: 0.65rem;
+            color: var(--retro-red);
+            letter-spacing: 2px;
             margin-bottom: 0.5rem;
         }
         .mock-draft-pitcher-warning-title {
@@ -20556,7 +20559,7 @@
             <!-- Pitcher Limit Warning Modal -->
             <div id="mock-draft-pitcher-warning" class="mock-draft-pitcher-warning-overlay">
                 <div class="mock-draft-pitcher-warning-box">
-                    <div class="mock-draft-pitcher-warning-icon">⚠️</div>
+                    <div class="mock-draft-pitcher-warning-tag">WARNING</div>
                     <div class="mock-draft-pitcher-warning-title">Pitcher Limit Reached</div>
                     <div class="mock-draft-pitcher-warning-body">
                         The league only allows <strong>10 pitchers</strong> on the roster by Opening Day.
@@ -20564,8 +20567,8 @@
                         you'll need to drop one post-draft.
                     </div>
                     <div class="mock-draft-pitcher-warning-actions">
-                        <button class="mock-draft-btn-primary" onclick="confirmPitcherOverLimit()" style="background:var(--retro-red);border-color:var(--retro-red);">Draft Anyway</button>
-                        <button class="mock-draft-btn-secondary" onclick="cancelPitcherWarning()">Choose Another Player</button>
+                        <button class="mock-draft-btn-primary" onclick="confirmPitcherOverLimit()" style="background:var(--retro-red);border-color:var(--retro-red);padding:0.6rem 1.5rem;font-size:0.95rem;margin-top:0;white-space:nowrap;">Draft Anyway</button>
+                        <button class="mock-draft-btn-secondary" onclick="cancelPitcherWarning()" style="padding:0.6rem 1.5rem;font-size:0.95rem;white-space:nowrap;">Choose Another Player</button>
                     </div>
                 </div>
             </div>
