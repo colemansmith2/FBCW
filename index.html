@@ -14885,6 +14885,70 @@
             letter-spacing: 0.5px;
             color: #666;
         }
+        .mock-draft-pitcher-count {
+            font-family: 'Basis33', monospace;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .mock-draft-pitcher-count.at-limit {
+            color: var(--retro-green);
+            font-weight: 700;
+        }
+        .mock-draft-round-next-pick {
+            display: block;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            font-size: 0.68rem;
+            letter-spacing: 0;
+            color: #aaa;
+            font-weight: 400;
+            margin-top: 1px;
+        }
+        /* Pitcher limit warning modal */
+        .mock-draft-pitcher-warning-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        .mock-draft-pitcher-warning-overlay.active {
+            display: flex;
+        }
+        .mock-draft-pitcher-warning-box {
+            background: #fff;
+            border-radius: 10px;
+            padding: 1.75rem 2rem;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            text-align: center;
+        }
+        .mock-draft-pitcher-warning-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+        .mock-draft-pitcher-warning-title {
+            font-family: 'Arcade Gamer', monospace;
+            font-size: 0.9rem;
+            color: var(--retro-red);
+            margin-bottom: 0.75rem;
+        }
+        .mock-draft-pitcher-warning-body {
+            font-family: 'Basis33', monospace;
+            font-size: 0.9rem;
+            color: #444;
+            line-height: 1.5;
+            margin-bottom: 1.25rem;
+        }
+        .mock-draft-pitcher-warning-actions {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+        }
         .mock-draft-controls-right { display: flex; gap: 0.5rem; }
 
         /* User Turn Banner */
@@ -20410,6 +20474,7 @@
                     </div>
                     <div class="mock-draft-controls-center">
                         <span id="mock-draft-picks-remaining" class="mock-draft-picks-remaining"></span>
+                        <span id="mock-draft-pitcher-count" class="mock-draft-pitcher-count"></span>
                     </div>
                     <div class="mock-draft-controls-right">
                         <button id="mock-draft-skip-btn" class="mock-draft-btn-primary" style="padding:0.4rem 1rem;font-size:0.85rem;margin-top:0;" onclick="skipToNextUserPick()">⏭ Skip to My Pick</button>
@@ -20482,6 +20547,23 @@
                             </div>
                             <div id="mock-draft-roster-body" class="mock-draft-roster-body-scroll"></div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pitcher Limit Warning Modal -->
+            <div id="mock-draft-pitcher-warning" class="mock-draft-pitcher-warning-overlay">
+                <div class="mock-draft-pitcher-warning-box">
+                    <div class="mock-draft-pitcher-warning-icon">⚠️</div>
+                    <div class="mock-draft-pitcher-warning-title">Pitcher Limit Reached</div>
+                    <div class="mock-draft-pitcher-warning-body">
+                        The league only allows <strong>10 pitchers</strong> on the roster by Opening Day.
+                        You already have 10 pitchers — if you draft <strong><span id="mock-draft-warning-player-name"></span></strong>,
+                        you'll need to drop one post-draft.
+                    </div>
+                    <div class="mock-draft-pitcher-warning-actions">
+                        <button class="mock-draft-btn-primary" onclick="confirmPitcherOverLimit()" style="background:var(--retro-red);border-color:var(--retro-red);">Draft Anyway</button>
+                        <button class="mock-draft-btn-secondary" onclick="cancelPitcherWarning()">Choose Another Player</button>
                     </div>
                 </div>
             </div>
@@ -45080,17 +45162,30 @@
 
         function updateMockDraftPicksRemaining() {
             const el = document.getElementById('mock-draft-picks-remaining');
-            if (!el) return;
+            const pitcherEl = document.getElementById('mock-draft-pitcher-count');
+
             if (mockDraftState.phase !== 'drafting') {
-                el.textContent = '';
+                if (el) el.textContent = '';
+                if (pitcherEl) { pitcherEl.textContent = ''; pitcherEl.className = 'mock-draft-pitcher-count'; }
                 return;
             }
 
-            const totalUserPicks = mockDraftState.pickSequence
-                .filter(p => !p.isKeeper && p.teamKey === mockDraftState.userTeamKey)
-                .length;
-            const remaining = getMockDraftUserPicksRemaining();
-            el.textContent = `Your Picks Left: ${remaining} / ${totalUserPicks}`;
+            if (el) {
+                const totalUserPicks = mockDraftState.pickSequence
+                    .filter(p => !p.isKeeper && p.teamKey === mockDraftState.userTeamKey)
+                    .length;
+                const remaining = getMockDraftUserPicksRemaining();
+                el.textContent = `Your Picks Left: ${remaining} / ${totalUserPicks}`;
+            }
+
+            if (pitcherEl && mockDraftState.userTeamKey) {
+                const roster = mockDraftState.teamRosters[mockDraftState.userTeamKey];
+                const pitcherCount = roster
+                    ? roster.players.filter(p => p.type === 'pitcher' && p.assignedSlot !== 'NA').length
+                    : 0;
+                pitcherEl.textContent = `Your Pitcher Count: ${pitcherCount} / 10`;
+                pitcherEl.className = 'mock-draft-pitcher-count' + (pitcherCount >= 10 ? ' at-limit' : '');
+            }
         }
 
         function mockDraftAssignSlot(player, roster) {
@@ -45519,6 +45614,29 @@
             const player = mockDraftState.availablePlayers[playerIdx];
             if (!player) return;
 
+            // Check pitcher limit before executing
+            if (player.type === 'pitcher') {
+                const roster = mockDraftState.teamRosters[mockDraftState.userTeamKey];
+                const pitcherCount = roster
+                    ? roster.players.filter(p => p.type === 'pitcher' && p.assignedSlot !== 'NA').length
+                    : 0;
+                if (pitcherCount >= 10) {
+                    // Show warning modal and hold the pending pick
+                    mockDraftState.pendingPitcherPickIdx = playerIdx;
+                    const nameEl = document.getElementById('mock-draft-warning-player-name');
+                    if (nameEl) nameEl.textContent = player.name;
+                    document.getElementById('mock-draft-pitcher-warning').classList.add('active');
+                    return;
+                }
+            }
+
+            userMockDraftExecuteCurrentPick(playerIdx);
+        }
+
+        function userMockDraftExecuteCurrentPick(playerIdx) {
+            const player = mockDraftState.availablePlayers[playerIdx];
+            if (!player) return;
+
             const pick = mockDraftState.pickSequence[mockDraftState.currentPickIndex];
             mockDraftExecutePick(pick.teamKey, player, true);
 
@@ -45529,6 +45647,18 @@
 
             // Continue draft
             mockDraftState.draftTimeout = setTimeout(() => mockDraftRunLoop(), mockDraftState.aiPickDelay);
+        }
+
+        function confirmPitcherOverLimit() {
+            document.getElementById('mock-draft-pitcher-warning').classList.remove('active');
+            const idx = mockDraftState.pendingPitcherPickIdx;
+            mockDraftState.pendingPitcherPickIdx = null;
+            if (idx != null) userMockDraftExecuteCurrentPick(idx);
+        }
+
+        function cancelPitcherWarning() {
+            document.getElementById('mock-draft-pitcher-warning').classList.remove('active');
+            mockDraftState.pendingPitcherPickIdx = null;
         }
 
         function skipToNextUserPick() {
@@ -45709,7 +45839,16 @@
             const info = mockDraftState.teamInfo[pick.teamKey];
             const teamName = info ? info.teamName : 'Unknown';
             const manager = info ? info.manager : '';
-            el.innerHTML = `Round ${pick.round} — Pick ${pick.pickInRound} | ${teamName}<span class="mock-draft-round-manager">${manager}</span>`;
+
+            // Find the next non-keeper pick for the team currently on the clock
+            const nextPick = mockDraftState.pickSequence
+                .slice(mockDraftState.currentPickIndex + 1)
+                .find(p => !p.isKeeper && p.teamKey === pick.teamKey);
+            const nextPickLabel = nextPick
+                ? `Next Pick: Round ${nextPick.round} — Pick ${nextPick.pickInRound}`
+                : 'Next Pick: —';
+
+            el.innerHTML = `Round ${pick.round} — Pick ${pick.pickInRound} | ${teamName}<span class="mock-draft-round-manager">${manager}<span class="mock-draft-round-next-pick">${nextPickLabel}</span></span>`;
         }
 
         function renderMockDraftAvailableTable() {
