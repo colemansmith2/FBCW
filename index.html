@@ -39783,7 +39783,7 @@
                             beginAtZero: false,
                             min: Math.max(0, yMin),
                             max: yMax,
-                            ticks: { font: { size: 10 }, stepSize: 50 },
+                            ticks: { font: { size: 10 }, stepSize: 50, callback: v => v >= 200 ? v : '' },
                             title: {
                                 display: true,
                                 text: 'Fantasy Points',
