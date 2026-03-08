@@ -39783,7 +39783,12 @@
                             beginAtZero: false,
                             min: Math.max(0, yMin),
                             max: yMax,
-                            ticks: { font: { size: 10 }, stepSize: 50, callback: v => v >= 200 ? v : '' },
+                            afterBuildTicks: function(scale) {
+                                const ticks = [];
+                                for (let v = 200; v <= scale.max; v += 50) ticks.push({ value: v });
+                                scale.ticks = ticks;
+                            },
+                            ticks: { font: { size: 10 } },
                             title: {
                                 display: true,
                                 text: 'Fantasy Points',
