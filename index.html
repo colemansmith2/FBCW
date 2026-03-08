@@ -7818,6 +7818,16 @@
             background-color: var(--pos-p-light);
         }
 
+        .position-badge.pos-RHP {
+            color: var(--pos-sp-dark);
+            background-color: var(--pos-sp-light);
+        }
+
+        .position-badge.pos-LHP {
+            color: var(--pos-rp-dark);
+            background-color: var(--pos-rp-light);
+        }
+
         /* Default/unknown position */
         .position-badge:not([class*="pos-"]) {
             color: #666;
@@ -7890,6 +7900,16 @@
         .draft-player-pos.pos-p {
             color: var(--pos-p-dark);
             background-color: var(--pos-p-light);
+        }
+
+        .draft-player-pos.pos-rhp {
+            color: var(--pos-sp-dark);
+            background-color: var(--pos-sp-light);
+        }
+
+        .draft-player-pos.pos-lhp {
+            color: var(--pos-rp-dark);
+            background-color: var(--pos-rp-light);
         }
 
         /* Hide batter/pitcher stats based on filter */
@@ -17655,6 +17675,8 @@
         .player-card-pos-badge.pos-SP { color: var(--pos-sp-dark); background-color: #fff; }
         .player-card-pos-badge.pos-RP { color: var(--pos-rp-dark); background-color: #fff; }
         .player-card-pos-badge.pos-P { color: var(--pos-p-dark); background-color: #fff; }
+        .player-card-pos-badge.pos-RHP { color: var(--pos-sp-dark); background-color: #fff; }
+        .player-card-pos-badge.pos-LHP { color: var(--pos-rp-dark); background-color: #fff; }
 
         /* Player name on card */
         .player-card-name {
@@ -20009,7 +20031,9 @@
                         <option value="3B">3B</option>
                         <option value="SS">SS</option>
                         <option value="OF">OF</option>
-                        <option value="P">P</option>
+                        <option value="RHP">RHP</option>
+                        <option value="LHP">LHP</option>
+                        <option value="P">P (All Pitchers)</option>
                     </select>
                 </div>
             </div>
@@ -20103,7 +20127,9 @@
                                         <option value="3B">3B</option>
                                         <option value="SS">SS</option>
                                         <option value="OF">OF</option>
-                                        <option value="P">P</option>
+                                        <option value="RHP">RHP</option>
+                                        <option value="LHP">LHP</option>
+                                        <option value="P">P (All)</option>
                                     </select>
                                     <select id="opcomp-team-filter" onchange="filterOpcompAvailable()">
                                         <option value="">Team</option>
@@ -43159,6 +43185,17 @@
             }
         }
 
+        // Derive display position for prospects: pitchers become RHP/LHP based on throwing hand
+        // Jurrangelo Cijntje is a switch pitcher (S/S) and stays as P
+        function getProspectDisplayPosition(prospect) {
+            if (prospect.position !== 'P') return prospect.position;
+            const bt = prospect.bats_throws || '';
+            const throwHand = bt.split('/')[1]?.trim();
+            if (throwHand === 'R') return 'RHP';
+            if (throwHand === 'L') return 'LHP';
+            return 'P'; // Switch pitcher or unknown
+        }
+
         function renderProspectTable() {
             const tbody = document.getElementById('prospect-table-body');
             const hideOwned = document.getElementById('hide-owned-prospects').checked;
@@ -43228,8 +43265,15 @@
                     if (!nameMatch && !teamMatch) return false;
                 }
 
-                // Position filter
-                if (positionFilter && prospect.position !== positionFilter) return false;
+                // Position filter — "P" matches all pitchers (RHP, LHP, P)
+                if (positionFilter) {
+                    const displayPos = getProspectDisplayPosition(prospect);
+                    if (positionFilter === 'P') {
+                        if (prospect.position !== 'P') return false;
+                    } else {
+                        if (displayPos !== positionFilter) return false;
+                    }
+                }
 
                 return true;
             });
@@ -43238,7 +43282,10 @@
             let ownedCount, ownedLabel;
             if (positionFilter) {
                 // Count owned for this specific position
-                const positionProspects = baseProspects.filter(p => p.position === positionFilter);
+                const positionProspects = baseProspects.filter(p => {
+                    const dp = getProspectDisplayPosition(p);
+                    return positionFilter === 'P' ? p.position === 'P' : dp === positionFilter;
+                });
                 ownedCount = positionProspects.filter(p => findOwner(p.name)).length;
                 ownedLabel = `${ownedCount} ${positionFilter} owned`;
             } else {
@@ -43308,7 +43355,7 @@
                             </div>
                         </td>
                         <td class="prospect-col-pos">
-                            <span class="position-badge pos-${prospect.position}">${prospect.position}</span>
+                            ${(() => { const dp = getProspectDisplayPosition(prospect); return `<span class="position-badge pos-${dp}">${dp}</span>`; })()}
                         </td>
                         <td class="prospect-col-details">
                             <div class="prospect-details">
@@ -43428,7 +43475,7 @@
                         <div class="prospect-detail-name">${prospect.name}</div>
                         <div class="prospect-detail-rank ${rankClass}">#${prospect.rank} Overall</div>
                         <div class="prospect-detail-position">
-                            <span class="position-badge pos-${prospect.position}">${prospect.position}</span>
+                            ${(() => { const dp = getProspectDisplayPosition(prospect); return `<span class="position-badge pos-${dp}">${dp}</span>`; })()}
                         </div>
                     </div>
                 </div>
@@ -43739,7 +43786,13 @@
                 const mlbLogoUrl = row.mlbTeam ? getMLBTeamLogo(row.mlbTeam) : '';
                 const rankDisplay = Number.isFinite(row.rank) && row.rank < 9999 ? `#${row.rank}` : 'N/A';
                 const avgRankDisplay = Number.isFinite(row.avgRank) ? row.avgRank.toFixed(1) : '-';
-                const posClass = String(row.position || '').replace(/[^A-Za-z0-9_-]/g, '');
+                // Derive display position (RHP/LHP) if we can find the prospect
+                let resultDisplayPos = row.position || '';
+                if (resultDisplayPos === 'P') {
+                    const fullP = prospectsData.find(p => p.name === row.name);
+                    if (fullP) resultDisplayPos = getProspectDisplayPosition(fullP);
+                }
+                const posClass = String(resultDisplayPos).replace(/[^A-Za-z0-9_-]/g, '');
                 const bidderCountLabel = `${row.bids.length} manager${row.bids.length === 1 ? '' : 's'} on list`;
                 const tiedWinnerCount = row.bids.filter(bid => bid.priority === row.winner.priority).length;
                 const winnerPriorityLabel = tiedWinnerCount > 1
@@ -43775,7 +43828,7 @@
                                         ${mlbLogoUrl ? `<img src="${opcompEscapeHtml(mlbLogoUrl)}" class="opcomp-result-mlb-logo" alt="${opcompEscapeHtml(row.mlbTeam)}" onerror="this.style.display='none'">` : ''}
                                         ${opcompEscapeHtml(row.mlbTeam || 'FA')}
                                     </span>
-                                    ${row.position ? `<span class="position-badge pos-${posClass}">${opcompEscapeHtml(row.position)}</span>` : ''}
+                                    ${resultDisplayPos ? `<span class="position-badge pos-${posClass}">${opcompEscapeHtml(resultDisplayPos)}</span>` : ''}
                                     <span>Avg: ${avgRankDisplay}</span>
                                 </div>
                             </div>
@@ -44046,8 +44099,15 @@
                     if (!nameMatch && !teamMatch) return false;
                 }
 
-                // Position filter
-                if (posFilter && prospect.position !== posFilter) return false;
+                // Position filter — "P" matches all pitchers (RHP, LHP, P)
+                if (posFilter) {
+                    const displayPos = getProspectDisplayPosition(prospect);
+                    if (posFilter === 'P') {
+                        if (prospect.position !== 'P') return false;
+                    } else {
+                        if (displayPos !== posFilter) return false;
+                    }
+                }
 
                 // MLB team filter
                 if (teamFilter && (prospect.mlb_team || '') !== teamFilter) return false;
@@ -44081,7 +44141,7 @@
                             <div class="opcomp-prospect-name" onclick="openOpcompProspectDetail(${prospectIndex})">${prospect.name}</div>
                             <div class="opcomp-prospect-meta">
                                 <span class="opcomp-prospect-team">${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="opcomp-prospect-mlb-logo" alt="${mlbTeam}" onerror="this.style.display='none'">` : ''}${mlbTeam}</span>
-                                <span class="position-badge pos-${prospect.position}">${prospect.position}</span>
+                                ${(() => { const dp = getProspectDisplayPosition(prospect); return `<span class="position-badge pos-${dp}">${dp}</span>`; })()}
                                 <span>Avg: <span class="opcomp-prospect-avgrank">${avgRank}</span></span>
                             </div>
                             <div class="opcomp-prospect-details">
@@ -44114,6 +44174,9 @@
                 if (prospect) {
                     const mlbLogoUrl = prospect.mlb_team ? getMLBTeamLogo(prospect.mlb_team) : '';
                     const avgRank = prospect.avg_rank ? prospect.avg_rank.toFixed(1) : '-';
+                    // Look up full prospect data for display position
+                    const fullProspect = prospectsData.find(p => p.name === prospect.name) || prospect;
+                    const slotDisplayPos = getProspectDisplayPosition(fullProspect);
                     html += `
                         <div class="opcomp-slot" draggable="true"
                              data-slot-index="${i}"
@@ -44127,7 +44190,7 @@
                             <div class="opcomp-slot-player">
                                 <div class="opcomp-slot-name">${prospect.name}</div>
                                 <div class="opcomp-slot-detail">
-                                    <span class="position-badge pos-${prospect.position}">${prospect.position}</span>
+                                    <span class="position-badge pos-${slotDisplayPos}">${slotDisplayPos}</span>
                                     <span class="opcomp-slot-team">${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="opcomp-slot-mlb-logo" alt="${prospect.mlb_team}" onerror="this.style.display='none'">` : ''}${prospect.mlb_team}</span>
                                     <span>Avg: ${avgRank}</span>
                                 </div>
