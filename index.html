@@ -15218,6 +15218,108 @@
             font-weight: bold;
         }
 
+        /* Roster player hover tooltip */
+        .mock-roster-hoverable { cursor: pointer; }
+        .mock-roster-tooltip {
+            position: fixed;
+            z-index: 10000;
+            background: #fff;
+            border: 1px solid #e0d5c0;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+            padding: 0.9rem 1.1rem 0.85rem;
+            min-width: 175px;
+            max-width: 220px;
+            pointer-events: none;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.12s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            text-align: center;
+        }
+        .mock-roster-tooltip.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .mock-roster-tooltip-close {
+            display: none;
+            position: absolute;
+            top: 7px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            line-height: 1;
+            color: #aaa;
+            cursor: pointer;
+            padding: 0;
+        }
+        .mock-roster-tooltip-close:hover { color: #444; }
+        .mock-roster-tooltip-hs {
+            width: 62px;
+            height: 62px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #eee;
+            border: 2px solid #e0d5c0;
+        }
+        .mock-roster-tooltip-name {
+            font-family: 'Basis33', monospace;
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #222;
+            line-height: 1.2;
+        }
+        .mock-roster-tooltip-team {
+            font-family: 'Basis33', monospace;
+            font-size: 0.78rem;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .mock-roster-tooltip-team img {
+            width: 18px;
+            height: 18px;
+            object-fit: contain;
+        }
+        .mock-roster-tooltip-positions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+            justify-content: center;
+        }
+        .mock-roster-tooltip-backdrop { display: none; }
+        @media (max-width: 768px) {
+            .mock-roster-tooltip {
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                pointer-events: auto;
+                min-width: 220px;
+                max-width: 75vw;
+            }
+            .mock-roster-tooltip-close { display: block; }
+            .mock-roster-tooltip-backdrop {
+                display: block;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.4);
+                z-index: 9999;
+                visibility: hidden;
+                opacity: 0;
+                transition: opacity 0.12s;
+            }
+            .mock-roster-tooltip-backdrop.visible {
+                visibility: visible;
+                opacity: 1;
+            }
+        }
+
         /* Draft Log */
         .mock-draft-log-panel {
             background: white;
@@ -20577,6 +20679,16 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Roster player tooltip -->
+            <div id="mock-roster-tooltip" class="mock-roster-tooltip">
+                <button class="mock-roster-tooltip-close" onclick="closeMockRosterTooltip()">×</button>
+                <img id="mock-roster-tooltip-hs" class="mock-roster-tooltip-hs" src="" alt="" onerror="this.style.display='none'">
+                <div id="mock-roster-tooltip-name" class="mock-roster-tooltip-name"></div>
+                <div id="mock-roster-tooltip-team" class="mock-roster-tooltip-team"></div>
+                <div id="mock-roster-tooltip-positions" class="mock-roster-tooltip-positions"></div>
+            </div>
+            <div id="mock-roster-tooltip-backdrop" class="mock-roster-tooltip-backdrop" onclick="closeMockRosterTooltip()"></div>
 
             <!-- Phase 3: Draft Report -->
             <div id="mock-draft-report" style="display: none;">
@@ -46033,6 +46145,68 @@
             activePlayers.forEach((p, i) => { p.assignedSlot = assignedSlot[i]; });
         }
 
+        window.mockRosterTooltipMap = {};
+        window._mockRosterPid = 0;
+
+        function populateMockRosterTooltip(player) {
+            const hsEl = document.getElementById('mock-roster-tooltip-hs');
+            const nameEl = document.getElementById('mock-roster-tooltip-name');
+            const teamEl = document.getElementById('mock-roster-tooltip-team');
+            const posEl = document.getElementById('mock-roster-tooltip-positions');
+            if (hsEl) {
+                hsEl.style.display = player.headshot_url ? 'block' : 'none';
+                if (player.headshot_url) hsEl.src = player.headshot_url;
+            }
+            if (nameEl) nameEl.textContent = player.name;
+            if (teamEl) {
+                const logo = getMLBTeamLogo(player.mlbTeam || '');
+                teamEl.innerHTML = (logo ? `<img src="${logo}" alt="" onerror="this.style.display='none'">` : '')
+                    + `<span>${player.mlbTeam || 'FA'}</span>`;
+            }
+            if (posEl) posEl.innerHTML = mockDraftPositionBadges(player.positions || []);
+        }
+
+        function showMockRosterTooltip(pid, event) {
+            if (window.innerWidth <= 768) return;
+            const player = window.mockRosterTooltipMap[pid];
+            if (!player) return;
+            populateMockRosterTooltip(player);
+            const tt = document.getElementById('mock-roster-tooltip');
+            tt.classList.add('visible');
+            const x = event.clientX + 14, y = event.clientY - 20;
+            tt.style.left = (x + 220 > window.innerWidth - 10 ? event.clientX - 234 : x) + 'px';
+            tt.style.top = Math.max(10, Math.min(y, window.innerHeight - 200)) + 'px';
+        }
+
+        function moveMockRosterTooltip(event) {
+            if (window.innerWidth <= 768) return;
+            const tt = document.getElementById('mock-roster-tooltip');
+            if (!tt || !tt.classList.contains('visible')) return;
+            const x = event.clientX + 14, y = event.clientY - 20;
+            tt.style.left = (x + 220 > window.innerWidth - 10 ? event.clientX - 234 : x) + 'px';
+            tt.style.top = Math.max(10, Math.min(y, window.innerHeight - 200)) + 'px';
+        }
+
+        function hideMockRosterTooltip() {
+            if (window.innerWidth <= 768) return;
+            document.getElementById('mock-roster-tooltip')?.classList.remove('visible');
+        }
+
+        function tapMockRosterTooltip(pid, event) {
+            if (window.innerWidth > 768) return;
+            event.stopPropagation();
+            const player = window.mockRosterTooltipMap[pid];
+            if (!player) return;
+            populateMockRosterTooltip(player);
+            document.getElementById('mock-roster-tooltip')?.classList.add('visible');
+            document.getElementById('mock-roster-tooltip-backdrop')?.classList.add('visible');
+        }
+
+        function closeMockRosterTooltip() {
+            document.getElementById('mock-roster-tooltip')?.classList.remove('visible');
+            document.getElementById('mock-roster-tooltip-backdrop')?.classList.remove('visible');
+        }
+
         function renderMockDraftRoster() {
             const body = document.getElementById('mock-draft-roster-body');
             const sel = document.getElementById('mock-draft-roster-team');
@@ -46041,6 +46215,8 @@
             const roster = mockDraftState.teamRosters[teamKey];
             if (!roster) { body.innerHTML = '<p style="color:#999;">No roster data</p>'; return; }
             mockDraftOptimizeSlots(roster);
+            window.mockRosterTooltipMap = {};
+            window._mockRosterPid = 0;
 
             const slotOrder = [
                 { label: 'Batters', slots: [
@@ -46062,7 +46238,9 @@
                         const p = playersInSlot[i];
                         if (p) {
                             const keeperTag = p.isKeeper ? '<span class="keeper-tag">K</span>' : '';
-                            html += `<div class="mock-draft-roster-slot${p.isKeeper ? ' keeper-slot' : ''}">
+                            const rpid = ++window._mockRosterPid;
+                            window.mockRosterTooltipMap[rpid] = { name: p.name, positions: p.positions || [], mlbTeam: p.mlbTeam || '', headshot_url: p.headshot_url || '' };
+                            html += `<div class="mock-draft-roster-slot mock-roster-hoverable${p.isKeeper ? ' keeper-slot' : ''}" onmouseenter="showMockRosterTooltip(${rpid},event)" onmouseleave="hideMockRosterTooltip()" onmousemove="moveMockRosterTooltip(event)" onclick="tapMockRosterTooltip(${rpid},event)">
                                 <span class="slot-label"><span class="position-badge pos-${slotDef.pos}">${slotDef.pos}</span></span>
                                 <span class="slot-player">${p.name}${keeperTag}</span>
                                 <span class="slot-points">${p.avgPoints}</span>
@@ -46084,7 +46262,9 @@
                 html += `<div class="mock-draft-roster-divider">Bench (${benchPlayers.length})</div>`;
                 benchPlayers.forEach(p => {
                     const keeperTag = p.isKeeper ? '<span class="keeper-tag">K</span>' : '';
-                    html += `<div class="mock-draft-roster-slot${p.isKeeper ? ' keeper-slot' : ''}">
+                    const rpid = ++window._mockRosterPid;
+                    window.mockRosterTooltipMap[rpid] = { name: p.name, positions: p.positions || [], mlbTeam: p.mlbTeam || '', headshot_url: p.headshot_url || '' };
+                    html += `<div class="mock-draft-roster-slot mock-roster-hoverable${p.isKeeper ? ' keeper-slot' : ''}" onmouseenter="showMockRosterTooltip(${rpid},event)" onmouseleave="hideMockRosterTooltip()" onmousemove="moveMockRosterTooltip(event)" onclick="tapMockRosterTooltip(${rpid},event)">
                         <span class="slot-label"><span class="position-badge pos-BN">BN</span></span>
                         <span class="slot-player">${p.name}${keeperTag}</span>
                         <span class="slot-points">${p.avgPoints}</span>
@@ -46106,7 +46286,9 @@
             if (naPlayers.length > 0) {
                 html += `<div class="mock-draft-roster-divider">NA (Not Active) — Top ${naPlayers.length}</div>`;
                 naPlayers.forEach(p => {
-                    html += `<div class="mock-draft-roster-slot keeper-slot" style="opacity:0.6;">
+                    const rpid = ++window._mockRosterPid;
+                    window.mockRosterTooltipMap[rpid] = { name: p.name, positions: p.positions || [], mlbTeam: p.mlbTeam || '', headshot_url: p.headshot_url || '' };
+                    html += `<div class="mock-draft-roster-slot mock-roster-hoverable keeper-slot" style="opacity:0.6;" onmouseenter="showMockRosterTooltip(${rpid},event)" onmouseleave="hideMockRosterTooltip()" onmousemove="moveMockRosterTooltip(event)" onclick="tapMockRosterTooltip(${rpid},event)">
                         <span class="slot-label"><span class="position-badge" style="background:#e8f7fa;color:#17a2b8;">NA</span></span>
                         <span class="slot-player">${p.name}<span class="keeper-tag">K</span></span>
                         <span class="slot-points">${p.avgPoints}</span>
