@@ -9451,6 +9451,42 @@
             stroke-width: 1;
         }
 
+        /* Density chart styles */
+        .density-curve-type {
+            fill: rgba(180, 180, 180, 0.25);
+            stroke: #333;
+            stroke-width: 1.5;
+            fill-rule: nonzero;
+        }
+        .density-curve-pos {
+            stroke-width: 1.5;
+            fill-rule: nonzero;
+        }
+        .density-median-line {
+            stroke-dasharray: 4, 3;
+            stroke-width: 1.2;
+        }
+        .density-player-line {
+            stroke: #d4a017;
+            stroke-width: 2;
+        }
+        .density-legend-text {
+            font-size: 9px;
+            fill: #555;
+            font-family: 'Basis33', monospace;
+        }
+        .density-label {
+            font-size: 9px;
+            fill: #888;
+            font-family: 'Basis33', monospace;
+        }
+        .density-player-label {
+            font-size: 10px;
+            fill: #d4a017;
+            font-weight: bold;
+            font-family: 'Basis33', monospace;
+        }
+
         /* Mobile styles for projection modal */
         @media (max-width: 900px) {
             .projection-modal-content {
@@ -19647,13 +19683,13 @@
                                 <canvas id="projection-history-canvas"></canvas>
                             </div>
                         </div>
-                        <!-- Bottom chart: Toggle between Position Ranking and Points vs G/IP -->
+                        <!-- Bottom chart: Toggle between Density and Points vs PA/IP -->
                         <div class="projection-chart-box">
                             <div class="projection-bottom-chart-header">
-                                <div class="projection-chart-title" id="projection-bottom-chart-title" style="margin-bottom:0;">Position Ranking</div>
+                                <div class="projection-chart-title" id="projection-bottom-chart-title" style="margin-bottom:0;">Position Density</div>
                                 <div class="chart-toggle projection-bottom-toggle">
-                                    <button class="chart-toggle-btn chart-toggle-btn-sm active" id="proj-toggle-rank-btn" onclick="toggleProjectionBottomChart('rank')">Pos Rank</button>
-                                    <button class="chart-toggle-btn chart-toggle-btn-sm" id="proj-toggle-scatter-btn" onclick="toggleProjectionBottomChart('scatter')">Pts vs G/IP</button>
+                                    <button class="chart-toggle-btn chart-toggle-btn-sm active" id="proj-toggle-rank-btn" onclick="toggleProjectionBottomChart('rank')">Density</button>
+                                    <button class="chart-toggle-btn chart-toggle-btn-sm" id="proj-toggle-scatter-btn" onclick="toggleProjectionBottomChart('scatter')">Pts vs PA/IP</button>
                                 </div>
                             </div>
                             <div class="projection-chart" id="projection-pos-chart">
@@ -39125,7 +39161,7 @@
                 historyChartBox.style.display = 'none';
             }
 
-            // Bottom chart: always start on Position Ranking
+            // Bottom chart: always start on Position Density
             renderPositionRankChart(player, posChartEl);
 
             // Reset bottom toggle to rank view
@@ -39138,7 +39174,7 @@
             if (rankBtn) rankBtn.classList.add('active');
             if (scatterBtn) scatterBtn.classList.remove('active');
             const bottomTitle = document.getElementById('projection-bottom-chart-title');
-            if (bottomTitle) bottomTitle.textContent = 'Position Ranking';
+            if (bottomTitle) bottomTitle.textContent = 'Position Density';
 
             // Store state for lazy scatter rendering via toggle
             projectionBottomChartState = {
@@ -39167,119 +39203,205 @@
             panel.style.minHeight = `${targetHeight}px`;
         }
 
+        // --- Density chart utilities ---
+        function gaussianKDE(values, numPoints) {
+            numPoints = numPoints || 200;
+            const n = values.length;
+            if (n === 0) return [];
+            const mean = values.reduce((s, v) => s + v, 0) / n;
+            const variance = values.reduce((s, v) => s + (v - mean) ** 2, 0) / n;
+            const sigma = Math.sqrt(variance) || 1;
+            const sorted = [...values].sort((a, b) => a - b);
+            const q1 = sorted[Math.floor(n * 0.25)];
+            const q3 = sorted[Math.floor(n * 0.75)];
+            const iqr = q3 - q1;
+            const h = Math.max(0.9 * Math.min(sigma, (iqr / 1.34) || sigma) * Math.pow(n, -0.2), 1);
+            const minVal = sorted[0] - 2 * h;
+            const maxVal = sorted[n - 1] + 2 * h;
+            const step = (maxVal - minVal) / (numPoints - 1);
+            const invH = 1 / h;
+            const invNH = 1 / (n * h);
+            const coeff = invNH / Math.sqrt(2 * Math.PI);
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const x = minVal + i * step;
+                let density = 0;
+                for (let j = 0; j < n; j++) {
+                    const z = (x - values[j]) * invH;
+                    density += Math.exp(-0.5 * z * z);
+                }
+                points.push({ x, y: density * coeff });
+            }
+            return points;
+        }
+
+        function getDensityPositionColors(pos) {
+            const p = (pos || '').toUpperCase();
+            const map = {
+                'C':  { dark: '#4a148c', fill: 'rgba(74, 20, 140, 0.28)' },
+                '1B': { dark: '#1565c0', fill: 'rgba(21, 101, 192, 0.28)' },
+                '2B': { dark: '#e65100', fill: 'rgba(230, 81, 0, 0.28)' },
+                '3B': { dark: '#d84315', fill: 'rgba(216, 67, 21, 0.28)' },
+                'SS': { dark: '#9c7c00', fill: 'rgba(200, 160, 0, 0.30)' },
+                'OF': { dark: '#2e7d32', fill: 'rgba(46, 125, 50, 0.28)' },
+                'LF': { dark: '#2e7d32', fill: 'rgba(46, 125, 50, 0.28)' },
+                'CF': { dark: '#2e7d32', fill: 'rgba(46, 125, 50, 0.28)' },
+                'RF': { dark: '#2e7d32', fill: 'rgba(46, 125, 50, 0.28)' },
+                'DH': { dark: '#546e7a', fill: 'rgba(84, 110, 122, 0.28)' },
+                'SP': { dark: '#7e57c2', fill: 'rgba(126, 87, 194, 0.28)' },
+                'RP': { dark: '#00838f', fill: 'rgba(0, 131, 143, 0.28)' },
+            };
+            return map[p] || { dark: '#666', fill: 'rgba(102,102,102,0.25)' };
+        }
+
+        function densityMedian(arr) {
+            if (!arr.length) return 0;
+            const s = [...arr].sort((a, b) => a - b);
+            const m = Math.floor(s.length / 2);
+            return s.length % 2 !== 0 ? s[m] : (s[m - 1] + s[m]) / 2;
+        }
+
+        function densityPath(kde, scaleX, scaleY, baseline) {
+            if (!kde.length) return '';
+            let d = `M ${scaleX(kde[0].x)} ${baseline}`;
+            for (let i = 0; i < kde.length; i++) d += ` L ${scaleX(kde[i].x)} ${scaleY(kde[i].y)}`;
+            d += ` L ${scaleX(kde[kde.length - 1].x)} ${baseline} Z`;
+            return d;
+        }
+
         function renderPositionRankChart(selectedPlayer, container) {
             const isBatter = selectedPlayer.type === 'batter';
             const allPlayers = isBatter ? [...allProjectionBatters] : [...allProjectionPitchers];
+            const typeLabel = isBatter ? 'All Batters' : 'All Pitchers';
 
             // Get primary position
             const posDisplay = formatProjectionPosition(selectedPlayer.position, selectedPlayer.name);
             const primaryPos = posDisplay.split(',')[0].trim();
+            const posUpper = primaryPos.toUpperCase();
+            const posLabel = ['LF','CF','RF'].includes(posUpper) ? 'OF' : posUpper;
 
-            // Filter players
+            // Filter position-specific players (reuse OF/SP/RP grouping logic)
             let positionPlayers;
-            if (['LF', 'CF', 'RF', 'OF'].includes(primaryPos.toUpperCase())) {
+            if (['LF', 'CF', 'RF', 'OF'].includes(posUpper)) {
                 positionPlayers = allPlayers.filter(p => {
                     const pos = (p.position || '').toUpperCase();
                     return pos.includes('LF') || pos.includes('CF') || pos.includes('RF') || pos.includes('OF');
                 });
-            } else if (['SP', 'RP'].includes(primaryPos.toUpperCase())) {
-                positionPlayers = allPlayers.filter(p => {
-                    const pos = (p.position || '').toUpperCase();
-                    return pos.includes(primaryPos.toUpperCase());
-                });
             } else {
                 positionPlayers = allPlayers.filter(p => {
                     const pos = (p.position || '').toUpperCase();
-                    return pos.includes(primaryPos.toUpperCase());
+                    return pos.includes(posUpper);
                 });
             }
 
-            // Sort by projected points
-            positionPlayers.sort((a, b) => (a.projected_points || 0) - (b.projected_points || 0));
+            // Extract projected points arrays (filter out zero/null)
+            const typeValues = allPlayers.map(p => p.projected_points || 0).filter(v => v > 0);
+            const posValues = positionPlayers.map(p => p.projected_points || 0).filter(v => v > 0);
 
-            // LIMIT: 75 for SP, 50 for others
-            const limit = primaryPos.toUpperCase() === 'SP' ? 75 : 50;
-            const topPlayers = positionPlayers.slice(-limit);
+            if (typeValues.length < 2 || posValues.length < 2) {
+                container.innerHTML = '<div style="text-align:center;color:#999;padding:2rem;">Not enough data for density plot</div>';
+                return;
+            }
+
+            // Compute KDE
+            const typeKDE = gaussianKDE(typeValues, 200);
+            const posKDE = gaussianKDE(posValues, 200);
+
+            // Medians
+            const typeMedian = densityMedian(typeValues);
+            const posMedian = densityMedian(posValues);
+            const playerPts = selectedPlayer.projected_points || selectedPlayer.avgPoints || 0;
+
+            // Colors
+            const posColors = getDensityPositionColors(posLabel);
 
             // Dimensions
             const width = container.clientWidth || 320;
             const height = 180;
-            // Reduced right padding to 10 to fill box better
-            const padding = { top: 15, right: 10, bottom: 25, left: 45 };
+            const padding = { top: 12, right: 12, bottom: 28, left: 35 };
+            const chartW = width - padding.left - padding.right;
+            const chartH = height - padding.top - padding.bottom;
 
-            // Y-Scale
-            const minPts = Math.min(...topPlayers.map(p => p.projected_points || 0));
-            const maxPts = Math.max(...topPlayers.map(p => p.projected_points || 0));
-            const tickInterval = 50;
-            const niceMin = Math.floor(minPts / tickInterval) * tickInterval;
-            const niceMax = Math.ceil(maxPts / tickInterval) * tickInterval;
-            const range = niceMax - niceMin || 1;
-            const scaleY = (val) => padding.top + (height - padding.top - padding.bottom) - ((val - niceMin) / range * (height - padding.top - padding.bottom));
+            // X domain: union of both KDE ranges, include player point
+            const allKdeX = [...typeKDE.map(p => p.x), ...posKDE.map(p => p.x), playerPts];
+            const xMin = Math.min(...allKdeX);
+            const xMax = Math.max(...allKdeX);
+            const xRange = xMax - xMin || 1;
+            const scaleX = (v) => padding.left + ((v - xMin) / xRange) * chartW;
 
-            // SVG setup
-            let svg = `<svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" style="display: block;">`;
+            // Y domain: max density from either curve
+            const maxDensity = Math.max(...typeKDE.map(p => p.y), ...posKDE.map(p => p.y));
+            const yMax = maxDensity * 1.12; // 12% headroom
+            const scaleY = (v) => padding.top + chartH - (v / yMax) * chartH;
+            const baseline = padding.top + chartH;
 
-            // Draw Axis/Grid
-            svg += `<line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${height - padding.bottom}" class="chart-axis"/>`;
-            for (let val = niceMin; val <= niceMax; val += tickInterval) {
-                const y = scaleY(val);
-                svg += `<line x1="${padding.left - 5}" y1="${y}" x2="${padding.left}" y2="${y}" class="chart-axis"/>`;
-                svg += `<text x="${padding.left - 8}" y="${y + 4}" text-anchor="end" class="chart-axis-label">${val}</text>`;
-                svg += `<line x1="${padding.left}" y1="${y}" x2="${width - padding.right}" y2="${y}" class="chart-grid"/>`;
+            // X-axis tick intervals (50-pt)
+            const xTickStart = Math.ceil(xMin / 50) * 50;
+
+            let svg = `<svg width="100%" height="${height}" viewBox="0 0 ${width} ${height}" style="display:block;">`;
+
+            // X-axis line
+            svg += `<line x1="${padding.left}" y1="${baseline}" x2="${width - padding.right}" y2="${baseline}" class="chart-axis"/>`;
+
+            // X-axis ticks and grid
+            for (let val = xTickStart; val <= xMax; val += 50) {
+                const x = scaleX(val);
+                if (x >= padding.left && x <= width - padding.right) {
+                    svg += `<line x1="${x}" y1="${baseline}" x2="${x}" y2="${baseline + 4}" class="chart-axis"/>`;
+                    svg += `<text x="${x}" y="${baseline + 15}" text-anchor="middle" class="chart-axis-label">${Math.round(val)}</text>`;
+                    svg += `<line x1="${x}" y1="${padding.top}" x2="${x}" y2="${baseline}" class="chart-grid"/>`;
+                }
             }
-            svg += `<text x="12" y="${height / 2}" text-anchor="middle" transform="rotate(-90, 12, ${height / 2})" class="chart-axis-label" style="font-weight: bold;">Proj Pts</text>`;
-            svg += `<line x1="${padding.left}" y1="${height - padding.bottom}" x2="${width - padding.right}" y2="${height - padding.bottom}" class="chart-axis"/>`;
 
-            // NEW Spacing Logic: Spread fully edge-to-edge
-            const chartWidth = width - padding.left - padding.right;
-            const count = topPlayers.length;
-            const dotSpacing = count > 1 ? chartWidth / (count - 1) : 0;
+            // Y-axis line (no labels — density values are meaningless to users)
+            svg += `<line x1="${padding.left}" y1="${padding.top}" x2="${padding.left}" y2="${baseline}" class="chart-axis"/>`;
 
-            // Draw Dots (Background)
-            topPlayers.forEach((player, i) => {
-                if (player.name === selectedPlayer.name) return;
-                // Use i directly to start at 0 (left) and end at width (right)
-                const x = padding.left + (dotSpacing * i);
-                const y = scaleY(player.projected_points || 0);
-                const pts = (player.projected_points || 0).toFixed(1);
-                const isKeeper = getPlayerKeeperInfo(player.name) !== null;
-                const keeperClass = isKeeper ? 'keeper-dot' : '';
-                svg += `<circle cx="${x}" cy="${y}" r="5" class="chart-dot ${keeperClass}" data-name="${player.name}" data-pts="${pts}"/>`;
-            });
+            // X-axis label
+            svg += `<text x="${width / 2}" y="${height - 3}" text-anchor="middle" class="chart-axis-label" style="font-weight:bold;">Fantasy Points</text>`;
 
-            // Draw Selected Dot (Foreground)
-            topPlayers.forEach((player, i) => {
-                if (player.name !== selectedPlayer.name) return;
-                const x = padding.left + (dotSpacing * i);
-                const y = scaleY(player.projected_points || 0);
-                const pts = (player.projected_points || 0).toFixed(1);
-                svg += `<circle cx="${x}" cy="${y}" r="8" class="chart-dot highlighted" data-name="${player.name}" data-pts="${pts}"/>`;
-            });
+            // --- Type curve (background) ---
+            svg += `<path d="${densityPath(typeKDE, scaleX, scaleY, baseline)}" class="density-curve-type"/>`;
 
-            svg += `<text x="${width / 2}" y="${height - 5}" text-anchor="middle" class="chart-axis-label" style="font-weight: bold;">${primaryPos.toUpperCase()} Rankings</text>`;
+            // --- Position curve (foreground) ---
+            svg += `<path d="${densityPath(posKDE, scaleX, scaleY, baseline)}" class="density-curve-pos" fill="${posColors.fill}" stroke="${posColors.dark}"/>`;
+
+            // --- Type median (dotted black) ---
+            const typeMedianX = scaleX(typeMedian);
+            if (typeMedianX >= padding.left && typeMedianX <= width - padding.right) {
+                svg += `<line x1="${typeMedianX}" y1="${padding.top}" x2="${typeMedianX}" y2="${baseline}" class="density-median-line" stroke="#333"/>`;
+            }
+
+            // --- Position median (dotted position color) ---
+            const posMedianX = scaleX(posMedian);
+            if (posMedianX >= padding.left && posMedianX <= width - padding.right) {
+                svg += `<line x1="${posMedianX}" y1="${padding.top}" x2="${posMedianX}" y2="${baseline}" class="density-median-line" stroke="${posColors.dark}"/>`;
+            }
+
+            // --- Player marker (solid gold line) ---
+            const playerX = scaleX(playerPts);
+            if (playerX >= padding.left && playerX <= width - padding.right) {
+                svg += `<line x1="${playerX}" y1="${padding.top}" x2="${playerX}" y2="${baseline}" class="density-player-line"/>`;
+                // Player points label
+                const labelAnchor = playerX > width - 50 ? 'end' : (playerX < padding.left + 50 ? 'start' : 'middle');
+                svg += `<text x="${playerX}" y="${padding.top - 2}" text-anchor="${labelAnchor}" class="density-player-label">${Math.round(playerPts)}</text>`;
+            }
+
+            // --- Legend (compact, top-left inside chart) ---
+            const lgX = padding.left + 6;
+            const lgY = padding.top + 10;
+            // Type legend
+            svg += `<line x1="${lgX}" y1="${lgY}" x2="${lgX + 14}" y2="${lgY}" stroke="#333" stroke-width="1.5"/>`;
+            svg += `<text x="${lgX + 18}" y="${lgY + 3}" class="density-legend-text">${typeLabel}</text>`;
+            // Position legend
+            svg += `<line x1="${lgX}" y1="${lgY + 12}" x2="${lgX + 14}" y2="${lgY + 12}" stroke="${posColors.dark}" stroke-width="1.5"/>`;
+            svg += `<text x="${lgX + 18}" y="${lgY + 15}" class="density-legend-text">${posLabel}</text>`;
+            // Player legend
+            svg += `<line x1="${lgX}" y1="${lgY + 24}" x2="${lgX + 14}" y2="${lgY + 24}" stroke="#d4a017" stroke-width="2"/>`;
+            svg += `<text x="${lgX + 18}" y="${lgY + 27}" class="density-legend-text" style="fill:#d4a017;">${selectedPlayer.name.split(' ').pop()}</text>`;
+
             svg += '</svg>';
-            svg += `<div class="chart-tooltip" style="display: none; position: absolute; background: rgba(0,0,0,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; pointer-events: none; z-index: 100;"></div>`;
-
             container.innerHTML = svg;
             container.style.position = 'relative';
-
-            // Tooltip listeners
-            const tooltip = container.querySelector('.chart-tooltip');
-            container.querySelectorAll('.chart-dot').forEach(dot => {
-                dot.addEventListener('mouseenter', (e) => {
-                    const name = dot.getAttribute('data-name');
-                    const pts = dot.getAttribute('data-pts');
-                    tooltip.textContent = `${name}: ${pts} pts`;
-                    tooltip.style.display = 'block';
-                    tooltip.style.left = (e.offsetX + 10) + 'px';
-                    tooltip.style.top = (e.offsetY - 20) + 'px';
-                });
-                dot.addEventListener('mousemove', (e) => {
-                    tooltip.style.left = (e.offsetX + 10) + 'px';
-                    tooltip.style.top = (e.offsetY - 20) + 'px';
-                });
-                dot.addEventListener('mouseleave', () => { tooltip.style.display = 'none'; });
-            });
         }
 
         function renderScatterChart(selectedPlayer, container, isBatter, systemProjectionData = null) {
@@ -39825,7 +39947,7 @@
             if (view === 'rank') {
                 posChart.style.display = '';
                 scatterChart.style.display = 'none';
-                titleEl.textContent = 'Position Ranking';
+                titleEl.textContent = 'Position Density';
                 rankBtn.classList.add('active');
                 scatterBtn.classList.remove('active');
             } else {
