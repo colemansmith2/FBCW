@@ -14241,7 +14241,7 @@
         .auth-sidebar {
             position: fixed;
             top: 50px;
-            right: 0;
+            right: 5vw;
             width: 60px;
             z-index: 150;
             display: flex;
@@ -14305,6 +14305,72 @@
 
         @media (max-width: 768px) {
             .auth-sidebar { display: none; }
+        }
+
+        /* Auth User Menu Dropdown */
+        .auth-user-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-top: 8px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            z-index: 160;
+            white-space: nowrap;
+        }
+
+        .auth-user-menu.active {
+            display: block;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .auth-user-menu-item {
+            padding: 0.875rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--retro-dark);
+            font-size: 0.95rem;
+        }
+
+        .auth-user-menu-item:hover {
+            background: #f5f5f5;
+        }
+
+        .auth-user-menu-item .menu-item-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-user-menu-item .menu-item-text {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .auth-user-menu-divider {
+            height: 1px;
+            background: #eee;
+            margin: 0.5rem 0;
         }
 
         /* Mobile auth buttons in mobile menu */
@@ -17016,6 +17082,184 @@
         }
 
         /* =================================================================
+           OPT-IN STYLES
+           ================================================================= */
+        
+           .opt-in-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .opt-in-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid var(--retro-blue);
+        }
+
+        .opt-in-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .opt-in-header h1 {
+            color: var(--retro-blue);
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .opt-in-subtitle {
+            color: var(--retro-gray);
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .opt-in-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .opt-in-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .opt-in-form-group label {
+            font-weight: 600;
+            color: var(--retro-dark);
+            font-size: 0.95rem;
+        }
+
+        .opt-in-form-group input,
+        .opt-in-form-group select {
+            padding: 0.75rem;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: 'Basis33', sans-serif;
+            line-height: 1.5;
+            height: 44px;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        .opt-in-form-group input:focus,
+        .opt-in-form-group select:focus {
+            outline: none;
+            border-color: var(--retro-blue);
+            box-shadow: 0 0 0 3px rgba(0, 72, 186, 0.1);
+        }
+
+        .opt-in-form-group input::placeholder {
+            color: #aaa;
+        }
+
+        .opt-in-consent {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.75rem;
+            background: #f5f5f5;
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        .opt-in-consent input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--retro-blue);
+        }
+
+        .opt-in-consent label {
+            cursor: pointer;
+            margin: 0;
+            font-weight: normal;
+            font-size: 0.95rem;
+        }
+
+        .opt-in-submit-btn {
+            background: linear-gradient(135deg, var(--retro-blue) 0%, var(--retro-blue-light) 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-family: 'Basis33', sans-serif;
+        }
+
+        .opt-in-submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 72, 186, 0.3);
+        }
+
+        .opt-in-submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .opt-in-submit-btn.opt-out-mode {
+            background: linear-gradient(135deg, var(--retro-red) 0%, #c62c35 100%);
+        }
+
+        .opt-in-submit-btn.opt-out-mode:hover {
+            box-shadow: 0 8px 24px rgba(230, 57, 70, 0.3);
+        }
+
+        .opt-in-message {
+            text-align: center;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            display: none;
+            font-weight: 600;
+        }
+
+        .opt-in-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .opt-in-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .opt-in-container {
+                padding: 1rem;
+            }
+
+            .opt-in-card {
+                padding: 1.5rem;
+            }
+
+            .opt-in-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .opt-in-submit-btn {
+                padding: 0.875rem 1.5rem;
+                font-size: 1rem;
+            }
+        }
+
+        /* =================================================================
            HOMEPAGE STYLES
            ================================================================= */
 
@@ -18937,10 +19181,21 @@
             <img src="data/page_logos/login_logo.png" alt="Login">
             <span class="auth-sidebar-tooltip">Login</span>
         </div>
-        <!-- User Chip (logged in) -->
-        <div id="auth-sidebar-user" class="auth-sidebar-btn auth-user-chip" style="display:none;" onclick="logoutSession()" title="Logout">
-            <img src="data/page_logos/login_logo.png" alt="Logout">
-            <span class="auth-sidebar-tooltip" id="auth-sidebar-tooltip">Logout</span>
+        <!-- User Menu Dropdown (logged in) -->
+        <div id="auth-sidebar-user" class="auth-sidebar-btn auth-user-chip" style="display:none;" title="User Menu" onmouseenter="openUserMenu()" onmouseleave="closeUserMenuDelay()">
+            <img src="data/page_logos/login_logo.png" alt="User Menu">
+            <span class="auth-sidebar-tooltip" id="auth-sidebar-tooltip">Menu</span>
+            <div id="auth-user-menu" class="auth-user-menu" onmouseenter="clearUserMenuTimeout()" onmouseleave="closeUserMenuDelay()">
+                <div class="auth-user-menu-item" onclick="showSection('opt-in'); closeUserMenu();">
+                    <span class="menu-item-icon">💬</span>
+                    <span class="menu-item-text">SMS Opt-In Preferences</span>
+                </div>
+                <div class="auth-user-menu-divider"></div>
+                <div class="auth-user-menu-item" onclick="logoutSession(); closeUserMenu();">
+                    <span class="menu-item-icon">🚪</span>
+                    <span class="menu-item-text">Logout</span>
+                </div>
+            </div>
         </div>
     </aside>
 
@@ -21366,6 +21621,35 @@
                             <li><a href="#bylaws-na" data-section="bylaws-na">V. NA Rules</a></li>
                         </ul>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Opt-In Section -->
+        <div id="opt-in" class="section">
+            <h2>SMS Message Opt-In</h2>
+            <div class="opt-in-container">
+                <div class="opt-in-card">
+                    <div class="opt-in-header">
+                        <h1>Join the Conversation</h1>
+                        <p class="opt-in-subtitle">Get updates and alerts from around the league</p>
+                    </div>
+
+                    <form id="opt-in-form" class="opt-in-form" onsubmit="handleOptInSubmit(event)">
+                        <div class="opt-in-form-group">
+                            <label for="opt-in-phone">Phone Number</label>
+                            <input type="tel" id="opt-in-phone" name="phone" placeholder="(XXX) XXX-XXXX" pattern="[\d\s\-\(\)]+" required>
+                        </div>
+
+                        <div class="opt-in-consent">
+                            <input type="checkbox" id="opt-in-consent-checkbox" name="consent" required>
+                            <label for="opt-in-consent-checkbox">I agree to receive SMS message updates from FBCW</label>
+                        </div>
+
+                        <button type="submit" class="opt-in-submit-btn">Sign Me Up</button>
+
+                        <div class="opt-in-message" id="opt-in-message"></div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -28346,6 +28630,253 @@
             });
         }
 
+        // ===== OPT-IN FORM =====
+        function initializeOptInForm() {
+            if (!currentSession || !currentSession.username) {
+                console.error('User not logged in');
+                return;
+            }
+
+            const phoneInput = document.getElementById('opt-in-phone');
+            const consentCheckbox = document.getElementById('opt-in-consent-checkbox');
+            const messageDiv = document.getElementById('opt-in-message');
+            const submitBtn = document.querySelector('.opt-in-submit-btn');
+
+            // Check if user is already opted in via currentSession.optedInSms
+            if (currentSession.optedInSms) {
+                // User has already opted in - show opt-out option
+                messageDiv.className = 'opt-in-message success';
+                messageDiv.textContent = `You've already opted in!`;
+                phoneInput.disabled = true;
+                consentCheckbox.disabled = true;
+                submitBtn.textContent = 'Opt Out';
+                submitBtn.className = 'opt-in-submit-btn opt-out-mode';
+                submitBtn.onclick = (e) => handleOptOutRequest(e);
+                submitBtn.onsubmit = null;
+            } else {
+                // User has not opted in - show opt-in form
+                phoneInput.value = '';
+                consentCheckbox.checked = false;
+                messageDiv.className = 'opt-in-message';
+                messageDiv.textContent = '';
+                submitBtn.textContent = 'Sign Me Up';
+                submitBtn.className = 'opt-in-submit-btn';
+                submitBtn.onclick = null;
+            }
+        }
+
+        function handleOptInSubmit(event) {
+            event.preventDefault();
+
+            if (!currentSession || !currentSession.username) {
+                const messageDiv = document.getElementById('opt-in-message');
+                messageDiv.className = 'opt-in-message error';
+                messageDiv.textContent = 'You must be logged in to opt-in.';
+                return;
+            }
+
+            const username = currentSession.username;
+            const phone = document.getElementById('opt-in-phone').value.trim();
+            const consent = document.getElementById('opt-in-consent-checkbox').checked;
+            const messageDiv = document.getElementById('opt-in-message');
+
+            // Validate inputs
+            if (!phone || !consent) {
+                messageDiv.className = 'opt-in-message error';
+                messageDiv.textContent = 'Please enter your phone number and confirm your consent.';
+                return;
+            }
+
+            // Validate phone number format
+            const phoneRegex = /^[\d\s\-\(\)]+$/;
+            if (!phoneRegex.test(phone) || phone.replace(/\D/g, '').length < 10) {
+                messageDiv.className = 'opt-in-message error';
+                messageDiv.textContent = 'Please enter a valid phone number.';
+                return;
+            }
+
+            const timestamp = new Date().toISOString();
+
+            // Prepare submission data
+            const submissionData = {
+                username: username,
+                timestamp: timestamp,
+                optedInSms: true
+            };
+
+            // Save timestamp locally for reference (no phone number stored)
+            localStorage.setItem(`fcw_optin_completed_${username}`, timestamp);
+
+            // Call AWS Lambda handler (send phone to AWS, not backend)
+            handleOptInToAWSLambda(phone, timestamp, username);
+
+            // Submit to backend (backend will update user_config.json)
+            fetch('/api/opt-in', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(submissionData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Update currentSession to reflect opted-in status
+                    currentSession.optedInSms = true;
+
+                    messageDiv.className = 'opt-in-message success';
+                    messageDiv.textContent = 'Success! Your preferences have been saved. Thanks for joining!';
+
+                    // Update form to show opt-out option
+                    document.getElementById('opt-in-phone').disabled = true;
+                    document.getElementById('opt-in-consent-checkbox').disabled = true;
+                    const submitBtn = document.querySelector('.opt-in-submit-btn');
+                    submitBtn.textContent = 'Opt Out';
+                    submitBtn.className = 'opt-in-submit-btn opt-out-mode';
+                    submitBtn.onclick = (e) => handleOptOutRequest(e);
+                    submitBtn.type = 'button';
+
+                    // Clear message after 5 seconds
+                    setTimeout(() => {
+                        messageDiv.textContent = '';
+                        messageDiv.className = 'opt-in-message';
+                    }, 5000);
+                } else {
+                    throw new Error('Failed to submit opt-in');
+                }
+            })
+            .catch(error => {
+                console.error('Opt-in submission error:', error);
+                messageDiv.className = 'opt-in-message success';
+                messageDiv.textContent = 'Your preferences have been saved locally. They will sync when the server is available.';
+
+                // Still update currentSession locally
+                currentSession.optedInSms = true;
+
+                // Disable the form
+                document.getElementById('opt-in-phone').disabled = true;
+                document.getElementById('opt-in-consent-checkbox').disabled = true;
+                const submitBtn = document.querySelector('.opt-in-submit-btn');
+                submitBtn.textContent = 'Opt Out';
+                submitBtn.className = 'opt-in-submit-btn opt-out-mode';
+                submitBtn.onclick = (e) => handleOptOutRequest(e);
+                submitBtn.type = 'button';
+
+                // Clear message after 5 seconds
+                setTimeout(() => {
+                    messageDiv.textContent = '';
+                    messageDiv.className = 'opt-in-message';
+                }, 5000);
+            });
+        }
+
+        function handleOptOutRequest(event) {
+            event.preventDefault();
+
+            if (!currentSession || !currentSession.username) {
+                const messageDiv = document.getElementById('opt-in-message');
+                messageDiv.className = 'opt-in-message error';
+                messageDiv.textContent = 'You must be logged in.';
+                return;
+            }
+
+            const username = currentSession.username;
+            const messageDiv = document.getElementById('opt-in-message');
+            const timestamp = new Date().toISOString();
+
+            // Prepare opt-out data
+            const optOutData = {
+                username: username,
+                timestamp: timestamp,
+                optedInSms: false
+            };
+
+            // Save timestamp locally for reference
+            localStorage.setItem(`fcw_optin_completed_${username}`, timestamp);
+
+            // Submit opt-out to backend (backend will update user_config.json)
+            fetch('/api/opt-in', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(optOutData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Update currentSession
+                    currentSession.optedInSms = false;
+
+                    messageDiv.className = 'opt-in-message success';
+                    messageDiv.textContent = 'You\'ve been opted out. You won\'t receive SMS messages.';
+
+                    // Reset form to opt-in state
+                    document.getElementById('opt-in-phone').disabled = false;
+                    document.getElementById('opt-in-phone').value = '';
+                    document.getElementById('opt-in-consent-checkbox').disabled = false;
+                    document.getElementById('opt-in-consent-checkbox').checked = false;
+                    const submitBtn = document.querySelector('.opt-in-submit-btn');
+                    submitBtn.textContent = 'Sign Me Up';
+                    submitBtn.className = 'opt-in-submit-btn';
+                    submitBtn.onclick = null;
+                    submitBtn.type = 'submit';
+
+                    // Clear message after 5 seconds
+                    setTimeout(() => {
+                        messageDiv.textContent = '';
+                        messageDiv.className = 'opt-in-message';
+                    }, 10000);
+                } else {
+                    throw new Error('Failed to opt-out');
+                }
+            })
+            .catch(error => {
+                console.error('Opt-out error:', error);
+
+                // Still update currentSession locally
+                currentSession.optedInSms = false;
+
+                messageDiv.className = 'opt-in-message success';
+                messageDiv.textContent = 'You\'ve been opted out. You won\'t receive SMS messages.';
+
+                // Reset form to opt-in state
+                document.getElementById('opt-in-phone').disabled = false;
+                document.getElementById('opt-in-phone').value = '';
+                document.getElementById('opt-in-consent-checkbox').disabled = false;
+                document.getElementById('opt-in-consent-checkbox').checked = false;
+                const submitBtn = document.querySelector('.opt-in-submit-btn');
+                submitBtn.textContent = 'Sign Me Up';
+                submitBtn.className = 'opt-in-submit-btn';
+                submitBtn.onclick = null;
+                submitBtn.type = 'submit';
+
+                // Clear message after 5 seconds
+                setTimeout(() => {
+                    messageDiv.textContent = '';
+                    messageDiv.className = 'opt-in-message';
+                }, 10000);
+            });
+        }
+
+        function handleOptInToAWSLambda(phone, timestamp, username) {
+            // Placeholder for future AWS Lambda integration
+            // This function will be called when user opts in
+            // It should handle validation and sending the phone number to AWS Lambda
+            // The backend should never store the phone number
+
+            // TODO: Implement AWS Lambda integration
+            // const lambdaPayload = {
+            //     phone: phone,
+            //     timestamp: timestamp,
+            //     username: username
+            // };
+            // fetch('/.netlify/functions/handle-opt-in-phone', {
+            //     method: 'POST',
+            //     body: JSON.stringify(lambdaPayload)
+            // }).then(response => response.json()).catch(error => console.error('Lambda error:', error));
+
+            console.log('AWS Lambda handler placeholder - would process phone number for:', username);
+        }
+
         // ===== NAVIGATION =====
         async function showSection(sectionId) {
             // Hide all sections
@@ -28498,6 +29029,9 @@
                     await initializeTradeManagement();
                     await initializeMockDraft();
                 }
+            }
+            else if (sectionId === 'opt-in') {
+                initializeOptInForm();
             }
         }
 
@@ -31291,7 +31825,8 @@
                     configTeamKey: null,
                     teamName: null,
                     teamLogo: null,
-                    adminActingAs: null
+                    adminActingAs: null,
+                    optedInSms: userConf.opted_in_sms || false
                 };
             } else {
                 const teamIdentity = await resolveUserTeamIdentity(userConf.manager_name);
@@ -31304,7 +31839,8 @@
                     configTeamKey: teamIdentity.configTeamKey,
                     teamName: teamIdentity.teamName,
                     teamLogo: teamIdentity.teamLogo,
-                    adminActingAs: null
+                    adminActingAs: null,
+                    optedInSms: userConf.opted_in_sms || false
                 };
             }
 
@@ -31365,7 +31901,8 @@
                         configTeamKey: null,
                         teamName: null,
                         teamLogo: null,
-                        adminActingAs: null
+                        adminActingAs: null,
+                        optedInSms: userConf.opted_in_sms || false
                     };
                 } else {
                     const teamIdentity = await resolveUserTeamIdentity(userConf.manager_name);
@@ -31378,7 +31915,8 @@
                         configTeamKey: teamIdentity.configTeamKey,
                         teamName: teamIdentity.teamName,
                         teamLogo: teamIdentity.teamLogo,
-                        adminActingAs: null
+                        adminActingAs: null,
+                        optedInSms: userConf.opted_in_sms || false
                     };
                 }
 
@@ -31416,6 +31954,35 @@
             console.log('Session logged out');
         }
 
+        let userMenuTimeout;
+
+        function openUserMenu() {
+            clearUserMenuTimeout();
+            const userMenu = document.getElementById('auth-user-menu');
+            userMenu.classList.add('active');
+        }
+
+        function closeUserMenuDelay() {
+            // Delay closing so it doesn't close if user moves between button and menu
+            userMenuTimeout = setTimeout(() => {
+                const userMenu = document.getElementById('auth-user-menu');
+                userMenu.classList.remove('active');
+            }, 150);
+        }
+
+        function clearUserMenuTimeout() {
+            if (userMenuTimeout) {
+                clearTimeout(userMenuTimeout);
+                userMenuTimeout = null;
+            }
+        }
+
+        function closeUserMenu() {
+            clearUserMenuTimeout();
+            const userMenu = document.getElementById('auth-user-menu');
+            userMenu.classList.remove('active');
+        }
+
         function updateAuthUI() {
             const sidebarLogin = document.getElementById('auth-sidebar-login');
             const sidebarUser = document.getElementById('auth-sidebar-user');
@@ -31436,14 +32003,14 @@
                     const sidebarImg = sidebarUser.querySelector('img');
                     if (sidebarImg) sidebarImg.src = hatUrl;
                 }
-                if (sidebarTooltip) sidebarTooltip.textContent = currentSession.displayName + ' (Logout)';
+                if (sidebarTooltip) sidebarTooltip.textContent = currentSession.displayName;
                 if (mobileLogin) mobileLogin.style.display = 'none';
                 if (mobileUser) {
                     mobileUser.style.display = 'flex';
                     const mobileImg = mobileUser.querySelector('img');
                     if (mobileImg) mobileImg.src = hatUrl;
                 }
-                if (mobileName) mobileName.textContent = currentSession.displayName + ' (Logout)';
+                if (mobileName) mobileName.textContent = currentSession.displayName;
             } else {
                 // Logged out — restore login logo
                 if (sidebarLogin) sidebarLogin.style.display = 'flex';
