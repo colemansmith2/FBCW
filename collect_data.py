@@ -179,6 +179,27 @@ def _unwrap_single_item_list(value: Any) -> Any:
         value = value[0]
     return value
 
+def _extract_nested_fields(value: Any, field_names: List[str]) -> Dict[str, Any]:
+    """Recursively extract first non-empty occurrence of requested fields."""
+    extracted: Dict[str, Any] = {field: '' for field in field_names}
+
+    def _is_empty(v: Any) -> bool:
+        return v is None or v == '' or v == [] or v == {}
+
+    def _walk(node: Any):
+        if isinstance(node, dict):
+            for field in field_names:
+                if _is_empty(extracted[field]) and field in node and not _is_empty(node.get(field)):
+                    extracted[field] = node.get(field)
+            for child in node.values():
+                _walk(child)
+        elif isinstance(node, list):
+            for item in node:
+                _walk(item)
+
+    _walk(value)
+    return extracted
+
 def _extract_transaction_players(players: Any) -> List[Dict[str, Any]]:
     """Normalize Yahoo transaction players payload to a flat list."""
     if not players:
@@ -189,7 +210,7 @@ def _extract_transaction_players(players: Any) -> List[Dict[str, Any]]:
         count = safe_int(players.get('count', 0), 0)
         if count > 0:
             for i in range(count):
-                player_info = players.get(str(i))
+                player_info = players.get(str(i), players.get(i))
                 if player_info:
                     player_entries.append(player_info)
         else:
@@ -206,15 +227,15 @@ def _extract_transaction_players(players: Any) -> List[Dict[str, Any]]:
         if not isinstance(player_info, dict):
             continue
 
-        player_data = _unwrap_single_item_list(player_info.get('player', {}))
-        if isinstance(player_data, list) and player_data:
-            player_data = player_data[0]
-        if not isinstance(player_data, dict):
-            player_data = {}
-
-        trans_player_data = _unwrap_single_item_list(player_info.get('transaction_data', {}))
-        if not isinstance(trans_player_data, dict):
-            trans_player_data = {}
+        # Yahoo transaction payloads can be deeply nested with dict fragments.
+        player_data = _extract_nested_fields(
+            player_info.get('player', player_info),
+            ['player_key', 'player_id', 'name', 'editorial_team_abbr', 'display_position']
+        )
+        trans_player_data = _extract_nested_fields(
+            player_info.get('transaction_data', player_info),
+            ['type', 'source_type', 'source_team_key', 'source_team_name', 'destination_type', 'destination_team_key', 'destination_team_name']
+        )
 
         name_info = player_data.get('name', {})
         player_name = ''
@@ -223,9 +244,9 @@ def _extract_transaction_players(players: Any) -> List[Dict[str, Any]]:
         elif isinstance(name_info, str):
             player_name = name_info
 
-        normalized_players.append({
+        normalized_player = {
             'player_key': player_data.get('player_key', ''),
-            'player_id': player_data.get('player_id', ''),
+            'player_id': str(player_data.get('player_id', '')) if player_data.get('player_id', '') is not None else '',
             'player_name': player_name,
             'team_abbr': player_data.get('editorial_team_abbr', ''),
             'position': player_data.get('display_position', ''),
@@ -236,7 +257,19 @@ def _extract_transaction_players(players: Any) -> List[Dict[str, Any]]:
             'destination_type': trans_player_data.get('destination_type', ''),
             'destination_team_key': trans_player_data.get('destination_team_key', ''),
             'destination_team_name': trans_player_data.get('destination_team_name', ''),
-        })
+        }
+
+        # Skip fully blank placeholder rows if parsing failed.
+        has_signal = any([
+            normalized_player['player_key'],
+            normalized_player['player_id'],
+            normalized_player['player_name'],
+            normalized_player['transaction_type'],
+            normalized_player['source_team_key'],
+            normalized_player['destination_team_key'],
+        ])
+        if has_signal:
+            normalized_players.append(normalized_player)
 
     return normalized_players
 
@@ -2613,6 +2646,40 @@ def collect_selected_historical_seasons(years: List[int]):
     print("✓ Selected seasons collection complete!")
     print("=" * 60)
 
+def collect_transactions_for_year(oauth, year: int):
+    """Collect and save transactions.json for a single season year."""
+    if year == CURRENT_SEASON:
+        output_dir = f"{DATA_DIR}/current_season"
+    else:
+        output_dir = f"{DATA_DIR}/historical/{year}"
+    os.makedirs(output_dir, exist_ok=True)
+
+    transactions = get_all_transactions(oauth, year)
+    output_file = f"{output_dir}/transactions.json"
+    with open(output_file, 'w', encoding='utf-8') as f:
+        json.dump(transactions, f, indent=2, ensure_ascii=False)
+    print(f"  ✓ {year}: transactions saved ({len(transactions)} transactions)")
+
+def collect_selected_transactions(years: List[int]):
+    """Collect transactions only for selected seasons."""
+    selected_years = sorted(set(years))
+    print("=" * 60)
+    print(f"COLLECTING TRANSACTIONS ONLY: {', '.join(str(y) for y in selected_years)}")
+    print("=" * 60)
+
+    create_directory_structure()
+    oauth = setup_oauth()
+
+    for year in selected_years:
+        try:
+            collect_transactions_for_year(oauth, year)
+        except Exception as e:
+            print(f"  ⚠ {year}: could not collect transactions: {e}")
+
+    print("\n" + "=" * 60)
+    print("✓ Transactions-only collection complete!")
+    print("=" * 60)
+
 def weekly_update_with_players():
     """Run this WEEKLY to update everything including player data"""
     print("=" * 60)
@@ -3479,6 +3546,24 @@ if __name__ == "__main__":
                     collect_selected_historical_seasons(selected_years)
                 except ValueError as e:
                     print(f"Invalid season arguments: {e}")
+        elif command == "transactions":
+            # Collect transactions only for selected seasons
+            # Examples:
+            #   python collect_data.py transactions 2017 2018
+            #   python collect_data.py transactions 2017,2018
+            #   python collect_data.py transactions 2017-2018
+            if len(sys.argv) < 3:
+                print("Usage: python collect_data.py transactions <year ...>")
+                print("Examples:")
+                print("  python collect_data.py transactions 2017 2018")
+                print("  python collect_data.py transactions 2017,2018")
+                print("  python collect_data.py transactions 2017-2018")
+            else:
+                try:
+                    selected_years = parse_year_arguments(sys.argv[2:])
+                    collect_selected_transactions(selected_years)
+                except ValueError as e:
+                    print(f"Invalid transaction arguments: {e}")
         elif command == "quick":
             # Quick update - just teams, standings, and current week scores
             quick_update()
@@ -3534,6 +3619,7 @@ if __name__ == "__main__":
             print("  setup              - Initial setup (historical data)")
             print("  check              - Check available seasons")
             print("  seasons <yrs...>   - Collect specific historical seasons (e.g., 2017 2018 or 2017-2018)")
+            print("  transactions <yrs...> - Collect transactions only for selected seasons")
             print("  quick              - Quick update (teams, standings, rosters)")
             print("  players            - Collect player stats (Fangraphs + Yahoo)")
             print("  headshots          - Update existing player data with headshots only")
