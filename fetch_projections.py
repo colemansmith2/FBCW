@@ -23,7 +23,12 @@ import requests
 import json
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, date
+
+try:
+    from pybaseball.playerid_lookup import chadwick_register
+except Exception:
+    chadwick_register = None
 
 # Fangraphs API endpoints for projections
 FANGRAPHS_API_BASE = "https://www.fangraphs.com/api/projections"
@@ -48,6 +53,8 @@ PROJECTION_SYSTEMS = {
 
 # Systems that should include all players (no truncation)
 FULL_PLAYER_LIST_SYSTEMS = {'zips', 'zipsdc', 'zips2027', 'zips2028'}
+BASE_AGE_YEAR = 2026
+_PYBASEBALL_BASE_AGE_LOOKUP = None
 
 # Your league's scoring settings
 BATTING_SCORING = {
@@ -126,6 +133,303 @@ def get_headshot_url(mlb_id):
     return "https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/1/headshot/67/current"
 
 
+def normalize_mlb_id(raw_value):
+    """Normalize MLB ID values from Fangraphs into int or None."""
+    if raw_value in (None, '', '-', '--'):
+        return None
+    try:
+        return int(float(raw_value))
+    except (TypeError, ValueError):
+        return None
+
+
+def extract_projection_age(player):
+    """Extract numeric player age from Fangraphs projection rows."""
+    raw_age = (
+        player.get('Age') or
+        player.get('age') or
+        player.get('PlayerAge') or
+        player.get('player_age')
+    )
+    if raw_age in (None, '', '-', '--'):
+        return None
+    try:
+        age = float(raw_age)
+        if age <= 0:
+            return None
+        return round(age, 1)
+    except (TypeError, ValueError):
+        return None
+
+
+def _safe_int(raw_value):
+    """Convert value to int when possible, otherwise return None."""
+    if raw_value in (None, '', '-', '--'):
+        return None
+    try:
+        return int(float(raw_value))
+    except (TypeError, ValueError):
+        return None
+
+
+def _calculate_age_on_reference_date(birth_year, birth_month, birth_day, reference_date, birth_date_raw=None):
+    """Calculate age (in whole years) on a reference date."""
+    year = _safe_int(birth_year)
+    if year is None and birth_date_raw not in (None, '', '-', '--'):
+        parsed_birth_date = None
+        birth_date_str = str(birth_date_raw).strip()
+        for fmt in ('%Y-%m-%d', '%m/%d/%Y', '%Y/%m/%d'):
+            try:
+                parsed_birth_date = datetime.strptime(birth_date_str, fmt).date()
+                break
+            except ValueError:
+                continue
+        if parsed_birth_date:
+            return reference_date.year - parsed_birth_date.year - (
+                (reference_date.month, reference_date.day) < (parsed_birth_date.month, parsed_birth_date.day)
+            )
+
+    if year is None:
+        return None
+
+    month = _safe_int(birth_month)
+    day = _safe_int(birth_day)
+
+    # If full date exists, compute precise age; otherwise fall back to year-only.
+    if month and day:
+        try:
+            dob = date(year, month, day)
+            return reference_date.year - dob.year - ((reference_date.month, reference_date.day) < (dob.month, dob.day))
+        except ValueError:
+            pass
+
+    return reference_date.year - year
+
+
+def _build_age_lookup_from_mlb_people_api(register, mlbam_col):
+    """
+    Fallback age source when pybaseball Lahman data is unavailable.
+    Uses MLB StatsAPI people endpoint by MLBAM ID.
+    """
+    mlb_ids = []
+    for _, row in register.iterrows():
+        mlb_id = normalize_mlb_id(row.get(mlbam_col))
+        if mlb_id:
+            mlb_ids.append(mlb_id)
+
+    unique_ids = sorted(set(mlb_ids))
+    if not unique_ids:
+        return {}
+
+    reference_date = date(BASE_AGE_YEAR, 7, 1)
+    age_lookup = {}
+    batch_size = 200
+
+    for i in range(0, len(unique_ids), batch_size):
+        batch = unique_ids[i:i + batch_size]
+        ids_param = ",".join(str(x) for x in batch)
+        url = f"https://statsapi.mlb.com/api/v1/people?personIds={ids_param}"
+
+        try:
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            payload = response.json()
+            for person in payload.get('people', []):
+                mlb_id = normalize_mlb_id(person.get('id'))
+                if not mlb_id:
+                    continue
+                birth_date_raw = person.get('birthDate')
+                age = _calculate_age_on_reference_date(
+                    None,
+                    None,
+                    None,
+                    reference_date,
+                    birth_date_raw
+                )
+                if age is not None and age > 0:
+                    age_lookup[mlb_id] = int(age)
+        except Exception as e:
+            print(f"  ⚠ MLB people API batch failed ({len(batch)} IDs): {e}")
+            continue
+
+    if age_lookup:
+        print(f"  ✓ Loaded fallback MLB API base ages for {len(age_lookup)} players ({BASE_AGE_YEAR})")
+
+    return age_lookup
+
+
+def _build_age_lookup_from_pybaseball_bref_stats():
+    """
+    Preferred age source:
+    Use pybaseball league tables that include MLBAM IDs and Age.
+    We use the prior season and increment by +1 to estimate BASE_AGE_YEAR age.
+    """
+    try:
+        from pybaseball import batting_stats_bref, pitching_stats_bref
+    except Exception as e:
+        print(f"  ⚠ Could not import pybaseball BRef stats functions: {e}")
+        return {}
+
+    source_year = BASE_AGE_YEAR - 1
+    age_lookup = {}
+
+    for label, fetch_fn in [('batting', batting_stats_bref), ('pitching', pitching_stats_bref)]:
+        try:
+            df = fetch_fn(source_year)
+        except Exception as e:
+            print(f"  ⚠ Could not load pybaseball {label} stats for {source_year}: {e}")
+            continue
+
+        if df is None or df.empty:
+            continue
+
+        id_col = next((c for c in ['mlbID', 'mlbid', 'MLBID', 'key_mlbam'] if c in df.columns), None)
+        age_col = next((c for c in ['Age', 'age'] if c in df.columns), None)
+        if id_col is None or age_col is None:
+            continue
+
+        for _, row in df.iterrows():
+            mlb_id = normalize_mlb_id(row.get(id_col))
+            if not mlb_id:
+                continue
+            try:
+                prior_season_age = float(row.get(age_col))
+            except (TypeError, ValueError):
+                continue
+            if prior_season_age <= 0:
+                continue
+
+            # BRef age is for source_year; move it to BASE_AGE_YEAR
+            base_age = int(round(prior_season_age + (BASE_AGE_YEAR - source_year)))
+            existing = age_lookup.get(mlb_id)
+            if existing is None:
+                age_lookup[mlb_id] = base_age
+
+    if age_lookup:
+        print(f"  ✓ Loaded pybaseball BRef-derived base ages for {len(age_lookup)} players ({BASE_AGE_YEAR})")
+
+    return age_lookup
+
+
+def get_pybaseball_base_age_lookup():
+    """
+    Build a lookup of mlb_id -> age for the BASE_AGE_YEAR using pybaseball.
+    Ages for future projection files are derived as +1/+2 from this base.
+    """
+    global _PYBASEBALL_BASE_AGE_LOOKUP
+
+    if _PYBASEBALL_BASE_AGE_LOOKUP is not None:
+        return _PYBASEBALL_BASE_AGE_LOOKUP
+
+    if chadwick_register is None:
+        print("  ⚠ pybaseball unavailable; ages will remain null")
+        _PYBASEBALL_BASE_AGE_LOOKUP = {}
+        return _PYBASEBALL_BASE_AGE_LOOKUP
+
+    try:
+        register = chadwick_register(save=True)
+    except Exception as e:
+        print(f"  ⚠ Could not load pybaseball player register: {e}")
+        _PYBASEBALL_BASE_AGE_LOOKUP = {}
+        return _PYBASEBALL_BASE_AGE_LOOKUP
+
+    if register is None or register.empty:
+        print("  ⚠ pybaseball player register is empty; ages will remain null")
+        _PYBASEBALL_BASE_AGE_LOOKUP = {}
+        return _PYBASEBALL_BASE_AGE_LOOKUP
+
+    mlbam_col = next((c for c in ['key_mlbam', 'mlbam_id', 'mlbamid', 'mlbam'] if c in register.columns), None)
+    if mlbam_col is None:
+        print("  ⚠ pybaseball register missing MLBAM ID column; ages will remain null")
+        _PYBASEBALL_BASE_AGE_LOOKUP = {}
+        return _PYBASEBALL_BASE_AGE_LOOKUP
+
+    # First try pure-pybaseball MLB-ID age lookup from BRef league tables.
+    age_lookup = _build_age_lookup_from_pybaseball_bref_stats()
+    if age_lookup:
+        _PYBASEBALL_BASE_AGE_LOOKUP = age_lookup
+        return _PYBASEBALL_BASE_AGE_LOOKUP
+
+    # Load Lahman people table (via pybaseball) to get birth fields.
+    try:
+        from pybaseball.lahman import people as lahman_people
+        people_df = lahman_people()
+    except Exception as e:
+        print(f"  ⚠ Could not load pybaseball Lahman people table: {e}")
+        _PYBASEBALL_BASE_AGE_LOOKUP = _build_age_lookup_from_mlb_people_api(register, mlbam_col)
+        return _PYBASEBALL_BASE_AGE_LOOKUP
+
+    if people_df is None or people_df.empty:
+        print("  ⚠ pybaseball Lahman people table is empty; ages will remain null")
+        _PYBASEBALL_BASE_AGE_LOOKUP = _build_age_lookup_from_mlb_people_api(register, mlbam_col)
+        return _PYBASEBALL_BASE_AGE_LOOKUP
+
+    bbref_col = next((c for c in ['bbrefID', 'bbref_id', 'key_bbref'] if c in people_df.columns), None)
+    retro_col = next((c for c in ['retroID', 'retro_id', 'key_retro'] if c in people_df.columns), None)
+    birth_year_col = next((c for c in ['birthYear', 'birth_year'] if c in people_df.columns), None)
+    birth_month_col = next((c for c in ['birthMonth', 'birth_month'] if c in people_df.columns), None)
+    birth_day_col = next((c for c in ['birthDay', 'birth_day'] if c in people_df.columns), None)
+    birth_date_col = next((c for c in ['birth_date', 'birthDate'] if c in people_df.columns), None)
+
+    if birth_year_col is None:
+        print("  ⚠ Lahman people table missing birth year column; ages will remain null")
+        _PYBASEBALL_BASE_AGE_LOOKUP = _build_age_lookup_from_mlb_people_api(register, mlbam_col)
+        return _PYBASEBALL_BASE_AGE_LOOKUP
+
+    by_bbref = {}
+    by_retro = {}
+    for _, row in people_df.iterrows():
+        birth_tuple = (
+            row.get(birth_year_col),
+            row.get(birth_month_col) if birth_month_col else None,
+            row.get(birth_day_col) if birth_day_col else None,
+            row.get(birth_date_col) if birth_date_col else None
+        )
+
+        if bbref_col:
+            bbref_key = row.get(bbref_col)
+            if bbref_key not in (None, '', '-', '--'):
+                by_bbref[str(bbref_key).strip().lower()] = birth_tuple
+        if retro_col:
+            retro_key = row.get(retro_col)
+            if retro_key not in (None, '', '-', '--'):
+                by_retro[str(retro_key).strip().lower()] = birth_tuple
+
+    reference_date = date(BASE_AGE_YEAR, 7, 1)
+    age_lookup = {}
+
+    for _, row in register.iterrows():
+        mlb_id = normalize_mlb_id(row.get(mlbam_col))
+        if not mlb_id:
+            continue
+
+        birth_tuple = None
+        bbref_key = str(row.get('key_bbref', '')).strip().lower()
+        retro_key = str(row.get('key_retro', '')).strip().lower()
+
+        if bbref_key and bbref_key not in ('nan', 'none'):
+            birth_tuple = by_bbref.get(bbref_key)
+        if birth_tuple is None and retro_key and retro_key not in ('nan', 'none'):
+            birth_tuple = by_retro.get(retro_key)
+        if birth_tuple is None:
+            continue
+
+        age = _calculate_age_on_reference_date(
+            birth_tuple[0],
+            birth_tuple[1],
+            birth_tuple[2],
+            reference_date,
+            birth_tuple[3]
+        )
+
+        if age is not None and age > 0:
+            age_lookup[mlb_id] = int(age)
+
+    _PYBASEBALL_BASE_AGE_LOOKUP = age_lookup
+    print(f"  ✓ Loaded pybaseball base ages for {len(age_lookup)} players ({BASE_AGE_YEAR})")
+    return _PYBASEBALL_BASE_AGE_LOOKUP
+
+
 def fetch_fangraphs_projections(proj_type, stat_type):
     """
     Fetch projections from Fangraphs API.
@@ -157,9 +461,10 @@ def fetch_fangraphs_projections(proj_type, stat_type):
         return []
 
 
-def process_batter_projections(raw_data):
+def process_batter_projections(raw_data, projection_year=BASE_AGE_YEAR, base_age_lookup=None):
     """Process raw batter projection data into standardized format matching existing JSONs."""
     players = []
+    base_age_lookup = base_age_lookup or {}
     
     for player in raw_data:
         try:
@@ -210,8 +515,13 @@ def process_batter_projections(raw_data):
             points = calculate_batting_points(stats)
             
             # Get headshot URL - xMLBAMID is the MLB player ID from Fangraphs
-            mlb_id = player.get('xMLBAMID') or player.get('mlbamid') or player.get('MLBAMID')
+            mlb_id = normalize_mlb_id(player.get('xMLBAMID') or player.get('mlbamid') or player.get('MLBAMID'))
             headshot_url = get_headshot_url(mlb_id)
+            age = extract_projection_age(player)
+            if age is None and mlb_id:
+                base_age = base_age_lookup.get(mlb_id)
+                if base_age is not None:
+                    age = base_age + (projection_year - BASE_AGE_YEAR)
             
             processed = {
                 'name': name,
@@ -221,7 +531,8 @@ def process_batter_projections(raw_data):
                 'projected_points': points,
                 'stats': stats,
                 'headshot_url': headshot_url,
-                'mlb_id': None
+                'mlb_id': mlb_id,
+                'age': age
             }
             
             # Only include players with significant playing time projections
@@ -237,9 +548,10 @@ def process_batter_projections(raw_data):
     return players
 
 
-def process_pitcher_projections(raw_data):
+def process_pitcher_projections(raw_data, projection_year=BASE_AGE_YEAR, base_age_lookup=None):
     """Process raw pitcher projection data into standardized format matching existing JSONs."""
     players = []
+    base_age_lookup = base_age_lookup or {}
     
     for player in raw_data:
         try:
@@ -279,8 +591,13 @@ def process_pitcher_projections(raw_data):
             points = calculate_pitching_points(stats)
             
             # Get headshot URL - xMLBAMID is the MLB player ID from Fangraphs
-            mlb_id = player.get('xMLBAMID') or player.get('mlbamid') or player.get('MLBAMID')
+            mlb_id = normalize_mlb_id(player.get('xMLBAMID') or player.get('mlbamid') or player.get('MLBAMID'))
             headshot_url = get_headshot_url(mlb_id)
+            age = extract_projection_age(player)
+            if age is None and mlb_id:
+                base_age = base_age_lookup.get(mlb_id)
+                if base_age is not None:
+                    age = base_age + (projection_year - BASE_AGE_YEAR)
             
             processed = {
                 'name': name,
@@ -290,7 +607,8 @@ def process_pitcher_projections(raw_data):
                 'projected_points': points,
                 'stats': stats,
                 'headshot_url': headshot_url,
-                'mlb_id': None
+                'mlb_id': mlb_id,
+                'age': age
             }
             
             # Only include pitchers with significant IP projections
@@ -329,9 +647,24 @@ def fetch_and_save_projections(output_name, api_type):
         print(f"\n⚠ No data fetched for {output_name}. API may be unavailable.")
         return False
 
+    # Determine projection year based on system
+    if output_name == 'zips2027':
+        projection_year = 2027
+    elif output_name == 'zips2028':
+        projection_year = 2028
+    else:
+        projection_year = 2026
+
+    # Build base-age lookup once (2026) and derive +1/+2 for 2027/2028
+    base_age_lookup = get_pybaseball_base_age_lookup()
+
     # Process data
-    batters = process_batter_projections(batters_raw)
-    pitchers = process_pitcher_projections(pitchers_raw) if pitchers_raw else []
+    batters = process_batter_projections(batters_raw, projection_year=projection_year, base_age_lookup=base_age_lookup)
+    pitchers = process_pitcher_projections(
+        pitchers_raw,
+        projection_year=projection_year,
+        base_age_lookup=base_age_lookup
+    ) if pitchers_raw else []
 
     # Truncate to top 400 each (already sorted by projected points) unless it's a full-list system
     if not include_all_players:
@@ -341,14 +674,6 @@ def fetch_and_save_projections(output_name, api_type):
         print(f"  ℹ️  Including all players for {output_name.upper()} (no truncation)")
 
     print(f"\n  Processed {len(batters)} batters and {len(pitchers)} pitchers")
-
-    # Determine projection year based on system
-    if output_name == 'zips2027':
-        projection_year = 2027
-    elif output_name == 'zips2028':
-        projection_year = 2028
-    else:
-        projection_year = 2026
 
     # Build output matching existing JSON format
     output = {

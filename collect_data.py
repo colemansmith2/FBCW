@@ -19,7 +19,7 @@ import re
 import time
 import unicodedata
 from datetime import datetime, date, timedelta
-from typing import List, Dict, Optional, Tuple
+from typing import Any, List, Dict, Optional, Tuple
 from yahoo_oauth import OAuth2
 from yahoo_fantasy_api import Game, League
 import pandas as pd
@@ -39,7 +39,7 @@ except ImportError:
 # =============================================================================
 
 CURRENT_SEASON = 2026
-HISTORICAL_SEASONS = [2019, 2020, 2021, 2022, 2023, 2024]
+HISTORICAL_SEASONS = [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
 DATA_DIR = "data"
 
 # Override league IDs for specific years (if needed)
@@ -172,6 +172,213 @@ def safe_float(value, default: float = 0.0) -> float:
         return float_val
     except (ValueError, TypeError):
         return default
+
+def _unwrap_single_item_list(value: Any) -> Any:
+    """Unwrap nested singleton lists often returned by Yahoo payloads."""
+    while isinstance(value, list) and len(value) == 1:
+        value = value[0]
+    return value
+
+def _extract_transaction_players(players: Any) -> List[Dict[str, Any]]:
+    """Normalize Yahoo transaction players payload to a flat list."""
+    if not players:
+        return []
+
+    player_entries: List[Any] = []
+    if isinstance(players, dict):
+        count = safe_int(players.get('count', 0), 0)
+        if count > 0:
+            for i in range(count):
+                player_info = players.get(str(i))
+                if player_info:
+                    player_entries.append(player_info)
+        else:
+            numeric_keys = sorted([k for k in players.keys() if str(k).isdigit()], key=lambda x: int(x))
+            for key in numeric_keys:
+                player_info = players.get(key)
+                if player_info:
+                    player_entries.append(player_info)
+    elif isinstance(players, list):
+        player_entries = [p for p in players if p]
+
+    normalized_players: List[Dict[str, Any]] = []
+    for player_info in player_entries:
+        if not isinstance(player_info, dict):
+            continue
+
+        player_data = _unwrap_single_item_list(player_info.get('player', {}))
+        if isinstance(player_data, list) and player_data:
+            player_data = player_data[0]
+        if not isinstance(player_data, dict):
+            player_data = {}
+
+        trans_player_data = _unwrap_single_item_list(player_info.get('transaction_data', {}))
+        if not isinstance(trans_player_data, dict):
+            trans_player_data = {}
+
+        name_info = player_data.get('name', {})
+        player_name = ''
+        if isinstance(name_info, dict):
+            player_name = name_info.get('full', '')
+        elif isinstance(name_info, str):
+            player_name = name_info
+
+        normalized_players.append({
+            'player_key': player_data.get('player_key', ''),
+            'player_id': player_data.get('player_id', ''),
+            'player_name': player_name,
+            'team_abbr': player_data.get('editorial_team_abbr', ''),
+            'position': player_data.get('display_position', ''),
+            'transaction_type': trans_player_data.get('type', ''),
+            'source_type': trans_player_data.get('source_type', ''),
+            'source_team_key': trans_player_data.get('source_team_key', ''),
+            'source_team_name': trans_player_data.get('source_team_name', ''),
+            'destination_type': trans_player_data.get('destination_type', ''),
+            'destination_team_key': trans_player_data.get('destination_team_key', ''),
+            'destination_team_name': trans_player_data.get('destination_team_name', ''),
+        })
+
+    return normalized_players
+
+def _iter_nested_dicts(value: Any):
+    """Yield every nested dict inside a dict/list payload."""
+    if isinstance(value, dict):
+        yield value
+        for nested in value.values():
+            yield from _iter_nested_dicts(nested)
+    elif isinstance(value, list):
+        for item in value:
+            yield from _iter_nested_dicts(item)
+
+def _normalize_draft_pick_candidate(raw_pick: Any) -> Optional[Dict[str, Any]]:
+    """Normalize a single draft-pick object from Yahoo transaction payloads."""
+    if not isinstance(raw_pick, dict):
+        return None
+
+    # Wrapper object: {'pick': {...}}
+    nested_pick = raw_pick.get('pick')
+    if isinstance(nested_pick, dict):
+        return _normalize_draft_pick_candidate(nested_pick)
+
+    source_year = (
+        raw_pick.get('source_year')
+        or raw_pick.get('year')
+        or raw_pick.get('season')
+        or ''
+    )
+    destination_year = (
+        raw_pick.get('destination_year')
+        or raw_pick.get('year')
+        or raw_pick.get('season')
+        or ''
+    )
+    round_value = (
+        raw_pick.get('round')
+        or raw_pick.get('pick_round')
+        or raw_pick.get('source_round')
+        or ''
+    )
+    source_team_key = (
+        raw_pick.get('source_team_key')
+        or raw_pick.get('from_team_key')
+        or raw_pick.get('original_team_key')
+        or ''
+    )
+    source_team_name = (
+        raw_pick.get('source_team_name')
+        or raw_pick.get('from_team_name')
+        or raw_pick.get('original_team_name')
+        or ''
+    )
+    destination_team_key = (
+        raw_pick.get('destination_team_key')
+        or raw_pick.get('to_team_key')
+        or ''
+    )
+    destination_team_name = (
+        raw_pick.get('destination_team_name')
+        or raw_pick.get('to_team_name')
+        or ''
+    )
+    display_name = raw_pick.get('display_name', '')
+    source_type = raw_pick.get('source_type', '')
+    destination_type = raw_pick.get('destination_type', '')
+
+    looks_like_pick = bool(display_name) or (
+        bool(round_value) and (
+            bool(source_year) or bool(destination_year) or bool(source_team_key) or bool(destination_team_key)
+        )
+    )
+    if not looks_like_pick:
+        return None
+
+    if not display_name:
+        label_year = source_year or destination_year
+        if label_year and round_value:
+            display_name = f"{label_year} Round {round_value} Pick"
+        elif round_value:
+            display_name = f"Round {round_value} Pick"
+        else:
+            display_name = "Draft Pick"
+
+    return {
+        'display_name': str(display_name),
+        'round': str(round_value) if round_value is not None else '',
+        'source_year': str(source_year) if source_year is not None else '',
+        'destination_year': str(destination_year) if destination_year is not None else '',
+        'source_type': str(source_type) if source_type is not None else '',
+        'source_team_key': str(source_team_key) if source_team_key is not None else '',
+        'source_team_name': str(source_team_name) if source_team_name is not None else '',
+        'destination_type': str(destination_type) if destination_type is not None else '',
+        'destination_team_key': str(destination_team_key) if destination_team_key is not None else '',
+        'destination_team_name': str(destination_team_name) if destination_team_name is not None else '',
+    }
+
+def _extract_draft_picks(transaction: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Extract normalized draft picks from a raw Yahoo transaction payload."""
+    draft_picks: List[Dict[str, Any]] = []
+    seen = set()
+
+    for node in _iter_nested_dicts(transaction):
+        normalized = _normalize_draft_pick_candidate(node)
+        if not normalized:
+            continue
+
+        signature = (
+            normalized.get('display_name', ''),
+            normalized.get('round', ''),
+            normalized.get('source_year', ''),
+            normalized.get('destination_year', ''),
+            normalized.get('source_team_key', ''),
+            normalized.get('destination_team_key', '')
+        )
+        if signature in seen:
+            continue
+        seen.add(signature)
+        draft_picks.append(normalized)
+
+    return draft_picks
+
+def _normalize_transaction(trans: Dict[str, Any], fallback_type: str) -> Dict[str, Any]:
+    """Normalize a Yahoo transaction object for storage in transactions.json."""
+    trans_data = {
+        'transaction_key': trans.get('transaction_key', ''),
+        'transaction_id': trans.get('transaction_id', ''),
+        'type': trans.get('type', fallback_type),
+        'timestamp': trans.get('timestamp', ''),
+        'status': trans.get('status', ''),
+        'players': _extract_transaction_players(trans.get('players', [])),
+    }
+
+    # Preserve additional transaction-level fields (team keys, names, etc.) for UI use.
+    for key, value in trans.items():
+        if key in trans_data or key == 'players':
+            continue
+        trans_data[key] = value
+
+    # Always provide normalized draft picks for trade rendering.
+    trans_data['draft_picks'] = _extract_draft_picks(trans)
+    return trans_data
 
 def normalize_manager_name(manager_name: str, year: int = None, team_name: str = None) -> str:
     """Normalize manager names to proper case and handle special cases"""
@@ -973,53 +1180,7 @@ def get_all_transactions(oauth, year: int, max_per_type: int = 1000) -> List[Dic
                 
                 type_count = 0
                 for trans in transactions_raw:
-                    trans_data = {
-                        'transaction_key': trans.get('transaction_key', ''),
-                        'transaction_id': trans.get('transaction_id', ''),
-                        'type': trans.get('type', trans_type),
-                        'timestamp': trans.get('timestamp', ''),
-                        'status': trans.get('status', ''),
-                        'players': []
-                    }
-                    
-                    players = trans.get('players', [])
-                    if isinstance(players, dict):
-                        player_count = players.get('count', 0)
-                        for i in range(int(player_count)):
-                            player_info = players.get(str(i), {})
-                            if player_info:
-                                player = player_info.get('player', [[{}]])
-                                if isinstance(player, list) and len(player) > 0:
-                                    player_data = player[0]
-                                    if isinstance(player_data, list) and len(player_data) > 0:
-                                        player_data = player_data[0]
-                                else:
-                                    player_data = player
-                                
-                                trans_player_data = player_info.get('transaction_data', {})
-                                if isinstance(trans_player_data, list) and len(trans_player_data) > 0:
-                                    trans_player_data = trans_player_data[0]
-                                
-                                player_name = ''
-                                if isinstance(player_data, dict):
-                                    name_info = player_data.get('name', {})
-                                    if isinstance(name_info, dict):
-                                        player_name = name_info.get('full', '')
-                                    elif isinstance(name_info, str):
-                                        player_name = name_info
-                                
-                                player_trans = {
-                                    'player_key': player_data.get('player_key', '') if isinstance(player_data, dict) else '',
-                                    'player_name': player_name,
-                                    'transaction_type': trans_player_data.get('type', '') if isinstance(trans_player_data, dict) else '',
-                                    'source_type': trans_player_data.get('source_type', '') if isinstance(trans_player_data, dict) else '',
-                                    'source_team_key': trans_player_data.get('source_team_key', '') if isinstance(trans_player_data, dict) else '',
-                                    'source_team_name': trans_player_data.get('source_team_name', '') if isinstance(trans_player_data, dict) else '',
-                                    'destination_team_key': trans_player_data.get('destination_team_key', '') if isinstance(trans_player_data, dict) else '',
-                                    'destination_team_name': trans_player_data.get('destination_team_name', '') if isinstance(trans_player_data, dict) else '',
-                                }
-                                trans_data['players'].append(player_trans)
-                    
+                    trans_data = _normalize_transaction(trans, trans_type)
                     all_transactions.append(trans_data)
                     type_count += 1
                 
@@ -1626,72 +1787,107 @@ def create_directory_structure():
     for directory in dirs:
         os.makedirs(directory, exist_ok=True)
 
-def collect_historical_data(oauth):
-    """Collect all historical season data"""
-    print("Collecting historical data...")
-    
-    for year in HISTORICAL_SEASONS:
-        print(f"\nCollecting {year} season...")
-        
-        standings = get_standings(oauth, year)
-        scores = get_all_season_scores(oauth, year)
-        try:
-            draft = get_draft_results(oauth, year)
-        except:
-            draft = []
-        teams = get_teams(oauth, year)
-        
-        year_dir = f"{DATA_DIR}/historical/{year}"
-        os.makedirs(year_dir, exist_ok=True)
-        
-        with open(f"{year_dir}/final_standings.json", 'w', encoding='utf-8') as f:
-            json.dump(standings, f, indent=2, ensure_ascii=False)
-        with open(f"{year_dir}/all_scores.json", 'w', encoding='utf-8') as f:
-            json.dump(scores, f, indent=2, ensure_ascii=False)
-        with open(f"{year_dir}/draft.json", 'w', encoding='utf-8') as f:
-            json.dump(draft, f, indent=2, ensure_ascii=False)
-        with open(f"{year_dir}/teams.json", 'w', encoding='utf-8') as f:
-            json.dump(teams, f, indent=2, ensure_ascii=False)
-        
-        print(f"✓ {year} season saved")
+def parse_year_arguments(year_args: List[str]) -> List[int]:
+    """Parse CLI year arguments like '2017 2018', '2017,2018', or '2017-2019'."""
+    years: List[int] = []
+    for raw_arg in year_args:
+        for token in str(raw_arg).split(','):
+            part = token.strip()
+            if not part:
+                continue
+            if '-' in part:
+                start_str, end_str = part.split('-', 1)
+                try:
+                    start_year = int(start_str.strip())
+                    end_year = int(end_str.strip())
+                except ValueError:
+                    raise ValueError(f"Invalid year range: '{part}'")
+                step = 1 if end_year >= start_year else -1
+                years.extend(list(range(start_year, end_year + step, step)))
+            else:
+                try:
+                    years.append(int(part))
+                except ValueError:
+                    raise ValueError(f"Invalid year value: '{part}'")
 
-def collect_historical_player_data(oauth):
-    """Collect player stats and transactions for historical seasons"""
+    if not years:
+        raise ValueError("No valid years provided.")
+    return sorted(set(years))
+
+def collect_historical_data_for_year(oauth, year: int):
+    """Collect and save historical standings/scores/draft/teams for one year."""
+    print(f"\nCollecting {year} season...")
+
+    standings = get_standings(oauth, year)
+    scores = get_all_season_scores(oauth, year)
+    try:
+        draft = get_draft_results(oauth, year)
+    except Exception:
+        draft = []
+    teams = get_teams(oauth, year)
+
+    year_dir = f"{DATA_DIR}/historical/{year}"
+    os.makedirs(year_dir, exist_ok=True)
+
+    with open(f"{year_dir}/final_standings.json", 'w', encoding='utf-8') as f:
+        json.dump(standings, f, indent=2, ensure_ascii=False)
+    with open(f"{year_dir}/all_scores.json", 'w', encoding='utf-8') as f:
+        json.dump(scores, f, indent=2, ensure_ascii=False)
+    with open(f"{year_dir}/draft.json", 'w', encoding='utf-8') as f:
+        json.dump(draft, f, indent=2, ensure_ascii=False)
+    with open(f"{year_dir}/teams.json", 'w', encoding='utf-8') as f:
+        json.dump(teams, f, indent=2, ensure_ascii=False)
+
+    print(f"✓ {year} season saved")
+
+def collect_historical_player_data_for_year(oauth, year: int):
+    """Collect and save historical player stats/transactions/scoring for one year."""
+    print(f"\n{'='*50}")
+    print(f"Collecting {year} player data...")
+    print('='*50)
+
+    year_dir = f"{DATA_DIR}/historical/{year}"
+    os.makedirs(year_dir, exist_ok=True)
+
+    try:
+        player_stats = build_player_stats(oauth, year)
+        with open(f"{year_dir}/player_stats.json", 'w', encoding='utf-8') as f:
+            json.dump(player_stats, f, indent=2, ensure_ascii=False)
+        print(f"  ✓ Player stats saved ({len(player_stats)} players)")
+    except Exception as e:
+        print(f"  ⚠ Could not collect player stats: {e}")
+        import traceback
+        traceback.print_exc()
+
+    try:
+        transactions = get_all_transactions(oauth, year)
+        with open(f"{year_dir}/transactions.json", 'w', encoding='utf-8') as f:
+            json.dump(transactions, f, indent=2, ensure_ascii=False)
+        print(f"  ✓ Transactions saved ({len(transactions)} transactions)")
+    except Exception as e:
+        print(f"  ⚠ Could not collect transactions: {e}")
+
+    try:
+        scoring = get_league_scoring_settings(oauth, year)
+        with open(f"{year_dir}/scoring_settings.json", 'w', encoding='utf-8') as f:
+            json.dump(scoring, f, indent=2, ensure_ascii=False)
+        print(f"  ✓ Scoring settings saved")
+    except Exception as e:
+        print(f"  ⚠ Could not save scoring settings: {e}")
+
+def collect_historical_data(oauth, years: Optional[List[int]] = None):
+    """Collect historical season data for the configured seasons or a custom list."""
+    print("Collecting historical data...")
+    seasons = years if years else HISTORICAL_SEASONS
+    for year in seasons:
+        collect_historical_data_for_year(oauth, year)
+
+def collect_historical_player_data(oauth, years: Optional[List[int]] = None):
+    """Collect historical player data for the configured seasons or a custom list."""
     print("\nCollecting historical player data...")
-    
-    for year in HISTORICAL_SEASONS:
-        print(f"\n{'='*50}")
-        print(f"Collecting {year} player data...")
-        print('='*50)
-        
-        year_dir = f"{DATA_DIR}/historical/{year}"
-        os.makedirs(year_dir, exist_ok=True)
-        
-        try:
-            player_stats = build_player_stats(oauth, year)
-            with open(f"{year_dir}/player_stats.json", 'w', encoding='utf-8') as f:
-                json.dump(player_stats, f, indent=2, ensure_ascii=False)
-            print(f"  ✓ Player stats saved ({len(player_stats)} players)")
-        except Exception as e:
-            print(f"  ⚠ Could not collect player stats: {e}")
-            import traceback
-            traceback.print_exc()
-        
-        try:
-            transactions = get_all_transactions(oauth, year)
-            with open(f"{year_dir}/transactions.json", 'w', encoding='utf-8') as f:
-                json.dump(transactions, f, indent=2, ensure_ascii=False)
-            print(f"  ✓ Transactions saved ({len(transactions)} transactions)")
-        except Exception as e:
-            print(f"  ⚠ Could not collect transactions: {e}")
-        
-        try:
-            scoring = get_league_scoring_settings(oauth, year)
-            with open(f"{year_dir}/scoring_settings.json", 'w', encoding='utf-8') as f:
-                json.dump(scoring, f, indent=2, ensure_ascii=False)
-            print(f"  ✓ Scoring settings saved")
-        except Exception as e:
-            print(f"  ⚠ Could not save scoring settings: {e}")
+    seasons = years if years else HISTORICAL_SEASONS
+    for year in seasons:
+        collect_historical_player_data_for_year(oauth, year)
 
 def collect_current_season_data(oauth):
     """Collect current season data"""
@@ -1759,13 +1955,14 @@ def collect_current_season_player_data(oauth):
     except Exception as e:
         print(f"  ⚠ Could not save scoring settings: {e}")
 
-def update_manager_stats(oauth):
+def update_manager_stats(oauth, historical_years: Optional[List[int]] = None):
     """Update manager statistics"""
     print("\nUpdating manager statistics...")
     
     all_seasons = {}
+    years_to_load = historical_years if historical_years is not None else HISTORICAL_SEASONS
     
-    for year in HISTORICAL_SEASONS:
+    for year in years_to_load:
         standings_file = f"{DATA_DIR}/historical/{year}/final_standings.json"
         scores_file = f"{DATA_DIR}/historical/{year}/all_scores.json"
         
@@ -1813,13 +2010,14 @@ def update_manager_stats(oauth):
     
     print(f"✓ Manager stats updated ({len(manager_stats)} managers)")
 
-def build_player_career_history():
+def build_player_career_history(historical_years: Optional[List[int]] = None):
     """Aggregate player data across all seasons"""
     print("\nBuilding player career history...")
     
     player_careers = {}
+    years_to_load = historical_years if historical_years is not None else HISTORICAL_SEASONS
     
-    for year in HISTORICAL_SEASONS + [CURRENT_SEASON]:
+    for year in years_to_load + [CURRENT_SEASON]:
         if year == CURRENT_SEASON:
             player_file = f"{DATA_DIR}/current_season/player_stats.json"
         else:
@@ -1861,11 +2059,12 @@ def build_player_career_history():
     
     print(f"✓ Player career history built ({len(player_careers)} players)")
 
-def create_league_info():
+def create_league_info(historical_years: Optional[List[int]] = None):
     """Create league metadata file"""
+    years_for_info = historical_years if historical_years is not None else HISTORICAL_SEASONS
     league_info = {
         'league_name': 'Fantasy Baseball Civil War',
-        'founded': min(HISTORICAL_SEASONS) if HISTORICAL_SEASONS else CURRENT_SEASON,
+        'founded': min(years_for_info) if years_for_info else CURRENT_SEASON,
         'current_season': CURRENT_SEASON,
         'total_teams': 12,
         'league_type': 'Points',
@@ -2240,13 +2439,31 @@ def quick_update():
             except:
                 pass
         
-        # Merge new transactions (avoid duplicates by transaction_key)
-        existing_keys = {t.get('transaction_key') for t in existing_transactions}
+        # Merge new transactions by transaction_key (upsert so richer payloads replace stale rows)
+        existing_by_key: Dict[str, Dict[str, Any]] = {}
+        existing_without_key: List[Dict[str, Any]] = []
+        for existing in existing_transactions:
+            key = existing.get('transaction_key')
+            if key:
+                existing_by_key[key] = existing
+            else:
+                existing_without_key.append(existing)
+
         new_count = 0
+        updated_count = 0
         for trans in transactions:
-            if trans.get('transaction_key') not in existing_keys:
-                existing_transactions.append(trans)
+            key = trans.get('transaction_key')
+            if key:
+                if key in existing_by_key:
+                    updated_count += 1
+                else:
+                    new_count += 1
+                existing_by_key[key] = trans
+            else:
+                existing_without_key.append(trans)
                 new_count += 1
+
+        existing_transactions = list(existing_by_key.values()) + existing_without_key
         
         # Sort by timestamp descending
         existing_transactions.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
@@ -2254,7 +2471,7 @@ def quick_update():
         with open(transactions_file, 'w', encoding='utf-8') as f:
             json.dump(existing_transactions, f, indent=2, ensure_ascii=False)
         
-        print(f"  ✓ transactions.json updated ({new_count} new, {len(existing_transactions)} total)")
+        print(f"  ✓ transactions.json updated ({new_count} new, {updated_count} refreshed, {len(existing_transactions)} total)")
     except Exception as e:
         print(f"  ⚠ Could not update transactions: {e}")
     
@@ -2333,53 +2550,7 @@ def get_recent_transactions(oauth, year: int, hours: int = 6) -> List[Dict]:
                         # Transactions are sorted by time, so we can break early
                         break
                     
-                    trans_data = {
-                        'transaction_key': trans.get('transaction_key', ''),
-                        'transaction_id': trans.get('transaction_id', ''),
-                        'type': trans.get('type', trans_type),
-                        'timestamp': trans.get('timestamp', ''),
-                        'status': trans.get('status', ''),
-                        'players': []
-                    }
-                    
-                    players = trans.get('players', [])
-                    if isinstance(players, dict):
-                        player_count = players.get('count', 0)
-                        for i in range(int(player_count)):
-                            player_info = players.get(str(i), {})
-                            if player_info:
-                                player = player_info.get('player', [[{}]])
-                                if isinstance(player, list) and len(player) > 0:
-                                    player_data = player[0]
-                                    if isinstance(player_data, list) and len(player_data) > 0:
-                                        player_data = player_data[0]
-                                else:
-                                    player_data = player
-                                
-                                trans_player_data = player_info.get('transaction_data', {})
-                                if isinstance(trans_player_data, list) and len(trans_player_data) > 0:
-                                    trans_player_data = trans_player_data[0]
-                                
-                                player_name = ''
-                                if isinstance(player_data, dict):
-                                    name_info = player_data.get('name', {})
-                                    if isinstance(name_info, dict):
-                                        player_name = name_info.get('full', '')
-                                    elif isinstance(name_info, str):
-                                        player_name = name_info
-                                
-                                player_trans = {
-                                    'player_key': player_data.get('player_key', '') if isinstance(player_data, dict) else '',
-                                    'player_name': player_name,
-                                    'transaction_type': trans_player_data.get('type', '') if isinstance(trans_player_data, dict) else '',
-                                    'source_type': trans_player_data.get('source_type', '') if isinstance(trans_player_data, dict) else '',
-                                    'source_team_key': trans_player_data.get('source_team_key', '') if isinstance(trans_player_data, dict) else '',
-                                    'source_team_name': trans_player_data.get('source_team_name', '') if isinstance(trans_player_data, dict) else '',
-                                    'destination_team_key': trans_player_data.get('destination_team_key', '') if isinstance(trans_player_data, dict) else '',
-                                    'destination_team_name': trans_player_data.get('destination_team_name', '') if isinstance(trans_player_data, dict) else '',
-                                }
-                                trans_data['players'].append(player_trans)
-                    
+                    trans_data = _normalize_transaction(trans, trans_type)
                     recent_transactions.append(trans_data)
                     
             except Exception as e:
@@ -2417,6 +2588,29 @@ def player_data_setup():
     
     print("\n" + "=" * 60)
     print("✓ Player data setup complete!")
+    print("=" * 60)
+
+def collect_selected_historical_seasons(years: List[int]):
+    """Collect core + player data for specific historical seasons only."""
+    selected_years = sorted(set(years))
+    all_historical_years = sorted(set(HISTORICAL_SEASONS + selected_years))
+
+    print("=" * 60)
+    print(f"COLLECTING SELECTED HISTORICAL SEASONS: {', '.join(str(y) for y in selected_years)}")
+    print("=" * 60)
+
+    create_directory_structure()
+    oauth = setup_oauth()
+
+    collect_historical_data(oauth, years=selected_years)
+    collect_historical_player_data(oauth, years=selected_years)
+
+    update_manager_stats(oauth, historical_years=all_historical_years)
+    build_player_career_history(historical_years=all_historical_years)
+    create_league_info(historical_years=all_historical_years)
+
+    print("\n" + "=" * 60)
+    print("✓ Selected seasons collection complete!")
     print("=" * 60)
 
 def weekly_update_with_players():
@@ -3267,6 +3461,24 @@ if __name__ == "__main__":
             initial_setup()
         elif command == "check":
             check_available_seasons()
+        elif command == "seasons":
+            # Collect specific historical seasons (supports space/comma/range syntax)
+            # Examples:
+            #   python collect_data.py seasons 2017 2018
+            #   python collect_data.py seasons 2017,2018
+            #   python collect_data.py seasons 2017-2018
+            if len(sys.argv) < 3:
+                print("Usage: python collect_data.py seasons <year ...>")
+                print("Examples:")
+                print("  python collect_data.py seasons 2017 2018")
+                print("  python collect_data.py seasons 2017,2018")
+                print("  python collect_data.py seasons 2017-2018")
+            else:
+                try:
+                    selected_years = parse_year_arguments(sys.argv[2:])
+                    collect_selected_historical_seasons(selected_years)
+                except ValueError as e:
+                    print(f"Invalid season arguments: {e}")
         elif command == "quick":
             # Quick update - just teams, standings, and current week scores
             quick_update()
@@ -3321,6 +3533,7 @@ if __name__ == "__main__":
             print("\nAvailable commands:")
             print("  setup              - Initial setup (historical data)")
             print("  check              - Check available seasons")
+            print("  seasons <yrs...>   - Collect specific historical seasons (e.g., 2017 2018 or 2017-2018)")
             print("  quick              - Quick update (teams, standings, rosters)")
             print("  players            - Collect player stats (Fangraphs + Yahoo)")
             print("  headshots          - Update existing player data with headshots only")
