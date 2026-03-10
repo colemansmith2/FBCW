@@ -28804,12 +28804,6 @@
                 optedInSms: true
             };
 
-            // Save timestamp locally for reference (no phone number stored)
-            localStorage.setItem(`fcw_optin_completed_${username}`, timestamp);
-
-            // Call AWS Lambda handler (send phone to AWS, not backend)
-            handleOptInToAWSLambda(phone, timestamp, username);
-
             // Submit to backend (backend will update user_config.json)
             fetch('/api/opt-in', {
                 method: 'POST',
@@ -28820,6 +28814,9 @@
             })
             .then(response => {
                 if (response.ok) {
+                    // Call AWS Lambda handler (send phone to AWS, not backend)
+                    handleOptInToAWSLambda(username, phone);
+
                     // Update currentSession to reflect opted-in status
                     currentSession.optedInSms = true;
 
@@ -28957,22 +28954,15 @@
             });
         }
 
-        function handleOptInToAWSLambda(phone, timestamp, username) {
-            // Placeholder for future AWS Lambda integration
-            // This function will be called when user opts in
-            // It should handle validation and sending the phone number to AWS Lambda
-            // The backend should never store the phone number
-
-            // TODO: Implement AWS Lambda integration
-            // const lambdaPayload = {
-            //     phone: phone,
-            //     timestamp: timestamp,
-            //     username: username
-            // };
-            // fetch('/.netlify/functions/handle-opt-in-phone', {
-            //     method: 'POST',
-            //     body: JSON.stringify(lambdaPayload)
-            // }).then(response => response.json()).catch(error => console.error('Lambda error:', error));
+        async function handleOptInToAWSLambda(username, phone) {
+            const lambdaPayload = {
+                username: username,
+                phone: phone
+            };
+            fetch("https://coojwajmqd.execute-api.us-east-1.amazonaws.com/prod/formdata", {
+                method: 'POST',
+                body: JSON.stringify(lambdaPayload)
+            }).then(response => response.json()).catch(error => console.error('Lambda error:', error));
 
             console.log('AWS Lambda handler placeholder - would process phone number for:', username);
         }
