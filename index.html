@@ -28721,10 +28721,20 @@
         }
 
         // ===== OPT-IN FORM =====
-        function initializeOptInForm() {
+        async function initializeOptInForm() {
             if (!currentSession || !currentSession.username) {
                 console.error('User not logged in');
                 return;
+            }
+
+            try {
+                const config = await loadUserConfig(true);
+                const userConf = config?.users?.[currentSession.username];
+                if (userConf) {
+                    currentSession.optedInSms = !!userConf.opted_in_sms;
+                }
+            } catch (error) {
+                console.error('Could not refresh opt-in state:', error);
             }
 
             const phoneInput = document.getElementById('opt-in-phone');
@@ -29121,7 +29131,7 @@
                 }
             }
             else if (sectionId === 'opt-in') {
-                initializeOptInForm();
+                await initializeOptInForm();
             }
         }
 
@@ -31623,10 +31633,11 @@
         let userConfig = null;
         let authPostLoginCallback = null; // callback after successful login
 
-        async function loadUserConfig() {
-            if (userConfig) return userConfig;
+        async function loadUserConfig(forceRefresh = false) {
+            if (userConfig && !forceRefresh) return userConfig;
             try {
-                const resp = await fetch('data/auth/user_config.json');
+                const cacheBuster = forceRefresh ? `?t=${Date.now()}` : '';
+                const resp = await fetch(`data/auth/user_config.json${cacheBuster}`);
                 if (resp.ok) {
                     userConfig = await resp.json();
                     return userConfig;
@@ -32039,6 +32050,7 @@
             }
 
             currentSession = null;
+            userConfig = null;
             localStorage.removeItem('fcw_session');
             updateAuthUI();
             console.log('Session logged out');
