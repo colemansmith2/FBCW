@@ -28728,13 +28728,10 @@
             }
 
             try {
-                const config = await loadUserConfig(true);
-                const userConf = config?.users?.[currentSession.username];
-                if (userConf) {
-                    currentSession.optedInSms = !!userConf.opted_in_sms;
-                }
+                const optedInStatus = await getOptInFromAWSDynamoDB(currentSession.username);
+                currentSession.optedInSms = !!optedInStatus;
             } catch (error) {
-                console.error('Could not refresh opt-in state:', error);
+                console.error('Could not retrieve opt-in state:', error);
             }
 
             const phoneInput = document.getElementById('opt-in-phone');
@@ -28765,7 +28762,7 @@
             }
         }
 
-        function handleOptInSubmit(event) {
+        async function handleOptInSubmit(event) {
             event.preventDefault();
 
             if (!currentSession || !currentSession.username) {
@@ -28788,34 +28785,19 @@
             }
 
             // Validate phone number format
-            const phoneRegex = /^[\d\s\-\(\)]+$/;
-            if (!phoneRegex.test(phone) || phone.replace(/\D/g, '').length < 10) {
+            const phoneRegex = /^[0-9]{10}$/;
+            if (!phoneRegex.test(phone)) {
                 messageDiv.className = 'opt-in-message error';
                 messageDiv.textContent = 'Please enter a valid phone number.';
                 return;
             }
 
-            const timestamp = new Date().toISOString();
-
-            // Prepare submission data
-            const submissionData = {
-                username: username,
-                timestamp: timestamp,
-                optedInSms: true
-            };
-
-            // Submit to backend (backend will update user_config.json)
-            fetch('/api/opt-in', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(submissionData)
-            })
-            .then(response => {
-                if (response.ok) {
-                    // Call AWS Lambda handler (send phone to AWS, not backend)
-                    handleOptInToAWSLambda(username, phone);
+            // Submit to backend (backend will update DynamoDB)
+            try {
+                const response = await setOptInToAWSDyanmoDB(username, true);
+                if (response && response.ok) {
+                    // Wait for AWS Lambda handler to complete before continuing
+                    await handleOptInToAWSLambda(username, phone);
 
                     // Update currentSession to reflect opted-in status
                     currentSession.optedInSms = true;
@@ -28840,33 +28822,20 @@
                 } else {
                     throw new Error('Failed to submit opt-in');
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Opt-in submission error:', error);
-                messageDiv.className = 'opt-in-message success';
-                messageDiv.textContent = 'Your preferences have been saved locally. They will sync when the server is available.';
-
-                // Still update currentSession locally
-                currentSession.optedInSms = true;
-
-                // Disable the form
-                document.getElementById('opt-in-phone').disabled = true;
-                document.getElementById('opt-in-consent-checkbox').disabled = true;
-                const submitBtn = document.querySelector('.opt-in-submit-btn');
-                submitBtn.textContent = 'Opt Out';
-                submitBtn.className = 'opt-in-submit-btn opt-out-mode';
-                submitBtn.onclick = (e) => handleOptOutRequest(e);
-                submitBtn.type = 'button';
+                messageDiv.className = 'opt-in-message error';
+                messageDiv.textContent = 'Failed to save preferences. Please try again.';
 
                 // Clear message after 5 seconds
                 setTimeout(() => {
                     messageDiv.textContent = '';
                     messageDiv.className = 'opt-in-message';
                 }, 5000);
-            });
+            }
         }
 
-        function handleOptOutRequest(event) {
+        async function handleOptOutRequest(event) {
             event.preventDefault();
 
             if (!currentSession || !currentSession.username) {
@@ -28880,26 +28849,10 @@
             const messageDiv = document.getElementById('opt-in-message');
             const timestamp = new Date().toISOString();
 
-            // Prepare opt-out data
-            const optOutData = {
-                username: username,
-                timestamp: timestamp,
-                optedInSms: false
-            };
-
-            // Save timestamp locally for reference
-            localStorage.setItem(`fcw_optin_completed_${username}`, timestamp);
-
-            // Submit opt-out to backend (backend will update user_config.json)
-            fetch('/api/opt-in', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(optOutData)
-            })
-            .then(response => {
-                if (response.ok) {
+            // Submit opt-out to DynamoDB (backend will update user_config.json)
+            try {
+                const response = await setOptInToAWSDyanmoDB(currentSession.username, false);
+                if (response && response.ok) {
                     // Update currentSession
                     currentSession.optedInSms = false;
 
@@ -28925,46 +28878,66 @@
                 } else {
                     throw new Error('Failed to opt-out');
                 }
-            })
-            .catch(error => {
+            } catch (error) {
                 console.error('Opt-out error:', error);
-
-                // Still update currentSession locally
-                currentSession.optedInSms = false;
-
-                messageDiv.className = 'opt-in-message success';
-                messageDiv.textContent = 'You\'ve been opted out. You won\'t receive SMS messages.';
-
-                // Reset form to opt-in state
-                document.getElementById('opt-in-phone').disabled = false;
-                document.getElementById('opt-in-phone').value = '';
-                document.getElementById('opt-in-consent-checkbox').disabled = false;
-                document.getElementById('opt-in-consent-checkbox').checked = false;
-                const submitBtn = document.querySelector('.opt-in-submit-btn');
-                submitBtn.textContent = 'Sign Me Up';
-                submitBtn.className = 'opt-in-submit-btn';
-                submitBtn.onclick = null;
-                submitBtn.type = 'submit';
+                messageDiv.className = 'opt-in-message error';
+                messageDiv.textContent = 'Failed to opt-out. Please try again.';
 
                 // Clear message after 5 seconds
                 setTimeout(() => {
                     messageDiv.textContent = '';
                     messageDiv.className = 'opt-in-message';
                 }, 10000);
-            });
+            }
+        }
+
+        async function getOptInFromAWSDynamoDB(username) {
+            try {
+                const response = await fetch("https://coojwajmqd.execute-api.us-east-1.amazonaws.com/prod/GetUserOptIn?strUser=" + username, {
+                    method: 'GET'
+                });
+                const data = await response.json();
+                return data["blnOptedIn"];
+            } catch (error) {
+                console.error('Lambda error:', error);
+                throw error;
+            }
+        }
+
+        async function setOptInToAWSDyanmoDB(username, optedIn) {
+            const lambdaPayload = {
+                strUser: username,
+                blnOptedIn: optedIn
+            };
+            try {
+                const response = await fetch("https://coojwajmqd.execute-api.us-east-1.amazonaws.com/prod/SetUserOptIn", {
+                    method: 'POST',
+                    body: JSON.stringify(lambdaPayload)
+                });
+                const data = await response.json();
+                return response;
+            } catch (error) {
+                console.error('Lambda error:', error);
+                throw error;
+            }
         }
 
         async function handleOptInToAWSLambda(username, phone) {
             const lambdaPayload = {
-                username: username,
-                phone: phone
+                strUser: username,
+                strPhoneNumber: phone
             };
-            fetch("https://coojwajmqd.execute-api.us-east-1.amazonaws.com/prod/formdata", {
-                method: 'POST',
-                body: JSON.stringify(lambdaPayload)
-            }).then(response => response.json()).catch(error => console.error('Lambda error:', error));
-
-            console.log('AWS Lambda handler placeholder - would process phone number for:', username);
+            try {
+                const response = await fetch("https://coojwajmqd.execute-api.us-east-1.amazonaws.com/prod/formdata", {
+                    method: 'POST',
+                    body: JSON.stringify(lambdaPayload)
+                });
+                const data = await response.json();
+                return response;
+            } catch (error) {
+                console.error('Lambda error:', error);
+                throw error;
+            }
         }
 
         // ===== NAVIGATION =====
