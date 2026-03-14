@@ -11092,12 +11092,16 @@
       @keyframes retroGlowPulse {
         0%,
         100% {
-          text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8), 0 0 6px var(--retro-gold);
+          text-shadow:
+            2px 2px 0 rgba(0, 0, 0, 0.8),
+            0 0 6px var(--retro-gold);
           opacity: 1;
         }
         50% {
-          text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8),
-            0 0 18px var(--retro-gold), 0 0 32px var(--retro-gold-light);
+          text-shadow:
+            2px 2px 0 rgba(0, 0, 0, 0.8),
+            0 0 18px var(--retro-gold),
+            0 0 32px var(--retro-gold-light);
           opacity: 0.8;
         }
       }
@@ -11143,26 +11147,6 @@
         animation: pixelBounce 0.6s steps(4) infinite;
         filter: drop-shadow(0 0 8px var(--retro-gold));
         line-height: 1;
-      }
-
-      /* Marching pixel progress bar below */
-      .loading::after {
-        content: "";
-        display: block;
-        width: 180px;
-        height: 14px;
-        margin: 1rem auto 0;
-        border: 3px solid var(--retro-gold);
-        background: repeating-linear-gradient(
-          90deg,
-          var(--retro-gold) 0px,
-          var(--retro-gold) 14px,
-          rgba(0, 0, 0, 0.25) 14px,
-          rgba(0, 0, 0, 0.25) 20px
-        );
-        animation: pixelMarch 0.4s steps(1) infinite;
-        box-shadow: 0 0 14px rgba(255, 204, 0, 0.45),
-          inset 0 0 6px rgba(0, 0, 0, 0.5);
       }
 
       @media (max-width: 768px) {
@@ -23882,11 +23866,11 @@
         <h2>SMS Message Opt-In</h2>
         <div class="opt-in-container">
           <div class="opt-in-card">
-            <div id="opt-in-loading" class="loading" style="display: none;">
+            <div id="opt-in-loading" class="loading" style="display: none">
               Checking your status
             </div>
 
-            <div id="opt-in-content" style="display: none;">
+            <div id="opt-in-content" style="display: none">
               <div class="opt-in-header">
                 <h1>Join the Conversation</h1>
                 <p class="opt-in-subtitle">
@@ -29279,7 +29263,12 @@
 
           if (!draftData || draftData.length === 0) {
             if (seasonNum === 2026) {
-              await render2026DraftOrder(draftEmpty, draftLoading, teamLogos, teamData);
+              await render2026DraftOrder(
+                draftEmpty,
+                draftLoading,
+                teamLogos,
+                teamData,
+              );
             } else {
               draftLoading.style.display = "none";
               draftEmpty.style.display = "block";
@@ -29444,7 +29433,12 @@
         } catch (error) {
           console.error("Error loading draft:", error);
           if (seasonNum === 2026) {
-            await render2026DraftOrder(draftEmpty, draftLoading, teamLogos, teamData);
+            await render2026DraftOrder(
+              draftEmpty,
+              draftLoading,
+              teamLogos,
+              teamData,
+            );
           } else {
             draftLoading.style.display = "none";
             draftEmpty.textContent = "Draft data not available for this season";
@@ -29454,7 +29448,12 @@
       }
 
       // ===== 2026 PRE-DRAFT ORDER DISPLAY =====
-      async function render2026DraftOrder(draftEmpty, draftLoading, teamLogos, teamData) {
+      async function render2026DraftOrder(
+        draftEmpty,
+        draftLoading,
+        teamLogos,
+        teamData,
+      ) {
         const draftTable = document.getElementById("draft-table");
         const draftBody = document.getElementById("draft-body");
         try {
@@ -29464,7 +29463,9 @@
           ]);
 
           const draftConfig = configRes.ok ? await configRes.json() : null;
-          const keeperConfigData = keeperConfigRes.ok ? await keeperConfigRes.json() : null;
+          const keeperConfigData = keeperConfigRes.ok
+            ? await keeperConfigRes.json()
+            : null;
           const totalRounds = draftConfig?.rounds || 22;
 
           // Ensure keeperConfig is available for trade management + keepers
@@ -29474,28 +29475,53 @@
 
           // Initialize trade management so getTeamPicks() works (uses keeperConfig)
           if (typeof initializeTradeManagement === "function") {
-            try { await initializeTradeManagement(); } catch (e) { /* ok */ }
+            try {
+              await initializeTradeManagement();
+            } catch (e) {
+              /* ok */
+            }
           }
           if (
             typeof initializeTeamAssets === "function" &&
             keeperConfig &&
             (!teamPicksOwned || Object.keys(teamPicksOwned).length === 0)
           ) {
-            try { await initializeTeamAssets(); } catch (e) { /* ok */ }
+            try {
+              await initializeTeamAssets();
+            } catch (e) {
+              /* ok */
+            }
           }
 
           // Ensure expected pick values and projections are loaded
-          if (typeof calculateExpectedPoints === "function" && Object.keys(expectedPointsByRound).length === 0) {
-            try { await calculateExpectedPoints(); } catch (e) { /* ok */ }
+          if (
+            typeof calculateExpectedPoints === "function" &&
+            Object.keys(expectedPointsByRound).length === 0
+          ) {
+            try {
+              await calculateExpectedPoints();
+            } catch (e) {
+              /* ok */
+            }
           }
-          if (typeof loadAverageProjections === "function" && !averageProjectionsLoaded) {
-            try { await loadAverageProjections(); } catch (e) { /* ok */ }
+          if (
+            typeof loadAverageProjections === "function" &&
+            !averageProjectionsLoaded
+          ) {
+            try {
+              await loadAverageProjections();
+            } catch (e) {
+              /* ok */
+            }
           }
 
           // Load keepers: prefer in-memory keeperSelections (Firebase),
           // else one-time Firebase fetch, else fall back to JSON
           let rawKeeperData = {};
-          if (typeof keeperSelections !== "undefined" && Object.keys(keeperSelections).length > 0) {
+          if (
+            typeof keeperSelections !== "undefined" &&
+            Object.keys(keeperSelections).length > 0
+          ) {
             rawKeeperData = keeperSelections;
           } else if (typeof firebaseDb !== "undefined" && firebaseDb) {
             try {
@@ -29504,10 +29530,14 @@
               if (fbData) {
                 Object.entries(fbData).forEach(([sanitizedKey, keepers]) => {
                   const teamKey = unsanitizeFirebaseKey(sanitizedKey);
-                  rawKeeperData[teamKey] = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
+                  rawKeeperData[teamKey] = Array.isArray(keepers)
+                    ? keepers
+                    : Object.values(keepers || {});
                 });
               }
-            } catch (e) { /* fall through to JSON */ }
+            } catch (e) {
+              /* fall through to JSON */
+            }
           }
           if (Object.keys(rawKeeperData).length === 0) {
             try {
@@ -29516,9 +29546,15 @@
                 const kd = await keepersRes.json();
                 rawKeeperData = kd.keepers || {};
               }
-            } catch (e) { /* ignore */ }
+            } catch (e) {
+              /* ignore */
+            }
           }
-          if (typeof keeperSelections !== "undefined" && Object.keys(keeperSelections).length === 0 && Object.keys(rawKeeperData).length > 0) {
+          if (
+            typeof keeperSelections !== "undefined" &&
+            Object.keys(keeperSelections).length === 0 &&
+            Object.keys(rawKeeperData).length > 0
+          ) {
             keeperSelections = rawKeeperData;
           }
 
@@ -29532,40 +29568,64 @@
           // Load Yahoo player data for headshots
           let headshotMap = {};
           try {
-            const yahooPlayers = typeof getYahooPlayerPositions === "function"
-              ? await getYahooPlayerPositions() : [];
+            const yahooPlayers =
+              typeof getYahooPlayerPositions === "function"
+                ? await getYahooPlayerPositions()
+                : [];
             yahooPlayers.forEach((p) => {
               if (p.headshot_url && p.name) {
                 const norm = normalizePlayerName(p.name);
                 headshotMap[norm] = p.headshot_url;
               }
             });
-          } catch (e) { /* headshots optional */ }
+          } catch (e) {
+            /* headshots optional */
+          }
 
           // Update panel title
-          const panelTitle = document.querySelector(".draft-panel .panel-title");
+          const panelTitle = document.querySelector(
+            ".draft-panel .panel-title",
+          );
           if (panelTitle) panelTitle.textContent = "Draft Order";
 
           // Build configKey → team info map
           const configTeamInfo = {};
           if (keeperConfigData?.teams) {
             Object.entries(keeperConfigData.teams).forEach(([key, team]) => {
-              const mgr = normalizeManagerName(team.manager || "", 2026, team.team_name, key);
+              const mgr = normalizeManagerName(
+                team.manager || "",
+                2026,
+                team.team_name,
+                key,
+              );
               const mgrLower = mgr.toLowerCase();
               // Find current-season logo from teamData
               let logo = "";
               let currentTeamName = team.team_name || "";
               if (teamData) {
                 const match = teamData.find((t) => {
-                  const tMgr = normalizeManagerName(t.manager, 2026, t.team_name, t.team_key).toLowerCase();
+                  const tMgr = normalizeManagerName(
+                    t.manager,
+                    2026,
+                    t.team_name,
+                    t.team_key,
+                  ).toLowerCase();
                   return tMgr === mgrLower || tMgr === mgrLower.split(" ")[0];
                 });
                 if (match) {
-                  logo = fixTeamLogo(match.team_logo) || teamLogos[match.team_key] || "";
+                  logo =
+                    fixTeamLogo(match.team_logo) ||
+                    teamLogos[match.team_key] ||
+                    "";
                   currentTeamName = match.team_name || currentTeamName;
                 }
               }
-              configTeamInfo[key] = { manager: mgr, teamName: currentTeamName, logo, configKey: key };
+              configTeamInfo[key] = {
+                manager: mgr,
+                teamName: currentTeamName,
+                logo,
+                configKey: key,
+              };
             });
           }
 
@@ -29580,8 +29640,15 @@
           const rawOrder = draftConfig?.draft_order || [];
           const resolvedOrder = rawOrder.map((mgrRaw) => {
             if (!mgrRaw) return null;
-            const norm = normalizeManagerName(mgrRaw, 2026, null, null).toLowerCase();
-            return mgrToConfigKey[norm] || mgrToConfigKey[norm.split(" ")[0]] || null;
+            const norm = normalizeManagerName(
+              mgrRaw,
+              2026,
+              null,
+              null,
+            ).toLowerCase();
+            return (
+              mgrToConfigKey[norm] || mgrToConfigKey[norm.split(" ")[0]] || null
+            );
           });
           const allConfigEntries = Object.entries(configTeamInfo);
           const assignedKeys = new Set(resolvedOrder.filter(Boolean));
@@ -29594,7 +29661,10 @@
               resolvedOrder[i] = unassignedKeys[uIdx++][0];
             }
           }
-          while (resolvedOrder.length < allConfigEntries.length && uIdx < unassignedKeys.length) {
+          while (
+            resolvedOrder.length < allConfigEntries.length &&
+            uIdx < unassignedKeys.length
+          ) {
             resolvedOrder.push(unassignedKeys[uIdx++][0]);
           }
 
@@ -29602,7 +29672,8 @@
           const pickOwnerLookup = {};
           const allTeamKeys = Object.keys(configTeamInfo);
           allTeamKeys.forEach((teamKey) => {
-            const picks = typeof getTeamPicks === "function" ? getTeamPicks(teamKey) : [];
+            const picks =
+              typeof getTeamPicks === "function" ? getTeamPicks(teamKey) : [];
             picks.forEach((pick) => {
               const key = `${pick.round}-${pick.originalOwner}`;
               pickOwnerLookup[key] = teamKey;
@@ -29612,7 +29683,9 @@
           // Build keeper data per team: { configKey: [{ player_name, roundCost, position, isProspect }] }
           const teamKeepersMap = {};
           Object.entries(rawKeeperData).forEach(([configKey, keepers]) => {
-            const arr = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
+            const arr = Array.isArray(keepers)
+              ? keepers
+              : Object.values(keepers || {});
             if (arr.length > 0) teamKeepersMap[configKey] = arr;
           });
           const keeperMetaByTeam = {};
@@ -29637,9 +29710,14 @@
               resolved.forEach((rc) => {
                 const rd = rc.actualRoundCost;
                 if (rd && rd > 0) {
-                  keeperRoundCounts[teamKey][rd] = (keeperRoundCounts[teamKey][rd] || 0) + 1;
-                  if (!keeperByTeamRound[teamKey][rd]) keeperByTeamRound[teamKey][rd] = [];
-                  const meta = keeperMetaByTeam[teamKey]?.[normalizePlayerName(rc.player_name)] || {};
+                  keeperRoundCounts[teamKey][rd] =
+                    (keeperRoundCounts[teamKey][rd] || 0) + 1;
+                  if (!keeperByTeamRound[teamKey][rd])
+                    keeperByTeamRound[teamKey][rd] = [];
+                  const meta =
+                    keeperMetaByTeam[teamKey]?.[
+                      normalizePlayerName(rc.player_name)
+                    ] || {};
                   keeperByTeamRound[teamKey][rd].push({
                     ...rc,
                     player_name: rc.player_name || meta.player_name,
@@ -29649,14 +29727,22 @@
               });
             } else {
               // Fallback: use raw round costs
-              keepers.filter((k) => !isProspectKeeperEntry(k)).forEach((k) => {
-                const rd = k.roundCost || 0;
-                if (rd > 0) {
-                  keeperRoundCounts[teamKey][rd] = (keeperRoundCounts[teamKey][rd] || 0) + 1;
-                  if (!keeperByTeamRound[teamKey][rd]) keeperByTeamRound[teamKey][rd] = [];
-                  keeperByTeamRound[teamKey][rd].push({ player_name: k.player_name, actualRoundCost: rd, position: k.position });
-                }
-              });
+              keepers
+                .filter((k) => !isProspectKeeperEntry(k))
+                .forEach((k) => {
+                  const rd = k.roundCost || 0;
+                  if (rd > 0) {
+                    keeperRoundCounts[teamKey][rd] =
+                      (keeperRoundCounts[teamKey][rd] || 0) + 1;
+                    if (!keeperByTeamRound[teamKey][rd])
+                      keeperByTeamRound[teamKey][rd] = [];
+                    keeperByTeamRound[teamKey][rd].push({
+                      player_name: k.player_name,
+                      actualRoundCost: rd,
+                      position: k.position,
+                    });
+                  }
+                });
             }
           });
 
@@ -29665,9 +29751,10 @@
           let overallPick = 0;
 
           for (let round = 1; round <= totalRounds; round++) {
-            const orderForRound = (draftConfig?.snake && round % 2 === 0)
-              ? [...resolvedOrder].reverse()
-              : [...resolvedOrder];
+            const orderForRound =
+              draftConfig?.snake && round % 2 === 0
+                ? [...resolvedOrder].reverse()
+                : [...resolvedOrder];
 
             const roundPicks = [];
             orderForRound.forEach((originalSlotTeam, slotIdx) => {
@@ -29710,26 +29797,37 @@
           }
 
           // Mark keeper picks in the sequence (latest pick per team per round)
-          Object.entries(keeperRoundCounts).forEach(([teamKey, roundCounts]) => {
-            Object.entries(roundCounts).forEach(([round, count]) => {
-              const roundNum = Number(round);
-              const teamPicksInRound = sequence.filter((p) => p.teamKey === teamKey && p.round === roundNum);
-              const picksToMark = teamPicksInRound.slice(-count);
-              const keeperEntries = keeperByTeamRound[teamKey]?.[roundNum] || [];
-              picksToMark.forEach((p, i) => {
-                p.isKeeper = true;
-                p.keeperData = keeperEntries[i] || keeperEntries[0] || null;
+          Object.entries(keeperRoundCounts).forEach(
+            ([teamKey, roundCounts]) => {
+              Object.entries(roundCounts).forEach(([round, count]) => {
+                const roundNum = Number(round);
+                const teamPicksInRound = sequence.filter(
+                  (p) => p.teamKey === teamKey && p.round === roundNum,
+                );
+                const picksToMark = teamPicksInRound.slice(-count);
+                const keeperEntries =
+                  keeperByTeamRound[teamKey]?.[roundNum] || [];
+                picksToMark.forEach((p, i) => {
+                  p.isKeeper = true;
+                  p.keeperData = keeperEntries[i] || keeperEntries[0] || null;
+                });
               });
-            });
-          });
+            },
+          );
 
           // Collect prospect keepers (NA - not assigned to rounds)
           const prospectKeepers = [];
           Object.entries(teamKeepersMap).forEach(([teamKey, keepers]) => {
             const arr = Array.isArray(keepers) ? keepers : [];
-            arr.filter((k) => isProspectKeeperEntry(k)).forEach((k) => {
-              prospectKeepers.push({ teamKey, player_name: k.player_name || "Unknown", position: k.position || "" });
-            });
+            arr
+              .filter((k) => isProspectKeeperEntry(k))
+              .forEach((k) => {
+                prospectKeepers.push({
+                  teamKey,
+                  player_name: k.player_name || "Unknown",
+                  position: k.position || "",
+                });
+              });
           });
 
           // Render into the draft table
@@ -32619,15 +32717,51 @@
       function getAwardsForSeason(managerName, year) {
         const awards = managerAwardsData[managerName] || {};
         const defs = [
-          { yearsKey: "championshipYears", src: "champion_ring.png", alt: "Championship" },
-          { yearsKey: "regularSeasonYears", src: "data/awards/reg_season_champion.png", alt: "Regular Season Champion" },
-          { yearsKey: "scoringChampYears", src: "data/awards/scoring_champion.png", alt: "Scoring Champion" },
-          { yearsKey: "troutAwardYears", src: "data/awards/hitter.png", alt: "Mike Trout Award" },
-          { yearsKey: "degromAwardYears", src: "data/awards/pitcher.png", alt: "Jacob deGrom Award" },
-          { yearsKey: "diamondAwardYears", src: "data/awards/diamond.png", alt: "Diamond in the Rough" },
-          { yearsKey: "garbageYears", src: "data/awards/garbage.png", alt: "Garbage Award" },
-          { yearsKey: "clownYears", src: "data/awards/clown.png", alt: "Clown Award" },
-          { yearsKey: "bustAwardYears", src: "data/awards/bust.png", alt: "Bust of the Year" },
+          {
+            yearsKey: "championshipYears",
+            src: "champion_ring.png",
+            alt: "Championship",
+          },
+          {
+            yearsKey: "regularSeasonYears",
+            src: "data/awards/reg_season_champion.png",
+            alt: "Regular Season Champion",
+          },
+          {
+            yearsKey: "scoringChampYears",
+            src: "data/awards/scoring_champion.png",
+            alt: "Scoring Champion",
+          },
+          {
+            yearsKey: "troutAwardYears",
+            src: "data/awards/hitter.png",
+            alt: "Mike Trout Award",
+          },
+          {
+            yearsKey: "degromAwardYears",
+            src: "data/awards/pitcher.png",
+            alt: "Jacob deGrom Award",
+          },
+          {
+            yearsKey: "diamondAwardYears",
+            src: "data/awards/diamond.png",
+            alt: "Diamond in the Rough",
+          },
+          {
+            yearsKey: "garbageYears",
+            src: "data/awards/garbage.png",
+            alt: "Garbage Award",
+          },
+          {
+            yearsKey: "clownYears",
+            src: "data/awards/clown.png",
+            alt: "Clown Award",
+          },
+          {
+            yearsKey: "bustAwardYears",
+            src: "data/awards/bust.png",
+            alt: "Bust of the Year",
+          },
         ];
         return defs.filter((d) => {
           const years = awards[d.yearsKey] || [];
@@ -32770,20 +32904,29 @@
             }
 
             // Per-season awards (inline with team name)
-            const seasonAwards = getAwardsForSeason(manager.manager_name, season.year);
+            const seasonAwards = getAwardsForSeason(
+              manager.manager_name,
+              season.year,
+            );
             let awardsHTML = "";
             if (seasonAwards.length > 0) {
               awardsHTML = `<div class="timeline-awards">${seasonAwards
-                .map((a) => `<div class="award-badge" data-tooltip="${a.alt}"><img src="${a.src}" alt="${a.alt}" class="award-image"></div>`)
+                .map(
+                  (a) =>
+                    `<div class="award-badge" data-tooltip="${a.alt}"><img src="${a.src}" alt="${a.alt}" class="award-image"></div>`,
+                )
                 .join("")}</div>`;
             }
 
             // Right side: draft grade + placement badge
-            const rightHTML = (draftGradeHTML || season.rank > 0) ? `
+            const rightHTML =
+              draftGradeHTML || season.rank > 0
+                ? `
                         <div class="timeline-right">
                             ${draftGradeHTML}
                             ${season.rank > 0 ? `<span class="rank ${rankClass}">${rankText}</span>` : ""}
-                        </div>` : "";
+                        </div>`
+                : "";
 
             return `
                     <div class="timeline-item">
@@ -37345,7 +37488,9 @@
           // Logged in — show hat image for the user
           const managerName = getSessionManagerName();
           const sessionTeamKey =
-            currentSession.adminActingAs?.teamKey ?? currentSession.teamKey ?? null;
+            currentSession.adminActingAs?.teamKey ??
+            currentSession.teamKey ??
+            null;
           const normalizedName = managerName
             ? normalizeManagerName(managerName, 2026, null, sessionTeamKey)
             : null;
