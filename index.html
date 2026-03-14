@@ -1487,6 +1487,7 @@
       .draft-table.draft-order-table th:nth-child(4),
       .draft-table.draft-order-table td:nth-child(4) {
         width: 160px;
+        text-align: left;
       }
 
       .draft-table.draft-order-table th:nth-child(5),
@@ -1498,6 +1499,8 @@
         display: flex;
         flex-direction: column;
         min-width: 0;
+        align-items: flex-start;
+        text-align: left;
       }
 
       .draft-order-team-name {
@@ -29377,9 +29380,21 @@
           const keeperConfigData = keeperConfigRes.ok ? await keeperConfigRes.json() : null;
           const totalRounds = draftConfig?.rounds || 22;
 
-          // Initialize trade management so getTeamPicks() works
+          // Ensure keeperConfig is available for trade management + keepers
+          if (keeperConfigData && !keeperConfig) {
+            keeperConfig = keeperConfigData;
+          }
+
+          // Initialize trade management so getTeamPicks() works (uses keeperConfig)
           if (typeof initializeTradeManagement === "function") {
             try { await initializeTradeManagement(); } catch (e) { /* ok */ }
+          }
+          if (
+            typeof initializeTeamAssets === "function" &&
+            keeperConfig &&
+            (!teamPicksOwned || Object.keys(teamPicksOwned).length === 0)
+          ) {
+            try { await initializeTeamAssets(); } catch (e) { /* ok */ }
           }
 
           // Ensure expected pick values and projections are loaded
@@ -29714,7 +29729,7 @@
                 expectedPoints && expectedPoints > 0
                   ? `${Math.round(expectedPoints).toLocaleString()} pts`
                   : "-";
-              keeperHtml = `<div class="draft-order-pick-value">Projected pick value: ${expectedDisplay}</div>`;
+              keeperHtml = `<div class="draft-order-pick-value">PIck Value: ${expectedDisplay}</div>`;
             }
 
             row.innerHTML = `
@@ -33613,7 +33628,7 @@
         } else if (sectionId === "preseason") {
           // Initialize keeper management first, then load projections
           // This ensures keeper data is available when rendering the table
-          if (!keeperConfig) {
+          if (!keeperConfig || Object.keys(keeperSelections).length === 0) {
             await initializeKeeperManagement();
           }
           // Initialize trade management (must be after keeper management)
@@ -33642,7 +33657,7 @@
           }
         } else if (sectionId === "valuesuite") {
           // Initialize keeper management if not already done (needed for value analysis)
-          if (!keeperConfig) {
+          if (!keeperConfig || Object.keys(keeperSelections).length === 0) {
             await initializeKeeperManagement();
           }
           // Initialize trade management (needed for draft pick values)
@@ -33665,7 +33680,7 @@
           }
         } else if (sectionId === "sportsbook") {
           // Initialize keeper management (needed for authentication)
-          if (!keeperConfig) {
+          if (!keeperConfig || Object.keys(keeperSelections).length === 0) {
             await initializeKeeperManagement();
           }
           // Initialize trade management (needed for draft pick ownership)
@@ -33676,14 +33691,14 @@
           checkSportsbookAutoLogin();
         } else if (sectionId === "prospects") {
           // Initialize Firebase if needed for ownership data
-          if (!keeperConfig) {
+          if (!keeperConfig || Object.keys(keeperSelections).length === 0) {
             await initializeKeeperManagement();
           }
           // Load prospects data
           initProspectsOnVisible();
         } else if (sectionId === "mockdraft") {
           if (!mockDraftInitialized) {
-            if (!keeperConfig) {
+            if (!keeperConfig || Object.keys(keeperSelections).length === 0) {
               await initializeKeeperManagement();
             }
             await initializeTradeManagement();
@@ -45060,13 +45075,30 @@
       let tradeManagementInitPromise = null;
 
       async function initializeTradeManagement() {
-        if (tradeManagementReady) return;
+        if (tradeManagementReady) {
+          if (teamPicksOwned && Object.keys(teamPicksOwned).length > 0) return;
+          tradeManagementReady = false;
+        }
         if (tradeManagementInitPromise) {
           await tradeManagementInitPromise;
           return;
         }
 
         tradeManagementInitPromise = (async () => {
+          // Ensure keeper config exists (needed to seed picks)
+          if (!keeperConfig) {
+            try {
+              const configResponse = await fetch(
+                "data/keepers/keeper_config.json",
+              );
+              if (configResponse.ok) {
+                keeperConfig = await configResponse.json();
+              }
+            } catch (e) {
+              console.log("Could not load keeper_config.json for trades");
+            }
+          }
+
           // Load manual budget adjustments (now async to check server first)
           await loadManualBudgetAdjustments();
 
