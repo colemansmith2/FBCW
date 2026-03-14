@@ -5747,6 +5747,90 @@
         font-style: italic;
       }
 
+      /* Pre-season draft order display */
+      .draft-order-list {
+        padding: 0;
+        text-align: left;
+        font-style: normal;
+      }
+
+      .draft-order-row {
+        display: grid;
+        grid-template-columns: 2rem 2.5rem 1fr auto;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.55rem 0.5rem;
+        border-bottom: 1px solid #eee;
+      }
+
+      .draft-order-row:last-child {
+        border-bottom: none;
+      }
+
+      .draft-order-slot {
+        font-weight: 700;
+        color: var(--retro-blue);
+        font-size: 0.95rem;
+        text-align: center;
+      }
+
+      .draft-order-logo {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #e0e0e0;
+      }
+
+      .draft-order-info {
+        min-width: 0;
+      }
+
+      .draft-order-manager {
+        font-weight: 600;
+        font-size: 0.88rem;
+        color: #222;
+      }
+
+      .draft-order-team {
+        font-size: 0.75rem;
+        color: #888;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .draft-order-keepers {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.2rem;
+        justify-content: flex-end;
+        max-width: 220px;
+      }
+
+      .draft-order-keeper-tag {
+        display: inline-block;
+        background: #e8f4fd;
+        border: 1px solid #b3d4f5;
+        border-radius: 4px;
+        padding: 0.1rem 0.35rem;
+        font-size: 0.7rem;
+        color: #1a5276;
+        white-space: nowrap;
+      }
+
+      .draft-order-keeper-tag.na-keeper {
+        background: #fef9e7;
+        border-color: #f9e79f;
+        color: #7d6608;
+      }
+
+      .draft-order-no-keepers {
+        font-size: 0.75rem;
+        color: #bbb;
+        font-style: italic;
+      }
+
       @media (max-width: 1024px) {
         .standings-draft-container {
           flex-direction: column;
@@ -27072,6 +27156,7 @@
 
         // Show week selector and change title for 2026
         if (headerWeekSelector) headerWeekSelector.style.display = "flex";
+        updateHeaderWeekArrows(); // Initialize arrow states immediately
         if (standingsTitle) standingsTitle.textContent = "Standings";
 
         try {
@@ -28993,8 +29078,12 @@
           const draftData = await draftResponse.json();
 
           if (!draftData || draftData.length === 0) {
-            draftLoading.style.display = "none";
-            draftEmpty.style.display = "block";
+            if (seasonNum === 2026) {
+              await render2026DraftOrder(draftEmpty, draftLoading, teamLogos, teamData);
+            } else {
+              draftLoading.style.display = "none";
+              draftEmpty.style.display = "block";
+            }
             return;
           }
 
@@ -29154,8 +29243,125 @@
           draftTable.style.display = "table";
         } catch (error) {
           console.error("Error loading draft:", error);
+          if (seasonNum === 2026) {
+            await render2026DraftOrder(draftEmpty, draftLoading, teamLogos, teamData);
+          } else {
+            draftLoading.style.display = "none";
+            draftEmpty.textContent = "Draft data not available for this season";
+            draftEmpty.style.display = "block";
+          }
+        }
+      }
+
+      // ===== 2026 PRE-DRAFT ORDER DISPLAY =====
+      async function render2026DraftOrder(draftEmpty, draftLoading, teamLogos, teamData) {
+        try {
+          const [configRes, keeperConfigRes, keepersRes] = await Promise.all([
+            fetch("data/mock_draft_config.json"),
+            fetch("data/keepers/keeper_config.json"),
+            fetch("data/keepers/keepers_2026.json"),
+          ]);
+
+          const draftConfig = configRes.ok ? await configRes.json() : null;
+          const keeperConfigData = keeperConfigRes.ok ? await keeperConfigRes.json() : null;
+          const keepersData = keepersRes.ok ? await keepersRes.json() : null;
+
+          // Update panel title
+          const panelTitle = document.querySelector(".draft-panel .panel-title");
+          if (panelTitle) panelTitle.textContent = "Draft Order";
+
+          // Build manager → logo/teamName map from teamData
+          const managerToLogo = {};
+          const managerToTeamName = {};
+          if (teamData) {
+            teamData.forEach((team) => {
+              const mgr = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key).toLowerCase();
+              managerToLogo[mgr] = teamLogos[team.team_key] || "";
+              managerToTeamName[mgr] = team.team_name || "";
+              // Also index by first name for loose matching
+              const first = mgr.split(" ")[0];
+              if (!managerToLogo[first]) managerToLogo[first] = managerToLogo[mgr];
+              if (!managerToTeamName[first]) managerToTeamName[first] = managerToTeamName[mgr];
+            });
+          }
+
+          // Build configKey → normalizedManager map
+          const configKeyToManager = {};
+          if (keeperConfigData?.teams) {
+            Object.entries(keeperConfigData.teams).forEach(([key, team]) => {
+              const mgr = normalizeManagerName(team.manager || "", 2026, team.team_name, key);
+              configKeyToManager[key] = mgr.toLowerCase();
+            });
+          }
+
+          // Build manager → keepers array map
+          const managerToKeepers = {};
+          if (keepersData?.keepers) {
+            Object.entries(keepersData.keepers).forEach(([configKey, keepers]) => {
+              const mgrLower = configKeyToManager[configKey];
+              if (mgrLower !== undefined) {
+                managerToKeepers[mgrLower] = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
+              }
+            });
+          }
+
+          const draftOrder = draftConfig?.draft_order || [];
+
+          let html = '<div class="draft-order-list">';
+          draftOrder.forEach((mgrRaw, idx) => {
+            const slot = idx + 1;
+            const mgrNorm = mgrRaw
+              ? normalizeManagerName(mgrRaw, 2026, null, null)
+              : null;
+            const mgrLower = mgrNorm?.toLowerCase() || "";
+            const logo = managerToLogo[mgrLower] || managerToLogo[mgrLower.split(" ")[0]] || "";
+            const teamName = managerToTeamName[mgrLower] || managerToTeamName[mgrLower.split(" ")[0]] || "";
+            const keepers = mgrLower ? (managerToKeepers[mgrLower] || []) : [];
+
+            const logoHtml = logo
+              ? `<img src="${logo}" class="draft-order-logo" alt="" onerror="this.style.visibility='hidden'">`
+              : `<div class="draft-order-logo"></div>`;
+
+            // Separate active keepers vs prospect/NA keepers
+            const activeKeepers = keepers.filter((k) => !isProspectKeeperEntry(k));
+            const naKeepers = keepers.filter((k) => isProspectKeeperEntry(k));
+
+            let keepersHtml = "";
+            if (keepers.length === 0) {
+              keepersHtml = `<span class="draft-order-no-keepers">${mgrNorm ? "No keepers yet" : "TBD"}</span>`;
+            } else {
+              activeKeepers.forEach((k) => {
+                const rd = k.roundCost || k.round || "?";
+                keepersHtml += `<span class="draft-order-keeper-tag">Rd ${rd}: ${k.player_name}</span>`;
+              });
+              naKeepers.forEach((k) => {
+                keepersHtml += `<span class="draft-order-keeper-tag na-keeper">NA: ${k.player_name}</span>`;
+              });
+            }
+
+            html += `
+              <div class="draft-order-row">
+                <div class="draft-order-slot">${slot}</div>
+                ${logoHtml}
+                <div class="draft-order-info">
+                  <div class="draft-order-manager">${mgrNorm || "<em>TBD</em>"}</div>
+                  <div class="draft-order-team">${teamName}</div>
+                </div>
+                <div class="draft-order-keepers">${keepersHtml}</div>
+              </div>`;
+          });
+          html += "</div>";
+
           draftLoading.style.display = "none";
-          draftEmpty.textContent = "Draft data not available for this season";
+          draftEmpty.style.textAlign = "left";
+          draftEmpty.style.padding = "0";
+          draftEmpty.style.fontStyle = "normal";
+          draftEmpty.innerHTML = html;
+          draftEmpty.style.display = "block";
+        } catch (e) {
+          console.error("Error rendering 2026 draft order:", e);
+          draftLoading.style.display = "none";
+          draftEmpty.textContent = "Draft order not available";
           draftEmpty.style.display = "block";
         }
       }
