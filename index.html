@@ -5994,16 +5994,16 @@
       }
 
       .award-image {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         object-fit: contain;
         vertical-align: middle;
       }
 
-      /* Larger awards in the modal header */
+      /* Awards in the modal header */
       .modal-header .award-image {
-        width: 44px;
-        height: 44px;
+        width: 36px;
+        height: 36px;
       }
 
       .award-count {
@@ -36572,8 +36572,10 @@
         if (currentSession) {
           // Logged in — show hat image for the user
           const managerName = getSessionManagerName();
+          const sessionTeamKey =
+            currentSession.adminActingAs?.teamKey ?? currentSession.teamKey ?? null;
           const normalizedName = managerName
-            ? normalizeManagerName(managerName, 2026)
+            ? normalizeManagerName(managerName, 2026, null, sessionTeamKey)
             : null;
           const hatUrl = normalizedName
             ? `data/hats/${getManagerHatFilename(normalizedName)}`
