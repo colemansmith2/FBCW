@@ -5994,8 +5994,8 @@
       }
 
       .award-image {
-        width: 36px;
-        height: 36px;
+        width: 44px;
+        height: 44px;
         object-fit: contain;
         vertical-align: middle;
       }
@@ -6170,44 +6170,63 @@
 
       .timeline-item {
         display: flex;
-        padding: 1rem;
+        padding: 0.75rem 1rem;
         border-left: 3px solid var(--retro-blue);
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
         background: #f8f9fa;
         border-radius: 0 8px 8px 0;
         align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
       }
 
       .timeline-item .year {
         font-weight: bold;
         color: var(--retro-blue);
-        min-width: 60px;
-        font-size: 1.1rem;
-      }
-
-      .timeline-item .details {
-        flex: 1;
-        margin-left: 1rem;
+        min-width: 48px;
+        font-size: 1.05rem;
+        flex-shrink: 0;
       }
 
       .timeline-item .timeline-logo {
-        width: 35px;
-        height: 35px;
+        width: 40px;
+        height: 40px;
         object-fit: contain;
         border-radius: 50%;
         background: white;
-        padding: 0.25rem;
-        margin-left: 1rem;
+        padding: 0.2rem;
+        border: 2px solid #e0e0e0;
+        flex-shrink: 0;
+      }
+
+      .timeline-main {
+        flex: 1;
+        min-width: 130px;
+      }
+
+      .timeline-record {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #333;
+      }
+
+      .timeline-team-name {
+        font-size: 0.8rem;
+        color: #888;
+        margin-top: 0.1rem;
       }
 
       .timeline-item .rank {
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
         background: var(--retro-blue);
         color: white;
-        padding: 0.25rem 0.75rem;
+        padding: 0.2rem 0.65rem;
         border-radius: 20px;
-        margin-right: 1rem;
-        font-size: 0.9rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        white-space: nowrap;
+        flex-shrink: 0;
       }
 
       .timeline-item .rank.champion {
@@ -6218,6 +6237,28 @@
       .timeline-item .rank.runner-up {
         background: #c0c0c0;
         color: #000;
+      }
+
+      .timeline-item .rank.third-place {
+        background: #cd7f32;
+        color: white;
+      }
+
+      .timeline-awards {
+        display: flex;
+        gap: 0.25rem;
+        align-items: center;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+      }
+
+      .timeline-awards .award-badge {
+        font-size: 1rem;
+      }
+
+      .timeline-awards .award-image {
+        width: 28px;
+        height: 28px;
       }
 
       /* Draft Grade Styles */
@@ -30843,31 +30884,32 @@
             const teams2026 = await getTeamData(2026);
 
             allManagersData.forEach((manager) => {
-              // Check if manager already has 2026 season
-              const has2026 = manager.season_history.some(
-                (s) => s.year === 2026,
+              // Always sync 2026 data from current standings to get latest team names/stats
+              const current2026 = normalized2026.find(
+                (t) =>
+                  normalizeManagerName(t.manager, 2026, t.team_name) ===
+                  manager.manager_name,
               );
-              if (!has2026) {
-                // Find this manager in current standings
-                const current2026 = normalized2026.find(
-                  (t) =>
-                    normalizeManagerName(t.manager, 2026, t.team_name) ===
-                    manager.manager_name,
+              if (current2026) {
+                const season2026Idx = manager.season_history.findIndex(
+                  (s) => s.year === 2026,
                 );
-                if (current2026) {
-                  // Add 2026 season to history
-                  manager.season_history.push({
-                    year: 2026,
-                    team_name: current2026.team_name,
-                    wins: current2026.wins || 0,
-                    losses: current2026.losses || 0,
-                    ties: current2026.ties || 0,
-                    points_for: current2026.points_for || 0,
-                    points_against: current2026.points_against || 0,
-                    rank: current2026.rank || 0,
-                  });
-
-                  // Update totals
+                const updated2026 = {
+                  year: 2026,
+                  team_name: current2026.team_name,
+                  wins: current2026.wins || 0,
+                  losses: current2026.losses || 0,
+                  ties: current2026.ties || 0,
+                  points_for: current2026.points_for || 0,
+                  points_against: current2026.points_against || 0,
+                  rank: current2026.rank || 0,
+                };
+                if (season2026Idx !== -1) {
+                  // Update existing entry with current data
+                  manager.season_history[season2026Idx] = updated2026;
+                } else {
+                  // Add new entry and update totals
+                  manager.season_history.push(updated2026);
                   manager.total_wins += current2026.wins || 0;
                   manager.total_losses += current2026.losses || 0;
                   manager.total_ties += current2026.ties || 0;
@@ -31803,6 +31845,26 @@
         container.appendChild(svg);
       }
 
+      // Returns array of { src, alt } for awards a manager won in a specific season year
+      function getAwardsForSeason(managerName, year) {
+        const awards = managerAwardsData[managerName] || {};
+        const defs = [
+          { yearsKey: "championshipYears", src: "champion_ring.png", alt: "Championship" },
+          { yearsKey: "regularSeasonYears", src: "data/awards/reg_season_champion.png", alt: "Regular Season Champion" },
+          { yearsKey: "scoringChampYears", src: "data/awards/scoring_champion.png", alt: "Scoring Champion" },
+          { yearsKey: "troutAwardYears", src: "data/awards/hitter.png", alt: "Mike Trout Award" },
+          { yearsKey: "degromAwardYears", src: "data/awards/pitcher.png", alt: "Jacob deGrom Award" },
+          { yearsKey: "diamondAwardYears", src: "data/awards/diamond.png", alt: "Diamond in the Rough" },
+          { yearsKey: "garbageYears", src: "data/awards/garbage.png", alt: "Garbage Award" },
+          { yearsKey: "clownYears", src: "data/awards/clown.png", alt: "Clown Award" },
+          { yearsKey: "bustAwardYears", src: "data/awards/bust.png", alt: "Bust of the Year" },
+        ];
+        return defs.filter((d) => {
+          const years = awards[d.yearsKey] || [];
+          return years.includes(year) || years.includes(String(year));
+        });
+      }
+
       // ===== SHOW MANAGER DETAIL MODAL =====
       // Generate hat filename from manager name
       function getManagerHatFilename(managerName) {
@@ -31822,15 +31884,29 @@
 
         // Load team logos for each season using cached data
         const seasonLogos = {};
+        const seasonTeamNames = {};
         let currentManagerLogo = "";
         for (const season of manager.season_history) {
           const teams = await getTeamData(season.year);
           if (teams) {
-            const managerTeam = teams.find(
+            let managerTeam = teams.find(
               (t) => t.team_name === season.team_name,
             );
+            // Fallback: match by normalized manager name
+            if (!managerTeam) {
+              managerTeam = teams.find((t) => {
+                const teamMgr = normalizeManagerName(
+                  t.manager,
+                  season.year,
+                  t.team_name,
+                  t.team_key,
+                );
+                return teamMgr === manager.manager_name;
+              });
+            }
             if (managerTeam) {
               seasonLogos[season.year] = fixTeamLogo(managerTeam.team_logo);
+              seasonTeamNames[season.year] = managerTeam.team_name;
             }
           }
         }
@@ -31852,9 +31928,21 @@
               (s) => s.year === recentSeason,
             );
             if (mgrSeason) {
-              const mgrTeam = teams.find(
+              let mgrTeam = teams.find(
                 (t) => t.team_name === mgrSeason.team_name,
               );
+              // Fallback: match by normalized manager name
+              if (!mgrTeam) {
+                mgrTeam = teams.find((t) => {
+                  const teamMgr = normalizeManagerName(
+                    t.manager,
+                    recentSeason,
+                    t.team_name,
+                    t.team_key,
+                  );
+                  return teamMgr === mgr.manager_name;
+                });
+              }
               if (mgrTeam) {
                 allManagerLogos[mgr.manager_name] = fixTeamLogo(
                   mgrTeam.team_logo,
@@ -31876,23 +31964,32 @@
 
         let timelineHTML = seasonHistory
           .map((season) => {
+            // Placement badge
             let rankClass = "";
-            let rankText = `#${season.rank}`;
-
+            let rankText = season.rank > 0 ? `#${season.rank}` : "—";
             if (season.rank === 1) {
               rankClass = "champion";
-              rankText =
-                '<img src="champion_ring.png" alt="Champion" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 4px;">Champion';
+              rankText = "#1";
             } else if (season.rank === 2) {
               rankClass = "runner-up";
-              rankText = "Runner-up";
+              rankText = "#2";
+            } else if (season.rank === 3) {
+              rankClass = "third-place";
+              rankText = "#3";
             }
 
-            const logo = seasonLogos[season.year]
-              ? `<img src="${seasonLogos[season.year]}" class="timeline-logo" alt="${season.team_name}">`
-              : "";
+            // Logo
+            const teamName = seasonTeamNames[season.year] || season.team_name;
+            const logoHTML = seasonLogos[season.year]
+              ? `<img src="${seasonLogos[season.year]}" class="timeline-logo" alt="${teamName}">`
+              : `<div class="timeline-logo" style="background:#e0e0e0;"></div>`;
 
-            // Get draft grade for this season
+            // Record & points
+            const recordHTML = season.rank > 0 || season.wins > 0 || season.losses > 0
+              ? `${season.wins}-${season.losses} | ${season.points_for.toLocaleString()} pts`
+              : `${season.points_for > 0 ? season.points_for.toLocaleString() + " pts" : "Season in progress"}`;
+
+            // Draft grade
             const seasonGrade = managerGrades.grades.find(
               (g) => g.year === season.year,
             );
@@ -31901,26 +31998,29 @@
               const gradeColor = getGradeColor(seasonGrade.grade);
               const bgColor = getGradeBackgroundColor(seasonGrade.grade);
               const scoreSign = seasonGrade.score >= 0 ? "+" : "";
-              draftGradeHTML = `
-                        <span class="draft-grade-badge" style="background: ${bgColor}; color: ${gradeColor}; border: 1px solid ${gradeColor};" 
-                              title="Draft: ${seasonGrade.actual.toFixed(0)} pts vs ${seasonGrade.expected.toFixed(0)} expected (${scoreSign}${seasonGrade.score.toFixed(1)}%)">
-                            Draft: ${seasonGrade.grade}
-                        </span>
-                    `;
+              draftGradeHTML = `<span class="draft-grade-badge" style="background: ${bgColor}; color: ${gradeColor}; border: 1px solid ${gradeColor};" title="Draft: ${seasonGrade.actual.toFixed(0)} pts vs ${seasonGrade.expected.toFixed(0)} expected (${scoreSign}${seasonGrade.score.toFixed(1)}%)">Draft: ${seasonGrade.grade}</span>`;
+            }
+
+            // Per-season awards
+            const seasonAwards = getAwardsForSeason(manager.manager_name, season.year);
+            let awardsHTML = "";
+            if (seasonAwards.length > 0) {
+              awardsHTML = `<div class="timeline-awards">${seasonAwards
+                .map((a) => `<div class="award-badge" data-tooltip="${a.alt}"><img src="${a.src}" alt="${a.alt}" class="award-image"></div>`)
+                .join("")}</div>`;
             }
 
             return `
                     <div class="timeline-item">
                         <div class="year">${season.year}</div>
-                        <div class="details">
-                            <span class="rank ${rankClass}">${rankText}</span>
-                            ${draftGradeHTML}
-                            <span>${season.wins}-${season.losses} | ${season.points_for.toLocaleString()} pts</span>
-                            <div style="margin-top: 0.25rem; color: #666; font-size: 0.9rem;">
-                                Team: ${season.team_name}
-                            </div>
+                        ${logoHTML}
+                        <div class="timeline-main">
+                            <div class="timeline-record">${recordHTML}</div>
+                            <div class="timeline-team-name">${teamName}</div>
                         </div>
-                        ${logo}
+                        ${season.rank > 0 ? `<span class="rank ${rankClass}">${rankText}</span>` : ""}
+                        ${draftGradeHTML}
+                        ${awardsHTML}
                     </div>
                 `;
           })
