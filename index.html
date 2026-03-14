@@ -5994,10 +5994,16 @@
       }
 
       .award-image {
-        width: 44px;
-        height: 44px;
+        width: 36px;
+        height: 36px;
         object-fit: contain;
         vertical-align: middle;
+      }
+
+      /* Larger awards in the modal header */
+      .modal-header .award-image {
+        width: 44px;
+        height: 44px;
       }
 
       .award-count {
@@ -6210,10 +6216,25 @@
         color: #333;
       }
 
+      .timeline-team-row {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        margin-top: 0.1rem;
+      }
+
       .timeline-team-name {
         font-size: 0.8rem;
         color: #888;
-        margin-top: 0.1rem;
+      }
+
+      .timeline-right {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
       }
 
       .timeline-item .rank {
@@ -6246,10 +6267,9 @@
 
       .timeline-awards {
         display: flex;
-        gap: 0.25rem;
+        gap: 0.2rem;
         align-items: center;
         flex-wrap: wrap;
-        flex-shrink: 0;
       }
 
       .timeline-awards .award-badge {
@@ -6257,8 +6277,8 @@
       }
 
       .timeline-awards .award-image {
-        width: 28px;
-        height: 28px;
+        width: 24px;
+        height: 24px;
       }
 
       /* Draft Grade Styles */
@@ -31985,9 +32005,7 @@
               : `<div class="timeline-logo" style="background:#e0e0e0;"></div>`;
 
             // Record & points
-            const recordHTML = season.rank > 0 || season.wins > 0 || season.losses > 0
-              ? `${season.wins}-${season.losses} | ${season.points_for.toLocaleString()} pts`
-              : `${season.points_for > 0 ? season.points_for.toLocaleString() + " pts" : "Season in progress"}`;
+            const recordHTML = `${season.wins}-${season.losses} | ${season.points_for > 0 ? season.points_for.toLocaleString() : "0.0"} pts`;
 
             // Draft grade
             const seasonGrade = managerGrades.grades.find(
@@ -32001,7 +32019,7 @@
               draftGradeHTML = `<span class="draft-grade-badge" style="background: ${bgColor}; color: ${gradeColor}; border: 1px solid ${gradeColor};" title="Draft: ${seasonGrade.actual.toFixed(0)} pts vs ${seasonGrade.expected.toFixed(0)} expected (${scoreSign}${seasonGrade.score.toFixed(1)}%)">Draft: ${seasonGrade.grade}</span>`;
             }
 
-            // Per-season awards
+            // Per-season awards (inline with team name)
             const seasonAwards = getAwardsForSeason(manager.manager_name, season.year);
             let awardsHTML = "";
             if (seasonAwards.length > 0) {
@@ -32010,17 +32028,25 @@
                 .join("")}</div>`;
             }
 
+            // Right side: draft grade + placement badge
+            const rightHTML = (draftGradeHTML || season.rank > 0) ? `
+                        <div class="timeline-right">
+                            ${draftGradeHTML}
+                            ${season.rank > 0 ? `<span class="rank ${rankClass}">${rankText}</span>` : ""}
+                        </div>` : "";
+
             return `
                     <div class="timeline-item">
                         <div class="year">${season.year}</div>
                         ${logoHTML}
                         <div class="timeline-main">
                             <div class="timeline-record">${recordHTML}</div>
-                            <div class="timeline-team-name">${teamName}</div>
+                            <div class="timeline-team-row">
+                                <span class="timeline-team-name">${teamName}</span>
+                                ${awardsHTML}
+                            </div>
                         </div>
-                        ${season.rank > 0 ? `<span class="rank ${rankClass}">${rankText}</span>` : ""}
-                        ${draftGradeHTML}
-                        ${awardsHTML}
+                        ${rightHTML}
                     </div>
                 `;
           })
