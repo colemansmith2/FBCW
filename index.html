@@ -11086,10 +11086,83 @@
         }
       }
 
+      /* ============================================
+         RETRO LOADING ANIMATION
+         ============================================ */
+      @keyframes retroGlowPulse {
+        0%,
+        100% {
+          text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8), 0 0 6px var(--retro-gold);
+          opacity: 1;
+        }
+        50% {
+          text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.8),
+            0 0 18px var(--retro-gold), 0 0 32px var(--retro-gold-light);
+          opacity: 0.8;
+        }
+      }
+
+      @keyframes pixelMarch {
+        from {
+          background-position: 0 0;
+        }
+        to {
+          background-position: 20px 0;
+        }
+      }
+
+      @keyframes pixelBounce {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-8px);
+        }
+      }
+
       .loading {
         text-align: center;
-        padding: 2rem;
-        color: #666;
+        padding: 2.5rem 2rem 2rem;
+        color: var(--retro-gold);
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.55rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        animation: retroGlowPulse 1.4s ease-in-out infinite;
+        position: relative;
+      }
+
+      /* Bouncing baseball above the loading text */
+      .loading::before {
+        content: "⚾";
+        display: block;
+        font-size: 2rem;
+        font-family: sans-serif;
+        margin-bottom: 1rem;
+        animation: pixelBounce 0.6s steps(4) infinite;
+        filter: drop-shadow(0 0 8px var(--retro-gold));
+        line-height: 1;
+      }
+
+      /* Marching pixel progress bar below */
+      .loading::after {
+        content: "";
+        display: block;
+        width: 180px;
+        height: 14px;
+        margin: 1rem auto 0;
+        border: 3px solid var(--retro-gold);
+        background: repeating-linear-gradient(
+          90deg,
+          var(--retro-gold) 0px,
+          var(--retro-gold) 14px,
+          rgba(0, 0, 0, 0.25) 14px,
+          rgba(0, 0, 0, 0.25) 20px
+        );
+        animation: pixelMarch 0.4s steps(1) infinite;
+        box-shadow: 0 0 14px rgba(255, 204, 0, 0.45),
+          inset 0 0 6px rgba(0, 0, 0, 0.5);
       }
 
       @media (max-width: 768px) {
@@ -17889,6 +17962,14 @@
         box-shadow: 0 8px 24px rgba(230, 57, 70, 0.3);
       }
 
+      .opt-in-submit-btn:disabled {
+        background: var(--retro-gray);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+        opacity: 0.7;
+      }
+
       .opt-in-message {
         text-align: center;
         padding: 1rem;
@@ -23801,48 +23882,54 @@
         <h2>SMS Message Opt-In</h2>
         <div class="opt-in-container">
           <div class="opt-in-card">
-            <div class="opt-in-header">
-              <h1>Join the Conversation</h1>
-              <p class="opt-in-subtitle">
-                Get updates and alerts from around the league
-              </p>
+            <div id="opt-in-loading" class="loading" style="display: none;">
+              Checking your status
             </div>
 
-            <form
-              id="opt-in-form"
-              class="opt-in-form"
-              onsubmit="handleOptInSubmit(event)"
-            >
-              <div class="opt-in-form-group">
-                <label for="opt-in-phone">Phone Number</label>
-                <input
-                  type="tel"
-                  id="opt-in-phone"
-                  name="phone"
-                  placeholder="(XXX) XXX-XXXX"
-                  pattern="[\d\s\-\(\)]+"
-                  required
-                />
+            <div id="opt-in-content" style="display: none;">
+              <div class="opt-in-header">
+                <h1>Join the Conversation</h1>
+                <p class="opt-in-subtitle">
+                  Get updates and alerts from around the league
+                </p>
               </div>
 
-              <div class="opt-in-consent">
-                <input
-                  type="checkbox"
-                  id="opt-in-consent-checkbox"
-                  name="consent"
-                  required
-                />
-                <label for="opt-in-consent-checkbox"
-                  >I agree to receive SMS message updates from FBCW</label
-                >
-              </div>
+              <form
+                id="opt-in-form"
+                class="opt-in-form"
+                onsubmit="handleOptInSubmit(event)"
+              >
+                <div class="opt-in-form-group">
+                  <label for="opt-in-phone">Phone Number</label>
+                  <input
+                    type="tel"
+                    id="opt-in-phone"
+                    name="phone"
+                    placeholder="(XXX) XXX-XXXX"
+                    pattern="[\d\s\-\(\)]+"
+                    required
+                  />
+                </div>
 
-              <button type="submit" class="opt-in-submit-btn">
-                Sign Me Up
-              </button>
+                <div class="opt-in-consent">
+                  <input
+                    type="checkbox"
+                    id="opt-in-consent-checkbox"
+                    name="consent"
+                    required
+                  />
+                  <label for="opt-in-consent-checkbox"
+                    >I agree to receive SMS message updates from FBCW</label
+                  >
+                </div>
 
-              <div class="opt-in-message" id="opt-in-message"></div>
-            </form>
+                <button type="submit" class="opt-in-submit-btn">
+                  Sign Me Up
+                </button>
+
+                <div class="opt-in-message" id="opt-in-message"></div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
@@ -33250,8 +33337,15 @@
 
       // ===== OPT-IN FORM =====
       async function initializeOptInForm() {
+        const loadingEl = document.getElementById("opt-in-loading");
+        const contentEl = document.getElementById("opt-in-content");
+
+        loadingEl.style.display = "block";
+        contentEl.style.display = "none";
+
         if (!currentSession || !currentSession.username) {
           console.error("User not logged in");
+          loadingEl.style.display = "none";
           return;
         }
 
@@ -33263,6 +33357,9 @@
         } catch (error) {
           console.error("Could not retrieve opt-in state:", error);
         }
+
+        loadingEl.style.display = "none";
+        contentEl.style.display = "block";
 
         const phoneInput = document.getElementById("opt-in-phone");
         const consentCheckbox = document.getElementById(
@@ -33328,6 +33425,10 @@
           return;
         }
 
+        const submitBtn = document.querySelector(".opt-in-submit-btn");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Saving...";
+
         // Submit to backend (backend will update DynamoDB)
         try {
           const response = await setOptInToAWSDyanmoDB(username, true);
@@ -33345,7 +33446,7 @@
             // Update form to show opt-out option
             document.getElementById("opt-in-phone").disabled = true;
             document.getElementById("opt-in-consent-checkbox").disabled = true;
-            const submitBtn = document.querySelector(".opt-in-submit-btn");
+            submitBtn.disabled = false;
             submitBtn.textContent = "Opt Out";
             submitBtn.className = "opt-in-submit-btn opt-out-mode";
             submitBtn.onclick = (e) => handleOptOutRequest(e);
@@ -33361,6 +33462,8 @@
           }
         } catch (error) {
           console.error("Opt-in submission error:", error);
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Sign Me Up";
           messageDiv.className = "opt-in-message error";
           messageDiv.textContent =
             "Failed to save preferences. Please try again.";
@@ -33387,6 +33490,10 @@
         const messageDiv = document.getElementById("opt-in-message");
         const timestamp = new Date().toISOString();
 
+        const submitBtn = document.querySelector(".opt-in-submit-btn");
+        submitBtn.disabled = true;
+        submitBtn.textContent = "Saving...";
+
         // Submit opt-out to DynamoDB (backend will update user_config.json)
         try {
           const response = await setOptInToAWSDyanmoDB(
@@ -33409,7 +33516,7 @@
             document.getElementById("opt-in-phone").value = "";
             document.getElementById("opt-in-consent-checkbox").disabled = false;
             document.getElementById("opt-in-consent-checkbox").checked = false;
-            const submitBtn = document.querySelector(".opt-in-submit-btn");
+            submitBtn.disabled = false;
             submitBtn.textContent = "Sign Me Up";
             submitBtn.className = "opt-in-submit-btn";
             submitBtn.onclick = null;
@@ -33425,6 +33532,8 @@
           }
         } catch (error) {
           console.error("Opt-out error:", error);
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Opt Out";
           messageDiv.className = "opt-in-message error";
           messageDiv.textContent = "Failed to opt-out. Please try again.";
 
