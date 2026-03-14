@@ -5756,10 +5756,10 @@
 
       .draft-order-row {
         display: grid;
-        grid-template-columns: 2rem 2.5rem 1fr auto;
+        grid-template-columns: 2rem 2rem 1fr auto;
         align-items: center;
-        gap: 0.6rem;
-        padding: 0.55rem 0.5rem;
+        gap: 0.5rem;
+        padding: 0.35rem 0.5rem;
         border-bottom: 1px solid #eee;
       }
 
@@ -5775,8 +5775,8 @@
       }
 
       .draft-order-logo {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         object-fit: cover;
         background: #e0e0e0;
@@ -29256,15 +29256,40 @@
       // ===== 2026 PRE-DRAFT ORDER DISPLAY =====
       async function render2026DraftOrder(draftEmpty, draftLoading, teamLogos, teamData) {
         try {
-          const [configRes, keeperConfigRes, keepersRes] = await Promise.all([
+          const [configRes, keeperConfigRes] = await Promise.all([
             fetch("data/mock_draft_config.json"),
             fetch("data/keepers/keeper_config.json"),
-            fetch("data/keepers/keepers_2026.json"),
           ]);
 
           const draftConfig = configRes.ok ? await configRes.json() : null;
           const keeperConfigData = keeperConfigRes.ok ? await keeperConfigRes.json() : null;
-          const keepersData = keepersRes.ok ? await keepersRes.json() : null;
+
+          // Load keepers: prefer in-memory keeperSelections (already synced from Firebase),
+          // else do a one-time Firebase fetch, else fall back to the JSON file
+          let rawKeeperData = {};
+          if (typeof keeperSelections !== "undefined" && Object.keys(keeperSelections).length > 0) {
+            rawKeeperData = keeperSelections;
+          } else if (typeof firebaseDb !== "undefined" && firebaseDb) {
+            try {
+              const snap = await firebaseDb.ref("keepers_2026").once("value");
+              const fbData = snap.val();
+              if (fbData) {
+                Object.entries(fbData).forEach(([sanitizedKey, keepers]) => {
+                  const teamKey = unsanitizeFirebaseKey(sanitizedKey);
+                  rawKeeperData[teamKey] = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
+                });
+              }
+            } catch (e) { /* fall through to JSON */ }
+          }
+          if (Object.keys(rawKeeperData).length === 0) {
+            try {
+              const keepersRes = await fetch("data/keepers/keepers_2026.json");
+              if (keepersRes.ok) {
+                const kd = await keepersRes.json();
+                rawKeeperData = kd.keepers || {};
+              }
+            } catch (e) { /* ignore */ }
+          }
 
           // Update panel title
           const panelTitle = document.querySelector(".draft-panel .panel-title");
@@ -29278,7 +29303,6 @@
               const mgr = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key).toLowerCase();
               managerToLogo[mgr] = teamLogos[team.team_key] || "";
               managerToTeamName[mgr] = team.team_name || "";
-              // Also index by first name for loose matching
               const first = mgr.split(" ")[0];
               if (!managerToLogo[first]) managerToLogo[first] = managerToLogo[mgr];
               if (!managerToTeamName[first]) managerToTeamName[first] = managerToTeamName[mgr];
@@ -29296,16 +29320,34 @@
 
           // Build manager → keepers array map
           const managerToKeepers = {};
-          if (keepersData?.keepers) {
-            Object.entries(keepersData.keepers).forEach(([configKey, keepers]) => {
-              const mgrLower = configKeyToManager[configKey];
-              if (mgrLower !== undefined) {
-                managerToKeepers[mgrLower] = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
-              }
-            });
-          }
+          Object.entries(rawKeeperData).forEach(([configKey, keepers]) => {
+            const mgrLower = configKeyToManager[configKey];
+            if (mgrLower !== undefined) {
+              managerToKeepers[mgrLower] = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
+            }
+          });
 
-          const draftOrder = draftConfig?.draft_order || [];
+          // Fill null (traded) slots with unassigned managers, same approach as mock drafter
+          const rawOrder = draftConfig?.draft_order || [];
+          const assignedNorm = new Set(
+            rawOrder.filter(Boolean).map((m) => normalizeManagerName(m, 2026, null, null).toLowerCase())
+          );
+          const allConfigManagers = keeperConfigData?.teams
+            ? Object.entries(keeperConfigData.teams).map(([key, team]) =>
+                normalizeManagerName(team.manager || "", 2026, team.team_name, key)
+              )
+            : [];
+          const unassigned = allConfigManagers
+            .filter((m) => {
+              const mLower = m.toLowerCase();
+              return !assignedNorm.has(mLower) && !assignedNorm.has(mLower.split(" ")[0]);
+            })
+            .sort((a, b) => a.localeCompare(b));
+          let uIdx = 0;
+          const draftOrder = rawOrder.map((m) => {
+            if (m) return m;
+            return uIdx < unassigned.length ? unassigned[uIdx++] : null;
+          });
 
           let html = '<div class="draft-order-list">';
           draftOrder.forEach((mgrRaw, idx) => {
