@@ -29255,6 +29255,8 @@
 
       // ===== 2026 PRE-DRAFT ORDER DISPLAY =====
       async function render2026DraftOrder(draftEmpty, draftLoading, teamLogos, teamData) {
+        const draftTable = document.getElementById("draft-table");
+        const draftBody = document.getElementById("draft-body");
         try {
           const [configRes, keeperConfigRes] = await Promise.all([
             fetch("data/mock_draft_config.json"),
@@ -29263,9 +29265,11 @@
 
           const draftConfig = configRes.ok ? await configRes.json() : null;
           const keeperConfigData = keeperConfigRes.ok ? await keeperConfigRes.json() : null;
+          const totalRounds = draftConfig?.rounds || 22;
+          const isSnake = draftConfig?.snake !== false;
 
-          // Load keepers: prefer in-memory keeperSelections (already synced from Firebase),
-          // else do a one-time Firebase fetch, else fall back to the JSON file
+          // Load keepers: prefer in-memory keeperSelections (Firebase),
+          // else one-time Firebase fetch, else fall back to JSON
           let rawKeeperData = {};
           if (typeof keeperSelections !== "undefined" && Object.keys(keeperSelections).length > 0) {
             rawKeeperData = keeperSelections;
@@ -29295,13 +29299,13 @@
           const panelTitle = document.querySelector(".draft-panel .panel-title");
           if (panelTitle) panelTitle.textContent = "Draft Order";
 
-          // Build manager → logo/teamName map from teamData
+          // Build manager → logo/teamName/teamKey maps from teamData
           const managerToLogo = {};
           const managerToTeamName = {};
           if (teamData) {
             teamData.forEach((team) => {
               const mgr = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key).toLowerCase();
-              managerToLogo[mgr] = teamLogos[team.team_key] || "";
+              managerToLogo[mgr] = fixTeamLogo(team.team_logo) || teamLogos[team.team_key] || "";
               managerToTeamName[mgr] = team.team_name || "";
               const first = mgr.split(" ")[0];
               if (!managerToLogo[first]) managerToLogo[first] = managerToLogo[mgr];
@@ -29317,15 +29321,6 @@
               configKeyToManager[key] = mgr.toLowerCase();
             });
           }
-
-          // Build manager → keepers array map
-          const managerToKeepers = {};
-          Object.entries(rawKeeperData).forEach(([configKey, keepers]) => {
-            const mgrLower = configKeyToManager[configKey];
-            if (mgrLower !== undefined) {
-              managerToKeepers[mgrLower] = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
-            }
-          });
 
           // Fill null (traded) slots with unassigned managers, same approach as mock drafter
           const rawOrder = draftConfig?.draft_order || [];
@@ -29349,60 +29344,155 @@
             return uIdx < unassigned.length ? unassigned[uIdx++] : null;
           });
 
-          let html = '<div class="draft-order-list">';
-          draftOrder.forEach((mgrRaw, idx) => {
-            const slot = idx + 1;
-            const mgrNorm = mgrRaw
-              ? normalizeManagerName(mgrRaw, 2026, null, null)
-              : null;
+          // Normalize the 12-slot draft order into { position, manager, logo, teamName }
+          const slots = draftOrder.map((mgrRaw, idx) => {
+            const mgrNorm = mgrRaw ? normalizeManagerName(mgrRaw, 2026, null, null) : null;
             const mgrLower = mgrNorm?.toLowerCase() || "";
-            const logo = managerToLogo[mgrLower] || managerToLogo[mgrLower.split(" ")[0]] || "";
-            const teamName = managerToTeamName[mgrLower] || managerToTeamName[mgrLower.split(" ")[0]] || "";
-            const keepers = mgrLower ? (managerToKeepers[mgrLower] || []) : [];
-
-            const logoHtml = logo
-              ? `<img src="${logo}" class="draft-order-logo" alt="" onerror="this.style.visibility='hidden'">`
-              : `<div class="draft-order-logo"></div>`;
-
-            // Separate active keepers vs prospect/NA keepers
-            const activeKeepers = keepers.filter((k) => !isProspectKeeperEntry(k));
-            const naKeepers = keepers.filter((k) => isProspectKeeperEntry(k));
-
-            let keepersHtml = "";
-            if (keepers.length === 0) {
-              keepersHtml = `<span class="draft-order-no-keepers">${mgrNorm ? "No keepers yet" : "TBD"}</span>`;
-            } else {
-              activeKeepers.forEach((k) => {
-                const rd = k.roundCost || k.round || "?";
-                keepersHtml += `<span class="draft-order-keeper-tag">Rd ${rd}: ${k.player_name}</span>`;
-              });
-              naKeepers.forEach((k) => {
-                keepersHtml += `<span class="draft-order-keeper-tag na-keeper">NA: ${k.player_name}</span>`;
-              });
-            }
-
-            html += `
-              <div class="draft-order-row">
-                <div class="draft-order-slot">${slot}</div>
-                ${logoHtml}
-                <div class="draft-order-info">
-                  <div class="draft-order-manager">${mgrNorm || "<em>TBD</em>"}</div>
-                  <div class="draft-order-team">${teamName}</div>
-                </div>
-                <div class="draft-order-keepers">${keepersHtml}</div>
-              </div>`;
+            return {
+              position: idx + 1,
+              manager: mgrNorm || "TBD",
+              logo: managerToLogo[mgrLower] || managerToLogo[mgrLower.split(" ")[0]] || "",
+              teamName: managerToTeamName[mgrLower] || managerToTeamName[mgrLower.split(" ")[0]] || "",
+            };
           });
-          html += "</div>";
+
+          // Build configKey → draft position map for keeper round assignment
+          const configKeyToSlot = {};
+          Object.entries(configKeyToManager).forEach(([key, mgrLower]) => {
+            const slot = slots.find((s) => {
+              const sLower = s.manager.toLowerCase();
+              return sLower === mgrLower || sLower === mgrLower.split(" ")[0];
+            });
+            if (slot) configKeyToSlot[key] = slot;
+          });
+
+          // Collect all keeper picks as draft-table rows
+          const allPicks = [];
+          Object.entries(rawKeeperData).forEach(([configKey, keepers]) => {
+            const arr = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
+            const slot = configKeyToSlot[configKey];
+            if (!slot || arr.length === 0) return;
+
+            arr.forEach((k) => {
+              const isProspect = isProspectKeeperEntry(k);
+              const round = isProspect ? 0 : (k.roundCost || k.round || 0);
+              allPicks.push({
+                round,
+                player_name: k.player_name || "Unknown",
+                position: k.position || "",
+                isProspect,
+                slot,
+              });
+            });
+          });
+
+          // Sort: prospects (round 0) last, then by round asc, then by draft position
+          allPicks.sort((a, b) => {
+            if (a.isProspect !== b.isProspect) return a.isProspect ? 1 : -1;
+            if (a.round !== b.round) return a.round - b.round;
+            return a.slot.position - b.slot.position;
+          });
+
+          // Render into the draft table
+          draftBody.innerHTML = "";
+          let currentRound = -1;
+
+          // Add draft order header section
+          const orderRow = document.createElement("tr");
+          orderRow.className = "draft-round-separator";
+          orderRow.innerHTML = `<td colspan="6">Draft Order</td>`;
+          draftBody.appendChild(orderRow);
+
+          slots.forEach((s) => {
+            const row = document.createElement("tr");
+            const teamTooltip = `${s.teamName} (${s.manager})`;
+            row.innerHTML = `
+              <td style="text-align:center;font-weight:700;color:var(--retro-blue)">${s.position}</td>
+              <td></td>
+              <td>
+                <div class="draft-player-cell">
+                  <div class="draft-player-info">
+                    <span class="draft-player-name">${s.manager}</span>
+                    <span class="draft-player-pos" style="background:transparent;color:#888">${s.teamName}</span>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="draft-team-cell">
+                  ${s.logo ? `<img src="${s.logo}" class="draft-team-logo" alt="${s.teamName}" onerror="this.style.visibility='hidden'"><span class="draft-team-tooltip">${teamTooltip}</span>` : ""}
+                </div>
+              </td>
+              <td></td>
+              <td></td>
+            `;
+            draftBody.appendChild(row);
+          });
+
+          if (allPicks.length > 0) {
+            // Add keeper picks section
+            allPicks.forEach((pick) => {
+              const roundLabel = pick.isProspect ? "NA" : pick.round;
+              if (pick.isProspect && currentRound !== -2) {
+                currentRound = -2;
+                const sep = document.createElement("tr");
+                sep.className = "draft-round-separator";
+                sep.innerHTML = `<td colspan="6">Prospect Keepers (NA)</td>`;
+                draftBody.appendChild(sep);
+              } else if (!pick.isProspect && pick.round !== currentRound) {
+                currentRound = pick.round;
+                const sep = document.createElement("tr");
+                sep.className = "draft-round-separator";
+                sep.innerHTML = `<td colspan="6">Round ${currentRound} Keepers</td>`;
+                draftBody.appendChild(sep);
+              }
+
+              const row = document.createElement("tr");
+              const teamTooltip = `${pick.slot.teamName} (${pick.slot.manager})`;
+              const primaryPos = (pick.position || "").split(",")[0].trim();
+              const posClass = typeof getDraftPosClass === "function" ? getDraftPosClass(primaryPos) : "";
+              row.innerHTML = `
+                <td>${roundLabel}</td>
+                <td>${pick.slot.position}</td>
+                <td>
+                  <div class="draft-player-cell">
+                    <div class="draft-player-info">
+                      <span class="draft-player-name">${pick.player_name}<span class="keeper-badge">K</span></span>
+                      <span class="draft-player-pos ${posClass}">${primaryPos}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="draft-team-cell">
+                    ${pick.slot.logo ? `<img src="${pick.slot.logo}" class="draft-team-logo" alt="${pick.slot.teamName}" onerror="this.style.visibility='hidden'"><span class="draft-team-tooltip">${teamTooltip}</span>` : ""}
+                  </div>
+                </td>
+                <td class="draft-pts">-</td>
+                <td></td>
+              `;
+              draftBody.appendChild(row);
+            });
+          }
+
+          // Update table header for pre-draft context
+          const thead = draftTable?.querySelector("thead tr");
+          if (thead) {
+            thead.innerHTML = `
+              <th>#</th>
+              <th>Slot</th>
+              <th>Player / Manager</th>
+              <th>Team</th>
+              <th></th>
+              <th></th>
+            `;
+          }
 
           draftLoading.style.display = "none";
-          draftEmpty.style.textAlign = "left";
-          draftEmpty.style.padding = "0";
-          draftEmpty.style.fontStyle = "normal";
-          draftEmpty.innerHTML = html;
-          draftEmpty.style.display = "block";
+          draftEmpty.style.display = "none";
+          draftTable.style.display = "table";
         } catch (e) {
           console.error("Error rendering 2026 draft order:", e);
           draftLoading.style.display = "none";
+          if (draftTable) draftTable.style.display = "none";
           draftEmpty.textContent = "Draft order not available";
           draftEmpty.style.display = "block";
         }
