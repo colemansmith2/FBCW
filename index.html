@@ -1461,6 +1461,102 @@
 
       /* Rank */
 
+      /* Draft Order (2026 pre-draft) table layout */
+      .draft-table.draft-order-table {
+        table-layout: fixed;
+      }
+
+      .draft-table.draft-order-table th:nth-child(1),
+      .draft-table.draft-order-table td:nth-child(1) {
+        width: 32px;
+        text-align: center;
+      }
+
+      .draft-table.draft-order-table th:nth-child(2),
+      .draft-table.draft-order-table td:nth-child(2) {
+        width: 36px;
+        text-align: center;
+      }
+
+      .draft-table.draft-order-table th:nth-child(3),
+      .draft-table.draft-order-table td:nth-child(3) {
+        width: 34px;
+        text-align: center;
+      }
+
+      .draft-table.draft-order-table th:nth-child(4),
+      .draft-table.draft-order-table td:nth-child(4) {
+        width: 160px;
+      }
+
+      .draft-table.draft-order-table th:nth-child(5),
+      .draft-table.draft-order-table td:nth-child(5) {
+        width: auto;
+      }
+
+      .draft-order-team-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .draft-order-team-name {
+        font-weight: 600;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .draft-order-team-manager {
+        font-size: 0.7rem;
+        color: #666;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .draft-order-keeper-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        min-width: 0;
+      }
+
+      .draft-order-keeper-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+      }
+
+      .draft-order-keeper-name {
+        font-weight: 500;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .draft-order-keeper-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.7rem;
+        color: #666;
+        flex-wrap: wrap;
+      }
+
+      .draft-order-keeper-proj {
+        font-size: 0.7rem;
+        color: #666;
+      }
+
+      .draft-order-pick-value {
+        font-size: 0.75rem;
+        color: #666;
+        font-style: italic;
+      }
+
       .draft-table td {
         padding: 0.4rem;
         border-bottom: 1px solid #eee;
@@ -29042,6 +29138,7 @@
         const draftBody = document.getElementById("draft-body");
         const draftLoading = document.getElementById("draft-loading");
         const draftEmpty = document.getElementById("draft-empty");
+        const draftHeaderRow = draftTable?.querySelector("thead tr");
 
         // Build team info lookup by team_key
         const teamInfo = {};
@@ -29055,6 +29152,19 @@
         }
 
         // Reset state
+        if (draftTable) {
+          draftTable.classList.remove("draft-order-table");
+        }
+        if (draftHeaderRow) {
+          draftHeaderRow.innerHTML = `
+            <th>Rd</th>
+            <th>Pick</th>
+            <th>Player</th>
+            <th>Team</th>
+            <th>Pts</th>
+            <th>Rank</th>
+          `;
+        }
         draftTable.style.display = "none";
         draftLoading.style.display = "block";
         draftEmpty.style.display = "none";
@@ -29266,7 +29376,19 @@
           const draftConfig = configRes.ok ? await configRes.json() : null;
           const keeperConfigData = keeperConfigRes.ok ? await keeperConfigRes.json() : null;
           const totalRounds = draftConfig?.rounds || 22;
-          const isSnake = draftConfig?.snake !== false;
+
+          // Initialize trade management so getTeamPicks() works
+          if (typeof initializeTradeManagement === "function") {
+            try { await initializeTradeManagement(); } catch (e) { /* ok */ }
+          }
+
+          // Ensure expected pick values and projections are loaded
+          if (typeof calculateExpectedPoints === "function" && Object.keys(expectedPointsByRound).length === 0) {
+            try { await calculateExpectedPoints(); } catch (e) { /* ok */ }
+          }
+          if (typeof loadAverageProjections === "function" && !averageProjectionsLoaded) {
+            try { await loadAverageProjections(); } catch (e) { /* ok */ }
+          }
 
           // Load keepers: prefer in-memory keeperSelections (Firebase),
           // else one-time Firebase fetch, else fall back to JSON
@@ -29294,196 +29416,384 @@
               }
             } catch (e) { /* ignore */ }
           }
+          if (typeof keeperSelections !== "undefined" && Object.keys(keeperSelections).length === 0 && Object.keys(rawKeeperData).length > 0) {
+            keeperSelections = rawKeeperData;
+          }
+
+          const normalizePlayerName = (name) =>
+            (name || "")
+              .toLowerCase()
+              .trim()
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "");
+
+          // Load Yahoo player data for headshots
+          let headshotMap = {};
+          try {
+            const yahooPlayers = typeof getYahooPlayerPositions === "function"
+              ? await getYahooPlayerPositions() : [];
+            yahooPlayers.forEach((p) => {
+              if (p.headshot_url && p.name) {
+                const norm = normalizePlayerName(p.name);
+                headshotMap[norm] = p.headshot_url;
+              }
+            });
+          } catch (e) { /* headshots optional */ }
 
           // Update panel title
           const panelTitle = document.querySelector(".draft-panel .panel-title");
           if (panelTitle) panelTitle.textContent = "Draft Order";
 
-          // Build manager → logo/teamName/teamKey maps from teamData
-          const managerToLogo = {};
-          const managerToTeamName = {};
-          if (teamData) {
-            teamData.forEach((team) => {
-              const mgr = normalizeManagerName(team.manager, 2026, team.team_name, team.team_key).toLowerCase();
-              managerToLogo[mgr] = fixTeamLogo(team.team_logo) || teamLogos[team.team_key] || "";
-              managerToTeamName[mgr] = team.team_name || "";
-              const first = mgr.split(" ")[0];
-              if (!managerToLogo[first]) managerToLogo[first] = managerToLogo[mgr];
-              if (!managerToTeamName[first]) managerToTeamName[first] = managerToTeamName[mgr];
-            });
-          }
-
-          // Build configKey → normalizedManager map
-          const configKeyToManager = {};
+          // Build configKey → team info map
+          const configTeamInfo = {};
           if (keeperConfigData?.teams) {
             Object.entries(keeperConfigData.teams).forEach(([key, team]) => {
               const mgr = normalizeManagerName(team.manager || "", 2026, team.team_name, key);
-              configKeyToManager[key] = mgr.toLowerCase();
+              const mgrLower = mgr.toLowerCase();
+              // Find current-season logo from teamData
+              let logo = "";
+              let currentTeamName = team.team_name || "";
+              if (teamData) {
+                const match = teamData.find((t) => {
+                  const tMgr = normalizeManagerName(t.manager, 2026, t.team_name, t.team_key).toLowerCase();
+                  return tMgr === mgrLower || tMgr === mgrLower.split(" ")[0];
+                });
+                if (match) {
+                  logo = fixTeamLogo(match.team_logo) || teamLogos[match.team_key] || "";
+                  currentTeamName = match.team_name || currentTeamName;
+                }
+              }
+              configTeamInfo[key] = { manager: mgr, teamName: currentTeamName, logo, configKey: key };
             });
           }
 
-          // Fill null (traded) slots with unassigned managers, same approach as mock drafter
+          // Map manager name → configKey for draft order resolution
+          const mgrToConfigKey = {};
+          Object.entries(configTeamInfo).forEach(([key, info]) => {
+            mgrToConfigKey[info.manager.toLowerCase()] = key;
+            mgrToConfigKey[info.manager.toLowerCase().split(" ")[0]] = key;
+          });
+
+          // Resolve draft order: fill any unassigned slots (including unrecognized names)
           const rawOrder = draftConfig?.draft_order || [];
-          const assignedNorm = new Set(
-            rawOrder.filter(Boolean).map((m) => normalizeManagerName(m, 2026, null, null).toLowerCase())
-          );
-          const allConfigManagers = keeperConfigData?.teams
-            ? Object.entries(keeperConfigData.teams).map(([key, team]) =>
-                normalizeManagerName(team.manager || "", 2026, team.team_name, key)
-              )
-            : [];
-          const unassigned = allConfigManagers
-            .filter((m) => {
-              const mLower = m.toLowerCase();
-              return !assignedNorm.has(mLower) && !assignedNorm.has(mLower.split(" ")[0]);
-            })
-            .sort((a, b) => a.localeCompare(b));
+          const resolvedOrder = rawOrder.map((mgrRaw) => {
+            if (!mgrRaw) return null;
+            const norm = normalizeManagerName(mgrRaw, 2026, null, null).toLowerCase();
+            return mgrToConfigKey[norm] || mgrToConfigKey[norm.split(" ")[0]] || null;
+          });
+          const allConfigEntries = Object.entries(configTeamInfo);
+          const assignedKeys = new Set(resolvedOrder.filter(Boolean));
+          const unassignedKeys = allConfigEntries
+            .filter(([key]) => !assignedKeys.has(key))
+            .sort(([, a], [, b]) => a.manager.localeCompare(b.manager));
           let uIdx = 0;
-          const draftOrder = rawOrder.map((m) => {
-            if (m) return m;
-            return uIdx < unassigned.length ? unassigned[uIdx++] : null;
-          });
+          for (let i = 0; i < resolvedOrder.length; i++) {
+            if (!resolvedOrder[i] && uIdx < unassignedKeys.length) {
+              resolvedOrder[i] = unassignedKeys[uIdx++][0];
+            }
+          }
+          while (resolvedOrder.length < allConfigEntries.length && uIdx < unassignedKeys.length) {
+            resolvedOrder.push(unassignedKeys[uIdx++][0]);
+          }
 
-          // Normalize the 12-slot draft order into { position, manager, logo, teamName }
-          const slots = draftOrder.map((mgrRaw, idx) => {
-            const mgrNorm = mgrRaw ? normalizeManagerName(mgrRaw, 2026, null, null) : null;
-            const mgrLower = mgrNorm?.toLowerCase() || "";
-            return {
-              position: idx + 1,
-              manager: mgrNorm || "TBD",
-              logo: managerToLogo[mgrLower] || managerToLogo[mgrLower.split(" ")[0]] || "",
-              teamName: managerToTeamName[mgrLower] || managerToTeamName[mgrLower.split(" ")[0]] || "",
-            };
-          });
-
-          // Build configKey → draft position map for keeper round assignment
-          const configKeyToSlot = {};
-          Object.entries(configKeyToManager).forEach(([key, mgrLower]) => {
-            const slot = slots.find((s) => {
-              const sLower = s.manager.toLowerCase();
-              return sLower === mgrLower || sLower === mgrLower.split(" ")[0];
+          // Build pick owner lookup using getTeamPicks (accounts for trades)
+          const pickOwnerLookup = {};
+          const allTeamKeys = Object.keys(configTeamInfo);
+          allTeamKeys.forEach((teamKey) => {
+            const picks = typeof getTeamPicks === "function" ? getTeamPicks(teamKey) : [];
+            picks.forEach((pick) => {
+              const key = `${pick.round}-${pick.originalOwner}`;
+              pickOwnerLookup[key] = teamKey;
             });
-            if (slot) configKeyToSlot[key] = slot;
           });
 
-          // Collect all keeper picks as draft-table rows
-          const allPicks = [];
+          // Build keeper data per team: { configKey: [{ player_name, roundCost, position, isProspect }] }
+          const teamKeepersMap = {};
           Object.entries(rawKeeperData).forEach(([configKey, keepers]) => {
             const arr = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
-            const slot = configKeyToSlot[configKey];
-            if (!slot || arr.length === 0) return;
+            if (arr.length > 0) teamKeepersMap[configKey] = arr;
+          });
+          const keeperMetaByTeam = {};
+          Object.entries(teamKeepersMap).forEach(([teamKey, keepers]) => {
+            keeperMetaByTeam[teamKey] = {};
+            keepers.forEach((k) => {
+              const key = normalizePlayerName(k.player_name);
+              if (!key) return;
+              keeperMetaByTeam[teamKey][key] = k;
+            });
+          });
 
-            arr.forEach((k) => {
-              const isProspect = isProspectKeeperEntry(k);
-              const round = isProspect ? 0 : (k.roundCost || k.round || 0);
-              allPicks.push({
+          // Calculate keeper round costs with bumping (same as mock drafter)
+          const keeperRoundCounts = {};
+          const keeperByTeamRound = {}; // { teamKey: { round: [keeperObj] } }
+          Object.entries(teamKeepersMap).forEach(([teamKey, keepers]) => {
+            keeperRoundCounts[teamKey] = {};
+            keeperByTeamRound[teamKey] = {};
+
+            if (typeof calculateTeamKeeperRoundCosts === "function") {
+              const resolved = calculateTeamKeeperRoundCosts(teamKey) || [];
+              resolved.forEach((rc) => {
+                const rd = rc.actualRoundCost;
+                if (rd && rd > 0) {
+                  keeperRoundCounts[teamKey][rd] = (keeperRoundCounts[teamKey][rd] || 0) + 1;
+                  if (!keeperByTeamRound[teamKey][rd]) keeperByTeamRound[teamKey][rd] = [];
+                  const meta = keeperMetaByTeam[teamKey]?.[normalizePlayerName(rc.player_name)] || {};
+                  keeperByTeamRound[teamKey][rd].push({
+                    ...rc,
+                    player_name: rc.player_name || meta.player_name,
+                    position: meta.position || rc.position || "",
+                  });
+                }
+              });
+            } else {
+              // Fallback: use raw round costs
+              keepers.filter((k) => !isProspectKeeperEntry(k)).forEach((k) => {
+                const rd = k.roundCost || 0;
+                if (rd > 0) {
+                  keeperRoundCounts[teamKey][rd] = (keeperRoundCounts[teamKey][rd] || 0) + 1;
+                  if (!keeperByTeamRound[teamKey][rd]) keeperByTeamRound[teamKey][rd] = [];
+                  keeperByTeamRound[teamKey][rd].push({ player_name: k.player_name, actualRoundCost: rd, position: k.position });
+                }
+              });
+            }
+          });
+
+          // Build full pick sequence (all rounds)
+          const sequence = [];
+          let overallPick = 0;
+
+          for (let round = 1; round <= totalRounds; round++) {
+            const orderForRound = (draftConfig?.snake && round % 2 === 0)
+              ? [...resolvedOrder].reverse()
+              : [...resolvedOrder];
+
+            const roundPicks = [];
+            orderForRound.forEach((originalSlotTeam, slotIdx) => {
+              if (!originalSlotTeam) return;
+              const lookupKey = `${round}-${originalSlotTeam}`;
+              const pickOwner = pickOwnerLookup[lookupKey] || originalSlotTeam;
+              roundPicks.push({
                 round,
-                player_name: k.player_name || "Unknown",
-                position: k.position || "",
-                isProspect,
-                slot,
+                pickInRound: slotIdx + 1,
+                teamKey: pickOwner,
+                originalSlotTeam,
+                isKeeper: false,
+                keeperData: null,
+              });
+            });
+
+            // Ensure every original team pick is present for this round
+            const placedOriginals = new Set(
+              roundPicks.map((p) => `${round}-${p.originalSlotTeam}`),
+            );
+            allTeamKeys.forEach((teamKey) => {
+              const key = `${round}-${teamKey}`;
+              if (!placedOriginals.has(key)) {
+                const pickOwner = pickOwnerLookup[key] || teamKey;
+                roundPicks.push({
+                  round,
+                  pickInRound: roundPicks.length + 1,
+                  teamKey: pickOwner,
+                  originalSlotTeam: teamKey,
+                  isKeeper: false,
+                  keeperData: null,
+                });
+              }
+            });
+
+            roundPicks.forEach((pick) => {
+              overallPick++;
+              sequence.push({ ...pick, overallPick });
+            });
+          }
+
+          // Mark keeper picks in the sequence (latest pick per team per round)
+          Object.entries(keeperRoundCounts).forEach(([teamKey, roundCounts]) => {
+            Object.entries(roundCounts).forEach(([round, count]) => {
+              const roundNum = Number(round);
+              const teamPicksInRound = sequence.filter((p) => p.teamKey === teamKey && p.round === roundNum);
+              const picksToMark = teamPicksInRound.slice(-count);
+              const keeperEntries = keeperByTeamRound[teamKey]?.[roundNum] || [];
+              picksToMark.forEach((p, i) => {
+                p.isKeeper = true;
+                p.keeperData = keeperEntries[i] || keeperEntries[0] || null;
               });
             });
           });
 
-          // Sort: prospects (round 0) last, then by round asc, then by draft position
-          allPicks.sort((a, b) => {
-            if (a.isProspect !== b.isProspect) return a.isProspect ? 1 : -1;
-            if (a.round !== b.round) return a.round - b.round;
-            return a.slot.position - b.slot.position;
+          // Collect prospect keepers (NA - not assigned to rounds)
+          const prospectKeepers = [];
+          Object.entries(teamKeepersMap).forEach(([teamKey, keepers]) => {
+            const arr = Array.isArray(keepers) ? keepers : [];
+            arr.filter((k) => isProspectKeeperEntry(k)).forEach((k) => {
+              prospectKeepers.push({ teamKey, player_name: k.player_name || "Unknown", position: k.position || "" });
+            });
           });
 
           // Render into the draft table
           draftBody.innerHTML = "";
-          let currentRound = -1;
+          if (draftTable) draftTable.classList.add("draft-order-table");
 
-          // Add draft order header section
-          const orderRow = document.createElement("tr");
-          orderRow.className = "draft-round-separator";
-          orderRow.innerHTML = `<td colspan="6">Draft Order</td>`;
-          draftBody.appendChild(orderRow);
+          // Update table header
+          const thead = draftTable?.querySelector("thead tr");
+          if (thead) {
+            thead.innerHTML = `
+              <th>Rd</th>
+              <th>Pick</th>
+              <th></th>
+              <th>Team</th>
+              <th>Keeper / Pick Value</th>
+            `;
+          }
 
-          slots.forEach((s) => {
+          let currentRound = 0;
+          sequence.forEach((pick) => {
+            // Round separator
+            if (pick.round !== currentRound) {
+              currentRound = pick.round;
+              const sep = document.createElement("tr");
+              sep.className = "draft-round-separator";
+              sep.innerHTML = `<td colspan="5">Round ${currentRound}</td>`;
+              draftBody.appendChild(sep);
+            }
+
+            const info = configTeamInfo[pick.teamKey] || {};
             const row = document.createElement("tr");
-            const teamTooltip = `${s.teamName} (${s.manager})`;
-            row.innerHTML = `
-              <td style="text-align:center;font-weight:700;color:var(--retro-blue)">${s.position}</td>
-              <td></td>
-              <td>
-                <div class="draft-player-cell">
-                  <div class="draft-player-info">
-                    <span class="draft-player-name">${s.manager}</span>
-                    <span class="draft-player-pos" style="background:transparent;color:#888">${s.teamName}</span>
+
+            // Team side (left): logo + team name / manager
+            const teamLogoHtml = info.logo
+              ? `<img src="${info.logo}" class="draft-team-logo" alt="" onerror="this.style.visibility='hidden'">`
+              : "";
+
+            // Keeper side (right): headshot + name + position badge + projection
+            let keeperHtml = "";
+            if (pick.isKeeper && pick.keeperData) {
+              const kd = pick.keeperData;
+              const playerName = kd.player_name || "";
+              const normName = normalizePlayerName(playerName);
+              const projInfo =
+                averageProjectionsMap[normName] ||
+                averageProjectionsMap[`${normName}|batter`] ||
+                averageProjectionsMap[`${normName}|pitcher`];
+              const keeperPos = kd.position || projInfo?.position || "";
+              const posBadge =
+                typeof getPositionBadge === "function"
+                  ? getPositionBadge(keeperPos, playerName)
+                  : keeperPos;
+              const projPoints =
+                typeof getAverageProjection === "function"
+                  ? getAverageProjection(playerName)
+                  : projInfo?.avgPoints || 0;
+              const projDisplay =
+                projPoints && projPoints > 0
+                  ? `${Math.round(projPoints).toLocaleString()} pts`
+                  : "-";
+              const headshot =
+                headshotMap[normName] || projInfo?.headshot || "";
+              const headshotHtml = headshot
+                ? `<img src="${headshot}" class="draft-headshot" alt="" onerror="this.style.visibility='hidden'">`
+                : '<div class="draft-headshot" style="display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;">?</div>';
+
+              keeperHtml = `
+                <div class="draft-order-keeper-cell">
+                  ${headshotHtml}
+                  <div class="draft-order-keeper-info">
+                    <span class="draft-order-keeper-name">${playerName}<span class="keeper-badge">K</span></span>
+                    <div class="draft-order-keeper-meta">
+                      ${posBadge}
+                      <span class="draft-order-keeper-proj">${projDisplay}</span>
+                    </div>
                   </div>
-                </div>
-              </td>
+                </div>`;
+            } else {
+              const expectedPoints =
+                typeof getExpectedPointsForRound === "function"
+                  ? getExpectedPointsForRound(pick.round)
+                  : 0;
+              const expectedDisplay =
+                expectedPoints && expectedPoints > 0
+                  ? `${Math.round(expectedPoints).toLocaleString()} pts`
+                  : "-";
+              keeperHtml = `<div class="draft-order-pick-value">Projected pick value: ${expectedDisplay}</div>`;
+            }
+
+            row.innerHTML = `
+              <td style="text-align:center;font-weight:600;color:#666">${pick.round}</td>
+              <td style="text-align:center;font-weight:600;color:#666">${pick.pickInRound || "-"}</td>
+              <td style="text-align:center">${teamLogoHtml}</td>
               <td>
-                <div class="draft-team-cell">
-                  ${s.logo ? `<img src="${s.logo}" class="draft-team-logo" alt="${s.teamName}" onerror="this.style.visibility='hidden'"><span class="draft-team-tooltip">${teamTooltip}</span>` : ""}
+                <div class="draft-order-team-info">
+                  <span class="draft-order-team-name">${info.teamName || "TBD"}</span>
+                  <span class="draft-order-team-manager">${info.manager || "TBD"}</span>
                 </div>
               </td>
-              <td></td>
-              <td></td>
+              <td>${keeperHtml}</td>
             `;
             draftBody.appendChild(row);
           });
 
-          if (allPicks.length > 0) {
-            // Add keeper picks section
-            allPicks.forEach((pick) => {
-              const roundLabel = pick.isProspect ? "NA" : pick.round;
-              if (pick.isProspect && currentRound !== -2) {
-                currentRound = -2;
-                const sep = document.createElement("tr");
-                sep.className = "draft-round-separator";
-                sep.innerHTML = `<td colspan="6">Prospect Keepers (NA)</td>`;
-                draftBody.appendChild(sep);
-              } else if (!pick.isProspect && pick.round !== currentRound) {
-                currentRound = pick.round;
-                const sep = document.createElement("tr");
-                sep.className = "draft-round-separator";
-                sep.innerHTML = `<td colspan="6">Round ${currentRound} Keepers</td>`;
-                draftBody.appendChild(sep);
-              }
+          // Add prospect keepers section if any
+          if (prospectKeepers.length > 0) {
+            const sep = document.createElement("tr");
+            sep.className = "draft-round-separator";
+            sep.innerHTML = `<td colspan="5">Prospect Keepers (NA)</td>`;
+            draftBody.appendChild(sep);
+
+            prospectKeepers.forEach((pk) => {
+              const info = configTeamInfo[pk.teamKey] || {};
+              const normName = normalizePlayerName(pk.player_name);
+              const projInfo =
+                averageProjectionsMap[normName] ||
+                averageProjectionsMap[`${normName}|batter`] ||
+                averageProjectionsMap[`${normName}|pitcher`];
+              const keeperPos = pk.position || projInfo?.position || "";
+              const posBadge =
+                typeof getPositionBadge === "function"
+                  ? getPositionBadge(keeperPos, pk.player_name)
+                  : keeperPos;
+              const projPoints =
+                typeof getAverageProjection === "function"
+                  ? getAverageProjection(pk.player_name)
+                  : projInfo?.avgPoints || 0;
+              const projDisplay =
+                projPoints && projPoints > 0
+                  ? `${Math.round(projPoints).toLocaleString()} pts`
+                  : "-";
+              const headshot =
+                headshotMap[normName] || projInfo?.headshot || "";
+              const headshotHtml = headshot
+                ? `<img src="${headshot}" class="draft-headshot" alt="" onerror="this.style.visibility='hidden'">`
+                : '<div class="draft-headshot" style="display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;">?</div>';
+              const teamLogoHtml = info.logo
+                ? `<img src="${info.logo}" class="draft-team-logo" alt="" onerror="this.style.visibility='hidden'">`
+                : "";
 
               const row = document.createElement("tr");
-              const teamTooltip = `${pick.slot.teamName} (${pick.slot.manager})`;
-              const primaryPos = (pick.position || "").split(",")[0].trim();
-              const posClass = typeof getDraftPosClass === "function" ? getDraftPosClass(primaryPos) : "";
               row.innerHTML = `
-                <td>${roundLabel}</td>
-                <td>${pick.slot.position}</td>
+                <td style="text-align:center;color:#7d6608;font-weight:600">NA</td>
+                <td style="text-align:center">-</td>
+                <td style="text-align:center">${teamLogoHtml}</td>
                 <td>
-                  <div class="draft-player-cell">
-                    <div class="draft-player-info">
-                      <span class="draft-player-name">${pick.player_name}<span class="keeper-badge">K</span></span>
-                      <span class="draft-player-pos ${posClass}">${primaryPos}</span>
+                  <div class="draft-order-team-info">
+                    <span class="draft-order-team-name">${info.teamName || "TBD"}</span>
+                    <span class="draft-order-team-manager">${info.manager || "TBD"}</span>
+                  </div>
+                </td>
+                <td>
+                  <div class="draft-order-keeper-cell">
+                    ${headshotHtml}
+                    <div class="draft-order-keeper-info">
+                      <span class="draft-order-keeper-name">${pk.player_name}<span class="prospect-badge">P</span></span>
+                      <div class="draft-order-keeper-meta">
+                        ${posBadge}
+                        <span class="draft-order-keeper-proj">${projDisplay}</span>
+                      </div>
                     </div>
                   </div>
                 </td>
-                <td>
-                  <div class="draft-team-cell">
-                    ${pick.slot.logo ? `<img src="${pick.slot.logo}" class="draft-team-logo" alt="${pick.slot.teamName}" onerror="this.style.visibility='hidden'"><span class="draft-team-tooltip">${teamTooltip}</span>` : ""}
-                  </div>
-                </td>
-                <td class="draft-pts">-</td>
-                <td></td>
               `;
               draftBody.appendChild(row);
             });
-          }
-
-          // Update table header for pre-draft context
-          const thead = draftTable?.querySelector("thead tr");
-          if (thead) {
-            thead.innerHTML = `
-              <th>#</th>
-              <th>Slot</th>
-              <th>Player / Manager</th>
-              <th>Team</th>
-              <th></th>
-              <th></th>
-            `;
           }
 
           draftLoading.style.display = "none";
