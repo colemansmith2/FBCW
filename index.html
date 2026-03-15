@@ -1461,105 +1461,6 @@
 
       /* Rank */
 
-      /* Draft Order (2026 pre-draft) table layout */
-      .draft-table.draft-order-table {
-        table-layout: fixed;
-      }
-
-      .draft-table.draft-order-table th:nth-child(1),
-      .draft-table.draft-order-table td:nth-child(1) {
-        width: 32px;
-        text-align: center;
-      }
-
-      .draft-table.draft-order-table th:nth-child(2),
-      .draft-table.draft-order-table td:nth-child(2) {
-        width: 36px;
-        text-align: center;
-      }
-
-      .draft-table.draft-order-table th:nth-child(3),
-      .draft-table.draft-order-table td:nth-child(3) {
-        width: 34px;
-        text-align: center;
-      }
-
-      .draft-table.draft-order-table th:nth-child(4),
-      .draft-table.draft-order-table td:nth-child(4) {
-        width: 160px;
-        text-align: left;
-      }
-
-      .draft-table.draft-order-table th:nth-child(5),
-      .draft-table.draft-order-table td:nth-child(5) {
-        width: auto;
-      }
-
-      .draft-order-team-info {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        align-items: flex-start;
-        text-align: left;
-      }
-
-      .draft-order-team-name {
-        font-weight: 600;
-        font-size: 0.8rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .draft-order-team-manager {
-        font-size: 0.7rem;
-        color: #666;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .draft-order-keeper-cell {
-        display: flex;
-        align-items: center;
-        gap: 0.4rem;
-        min-width: 0;
-      }
-
-      .draft-order-keeper-info {
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-      }
-
-      .draft-order-keeper-name {
-        font-weight: 500;
-        font-size: 0.8rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .draft-order-keeper-meta {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        font-size: 0.7rem;
-        color: #666;
-        flex-wrap: wrap;
-      }
-
-      .draft-order-keeper-proj {
-        font-size: 0.7rem;
-        color: #666;
-      }
-
-      .draft-order-pick-value {
-        font-size: 0.75rem;
-        color: #666;
-        font-style: italic;
-      }
-
       .draft-table td {
         padding: 0.4rem;
         border-bottom: 1px solid #eee;
@@ -5846,90 +5747,6 @@
         font-style: italic;
       }
 
-      /* Pre-season draft order display */
-      .draft-order-list {
-        padding: 0;
-        text-align: left;
-        font-style: normal;
-      }
-
-      .draft-order-row {
-        display: grid;
-        grid-template-columns: 2rem 2rem 1fr auto;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.35rem 0.5rem;
-        border-bottom: 1px solid #eee;
-      }
-
-      .draft-order-row:last-child {
-        border-bottom: none;
-      }
-
-      .draft-order-slot {
-        font-weight: 700;
-        color: var(--retro-blue);
-        font-size: 0.95rem;
-        text-align: center;
-      }
-
-      .draft-order-logo {
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        object-fit: cover;
-        background: #e0e0e0;
-      }
-
-      .draft-order-info {
-        min-width: 0;
-      }
-
-      .draft-order-manager {
-        font-weight: 600;
-        font-size: 0.88rem;
-        color: #222;
-      }
-
-      .draft-order-team {
-        font-size: 0.75rem;
-        color: #888;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .draft-order-keepers {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.2rem;
-        justify-content: flex-end;
-        max-width: 220px;
-      }
-
-      .draft-order-keeper-tag {
-        display: inline-block;
-        background: #e8f4fd;
-        border: 1px solid #b3d4f5;
-        border-radius: 4px;
-        padding: 0.1rem 0.35rem;
-        font-size: 0.7rem;
-        color: #1a5276;
-        white-space: nowrap;
-      }
-
-      .draft-order-keeper-tag.na-keeper {
-        background: #fef9e7;
-        border-color: #f9e79f;
-        color: #7d6608;
-      }
-
-      .draft-order-no-keepers {
-        font-size: 0.75rem;
-        color: #bbb;
-        font-style: italic;
-      }
-
       @media (max-width: 1024px) {
         .standings-draft-container {
           flex-direction: column;
@@ -6177,16 +5994,10 @@
       }
 
       .award-image {
-        width: 32px;
-        height: 32px;
-        object-fit: contain;
-        vertical-align: middle;
-      }
-
-      /* Awards in the modal header */
-      .modal-header .award-image {
         width: 36px;
         height: 36px;
+        object-fit: contain;
+        vertical-align: middle;
       }
 
       .award-count {
@@ -6359,78 +6170,44 @@
 
       .timeline-item {
         display: flex;
-        padding: 0.75rem 1rem;
+        padding: 1rem;
         border-left: 3px solid var(--retro-blue);
-        margin-bottom: 0.75rem;
+        margin-bottom: 1rem;
         background: #f8f9fa;
         border-radius: 0 8px 8px 0;
         align-items: center;
-        gap: 0.75rem;
-        flex-wrap: wrap;
       }
 
       .timeline-item .year {
         font-weight: bold;
         color: var(--retro-blue);
-        min-width: 48px;
-        font-size: 1.05rem;
-        flex-shrink: 0;
+        min-width: 60px;
+        font-size: 1.1rem;
+      }
+
+      .timeline-item .details {
+        flex: 1;
+        margin-left: 1rem;
       }
 
       .timeline-item .timeline-logo {
-        width: 40px;
-        height: 40px;
+        width: 35px;
+        height: 35px;
         object-fit: contain;
         border-radius: 50%;
         background: white;
-        padding: 0.2rem;
-        border: 2px solid #e0e0e0;
-        flex-shrink: 0;
-      }
-
-      .timeline-main {
-        flex: 1;
-        min-width: 130px;
-      }
-
-      .timeline-record {
-        font-weight: 600;
-        font-size: 0.95rem;
-        color: #333;
-      }
-
-      .timeline-team-row {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-        flex-wrap: wrap;
-        margin-top: 0.1rem;
-      }
-
-      .timeline-team-name {
-        font-size: 0.8rem;
-        color: #888;
-      }
-
-      .timeline-right {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        flex-shrink: 0;
+        padding: 0.25rem;
+        margin-left: 1rem;
       }
 
       .timeline-item .rank {
-        display: inline-flex;
-        align-items: center;
+        display: inline-block;
         background: var(--retro-blue);
         color: white;
-        padding: 0.2rem 0.65rem;
+        padding: 0.25rem 0.75rem;
         border-radius: 20px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        white-space: nowrap;
-        flex-shrink: 0;
+        margin-right: 1rem;
+        font-size: 0.9rem;
       }
 
       .timeline-item .rank.champion {
@@ -6441,27 +6218,6 @@
       .timeline-item .rank.runner-up {
         background: #c0c0c0;
         color: #000;
-      }
-
-      .timeline-item .rank.third-place {
-        background: #cd7f32;
-        color: white;
-      }
-
-      .timeline-awards {
-        display: flex;
-        gap: 0.2rem;
-        align-items: center;
-        flex-wrap: wrap;
-      }
-
-      .timeline-awards .award-badge {
-        font-size: 1rem;
-      }
-
-      .timeline-awards .award-image {
-        width: 24px;
-        height: 24px;
       }
 
       /* Draft Grade Styles */
@@ -11086,67 +10842,10 @@
         }
       }
 
-      /* ============================================
-         RETRO LOADING ANIMATION
-         ============================================ */
-      @keyframes retroGlowPulse {
-        0%,
-        100% {
-          text-shadow:
-            2px 2px 0 rgba(0, 0, 0, 0.8),
-            0 0 6px var(--retro-gold);
-          opacity: 1;
-        }
-        50% {
-          text-shadow:
-            2px 2px 0 rgba(0, 0, 0, 0.8),
-            0 0 18px var(--retro-gold),
-            0 0 32px var(--retro-gold-light);
-          opacity: 0.8;
-        }
-      }
-
-      @keyframes pixelMarch {
-        from {
-          background-position: 0 0;
-        }
-        to {
-          background-position: 20px 0;
-        }
-      }
-
-      @keyframes pixelBounce {
-        0%,
-        100% {
-          transform: translateY(0px);
-        }
-        50% {
-          transform: translateY(-8px);
-        }
-      }
-
       .loading {
         text-align: center;
-        padding: 2.5rem 2rem 2rem;
-        color: var(--retro-gold);
-        font-family: "Arcade Gamer", sans-serif;
-        font-size: 0.55rem;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        animation: retroGlowPulse 1.4s ease-in-out infinite;
-        position: relative;
-      }
-
-      /* Bouncing baseball above the loading text */
-      .loading::before {
-        content: "⚾";
-        display: block;
-        font-size: 2rem;
-        font-family: sans-serif;
-        margin-bottom: 1rem;
-        animation: pixelBounce 0.6s steps(4) infinite;
-        filter: drop-shadow(0 0 8px var(--retro-gold));
-        line-height: 1;
+        padding: 2rem;
+        color: #666;
       }
 
       @media (max-width: 768px) {
@@ -17946,14 +17645,6 @@
         box-shadow: 0 8px 24px rgba(230, 57, 70, 0.3);
       }
 
-      .opt-in-submit-btn:disabled {
-        background: var(--retro-gray);
-        cursor: not-allowed;
-        transform: none;
-        box-shadow: none;
-        opacity: 0.7;
-      }
-
       .opt-in-message {
         text-align: center;
         padding: 1rem;
@@ -23866,54 +23557,48 @@
         <h2>SMS Message Opt-In</h2>
         <div class="opt-in-container">
           <div class="opt-in-card">
-            <div id="opt-in-loading" class="loading" style="display: none">
-              Checking your status
+            <div class="opt-in-header">
+              <h1>Join the Conversation</h1>
+              <p class="opt-in-subtitle">
+                Get updates and alerts from around the league
+              </p>
             </div>
 
-            <div id="opt-in-content" style="display: none">
-              <div class="opt-in-header">
-                <h1>Join the Conversation</h1>
-                <p class="opt-in-subtitle">
-                  Get updates and alerts from around the league
-                </p>
+            <form
+              id="opt-in-form"
+              class="opt-in-form"
+              onsubmit="handleOptInSubmit(event)"
+            >
+              <div class="opt-in-form-group">
+                <label for="opt-in-phone">Phone Number</label>
+                <input
+                  type="tel"
+                  id="opt-in-phone"
+                  name="phone"
+                  placeholder="(XXX) XXX-XXXX"
+                  pattern="[\d\s\-\(\)]+"
+                  required
+                />
               </div>
 
-              <form
-                id="opt-in-form"
-                class="opt-in-form"
-                onsubmit="handleOptInSubmit(event)"
-              >
-                <div class="opt-in-form-group">
-                  <label for="opt-in-phone">Phone Number</label>
-                  <input
-                    type="tel"
-                    id="opt-in-phone"
-                    name="phone"
-                    placeholder="(XXX) XXX-XXXX"
-                    pattern="[\d\s\-\(\)]+"
-                    required
-                  />
-                </div>
+              <div class="opt-in-consent">
+                <input
+                  type="checkbox"
+                  id="opt-in-consent-checkbox"
+                  name="consent"
+                  required
+                />
+                <label for="opt-in-consent-checkbox"
+                  >I agree to receive SMS message updates from FBCW</label
+                >
+              </div>
 
-                <div class="opt-in-consent">
-                  <input
-                    type="checkbox"
-                    id="opt-in-consent-checkbox"
-                    name="consent"
-                    required
-                  />
-                  <label for="opt-in-consent-checkbox"
-                    >I agree to receive SMS message updates from FBCW</label
-                  >
-                </div>
+              <button type="submit" class="opt-in-submit-btn">
+                Sign Me Up
+              </button>
 
-                <button type="submit" class="opt-in-submit-btn">
-                  Sign Me Up
-                </button>
-
-                <div class="opt-in-message" id="opt-in-message"></div>
-              </form>
-            </div>
+              <div class="opt-in-message" id="opt-in-message"></div>
+            </form>
           </div>
         </div>
       </div>
@@ -27326,7 +27011,6 @@
 
         // Show week selector and change title for 2026
         if (headerWeekSelector) headerWeekSelector.style.display = "flex";
-        updateHeaderWeekArrows(); // Initialize arrow states immediately
         if (standingsTitle) standingsTitle.textContent = "Standings";
 
         try {
@@ -29212,7 +28896,6 @@
         const draftBody = document.getElementById("draft-body");
         const draftLoading = document.getElementById("draft-loading");
         const draftEmpty = document.getElementById("draft-empty");
-        const draftHeaderRow = draftTable?.querySelector("thead tr");
 
         // Build team info lookup by team_key
         const teamInfo = {};
@@ -29226,19 +28909,6 @@
         }
 
         // Reset state
-        if (draftTable) {
-          draftTable.classList.remove("draft-order-table");
-        }
-        if (draftHeaderRow) {
-          draftHeaderRow.innerHTML = `
-            <th>Rd</th>
-            <th>Pick</th>
-            <th>Player</th>
-            <th>Team</th>
-            <th>Pts</th>
-            <th>Rank</th>
-          `;
-        }
         draftTable.style.display = "none";
         draftLoading.style.display = "block";
         draftEmpty.style.display = "none";
@@ -29262,17 +28932,8 @@
           const draftData = await draftResponse.json();
 
           if (!draftData || draftData.length === 0) {
-            if (seasonNum === 2026) {
-              await render2026DraftOrder(
-                draftEmpty,
-                draftLoading,
-                teamLogos,
-                teamData,
-              );
-            } else {
-              draftLoading.style.display = "none";
-              draftEmpty.style.display = "block";
-            }
+            draftLoading.style.display = "none";
+            draftEmpty.style.display = "block";
             return;
           }
 
@@ -29432,578 +29093,8 @@
           draftTable.style.display = "table";
         } catch (error) {
           console.error("Error loading draft:", error);
-          if (seasonNum === 2026) {
-            await render2026DraftOrder(
-              draftEmpty,
-              draftLoading,
-              teamLogos,
-              teamData,
-            );
-          } else {
-            draftLoading.style.display = "none";
-            draftEmpty.textContent = "Draft data not available for this season";
-            draftEmpty.style.display = "block";
-          }
-        }
-      }
-
-      // ===== 2026 PRE-DRAFT ORDER DISPLAY =====
-      async function render2026DraftOrder(
-        draftEmpty,
-        draftLoading,
-        teamLogos,
-        teamData,
-      ) {
-        const draftTable = document.getElementById("draft-table");
-        const draftBody = document.getElementById("draft-body");
-        try {
-          const [configRes, keeperConfigRes] = await Promise.all([
-            fetch("data/mock_draft_config.json"),
-            fetch("data/keepers/keeper_config.json"),
-          ]);
-
-          const draftConfig = configRes.ok ? await configRes.json() : null;
-          const keeperConfigData = keeperConfigRes.ok
-            ? await keeperConfigRes.json()
-            : null;
-          const totalRounds = draftConfig?.rounds || 22;
-
-          // Ensure keeperConfig is available for trade management + keepers
-          if (keeperConfigData && !keeperConfig) {
-            keeperConfig = keeperConfigData;
-          }
-
-          // Initialize trade management so getTeamPicks() works (uses keeperConfig)
-          if (typeof initializeTradeManagement === "function") {
-            try {
-              await initializeTradeManagement();
-            } catch (e) {
-              /* ok */
-            }
-          }
-          if (
-            typeof initializeTeamAssets === "function" &&
-            keeperConfig &&
-            (!teamPicksOwned || Object.keys(teamPicksOwned).length === 0)
-          ) {
-            try {
-              await initializeTeamAssets();
-            } catch (e) {
-              /* ok */
-            }
-          }
-
-          // Ensure expected pick values and projections are loaded
-          if (
-            typeof calculateExpectedPoints === "function" &&
-            Object.keys(expectedPointsByRound).length === 0
-          ) {
-            try {
-              await calculateExpectedPoints();
-            } catch (e) {
-              /* ok */
-            }
-          }
-          if (
-            typeof loadAverageProjections === "function" &&
-            !averageProjectionsLoaded
-          ) {
-            try {
-              await loadAverageProjections();
-            } catch (e) {
-              /* ok */
-            }
-          }
-
-          // Load keepers: prefer in-memory keeperSelections (Firebase),
-          // else one-time Firebase fetch, else fall back to JSON
-          let rawKeeperData = {};
-          if (
-            typeof keeperSelections !== "undefined" &&
-            Object.keys(keeperSelections).length > 0
-          ) {
-            rawKeeperData = keeperSelections;
-          } else if (typeof firebaseDb !== "undefined" && firebaseDb) {
-            try {
-              const snap = await firebaseDb.ref("keepers_2026").once("value");
-              const fbData = snap.val();
-              if (fbData) {
-                Object.entries(fbData).forEach(([sanitizedKey, keepers]) => {
-                  const teamKey = unsanitizeFirebaseKey(sanitizedKey);
-                  rawKeeperData[teamKey] = Array.isArray(keepers)
-                    ? keepers
-                    : Object.values(keepers || {});
-                });
-              }
-            } catch (e) {
-              /* fall through to JSON */
-            }
-          }
-          if (Object.keys(rawKeeperData).length === 0) {
-            try {
-              const keepersRes = await fetch("data/keepers/keepers_2026.json");
-              if (keepersRes.ok) {
-                const kd = await keepersRes.json();
-                rawKeeperData = kd.keepers || {};
-              }
-            } catch (e) {
-              /* ignore */
-            }
-          }
-          if (
-            typeof keeperSelections !== "undefined" &&
-            Object.keys(keeperSelections).length === 0 &&
-            Object.keys(rawKeeperData).length > 0
-          ) {
-            keeperSelections = rawKeeperData;
-          }
-
-          const normalizePlayerName = (name) =>
-            (name || "")
-              .toLowerCase()
-              .trim()
-              .normalize("NFD")
-              .replace(/[\u0300-\u036f]/g, "");
-
-          // Load Yahoo player data for headshots
-          let headshotMap = {};
-          try {
-            const yahooPlayers =
-              typeof getYahooPlayerPositions === "function"
-                ? await getYahooPlayerPositions()
-                : [];
-            yahooPlayers.forEach((p) => {
-              if (p.headshot_url && p.name) {
-                const norm = normalizePlayerName(p.name);
-                headshotMap[norm] = p.headshot_url;
-              }
-            });
-          } catch (e) {
-            /* headshots optional */
-          }
-
-          // Update panel title
-          const panelTitle = document.querySelector(
-            ".draft-panel .panel-title",
-          );
-          if (panelTitle) panelTitle.textContent = "Draft Order";
-
-          // Build configKey → team info map
-          const configTeamInfo = {};
-          if (keeperConfigData?.teams) {
-            Object.entries(keeperConfigData.teams).forEach(([key, team]) => {
-              const mgr = normalizeManagerName(
-                team.manager || "",
-                2026,
-                team.team_name,
-                key,
-              );
-              const mgrLower = mgr.toLowerCase();
-              // Find current-season logo from teamData
-              let logo = "";
-              let currentTeamName = team.team_name || "";
-              if (teamData) {
-                const match = teamData.find((t) => {
-                  const tMgr = normalizeManagerName(
-                    t.manager,
-                    2026,
-                    t.team_name,
-                    t.team_key,
-                  ).toLowerCase();
-                  return tMgr === mgrLower || tMgr === mgrLower.split(" ")[0];
-                });
-                if (match) {
-                  logo =
-                    fixTeamLogo(match.team_logo) ||
-                    teamLogos[match.team_key] ||
-                    "";
-                  currentTeamName = match.team_name || currentTeamName;
-                }
-              }
-              configTeamInfo[key] = {
-                manager: mgr,
-                teamName: currentTeamName,
-                logo,
-                configKey: key,
-              };
-            });
-          }
-
-          // Map manager name → configKey for draft order resolution
-          const mgrToConfigKey = {};
-          Object.entries(configTeamInfo).forEach(([key, info]) => {
-            mgrToConfigKey[info.manager.toLowerCase()] = key;
-            mgrToConfigKey[info.manager.toLowerCase().split(" ")[0]] = key;
-          });
-
-          // Resolve draft order: fill any unassigned slots (including unrecognized names)
-          const rawOrder = draftConfig?.draft_order || [];
-          const resolvedOrder = rawOrder.map((mgrRaw) => {
-            if (!mgrRaw) return null;
-            const norm = normalizeManagerName(
-              mgrRaw,
-              2026,
-              null,
-              null,
-            ).toLowerCase();
-            return (
-              mgrToConfigKey[norm] || mgrToConfigKey[norm.split(" ")[0]] || null
-            );
-          });
-          const allConfigEntries = Object.entries(configTeamInfo);
-          const assignedKeys = new Set(resolvedOrder.filter(Boolean));
-          const unassignedKeys = allConfigEntries
-            .filter(([key]) => !assignedKeys.has(key))
-            .sort(([, a], [, b]) => a.manager.localeCompare(b.manager));
-          let uIdx = 0;
-          for (let i = 0; i < resolvedOrder.length; i++) {
-            if (!resolvedOrder[i] && uIdx < unassignedKeys.length) {
-              resolvedOrder[i] = unassignedKeys[uIdx++][0];
-            }
-          }
-          while (
-            resolvedOrder.length < allConfigEntries.length &&
-            uIdx < unassignedKeys.length
-          ) {
-            resolvedOrder.push(unassignedKeys[uIdx++][0]);
-          }
-
-          // Build pick owner lookup using getTeamPicks (accounts for trades)
-          const pickOwnerLookup = {};
-          const allTeamKeys = Object.keys(configTeamInfo);
-          allTeamKeys.forEach((teamKey) => {
-            const picks =
-              typeof getTeamPicks === "function" ? getTeamPicks(teamKey) : [];
-            picks.forEach((pick) => {
-              const key = `${pick.round}-${pick.originalOwner}`;
-              pickOwnerLookup[key] = teamKey;
-            });
-          });
-
-          // Build keeper data per team: { configKey: [{ player_name, roundCost, position, isProspect }] }
-          const teamKeepersMap = {};
-          Object.entries(rawKeeperData).forEach(([configKey, keepers]) => {
-            const arr = Array.isArray(keepers)
-              ? keepers
-              : Object.values(keepers || {});
-            if (arr.length > 0) teamKeepersMap[configKey] = arr;
-          });
-          const keeperMetaByTeam = {};
-          Object.entries(teamKeepersMap).forEach(([teamKey, keepers]) => {
-            keeperMetaByTeam[teamKey] = {};
-            keepers.forEach((k) => {
-              const key = normalizePlayerName(k.player_name);
-              if (!key) return;
-              keeperMetaByTeam[teamKey][key] = k;
-            });
-          });
-
-          // Calculate keeper round costs with bumping (same as mock drafter)
-          const keeperRoundCounts = {};
-          const keeperByTeamRound = {}; // { teamKey: { round: [keeperObj] } }
-          Object.entries(teamKeepersMap).forEach(([teamKey, keepers]) => {
-            keeperRoundCounts[teamKey] = {};
-            keeperByTeamRound[teamKey] = {};
-
-            if (typeof calculateTeamKeeperRoundCosts === "function") {
-              const resolved = calculateTeamKeeperRoundCosts(teamKey) || [];
-              resolved.forEach((rc) => {
-                const rd = rc.actualRoundCost;
-                if (rd && rd > 0) {
-                  keeperRoundCounts[teamKey][rd] =
-                    (keeperRoundCounts[teamKey][rd] || 0) + 1;
-                  if (!keeperByTeamRound[teamKey][rd])
-                    keeperByTeamRound[teamKey][rd] = [];
-                  const meta =
-                    keeperMetaByTeam[teamKey]?.[
-                      normalizePlayerName(rc.player_name)
-                    ] || {};
-                  keeperByTeamRound[teamKey][rd].push({
-                    ...rc,
-                    player_name: rc.player_name || meta.player_name,
-                    position: meta.position || rc.position || "",
-                  });
-                }
-              });
-            } else {
-              // Fallback: use raw round costs
-              keepers
-                .filter((k) => !isProspectKeeperEntry(k))
-                .forEach((k) => {
-                  const rd = k.roundCost || 0;
-                  if (rd > 0) {
-                    keeperRoundCounts[teamKey][rd] =
-                      (keeperRoundCounts[teamKey][rd] || 0) + 1;
-                    if (!keeperByTeamRound[teamKey][rd])
-                      keeperByTeamRound[teamKey][rd] = [];
-                    keeperByTeamRound[teamKey][rd].push({
-                      player_name: k.player_name,
-                      actualRoundCost: rd,
-                      position: k.position,
-                    });
-                  }
-                });
-            }
-          });
-
-          // Build full pick sequence (all rounds)
-          const sequence = [];
-          let overallPick = 0;
-
-          for (let round = 1; round <= totalRounds; round++) {
-            const orderForRound =
-              draftConfig?.snake && round % 2 === 0
-                ? [...resolvedOrder].reverse()
-                : [...resolvedOrder];
-
-            const roundPicks = [];
-            orderForRound.forEach((originalSlotTeam, slotIdx) => {
-              if (!originalSlotTeam) return;
-              const lookupKey = `${round}-${originalSlotTeam}`;
-              const pickOwner = pickOwnerLookup[lookupKey] || originalSlotTeam;
-              roundPicks.push({
-                round,
-                pickInRound: slotIdx + 1,
-                teamKey: pickOwner,
-                originalSlotTeam,
-                isKeeper: false,
-                keeperData: null,
-              });
-            });
-
-            // Ensure every original team pick is present for this round
-            const placedOriginals = new Set(
-              roundPicks.map((p) => `${round}-${p.originalSlotTeam}`),
-            );
-            allTeamKeys.forEach((teamKey) => {
-              const key = `${round}-${teamKey}`;
-              if (!placedOriginals.has(key)) {
-                const pickOwner = pickOwnerLookup[key] || teamKey;
-                roundPicks.push({
-                  round,
-                  pickInRound: roundPicks.length + 1,
-                  teamKey: pickOwner,
-                  originalSlotTeam: teamKey,
-                  isKeeper: false,
-                  keeperData: null,
-                });
-              }
-            });
-
-            roundPicks.forEach((pick) => {
-              overallPick++;
-              sequence.push({ ...pick, overallPick });
-            });
-          }
-
-          // Mark keeper picks in the sequence (latest pick per team per round)
-          Object.entries(keeperRoundCounts).forEach(
-            ([teamKey, roundCounts]) => {
-              Object.entries(roundCounts).forEach(([round, count]) => {
-                const roundNum = Number(round);
-                const teamPicksInRound = sequence.filter(
-                  (p) => p.teamKey === teamKey && p.round === roundNum,
-                );
-                const picksToMark = teamPicksInRound.slice(-count);
-                const keeperEntries =
-                  keeperByTeamRound[teamKey]?.[roundNum] || [];
-                picksToMark.forEach((p, i) => {
-                  p.isKeeper = true;
-                  p.keeperData = keeperEntries[i] || keeperEntries[0] || null;
-                });
-              });
-            },
-          );
-
-          // Collect prospect keepers (NA - not assigned to rounds)
-          const prospectKeepers = [];
-          Object.entries(teamKeepersMap).forEach(([teamKey, keepers]) => {
-            const arr = Array.isArray(keepers) ? keepers : [];
-            arr
-              .filter((k) => isProspectKeeperEntry(k))
-              .forEach((k) => {
-                prospectKeepers.push({
-                  teamKey,
-                  player_name: k.player_name || "Unknown",
-                  position: k.position || "",
-                });
-              });
-          });
-
-          // Render into the draft table
-          draftBody.innerHTML = "";
-          if (draftTable) draftTable.classList.add("draft-order-table");
-
-          // Update table header
-          const thead = draftTable?.querySelector("thead tr");
-          if (thead) {
-            thead.innerHTML = `
-              <th>Rd</th>
-              <th>Pick</th>
-              <th></th>
-              <th>Team</th>
-              <th>Keeper / Pick Value</th>
-            `;
-          }
-
-          let currentRound = 0;
-          sequence.forEach((pick) => {
-            // Round separator
-            if (pick.round !== currentRound) {
-              currentRound = pick.round;
-              const sep = document.createElement("tr");
-              sep.className = "draft-round-separator";
-              sep.innerHTML = `<td colspan="5">Round ${currentRound}</td>`;
-              draftBody.appendChild(sep);
-            }
-
-            const info = configTeamInfo[pick.teamKey] || {};
-            const row = document.createElement("tr");
-
-            // Team side (left): logo + team name / manager
-            const teamLogoHtml = info.logo
-              ? `<img src="${info.logo}" class="draft-team-logo" alt="" onerror="this.style.visibility='hidden'">`
-              : "";
-
-            // Keeper side (right): headshot + name + position badge + projection
-            let keeperHtml = "";
-            if (pick.isKeeper && pick.keeperData) {
-              const kd = pick.keeperData;
-              const playerName = kd.player_name || "";
-              const normName = normalizePlayerName(playerName);
-              const projInfo =
-                averageProjectionsMap[normName] ||
-                averageProjectionsMap[`${normName}|batter`] ||
-                averageProjectionsMap[`${normName}|pitcher`];
-              const keeperPos = kd.position || projInfo?.position || "";
-              const posBadge =
-                typeof getPositionBadge === "function"
-                  ? getPositionBadge(keeperPos, playerName)
-                  : keeperPos;
-              const projPoints =
-                typeof getAverageProjection === "function"
-                  ? getAverageProjection(playerName)
-                  : projInfo?.avgPoints || 0;
-              const projDisplay =
-                projPoints && projPoints > 0
-                  ? `${Math.round(projPoints).toLocaleString()} pts`
-                  : "-";
-              const headshot =
-                headshotMap[normName] || projInfo?.headshot || "";
-              const headshotHtml = headshot
-                ? `<img src="${headshot}" class="draft-headshot" alt="" onerror="this.style.visibility='hidden'">`
-                : '<div class="draft-headshot" style="display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;">?</div>';
-
-              keeperHtml = `
-                <div class="draft-order-keeper-cell">
-                  ${headshotHtml}
-                  <div class="draft-order-keeper-info">
-                    <span class="draft-order-keeper-name">${playerName}<span class="keeper-badge">K</span></span>
-                    <div class="draft-order-keeper-meta">
-                      ${posBadge}
-                      <span class="draft-order-keeper-proj">${projDisplay}</span>
-                    </div>
-                  </div>
-                </div>`;
-            } else {
-              const expectedPoints =
-                typeof getExpectedPointsForRound === "function"
-                  ? getExpectedPointsForRound(pick.round)
-                  : 0;
-              const expectedDisplay =
-                expectedPoints && expectedPoints > 0
-                  ? `${Math.round(expectedPoints).toLocaleString()} pts`
-                  : "-";
-              keeperHtml = `<div class="draft-order-pick-value">PIck Value: ${expectedDisplay}</div>`;
-            }
-
-            row.innerHTML = `
-              <td style="text-align:center;font-weight:600;color:#666">${pick.round}</td>
-              <td style="text-align:center;font-weight:600;color:#666">${pick.pickInRound || "-"}</td>
-              <td style="text-align:center">${teamLogoHtml}</td>
-              <td>
-                <div class="draft-order-team-info">
-                  <span class="draft-order-team-name">${info.teamName || "TBD"}</span>
-                  <span class="draft-order-team-manager">${info.manager || "TBD"}</span>
-                </div>
-              </td>
-              <td>${keeperHtml}</td>
-            `;
-            draftBody.appendChild(row);
-          });
-
-          // Add prospect keepers section if any
-          if (prospectKeepers.length > 0) {
-            const sep = document.createElement("tr");
-            sep.className = "draft-round-separator";
-            sep.innerHTML = `<td colspan="5">Prospect Keepers (NA)</td>`;
-            draftBody.appendChild(sep);
-
-            prospectKeepers.forEach((pk) => {
-              const info = configTeamInfo[pk.teamKey] || {};
-              const normName = normalizePlayerName(pk.player_name);
-              const projInfo =
-                averageProjectionsMap[normName] ||
-                averageProjectionsMap[`${normName}|batter`] ||
-                averageProjectionsMap[`${normName}|pitcher`];
-              const keeperPos = pk.position || projInfo?.position || "";
-              const posBadge =
-                typeof getPositionBadge === "function"
-                  ? getPositionBadge(keeperPos, pk.player_name)
-                  : keeperPos;
-              const projPoints =
-                typeof getAverageProjection === "function"
-                  ? getAverageProjection(pk.player_name)
-                  : projInfo?.avgPoints || 0;
-              const projDisplay =
-                projPoints && projPoints > 0
-                  ? `${Math.round(projPoints).toLocaleString()} pts`
-                  : "-";
-              const headshot =
-                headshotMap[normName] || projInfo?.headshot || "";
-              const headshotHtml = headshot
-                ? `<img src="${headshot}" class="draft-headshot" alt="" onerror="this.style.visibility='hidden'">`
-                : '<div class="draft-headshot" style="display:flex;align-items:center;justify-content:center;font-size:12px;color:#999;">?</div>';
-              const teamLogoHtml = info.logo
-                ? `<img src="${info.logo}" class="draft-team-logo" alt="" onerror="this.style.visibility='hidden'">`
-                : "";
-
-              const row = document.createElement("tr");
-              row.innerHTML = `
-                <td style="text-align:center;color:#7d6608;font-weight:600">NA</td>
-                <td style="text-align:center">-</td>
-                <td style="text-align:center">${teamLogoHtml}</td>
-                <td>
-                  <div class="draft-order-team-info">
-                    <span class="draft-order-team-name">${info.teamName || "TBD"}</span>
-                    <span class="draft-order-team-manager">${info.manager || "TBD"}</span>
-                  </div>
-                </td>
-                <td>
-                  <div class="draft-order-keeper-cell">
-                    ${headshotHtml}
-                    <div class="draft-order-keeper-info">
-                      <span class="draft-order-keeper-name">${pk.player_name}<span class="prospect-badge">P</span></span>
-                      <div class="draft-order-keeper-meta">
-                        ${posBadge}
-                        <span class="draft-order-keeper-proj">${projDisplay}</span>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              `;
-              draftBody.appendChild(row);
-            });
-          }
-
           draftLoading.style.display = "none";
-          draftEmpty.style.display = "none";
-          draftTable.style.display = "table";
-        } catch (e) {
-          console.error("Error rendering 2026 draft order:", e);
-          draftLoading.style.display = "none";
-          if (draftTable) draftTable.style.display = "none";
-          draftEmpty.textContent = "Draft order not available";
+          draftEmpty.textContent = "Draft data not available for this season";
           draftEmpty.style.display = "block";
         }
       }
@@ -31752,32 +30843,31 @@
             const teams2026 = await getTeamData(2026);
 
             allManagersData.forEach((manager) => {
-              // Always sync 2026 data from current standings to get latest team names/stats
-              const current2026 = normalized2026.find(
-                (t) =>
-                  normalizeManagerName(t.manager, 2026, t.team_name) ===
-                  manager.manager_name,
+              // Check if manager already has 2026 season
+              const has2026 = manager.season_history.some(
+                (s) => s.year === 2026,
               );
-              if (current2026) {
-                const season2026Idx = manager.season_history.findIndex(
-                  (s) => s.year === 2026,
+              if (!has2026) {
+                // Find this manager in current standings
+                const current2026 = normalized2026.find(
+                  (t) =>
+                    normalizeManagerName(t.manager, 2026, t.team_name) ===
+                    manager.manager_name,
                 );
-                const updated2026 = {
-                  year: 2026,
-                  team_name: current2026.team_name,
-                  wins: current2026.wins || 0,
-                  losses: current2026.losses || 0,
-                  ties: current2026.ties || 0,
-                  points_for: current2026.points_for || 0,
-                  points_against: current2026.points_against || 0,
-                  rank: current2026.rank || 0,
-                };
-                if (season2026Idx !== -1) {
-                  // Update existing entry with current data
-                  manager.season_history[season2026Idx] = updated2026;
-                } else {
-                  // Add new entry and update totals
-                  manager.season_history.push(updated2026);
+                if (current2026) {
+                  // Add 2026 season to history
+                  manager.season_history.push({
+                    year: 2026,
+                    team_name: current2026.team_name,
+                    wins: current2026.wins || 0,
+                    losses: current2026.losses || 0,
+                    ties: current2026.ties || 0,
+                    points_for: current2026.points_for || 0,
+                    points_against: current2026.points_against || 0,
+                    rank: current2026.rank || 0,
+                  });
+
+                  // Update totals
                   manager.total_wins += current2026.wins || 0;
                   manager.total_losses += current2026.losses || 0;
                   manager.total_ties += current2026.ties || 0;
@@ -32713,62 +31803,6 @@
         container.appendChild(svg);
       }
 
-      // Returns array of { src, alt } for awards a manager won in a specific season year
-      function getAwardsForSeason(managerName, year) {
-        const awards = managerAwardsData[managerName] || {};
-        const defs = [
-          {
-            yearsKey: "championshipYears",
-            src: "champion_ring.png",
-            alt: "Championship",
-          },
-          {
-            yearsKey: "regularSeasonYears",
-            src: "data/awards/reg_season_champion.png",
-            alt: "Regular Season Champion",
-          },
-          {
-            yearsKey: "scoringChampYears",
-            src: "data/awards/scoring_champion.png",
-            alt: "Scoring Champion",
-          },
-          {
-            yearsKey: "troutAwardYears",
-            src: "data/awards/hitter.png",
-            alt: "Mike Trout Award",
-          },
-          {
-            yearsKey: "degromAwardYears",
-            src: "data/awards/pitcher.png",
-            alt: "Jacob deGrom Award",
-          },
-          {
-            yearsKey: "diamondAwardYears",
-            src: "data/awards/diamond.png",
-            alt: "Diamond in the Rough",
-          },
-          {
-            yearsKey: "garbageYears",
-            src: "data/awards/garbage.png",
-            alt: "Garbage Award",
-          },
-          {
-            yearsKey: "clownYears",
-            src: "data/awards/clown.png",
-            alt: "Clown Award",
-          },
-          {
-            yearsKey: "bustAwardYears",
-            src: "data/awards/bust.png",
-            alt: "Bust of the Year",
-          },
-        ];
-        return defs.filter((d) => {
-          const years = awards[d.yearsKey] || [];
-          return years.includes(year) || years.includes(String(year));
-        });
-      }
-
       // ===== SHOW MANAGER DETAIL MODAL =====
       // Generate hat filename from manager name
       function getManagerHatFilename(managerName) {
@@ -32788,29 +31822,15 @@
 
         // Load team logos for each season using cached data
         const seasonLogos = {};
-        const seasonTeamNames = {};
         let currentManagerLogo = "";
         for (const season of manager.season_history) {
           const teams = await getTeamData(season.year);
           if (teams) {
-            let managerTeam = teams.find(
+            const managerTeam = teams.find(
               (t) => t.team_name === season.team_name,
             );
-            // Fallback: match by normalized manager name
-            if (!managerTeam) {
-              managerTeam = teams.find((t) => {
-                const teamMgr = normalizeManagerName(
-                  t.manager,
-                  season.year,
-                  t.team_name,
-                  t.team_key,
-                );
-                return teamMgr === manager.manager_name;
-              });
-            }
             if (managerTeam) {
               seasonLogos[season.year] = fixTeamLogo(managerTeam.team_logo);
-              seasonTeamNames[season.year] = managerTeam.team_name;
             }
           }
         }
@@ -32832,21 +31852,9 @@
               (s) => s.year === recentSeason,
             );
             if (mgrSeason) {
-              let mgrTeam = teams.find(
+              const mgrTeam = teams.find(
                 (t) => t.team_name === mgrSeason.team_name,
               );
-              // Fallback: match by normalized manager name
-              if (!mgrTeam) {
-                mgrTeam = teams.find((t) => {
-                  const teamMgr = normalizeManagerName(
-                    t.manager,
-                    recentSeason,
-                    t.team_name,
-                    t.team_key,
-                  );
-                  return teamMgr === mgr.manager_name;
-                });
-              }
               if (mgrTeam) {
                 allManagerLogos[mgr.manager_name] = fixTeamLogo(
                   mgrTeam.team_logo,
@@ -32868,30 +31876,23 @@
 
         let timelineHTML = seasonHistory
           .map((season) => {
-            // Placement badge
             let rankClass = "";
-            let rankText = season.rank > 0 ? `#${season.rank}` : "—";
+            let rankText = `#${season.rank}`;
+
             if (season.rank === 1) {
               rankClass = "champion";
-              rankText = "#1";
+              rankText =
+                '<img src="champion_ring.png" alt="Champion" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 4px;">Champion';
             } else if (season.rank === 2) {
               rankClass = "runner-up";
-              rankText = "#2";
-            } else if (season.rank === 3) {
-              rankClass = "third-place";
-              rankText = "#3";
+              rankText = "Runner-up";
             }
 
-            // Logo
-            const teamName = seasonTeamNames[season.year] || season.team_name;
-            const logoHTML = seasonLogos[season.year]
-              ? `<img src="${seasonLogos[season.year]}" class="timeline-logo" alt="${teamName}">`
-              : `<div class="timeline-logo" style="background:#e0e0e0;"></div>`;
+            const logo = seasonLogos[season.year]
+              ? `<img src="${seasonLogos[season.year]}" class="timeline-logo" alt="${season.team_name}">`
+              : "";
 
-            // Record & points
-            const recordHTML = `${season.wins}-${season.losses} | ${season.points_for > 0 ? season.points_for.toLocaleString() : "0.0"} pts`;
-
-            // Draft grade
+            // Get draft grade for this season
             const seasonGrade = managerGrades.grades.find(
               (g) => g.year === season.year,
             );
@@ -32900,46 +31901,26 @@
               const gradeColor = getGradeColor(seasonGrade.grade);
               const bgColor = getGradeBackgroundColor(seasonGrade.grade);
               const scoreSign = seasonGrade.score >= 0 ? "+" : "";
-              draftGradeHTML = `<span class="draft-grade-badge" style="background: ${bgColor}; color: ${gradeColor}; border: 1px solid ${gradeColor};" title="Draft: ${seasonGrade.actual.toFixed(0)} pts vs ${seasonGrade.expected.toFixed(0)} expected (${scoreSign}${seasonGrade.score.toFixed(1)}%)">Draft: ${seasonGrade.grade}</span>`;
+              draftGradeHTML = `
+                        <span class="draft-grade-badge" style="background: ${bgColor}; color: ${gradeColor}; border: 1px solid ${gradeColor};" 
+                              title="Draft: ${seasonGrade.actual.toFixed(0)} pts vs ${seasonGrade.expected.toFixed(0)} expected (${scoreSign}${seasonGrade.score.toFixed(1)}%)">
+                            Draft: ${seasonGrade.grade}
+                        </span>
+                    `;
             }
-
-            // Per-season awards (inline with team name)
-            const seasonAwards = getAwardsForSeason(
-              manager.manager_name,
-              season.year,
-            );
-            let awardsHTML = "";
-            if (seasonAwards.length > 0) {
-              awardsHTML = `<div class="timeline-awards">${seasonAwards
-                .map(
-                  (a) =>
-                    `<div class="award-badge" data-tooltip="${a.alt}"><img src="${a.src}" alt="${a.alt}" class="award-image"></div>`,
-                )
-                .join("")}</div>`;
-            }
-
-            // Right side: draft grade + placement badge
-            const rightHTML =
-              draftGradeHTML || season.rank > 0
-                ? `
-                        <div class="timeline-right">
-                            ${draftGradeHTML}
-                            ${season.rank > 0 ? `<span class="rank ${rankClass}">${rankText}</span>` : ""}
-                        </div>`
-                : "";
 
             return `
                     <div class="timeline-item">
                         <div class="year">${season.year}</div>
-                        ${logoHTML}
-                        <div class="timeline-main">
-                            <div class="timeline-record">${recordHTML}</div>
-                            <div class="timeline-team-row">
-                                <span class="timeline-team-name">${teamName}</span>
-                                ${awardsHTML}
+                        <div class="details">
+                            <span class="rank ${rankClass}">${rankText}</span>
+                            ${draftGradeHTML}
+                            <span>${season.wins}-${season.losses} | ${season.points_for.toLocaleString()} pts</span>
+                            <div style="margin-top: 0.25rem; color: #666; font-size: 0.9rem;">
+                                Team: ${season.team_name}
                             </div>
                         </div>
-                        ${rightHTML}
+                        ${logo}
                     </div>
                 `;
           })
@@ -33480,15 +32461,8 @@
 
       // ===== OPT-IN FORM =====
       async function initializeOptInForm() {
-        const loadingEl = document.getElementById("opt-in-loading");
-        const contentEl = document.getElementById("opt-in-content");
-
-        loadingEl.style.display = "block";
-        contentEl.style.display = "none";
-
         if (!currentSession || !currentSession.username) {
           console.error("User not logged in");
-          loadingEl.style.display = "none";
           return;
         }
 
@@ -33500,9 +32474,6 @@
         } catch (error) {
           console.error("Could not retrieve opt-in state:", error);
         }
-
-        loadingEl.style.display = "none";
-        contentEl.style.display = "block";
 
         const phoneInput = document.getElementById("opt-in-phone");
         const consentCheckbox = document.getElementById(
@@ -33568,10 +32539,6 @@
           return;
         }
 
-        const submitBtn = document.querySelector(".opt-in-submit-btn");
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Saving...";
-
         // Submit to backend (backend will update DynamoDB)
         try {
           const response = await setOptInToAWSDyanmoDB(username, true);
@@ -33589,7 +32556,7 @@
             // Update form to show opt-out option
             document.getElementById("opt-in-phone").disabled = true;
             document.getElementById("opt-in-consent-checkbox").disabled = true;
-            submitBtn.disabled = false;
+            const submitBtn = document.querySelector(".opt-in-submit-btn");
             submitBtn.textContent = "Opt Out";
             submitBtn.className = "opt-in-submit-btn opt-out-mode";
             submitBtn.onclick = (e) => handleOptOutRequest(e);
@@ -33605,8 +32572,6 @@
           }
         } catch (error) {
           console.error("Opt-in submission error:", error);
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Sign Me Up";
           messageDiv.className = "opt-in-message error";
           messageDiv.textContent =
             "Failed to save preferences. Please try again.";
@@ -33633,10 +32598,6 @@
         const messageDiv = document.getElementById("opt-in-message");
         const timestamp = new Date().toISOString();
 
-        const submitBtn = document.querySelector(".opt-in-submit-btn");
-        submitBtn.disabled = true;
-        submitBtn.textContent = "Saving...";
-
         // Submit opt-out to DynamoDB (backend will update user_config.json)
         try {
           const response = await setOptInToAWSDyanmoDB(
@@ -33659,7 +32620,7 @@
             document.getElementById("opt-in-phone").value = "";
             document.getElementById("opt-in-consent-checkbox").disabled = false;
             document.getElementById("opt-in-consent-checkbox").checked = false;
-            submitBtn.disabled = false;
+            const submitBtn = document.querySelector(".opt-in-submit-btn");
             submitBtn.textContent = "Sign Me Up";
             submitBtn.className = "opt-in-submit-btn";
             submitBtn.onclick = null;
@@ -33675,8 +32636,6 @@
           }
         } catch (error) {
           console.error("Opt-out error:", error);
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Opt Out";
           messageDiv.className = "opt-in-message error";
           messageDiv.textContent = "Failed to opt-out. Please try again.";
 
@@ -33880,7 +32839,7 @@
         } else if (sectionId === "preseason") {
           // Initialize keeper management first, then load projections
           // This ensures keeper data is available when rendering the table
-          if (!keeperConfig || Object.keys(keeperSelections).length === 0) {
+          if (!keeperConfig) {
             await initializeKeeperManagement();
           }
           // Initialize trade management (must be after keeper management)
@@ -33909,7 +32868,7 @@
           }
         } else if (sectionId === "valuesuite") {
           // Initialize keeper management if not already done (needed for value analysis)
-          if (!keeperConfig || Object.keys(keeperSelections).length === 0) {
+          if (!keeperConfig) {
             await initializeKeeperManagement();
           }
           // Initialize trade management (needed for draft pick values)
@@ -33932,7 +32891,7 @@
           }
         } else if (sectionId === "sportsbook") {
           // Initialize keeper management (needed for authentication)
-          if (!keeperConfig || Object.keys(keeperSelections).length === 0) {
+          if (!keeperConfig) {
             await initializeKeeperManagement();
           }
           // Initialize trade management (needed for draft pick ownership)
@@ -33943,14 +32902,14 @@
           checkSportsbookAutoLogin();
         } else if (sectionId === "prospects") {
           // Initialize Firebase if needed for ownership data
-          if (!keeperConfig || Object.keys(keeperSelections).length === 0) {
+          if (!keeperConfig) {
             await initializeKeeperManagement();
           }
           // Load prospects data
           initProspectsOnVisible();
         } else if (sectionId === "mockdraft") {
           if (!mockDraftInitialized) {
-            if (!keeperConfig || Object.keys(keeperSelections).length === 0) {
+            if (!keeperConfig) {
               await initializeKeeperManagement();
             }
             await initializeTradeManagement();
@@ -37487,12 +36446,8 @@
         if (currentSession) {
           // Logged in — show hat image for the user
           const managerName = getSessionManagerName();
-          const sessionTeamKey =
-            currentSession.adminActingAs?.teamKey ??
-            currentSession.teamKey ??
-            null;
           const normalizedName = managerName
-            ? normalizeManagerName(managerName, 2026, null, sessionTeamKey)
+            ? normalizeManagerName(managerName, 2026)
             : null;
           const hatUrl = normalizedName
             ? `data/hats/${getManagerHatFilename(normalizedName)}`
@@ -45329,30 +44284,13 @@
       let tradeManagementInitPromise = null;
 
       async function initializeTradeManagement() {
-        if (tradeManagementReady) {
-          if (teamPicksOwned && Object.keys(teamPicksOwned).length > 0) return;
-          tradeManagementReady = false;
-        }
+        if (tradeManagementReady) return;
         if (tradeManagementInitPromise) {
           await tradeManagementInitPromise;
           return;
         }
 
         tradeManagementInitPromise = (async () => {
-          // Ensure keeper config exists (needed to seed picks)
-          if (!keeperConfig) {
-            try {
-              const configResponse = await fetch(
-                "data/keepers/keeper_config.json",
-              );
-              if (configResponse.ok) {
-                keeperConfig = await configResponse.json();
-              }
-            } catch (e) {
-              console.log("Could not load keeper_config.json for trades");
-            }
-          }
-
           // Load manual budget adjustments (now async to check server first)
           await loadManualBudgetAdjustments();
 
@@ -48685,6 +47623,49 @@
 
       async function calculateTeamValuesForOdds() {
         const teamValues = [];
+
+        // Post-draft: prefer team projected totals if available
+        let postDraftTotals = null;
+        try {
+          const resp = await fetch(
+            "data/current_season/team_projected_points.json",
+          );
+          if (resp.ok) {
+            const data = await resp.json();
+            if (Array.isArray(data.teams) && data.teams.length > 0) {
+              postDraftTotals = {};
+              data.teams.forEach((t) => {
+                if (t.team_key) {
+                  postDraftTotals[t.team_key] = t.projected_points || 0;
+                }
+              });
+            }
+          }
+        } catch (e) {
+          /* ignore */
+        }
+
+        if (postDraftTotals) {
+          for (const team of sportsbookTeamData) {
+            const value = postDraftTotals[team.team_key] || 0;
+            teamValues.push({
+              teamKey: team.team_key,
+              teamName: team.team_name,
+              teamLogo: fixTeamLogo(team.team_logo),
+              manager: normalizeManagerName(
+                team.manager,
+                2026,
+                team.team_name,
+                team.team_key,
+              ),
+              rawManager: team.manager,
+              value: value,
+              pointsFactor: 1,
+              winsFactor: 1,
+            });
+          }
+          return teamValues;
+        }
 
         // Try to load team value rankings from the value suite calculation
         let valueRankingsData = {};
