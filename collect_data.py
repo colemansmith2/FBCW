@@ -1081,6 +1081,72 @@ def get_rosters(oauth, year: int) -> Dict[str, List[Dict]]:
     
     return rosters
 
+def load_projection_points_map(projections_dir: str = PROJECTIONS_DIR) -> Dict[str, float]:
+    """Average projected points across available systems (matching JS loadAverageProjections)."""
+    systems = ["thebatx", "thebat", "steamer", "zipsdc", "atc", "depthcharts", "oopsy"]
+    points_by_player: Dict[str, List[float]] = {}
+
+    for sys_name in systems:
+        path = os.path.join(projections_dir, f"projections_{sys_name}.json")
+        if not os.path.exists(path):
+            continue
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except Exception:
+            continue
+
+        for group in ("batters", "pitchers"):
+            for p in data.get(group, []) or []:
+                raw_name = p.get("name") or p.get("Name") or ""
+                norm = normalize_player_name(raw_name)
+                if not norm:
+                    continue
+                pts = p.get("projected_points") or p.get("Projected_Points") or 0
+                try:
+                    pts = float(pts)
+                except Exception:
+                    pts = 0
+                if pts <= 0:
+                    continue
+                points_by_player.setdefault(norm, []).append(pts)
+
+    averaged = {}
+    for name, points in points_by_player.items():
+        if points:
+            averaged[name] = sum(points) / len(points)
+    return averaged
+
+def build_team_projection_totals(rosters: Dict[str, List[Dict]], projections: Dict[str, float]) -> List[Dict]:
+    """Compute projected points totals per team based on current rosters."""
+    team_totals = []
+    for team_key, players in rosters.items():
+        total = 0.0
+        missing = 0
+        team_name = ""
+        manager = ""
+        team_logo = ""
+        for p in players:
+            if not team_name:
+                team_name = p.get("team_name", "")
+                manager = p.get("manager", "")
+                team_logo = p.get("team_logo", "")
+            name = normalize_player_name(p.get("name", ""))
+            pts = projections.get(name, 0.0)
+            if pts <= 0:
+                missing += 1
+            total += pts
+        team_totals.append({
+            "team_key": team_key,
+            "team_name": team_name,
+            "manager": manager,
+            "team_logo": team_logo,
+            "projected_points": round(total, 1),
+            "player_count": len(players),
+            "missing_projections": missing
+        })
+    return team_totals
+
 def get_league_settings(oauth, year: int) -> Dict:
     """Fetch league settings, categorizing points based on unique Stat ID."""
     gm = Game(oauth, 'mlb')
@@ -2527,7 +2593,50 @@ def quick_update():
     except Exception as e:
         print(f"  ⚠ Could not update player stats: {e}")
 
-    # 7. Update manager profiles if team info changed
+    # 7. Update scoring settings (includes draft_status)
+    scoring = None
+    try:
+        scoring = get_league_scoring_settings(oauth, CURRENT_SEASON)
+        with open(f"{current_season_dir}/scoring_settings.json", 'w', encoding='utf-8') as f:
+            json.dump(scoring, f, indent=2, ensure_ascii=False)
+        print("  ✓ scoring_settings.json updated")
+    except Exception as e:
+        print(f"  ⚠ Could not update scoring settings: {e}")
+
+    # 8. Post-draft prep: draft results + rosters + team projection totals
+    try:
+        draft_results = get_draft_results(oauth, CURRENT_SEASON)
+        draft_status = (scoring or {}).get("draft_status", "")
+        if draft_results and (draft_status == "postdraft" or len(draft_results) > 0):
+            with open(f"{current_season_dir}/draft.json", 'w', encoding='utf-8') as f:
+                json.dump(draft_results, f, indent=2, ensure_ascii=False)
+            print(f"  ✓ draft.json updated ({len(draft_results)} picks)")
+
+            print("  Updating rosters for post-draft projections...")
+            rosters = get_rosters(oauth, CURRENT_SEASON)
+            with open(f"{current_season_dir}/rosters.json", 'w', encoding='utf-8') as f:
+                json.dump(rosters, f, indent=2, ensure_ascii=False)
+            print(f"  ✓ rosters.json updated ({len(rosters)} teams)")
+
+            projections = load_projection_points_map()
+            if projections:
+                team_totals = build_team_projection_totals(rosters, projections)
+                projected_out = {
+                    "season": CURRENT_SEASON,
+                    "generated_at": datetime.now().isoformat(),
+                    "teams": team_totals
+                }
+                with open(f"{current_season_dir}/team_projected_points.json", 'w', encoding='utf-8') as f:
+                    json.dump(projected_out, f, indent=2, ensure_ascii=False)
+                print("  ✓ team_projected_points.json updated")
+            else:
+                print("  ⚠ No projections found for post-draft team totals")
+        else:
+            print("  Draft not complete yet — skipping post-draft projections")
+    except Exception as e:
+        print(f"  ⚠ Could not run post-draft prep: {e}")
+
+    # 9. Update manager profiles if team info changed
     if teams_changed:
         print("Updating manager profiles (team info changed)...")
         update_manager_stats(oauth)
