@@ -20,6 +20,7 @@ import time
 import unicodedata
 from datetime import datetime, date, timedelta
 from typing import Any, List, Dict, Optional, Tuple
+import subprocess
 from yahoo_oauth import OAuth2
 from yahoo_fantasy_api import Game, League
 import pandas as pd
@@ -1116,6 +1117,74 @@ def load_projection_points_map(projections_dir: str = PROJECTIONS_DIR) -> Dict[s
         if points:
             averaged[name] = sum(points) / len(points)
     return averaged
+
+def load_ros_projection_points_map(projections_dir: str = "data/projections/ros") -> Dict[str, float]:
+    """Average ROS projected points across available systems."""
+    systems = [
+        "ros_oopsydc",
+        "ros_zipsdc",
+        "ros_steamer",
+        "ros_fangraphsdc",
+        "ros_atcdc",
+        "ros_thebat",
+        "ros_thebatx",
+    ]
+    points_by_player: Dict[str, List[float]] = {}
+
+    for sys_name in systems:
+        path = os.path.join(projections_dir, f"{sys_name}.json")
+        if not os.path.exists(path):
+            continue
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except Exception:
+            continue
+
+        for group in ("batters", "pitchers"):
+            for p in data.get(group, []) or []:
+                raw_name = p.get("name") or p.get("Name") or ""
+                norm = normalize_player_name(raw_name)
+                if not norm:
+                    continue
+                pts = p.get("projected_points") or p.get("Projected_Points") or 0
+                try:
+                    pts = float(pts)
+                except Exception:
+                    pts = 0
+                if pts <= 0:
+                    continue
+                points_by_player.setdefault(norm, []).append(pts)
+
+    averaged = {}
+    for name, points in points_by_player.items():
+        if points:
+            averaged[name] = sum(points) / len(points)
+    return averaged
+
+def build_team_weekly_projection_totals(
+    rosters: Dict[str, List[Dict]],
+    projections: Dict[str, float],
+    start_week: int,
+    end_week: int,
+) -> Dict[str, Dict[str, float]]:
+    """Compute weekly projected points per team from ROS totals."""
+    if start_week < 1:
+        start_week = 1
+    if end_week < start_week:
+        end_week = start_week
+
+    remaining_weeks = max(1, end_week - start_week + 1)
+    team_totals = build_team_projection_totals(rosters, projections)
+
+    weekly = {}
+    for week in range(start_week, end_week + 1):
+        weekly[str(week)] = {}
+        for team in team_totals:
+            team_key = team.get("team_key")
+            total = team.get("projected_points", 0) or 0
+            weekly[str(week)][team_key] = round(total / remaining_weeks, 1)
+    return weekly
 
 def build_team_projection_totals(rosters: Dict[str, List[Dict]], projections: Dict[str, float]) -> List[Dict]:
     """Compute projected points totals per team based on current rosters."""
@@ -2452,7 +2521,7 @@ def quick_update():
     
     if not league_ids:
         print(f"ERROR: No league found for {CURRENT_SEASON}")
-        return
+        return False
     
     lg = gm.to_league(league_ids[0])
     print(f"League: {lg.settings()['name']}")
@@ -2631,6 +2700,46 @@ def quick_update():
                 print("  ✓ team_projected_points.json updated")
             else:
                 print("  ⚠ No projections found for post-draft team totals")
+
+            ros_projections = load_ros_projection_points_map()
+            if ros_projections:
+                ros_totals = build_team_projection_totals(rosters, ros_projections)
+                ros_out = {
+                    "season": CURRENT_SEASON,
+                    "generated_at": datetime.now().isoformat(),
+                    "teams": ros_totals
+                }
+                with open(f"{current_season_dir}/team_ros_projected_points.json", 'w', encoding='utf-8') as f:
+                    json.dump(ros_out, f, indent=2, ensure_ascii=False)
+                print("  ✓ team_ros_projected_points.json updated")
+
+                raw_settings = (scoring or {}).get("raw_settings", {})
+                try:
+                    current_week = int(raw_settings.get("current_week") or 1)
+                except Exception:
+                    current_week = 1
+                try:
+                    end_week = int(raw_settings.get("end_week") or current_week)
+                except Exception:
+                    end_week = current_week
+                weekly_proj = build_team_weekly_projection_totals(
+                    rosters,
+                    ros_projections,
+                    current_week,
+                    end_week,
+                )
+                weekly_out = {
+                    "season": CURRENT_SEASON,
+                    "generated_at": datetime.now().isoformat(),
+                    "current_week": current_week,
+                    "end_week": end_week,
+                    "weekly": weekly_proj
+                }
+                with open(f"{current_season_dir}/team_weekly_projected_points.json", 'w', encoding='utf-8') as f:
+                    json.dump(weekly_out, f, indent=2, ensure_ascii=False)
+                print("  ✓ team_weekly_projected_points.json updated")
+            else:
+                print("  ⚠ No ROS projections found for post-draft team totals")
         else:
             print("  Draft not complete yet — skipping post-draft projections")
     except Exception as e:
@@ -2642,6 +2751,28 @@ def quick_update():
         update_manager_stats(oauth)
     else:
         print("Manager profiles unchanged (no team info changes)")
+    return teams_changed
+
+def postdraft_update():
+    """Run projections + quick update for post-draft prep."""
+    print("=" * 60)
+    print(f"POST-DRAFT UPDATE - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("=" * 60)
+
+    # Full-season projections (preseason style)
+    try:
+        subprocess.run([sys.executable, "fetch_projections.py"], check=False)
+    except Exception as e:
+        print(f"  ⚠ Could not run fetch_projections.py: {e}")
+
+    # Rest-of-season projections
+    try:
+        subprocess.run([sys.executable, "fetch_ros_projections.py"], check=False)
+    except Exception as e:
+        print(f"  ⚠ Could not run fetch_ros_projections.py: {e}")
+
+    # Run quick update (includes post-draft projections/odds data)
+    teams_changed = quick_update()
 
     print("\n" + "=" * 60)
     print("✓ Quick update complete!")
@@ -3676,6 +3807,8 @@ if __name__ == "__main__":
         elif command == "quick":
             # Quick update - just teams, standings, and current week scores
             quick_update()
+        elif command in ("postdraft", "post-draft"):
+            postdraft_update()
         elif command == "players":
             player_data_setup()
         elif command == "headshots":
@@ -3730,6 +3863,7 @@ if __name__ == "__main__":
             print("  seasons <yrs...>   - Collect specific historical seasons (e.g., 2017 2018 or 2017-2018)")
             print("  transactions <yrs...> - Collect transactions only for selected seasons")
             print("  quick              - Quick update (teams, standings, rosters)")
+            print("  postdraft          - Post-draft refresh (fetch projections + quick update)")
             print("  players            - Collect player stats (Fangraphs + Yahoo)")
             print("  headshots          - Update existing player data with headshots only")
             print("  full               - Weekly update with player data")
