@@ -1,5 +1,120 @@
 [
   {
+    "transaction_key": "469.l.4114.tr.59",
+    "transaction_id": "59",
+    "type": "trade",
+    "timestamp": "1773584071",
+    "status": "successful",
+    "players": [
+      {
+        "player_key": "469.p.11822",
+        "player_id": "11822",
+        "player_name": "CJ Abrams",
+        "team_abbr": "WSH",
+        "position": "SS",
+        "transaction_type": "trade",
+        "source_type": "team",
+        "source_team_key": "469.l.4114.t.9",
+        "source_team_name": "Peanut Butter & Elly",
+        "destination_type": "team",
+        "destination_team_key": "469.l.4114.t.12",
+        "destination_team_name": "Team Beer"
+      },
+      {
+        "player_key": "469.p.11731",
+        "player_id": "11731",
+        "player_name": "Gunnar Henderson",
+        "team_abbr": "BAL",
+        "position": "SS",
+        "transaction_type": "trade",
+        "source_type": "team",
+        "source_team_key": "469.l.4114.t.12",
+        "source_team_name": "Team Beer",
+        "destination_type": "team",
+        "destination_team_key": "469.l.4114.t.9",
+        "destination_team_name": "Peanut Butter & Elly"
+      }
+    ],
+    "trader_team_key": "469.l.4114.t.9",
+    "trader_team_name": "Peanut Butter & Elly",
+    "tradee_team_key": "469.l.4114.t.12",
+    "tradee_team_name": "Team Beer",
+    "picks": [
+      {
+        "pick": {
+          "source_team_key": "469.l.4114.t.9",
+          "source_team_name": "Peanut Butter & Elly",
+          "destination_team_key": "469.l.4114.t.12",
+          "destination_team_name": "Team Beer",
+          "original_team_key": "469.l.4114.t.9",
+          "original_team_name": "Peanut Butter & Elly",
+          "round": "22"
+        }
+      },
+      {
+        "pick": {
+          "source_team_key": "469.l.4114.t.12",
+          "source_team_name": "Team Beer",
+          "destination_team_key": "469.l.4114.t.9",
+          "destination_team_name": "Peanut Butter & Elly",
+          "original_team_key": "469.l.4114.t.12",
+          "original_team_name": "Team Beer",
+          "round": "3"
+        }
+      }
+    ],
+    "draft_picks": [
+      {
+        "display_name": "Round 22 Pick",
+        "round": "22",
+        "source_year": "",
+        "destination_year": "",
+        "source_type": "",
+        "source_team_key": "469.l.4114.t.9",
+        "source_team_name": "Peanut Butter & Elly",
+        "destination_type": "",
+        "destination_team_key": "469.l.4114.t.12",
+        "destination_team_name": "Team Beer"
+      },
+      {
+        "display_name": "Round 3 Pick",
+        "round": "3",
+        "source_year": "",
+        "destination_year": "",
+        "source_type": "",
+        "source_team_key": "469.l.4114.t.12",
+        "source_team_name": "Team Beer",
+        "destination_type": "",
+        "destination_team_key": "469.l.4114.t.9",
+        "destination_team_name": "Peanut Butter & Elly"
+      }
+    ]
+  },
+  {
+    "transaction_key": "469.l.4114.tr.58",
+    "transaction_id": "58",
+    "type": "drop",
+    "timestamp": "1773583860",
+    "status": "successful",
+    "players": [
+      {
+        "player_key": "469.p.10916",
+        "player_id": "10916",
+        "player_name": "Royce Lewis",
+        "team_abbr": "MIN",
+        "position": "3B",
+        "transaction_type": "drop",
+        "source_type": "team",
+        "source_team_key": "469.l.4114.t.12",
+        "source_team_name": "Team Beer",
+        "destination_type": "freeagents",
+        "destination_team_key": "",
+        "destination_team_name": ""
+      }
+    ],
+    "draft_picks": []
+  },
+  {
     "transaction_key": "469.l.4114.tr.57",
     "transaction_id": "57",
     "type": "add",
