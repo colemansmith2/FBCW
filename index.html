@@ -35983,6 +35983,8 @@
               }
 
               console.log("Keeper data updated from Firebase");
+              // Invalidate merged roster cache so it rebuilds with new keeper data
+              mergedRostersCache = null;
               displayLeagueKeepers();
             }
           },
@@ -50274,23 +50276,47 @@
           yahooKeyToManager[t.team_key] = (t.manager || "").toLowerCase().trim();
         });
 
-        // Get keeper selections (from Firebase listener or local)
+        // Get keeper selections (from Firebase listener or direct fetch)
         let kSelections = keeperSelections || {};
-        if (Object.keys(kSelections).length === 0 && kConfig?.teams) {
-          // Try loading from Firebase directly
+        if (Object.keys(kSelections).length === 0) {
+          // Firebase listener may not have fired yet — fetch directly
           try {
-            if (firebaseDb) {
+            if (typeof firebaseDb !== 'undefined' && firebaseDb) {
               const snapshot = await firebaseDb.ref("keepers_2026").once("value");
               const data = snapshot.val();
               if (data) {
                 kSelections = {};
                 Object.entries(data).forEach(([sanitizedKey, keepers]) => {
-                  const teamKey = sanitizedKey.replace(/_/g, ".");
+                  const teamKey = typeof unsanitizeFirebaseKey === 'function'
+                    ? unsanitizeFirebaseKey(sanitizedKey)
+                    : sanitizedKey.replace(/_/g, ".");
                   kSelections[teamKey] = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
                 });
+                // Also update the global so subsequent calls use it
+                keeperSelections = kSelections;
               }
             }
-          } catch (e) { /* ignore */ }
+          } catch (e) {
+            console.log("Could not fetch keepers from Firebase:", e);
+          }
+
+          // Fallback: try local keepers_2026.json
+          if (Object.keys(kSelections).length === 0) {
+            try {
+              const resp = await fetch("data/keepers/keepers_2026.json");
+              if (resp.ok) {
+                const localData = await resp.json();
+                if (localData?.keepers) {
+                  kSelections = {};
+                  Object.entries(localData.keepers).forEach(([key, keepers]) => {
+                    if (Array.isArray(keepers) && keepers.length > 0) {
+                      kSelections[key] = keepers;
+                    }
+                  });
+                }
+              }
+            } catch (e) { /* ignore */ }
+          }
         }
 
         // Build merged rosters keyed by Yahoo team key
@@ -50316,19 +50342,26 @@
           const keeperKey = manager ? managerToKeeperKey[manager] : null;
           const teamKeepers = keeperKey ? (kSelections[keeperKey] || []) : [];
 
-          // Build set of Yahoo player names (lowercase) for dedup
-          const yahooNames = new Set(enrichedPlayers.map(p => (p.name || "").toLowerCase().trim()));
+          // Build set of Yahoo player names (lowercase + accent-stripped) for dedup
+          const yahooNames = new Set();
+          enrichedPlayers.forEach(p => {
+            const raw = (p.name || "").toLowerCase().trim();
+            yahooNames.add(raw);
+            yahooNames.add(raw.normalize("NFD").replace(/[\u0300-\u036f]/g, ""));
+          });
 
           // Add keeper players not already on Yahoo roster (NA players)
           const naPlayers = [];
           teamKeepers.forEach(keeper => {
             const keeperName = (keeper.player_name || keeper.name || "").toLowerCase().trim();
-            if (keeperName && !yahooNames.has(keeperName)) {
+            const keeperNameNorm = keeperName.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            if (keeperName && !yahooNames.has(keeperName) && !yahooNames.has(keeperNameNorm)) {
               const displayName = keeper.player_name || keeper.name || "Unknown";
-              const nameLower = keeperName.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+              const nameLower = keeperNameNorm;
               const pos = keeper.position || "Util";
               const posType = ["SP", "RP", "P"].includes(pos) ? "pitcher" : "batter";
-              const projMatch = averageProjectionsMap[`${nameLower}|${posType}`] || averageProjectionsMap[nameLower] || {};
+              const projMatch = averageProjectionsMap[`${keeperName}|${posType}`] || averageProjectionsMap[keeperName] ||
+                averageProjectionsMap[`${nameLower}|${posType}`] || averageProjectionsMap[nameLower] || {};
               naPlayers.push({
                 player_id: keeper.player_id || null,
                 name: displayName,
@@ -50598,6 +50631,9 @@
       }
 
       function buildRosterModalContent(players, teamKey) {
+        // Clear _used flags from any previous render
+        players.forEach(p => { delete p._used; });
+
         // Separate batters and pitchers (prospects included in normal slots)
         const batters = players.filter(
           (p) =>
@@ -50610,10 +50646,6 @@
             p.position_type === "P" ||
               ["SP", "RP", "P"].includes(p.primary_position),
         );
-
-        // Track prospects for badge display (but don't separate them)
-        const batterProspects = [];
-        const pitcherProspects = [];
 
         // Sort all groups by projected points (or actual points if available) descending
         const sortByPoints = (a, b) => {
