@@ -48348,47 +48348,8 @@
         const weekSelect = document.getElementById("sportsbook-week-select");
         const container = document.getElementById("weekly-matchup-bets");
 
-        // Try to load weekly stats to get matchups
         try {
-          let response = await fetch("data/current_season/weekly_stats.json");
-          if (!response.ok) {
-            response = await fetch("data/2026/weekly_stats.json");
-          }
-          if (!response.ok) {
-            container.innerHTML =
-              '<p style="text-align: center; color: #666; padding: 2rem;">No weekly matchups available yet.</p>';
-            return;
-          }
-
-          const weeklyStats = await response.json();
-          const currentWeek = weeklyStats.currentWeek || 1;
-
-          // Populate week selector
-          if (weekSelect.options.length === 0) {
-            const weeks = Object.keys(weeklyStats.weeks || {})
-              .map(Number)
-              .sort((a, b) => a - b);
-            weeks.forEach((week) => {
-              const option = document.createElement("option");
-              option.value = week;
-              option.textContent = `Week ${week}`;
-              if (week === currentWeek) option.selected = true;
-              weekSelect.appendChild(option);
-            });
-          }
-
-          const selectedWeek = parseInt(weekSelect.value) || currentWeek;
-          const weekData =
-            weeklyStats.weeks?.[selectedWeek] ||
-            weeklyStats.weeks?.[String(selectedWeek)];
-
-          if (!weekData?.matchups) {
-            container.innerHTML =
-              '<p style="text-align: center; color: #666; padding: 2rem;">No matchups found for this week.</p>';
-            return;
-          }
-
-          // Load weekly projections (ROS-based) for matchups
+          // Load weekly projections (Yahoo or Fangraphs-based)
           let weeklyProjections = null;
           try {
             const projResp = await fetch(
@@ -48400,6 +48361,93 @@
             }
           } catch (e) {
             /* ignore */
+          }
+
+          // Try to load weekly stats for matchup pairings
+          let weeklyStats = null;
+          let response = await fetch("data/current_season/weekly_stats.json");
+          if (!response.ok) {
+            response = await fetch("data/2026/weekly_stats.json");
+          }
+          if (response.ok) {
+            weeklyStats = await response.json();
+          }
+
+          const currentWeek = weeklyStats?.currentWeek || 1;
+
+          // Build matchup data from weekly_stats or score files
+          let matchupsByWeek = {};
+
+          if (weeklyStats?.weeks) {
+            // Use weekly stats matchups
+            Object.entries(weeklyStats.weeks).forEach(([wk, data]) => {
+              if (data?.matchups) matchupsByWeek[wk] = data.matchups;
+            });
+          }
+
+          // Fallback: build matchups from score files if no weekly stats
+          if (Object.keys(matchupsByWeek).length === 0) {
+            for (let wk = 1; wk <= 3; wk++) {
+              try {
+                const scoreResp = await fetch(`data/current_season/week_${wk}_scores.json`);
+                if (scoreResp.ok) {
+                  const scores = await scoreResp.json();
+                  // Convert score pairs into matchup format (dedup by pair)
+                  const seen = new Set();
+                  const matchups = [];
+                  scores.forEach(s => {
+                    const pairKey = [s.team_key, s.opponent_key].sort().join('|');
+                    if (!seen.has(pairKey)) {
+                      seen.add(pairKey);
+                      matchups.push({
+                        team1_key: s.team_key,
+                        team1_score: s.team_score,
+                        team1_projected: s.team_projected || 0,
+                        team2_key: s.opponent_key,
+                        team2_score: s.opponent_score,
+                        team2_projected: s.opponent_projected || 0,
+                      });
+                    }
+                  });
+                  if (matchups.length > 0) matchupsByWeek[String(wk)] = matchups;
+                }
+              } catch (e) { /* skip */ }
+            }
+          }
+
+          // Also check weekly projections for additional weeks
+          if (weeklyProjections && Object.keys(matchupsByWeek).length === 0) {
+            // No matchup pairings from any source
+            container.innerHTML =
+              '<p style="text-align: center; color: #666; padding: 2rem;">No weekly matchups available yet. Run a Quick Update to fetch matchup data.</p>';
+            return;
+          }
+
+          const availableWeeks = Object.keys(matchupsByWeek).map(Number).sort((a, b) => a - b);
+          if (availableWeeks.length === 0) {
+            container.innerHTML =
+              '<p style="text-align: center; color: #666; padding: 2rem;">No weekly matchups available yet.</p>';
+            return;
+          }
+
+          // Populate week selector
+          if (weekSelect.options.length === 0) {
+            availableWeeks.forEach((week) => {
+              const option = document.createElement("option");
+              option.value = week;
+              option.textContent = `Week ${week}`;
+              if (week === currentWeek) option.selected = true;
+              weekSelect.appendChild(option);
+            });
+          }
+
+          const selectedWeek = parseInt(weekSelect.value) || currentWeek;
+          const weekMatchups = matchupsByWeek[String(selectedWeek)];
+
+          if (!weekMatchups || weekMatchups.length === 0) {
+            container.innerHTML =
+              '<p style="text-align: center; color: #666; padding: 2rem;">No matchups found for this week.</p>';
+            return;
           }
 
           // Build team info lookup
@@ -48418,7 +48466,7 @@
           });
 
           // Render matchups
-          container.innerHTML = weekData.matchups
+          container.innerHTML = weekMatchups
             .map((matchup) => {
               const team1 = teamInfoLookup[matchup.team1_key] || {
                 name: "Unknown",

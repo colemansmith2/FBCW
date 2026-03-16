@@ -779,23 +779,29 @@ def get_week_scores(oauth, year: int, week: int) -> List[Dict]:
                 
                 team1_key = team1[0][0]['team_key']
                 team1_score = team1[1].get('team_points', {}).get('total', 0)
+                team1_projected = team1[1].get('team_projected_points', {}).get('total', 0)
                 team2_key = team2[0][0]['team_key']
                 team2_score = team2[1].get('team_points', {}).get('total', 0)
+                team2_projected = team2[1].get('team_projected_points', {}).get('total', 0)
                 week_num = team1[1].get('team_stats', {}).get('week', week)
 
                 data.append({
                     'team_key': team1_key,
                     'team_score': float(team1_score),
+                    'team_projected': float(team1_projected),
                     'week': int(week_num),
                     'opponent_key': team2_key,
-                    'opponent_score': float(team2_score)
+                    'opponent_score': float(team2_score),
+                    'opponent_projected': float(team2_projected)
                 })
                 data.append({
                     'team_key': team2_key,
                     'team_score': float(team2_score),
+                    'team_projected': float(team2_projected),
                     'week': int(week_num),
                     'opponent_key': team1_key,
-                    'opponent_score': float(team1_score)
+                    'opponent_score': float(team1_score),
+                    'opponent_projected': float(team1_projected)
                 })
             except (KeyError, IndexError):
                 continue
@@ -2590,9 +2596,51 @@ def quick_update():
                 json.dump(week_scores, f, indent=2, ensure_ascii=False)
         
         print(f"  ✓ Scores updated through week {current_week}")
+
+        # Build Yahoo weekly projected points from score data
+        try:
+            yahoo_weekly_proj = {}
+            for score in scores:
+                week = str(score['week'])
+                team_key = score['team_key']
+                projected = score.get('team_projected', 0)
+                if projected and projected > 0:
+                    if week not in yahoo_weekly_proj:
+                        yahoo_weekly_proj[week] = {}
+                    yahoo_weekly_proj[week][team_key] = projected
+
+            if yahoo_weekly_proj:
+                # Merge with existing file (preserve Fangraphs projections for weeks Yahoo doesn't have)
+                weekly_proj_file = f"{current_season_dir}/team_weekly_projected_points.json"
+                existing_weekly = {}
+                if os.path.exists(weekly_proj_file):
+                    with open(weekly_proj_file, 'r', encoding='utf-8') as f:
+                        existing_data = json.load(f)
+                        existing_weekly = existing_data.get('weekly', {})
+
+                # Yahoo projections override Fangraphs for weeks where available
+                for week_num, team_projs in yahoo_weekly_proj.items():
+                    existing_weekly[week_num] = team_projs
+
+                weekly_out = {
+                    "season": CURRENT_SEASON,
+                    "generated_at": datetime.now().isoformat(),
+                    "current_week": current_week,
+                    "end_week": 24,
+                    "source": "yahoo_projected",
+                    "weekly": existing_weekly
+                }
+                with open(weekly_proj_file, 'w', encoding='utf-8') as f:
+                    json.dump(weekly_out, f, indent=2, ensure_ascii=False)
+                print(f"  ✓ Yahoo weekly projected points updated ({len(yahoo_weekly_proj)} weeks)")
+            else:
+                print("  ℹ No Yahoo projected scores available yet (season may not have started)")
+        except Exception as e:
+            print(f"  ⚠ Could not update Yahoo weekly projections: {e}")
+
     except Exception as e:
         print(f"  ⚠ Could not update scores: {e}")
-    
+
     # 4. Get recent transactions (last 6 hours worth)
     print("Updating recent transactions...")
     try:
