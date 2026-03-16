@@ -47465,6 +47465,9 @@
           // Store raw ratios for projections
           team.rawWinPctRatio = factor.rawWinPctRatio || 1;
           team.rawPointsRatio = factor.rawPointsRatio || 1;
+          // Store historical per-game averages for normalization
+          team.pointsPerGame = factor.pointsPerGame || 0;
+          team.leagueAvgPointsPerGame = factor.leagueAvgPointsPerGame || 0;
         });
 
         // Render team totals (over/under bets)
@@ -47478,26 +47481,24 @@
       }
 
       async function loadHistoricalLeagueAverages() {
-        const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+        // Exclude 2020 (COVID-shortened season: only 7 games, ~1/3 normal points)
+        const seasons = [2019, 2021, 2022, 2023, 2024, 2025];
         let totalWins = 0;
         let totalPoints = 0;
+        let totalGames = 0;
         let teamSeasons = 0;
 
         for (const season of seasons) {
           try {
-            let response;
-            if (season === 2026) {
-              response = await fetch("data/historical/2025/standings.json");
-            } else {
-              response = await fetch(
-                `data/historical/${season}/final_standings.json`,
-              );
-            }
+            const response = await fetch(
+              `data/historical/${season}/final_standings.json`,
+            );
 
             if (response.ok) {
               const standings = await response.json();
               standings.forEach((team) => {
                 const wins = team.wins || team.Wins || 0;
+                const losses = team.losses || team.Losses || 0;
                 const points =
                   team.points_for ||
                   team.total_points ||
@@ -47505,6 +47506,7 @@
                   0;
                 totalWins += wins;
                 totalPoints += points;
+                totalGames += wins + losses;
                 teamSeasons++;
               });
             }
@@ -47513,9 +47515,17 @@
           }
         }
 
+        // Calculate historical win rate and points per game, then scale to 2026's 21-game season
+        const SEASON_2026_GAMES = 21;
+        const avgGamesPerSeason = teamSeasons > 0 ? totalGames / teamSeasons : 20;
+        const historicalWinRate = teamSeasons > 0 ? totalWins / totalGames : 0.5;
+        const historicalPtsPerGame = teamSeasons > 0 ? totalPoints / totalGames : 400;
+
         return {
-          avgWins: teamSeasons > 0 ? totalWins / teamSeasons : 10,
-          avgPoints: teamSeasons > 0 ? totalPoints / teamSeasons : 8000,
+          avgWins: historicalWinRate * SEASON_2026_GAMES,
+          avgPoints: historicalPtsPerGame * SEASON_2026_GAMES,
+          avgGamesPerSeason: avgGamesPerSeason,
+          season2026Games: SEASON_2026_GAMES,
         };
       }
 
@@ -47539,18 +47549,44 @@
             projectedPointValues.length
           : 0;
 
+        // Normalize projected points using manager historical averages
+        // Projections are inflated by prospects/NA players who won't actually play.
+        // Blend raw projection with manager historical average to get realistic estimate.
+        const SEASON_2026_GAMES = historicalAverages.season2026Games || 21;
+        const PROJECTION_WEIGHT = 0.65; // 65% raw projection, 35% historical context
+        const normalizedTeamData = teamData.map((team) => {
+          if (!hasProjectedTotals || !team.projectedPoints) return team;
+          const managerPPG = team.pointsPerGame || 0;
+          const leagueAvgPPG = team.leagueAvgPointsPerGame || 0;
+          if (managerPPG > 0 && leagueAvgPPG > 0) {
+            // Manager's historical expected season points (scaled to 21 games)
+            const managerHistoricalPts = managerPPG * SEASON_2026_GAMES;
+            // Blend: mostly raw projection, tempered by historical context
+            const normalizedPts = team.projectedPoints * PROJECTION_WEIGHT + managerHistoricalPts * (1 - PROJECTION_WEIGHT);
+            return { ...team, normalizedPoints: normalizedPts };
+          }
+          return { ...team, normalizedPoints: team.projectedPoints };
+        });
+
+        const normalizedPointValues = normalizedTeamData
+          .map((t) => t.normalizedPoints)
+          .filter((v) => typeof v === "number" && v > 0);
+        const avgNormalizedPoints = normalizedPointValues.length > 0
+          ? normalizedPointValues.reduce((a, b) => a + b, 0) / normalizedPointValues.length
+          : avgProjectedPoints;
+
         // Calculate projections for all teams first
-        const teamsWithProjections = teamData.map((team) => {
+        const teamsWithProjections = normalizedTeamData.map((team) => {
           if (hasProjectedTotals) {
-            const projectedPoints =
+            const projectedPoints = team.normalizedPoints ||
               team.projectedPoints ||
-              (avgProjectedPoints > 0 ? avgProjectedPoints : team.value || 0);
+              (avgNormalizedPoints > 0 ? avgNormalizedPoints : team.value || 0);
             const pointsLine = Math.round(projectedPoints / 50) * 50 + 0.5;
 
             const baseWins =
-              avgProjectedPoints > 0
+              avgNormalizedPoints > 0
                 ? (historicalAverages.avgWins || 10) *
-                  (projectedPoints / avgProjectedPoints)
+                  (projectedPoints / avgNormalizedPoints)
                 : 10;
             const projectedWins = baseWins * team.winsFactor;
             let winLine = Math.round(projectedWins * 2) / 2;
@@ -47728,19 +47764,15 @@
 
         try {
           // Load historical standings to calculate manager averages
-          const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+          // Exclude 2020 (COVID-shortened season: only 7 games, ~1/3 normal points)
+          const seasons = [2019, 2021, 2022, 2023, 2024, 2025];
           const managerStats = {};
 
           for (const season of seasons) {
             try {
-              let response;
-              if (season === 2026) {
-                response = await fetch("data/historical/2025/standings.json");
-              } else {
-                response = await fetch(
-                  `data/historical/${season}/final_standings.json`,
-                );
-              }
+              const response = await fetch(
+                `data/historical/${season}/final_standings.json`,
+              );
 
               if (response.ok) {
                 const standings = await response.json();
@@ -47774,18 +47806,22 @@
             }
           }
 
-          // Calculate points per season and win percentage per manager
+          // Calculate points per game and win percentage per manager
+          // Using per-game stats normalizes across different season lengths
+          const pointsPerGame = {};
           const pointsPerSeason = {};
           const winPcts = {};
+          let leagueAvgPointsPerGame = 0;
           let leagueAvgPointsPerSeason = 0;
           let leagueAvgWinPct = 0;
           let managerCount = 0;
 
           Object.entries(managerStats).forEach(([manager, stats]) => {
-            if (stats.seasons > 0) {
+            if (stats.seasons > 0 && stats.totalGames > 0) {
+              pointsPerGame[manager] = stats.totalPoints / stats.totalGames;
               pointsPerSeason[manager] = stats.totalPoints / stats.seasons;
-              winPcts[manager] =
-                stats.totalGames > 0 ? stats.totalWins / stats.totalGames : 0.5;
+              winPcts[manager] = stats.totalWins / stats.totalGames;
+              leagueAvgPointsPerGame += pointsPerGame[manager];
               leagueAvgPointsPerSeason += pointsPerSeason[manager];
               leagueAvgWinPct += winPcts[manager];
               managerCount++;
@@ -47793,6 +47829,7 @@
           });
 
           if (managerCount > 0) {
+            leagueAvgPointsPerGame /= managerCount;
             leagueAvgPointsPerSeason /= managerCount;
             leagueAvgWinPct /= managerCount;
           }
@@ -47819,20 +47856,23 @@
               const combinedRatio =
                 (regressedWinPctRatio + regressedPointsRatio) / 2;
 
-              // Range 0.97 to 1.03 for wins and points
+              // Range 0.92 to 1.08 for wins and points (wider for more differentiation)
               const winsFactor =
-                0.97 +
+                0.92 +
                 (Math.min(Math.max(regressedWinPctRatio, 0.85), 1.15) - 0.85) *
-                  0.2;
+                  0.533;
               const pointsFactor =
-                0.97 +
+                0.92 +
                 (Math.min(Math.max(regressedPointsRatio, 0.85), 1.15) - 0.85) *
-                  0.2;
+                  0.533;
 
-              // Wider range for champion (0.95 to 1.05) using combined factor
+              // Wider range for champion (0.90 to 1.10) using combined factor
               const championFactor =
-                0.95 +
-                (Math.min(Math.max(combinedRatio, 0.85), 1.15) - 0.85) * 0.333;
+                0.90 +
+                (Math.min(Math.max(combinedRatio, 0.85), 1.15) - 0.85) * 0.667;
+
+              // Manager's historical points per game (for normalizing inflated projections)
+              const managerPPG = pointsPerGame[manager] || leagueAvgPointsPerGame;
 
               factors[manager] = {
                 pointsFactor: pointsFactor,
@@ -47843,6 +47883,8 @@
                 seasons: stats.seasons,
                 winPct: winPcts[manager],
                 pointsPerSeason: pointsPerSeason[manager],
+                pointsPerGame: managerPPG,
+                leagueAvgPointsPerGame: leagueAvgPointsPerGame,
               };
             }
           });
