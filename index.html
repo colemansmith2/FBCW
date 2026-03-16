@@ -4893,12 +4893,23 @@
       }
 
       .roster-owner-tag {
-        font-size: 0.65rem;
+        font-size: 0.75rem;
         color: #4a90d9;
         font-weight: 600;
-        margin-top: 1px;
         display: flex;
         align-items: center;
+        white-space: nowrap;
+      }
+
+      .proj-owner-cell {
+        white-space: nowrap;
+        font-size: 0.8rem;
+      }
+
+      .free-agent-tag {
+        color: #888;
+        font-size: 0.75rem;
+        font-style: italic;
       }
 
       /* Keeper row styling in projections table */
@@ -29058,10 +29069,12 @@
             const teamTooltip = `${teamDetails.name} (${teamDetails.manager})`;
 
             // Player headshot - check draft data, player stats, then projections
-            const projNameKey = (pick.player_name || "").toLowerCase().trim();
-            const projNameNorm = projNameKey.replace(/\s*\(.*?\)\s*/g, "").normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const projNameRaw = (pick.player_name || "").toLowerCase().trim().replace(/\s*\(.*?\)\s*/g, "");
+            const projNameNorm = projNameRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const posType = pick.position_type === "P" ? "pitcher" : "batter";
-            const projMatch = averageProjectionsMap[`${projNameNorm}|${posType}`] || averageProjectionsMap[projNameNorm] || {};
+            // Try exact name first (preserving accents), then accent-stripped name
+            const projMatch = averageProjectionsMap[`${projNameRaw}|${posType}`] || averageProjectionsMap[projNameRaw] ||
+              averageProjectionsMap[`${projNameNorm}|${posType}`] || averageProjectionsMap[projNameNorm] || {};
             const headshot = pick.headshot_url || playerData.headshot_url || projMatch.headshot || "";
             const headshotImg = headshot
               ? `<img src="${headshot}" class="draft-headshot" alt="" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23e0e0e0%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2250%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2230%22 fill=%22%23999%22>?</text></svg>'">`
@@ -35280,6 +35293,17 @@
         data.sort((a, b) => {
           const col = projectionSort.column;
 
+          // Special handling for owner sorting
+          if (col === "owner") {
+            const ownerA = getPlayerTeamOwner(a.name);
+            const ownerB = getPlayerTeamOwner(b.name);
+            const nameA = ownerA ? ownerA.manager : "zzz"; // Free agents sort last
+            const nameB = ownerB ? ownerB.manager : "zzz";
+            return projectionSort.direction === "asc"
+              ? nameA.localeCompare(nameB)
+              : nameB.localeCompare(nameA);
+          }
+
           // Special handling for BPA sorting
           if (col === "bpa" && !showKeptPlayers) {
             // BPA is based on projected points ranking among non-keepers
@@ -35389,11 +35413,12 @@
         let headers;
 
         if (isHomeView) {
-          // Home view headers: Player, Pos, Rank, Avg Pts, Std Dev, Max, Rank, Min, Rank, Avg PPG
+          // Home view headers: Player, Owner, Pos, Rank, Avg Pts, Std Dev, Max, Rank, Min, Rank, Avg PPG
           headers = `
                     <tr>
                         <th class="sortable" onclick="sortProjectionTable('rank')">#</th>
                         <th class="sortable" onclick="sortProjectionTable('name')">Player</th>
+                        <th class="sortable" onclick="sortProjectionTable('owner')">Owner</th>
                         <th class="sortable" onclick="sortProjectionTable('position')">Pos</th>
                         <th>Rank</th>
                         <th class="sortable stat-col" onclick="sortProjectionTable('avgPoints')">Avg Pts</th>
@@ -35411,6 +35436,7 @@
                     <tr>
                         <th class="sortable" onclick="sortProjectionTable('rank')">#</th>
                         <th class="sortable" onclick="sortProjectionTable('name')">Player</th>
+                        <th class="sortable" onclick="sortProjectionTable('owner')">Owner</th>
                         <th class="sortable" onclick="sortProjectionTable('position')">Pos</th>
                         <th>Rank</th>
                         <th class="sortable stat-col" onclick="sortProjectionTable('projected_points')">Proj Pts</th>
@@ -35462,9 +35488,9 @@
         // Calculate column count for round divider colspan
         let colCount;
         if (isHomeView) {
-          colCount = 11; // Home view: #, Player, Pos, Rank, Avg Pts, Std Dev, Max, Rank, Min, Rank, Avg PPG
+          colCount = 12; // Home view: #, Player, Owner, Pos, Rank, Avg Pts, Std Dev, Max, Rank, Min, Rank, Avg PPG
         } else {
-          colCount = 8; // Base columns: #, Player, Pos, Rank, Proj Pts, G, PPG + BPA when shown
+          colCount = 9; // Base columns: #, Player, Owner, Pos, Rank, Proj Pts, G, PPG + BPA when shown
           if (!showKeptPlayers) colCount++; // BPA column
           if (hasBatters && !hasPitchers)
             colCount += 6; // Batter stats
@@ -35515,7 +35541,7 @@
             if (roundNum > lastRoundShown) {
               const roundRow = document.createElement("tr");
               roundRow.className = "round-divider";
-              roundRow.innerHTML = `<td colspan="${colCount}">Projected Round ${roundNum}</td>`;
+              roundRow.innerHTML = `<td colspan="${colCount}">Round ${roundNum}</td>`;
               tbody.appendChild(roundRow);
               lastRoundShown = roundNum;
             }
@@ -35557,9 +35583,9 @@
 
           // Check team ownership (from merged rosters)
           const teamOwner = getPlayerTeamOwner(player.name);
-          const ownerBadge = teamOwner
-            ? `<div class="roster-owner-tag" title="${teamOwner.teamName}">${teamOwner.teamLogo ? `<img src="${teamOwner.teamLogo}" style="width:14px;height:14px;border-radius:2px;vertical-align:middle;margin-right:3px;" onerror="this.style.display='none'">` : ""}${teamOwner.manager}</div>`
-            : "";
+          const ownerCell = teamOwner
+            ? `<td class="proj-owner-cell"><div class="roster-owner-tag" title="${teamOwner.teamName}">${teamOwner.teamLogo ? `<img src="${teamOwner.teamLogo}" style="width:16px;height:16px;border-radius:2px;vertical-align:middle;margin-right:4px;" onerror="this.style.display='none'">` : ""}${teamOwner.manager}</div></td>`
+            : `<td class="proj-owner-cell"><span class="free-agent-tag">Free Agent</span></td>`;
 
           // Escape player name for onclick
           const escapedName = player.name.replace(/'/g, "\\'");
@@ -35603,10 +35629,10 @@
                                     </div>
                                     <div class="player-mlb-team">${mlbLogoHtml}${teamDisplay}</div>
                                     ${isKept ? `<div class="keeper-by-tag">Kept by ${keeperInfo.manager}</div>` : ""}
-                                    ${ownerBadge}
                                 </div>
                             </div>
                         </td>
+                        ${ownerCell}
                         <td>${getPositionBadge(positionDisplay, player.name)}</td>
                         <td class="player-position">${positionRank}</td>
                         <td class="stat-col player-points">${avgPts.toFixed(1)}</td>
@@ -35670,10 +35696,10 @@
                                     </div>
                                     <div class="player-mlb-team">${mlbLogoHtml}${teamDisplay}</div>
                                     ${isKept ? `<div class="keeper-by-tag">Kept by ${keeperInfo.manager}</div>` : ""}
-                                    ${ownerBadge}
                                 </div>
                             </div>
                         </td>
+                        ${ownerCell}
                         <td>${getPositionBadge(positionDisplay, player.name)}</td>
                         <td class="player-position">${positionRank}</td>
                         <td class="stat-col player-points">${projPoints.toFixed(1)}</td>
@@ -45419,39 +45445,49 @@
                             <span class="card-points-rank">${positionRank}</span>
                         </div>`;
 
-        // Get 2026 draft info - check if kept or get projected round
-        let draftText = "Available";
+        // Get 2026 draft info - check actual draft data, then keeper status
+        let draftText = "Undrafted";
         const normalizedName = playerName
           .toLowerCase()
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "");
         const playerHistory = playerHistoryData[normalizedName];
 
-        // Check if player is being kept in 2026
+        // Load draft data to find actual draft position
+        if (!window._draftDataCache) {
+          try {
+            const draftResp = await fetch("data/current_season/draft.json");
+            if (draftResp.ok) {
+              window._draftDataCache = await draftResp.json();
+            } else {
+              window._draftDataCache = [];
+            }
+          } catch (e) {
+            window._draftDataCache = [];
+          }
+        }
+
+        // Look up player in draft results
+        const draftData = window._draftDataCache || [];
+        const playerNameLowerClean = playerName.toLowerCase().trim().replace(/\s*\(.*?\)\s*/g, "");
+        const draftPick = draftData.find(pick => {
+          const pickName = (pick.player_name || "").toLowerCase().trim().replace(/\s*\(.*?\)\s*/g, "");
+          return pickName === playerNameLowerClean;
+        });
+
+        // Get team owner info for draft display
+        const draftTeamOwner = getPlayerTeamOwner(playerName);
+
         if (keeperInfo) {
-          // Player is being kept - show their keeper round
           const roundCost = keeperInfo.roundCost || keeperInfo.round || "?";
           draftText = `Kept Round ${roundCost}`;
-        } else {
-          // Not kept - calculate projected round based on BPA
-          // Get all non-kept players sorted by projected points
-          const allPlayers = [
-            ...allProjectionBatters,
-            ...allProjectionPitchers,
-          ];
-          const nonKeptPlayers = allPlayers
-            .filter((p) => !getPlayerKeeperInfo(p.name))
-            .sort(
-              (a, b) => (b.projected_points || 0) - (a.projected_points || 0),
-            );
-
-          const playerIndex = nonKeptPlayers.findIndex(
-            (p) => p.name === playerName,
-          );
-          if (playerIndex >= 0) {
-            const projectedRound = Math.floor(playerIndex / 12) + 1;
-            draftText = `Projected Round ${projectedRound}`;
-          }
+        } else if (draftPick) {
+          // Show actual draft round and pick
+          const teamInfo = draftTeamOwner ? ` by ${draftTeamOwner.manager}` : "";
+          draftText = `Round ${draftPick.round}, Pick ${draftPick.pick}${teamInfo}`;
+        } else if (draftTeamOwner) {
+          // Player is owned but wasn't in draft (NA/free agent pickup)
+          draftText = `Owned by ${draftTeamOwner.manager}`;
         }
 
         // League history section (draft row is included inside, so it scrolls)
@@ -50266,9 +50302,12 @@
           // Enrich Yahoo players with headshots from projections
           const enrichedPlayers = yahooPlayers.map(p => {
             if (p.headshot_url) return p;
-            const nameLower = (p.name || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const nameRaw = (p.name || "").toLowerCase().trim();
+            const nameNorm = nameRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
             const posType = p.position_type === "P" ? "pitcher" : "batter";
-            const projMatch = averageProjectionsMap[`${nameLower}|${posType}`] || averageProjectionsMap[nameLower] || {};
+            // Try exact name first, then accent-stripped name
+            const projMatch = averageProjectionsMap[`${nameRaw}|${posType}`] || averageProjectionsMap[nameRaw] ||
+              averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || {};
             return { ...p, headshot_url: projMatch.headshot || "", projected_points: projMatch.avgPoints || 0 };
           });
 
@@ -50559,35 +50598,22 @@
       }
 
       function buildRosterModalContent(players, teamKey) {
-        // Separate batters and pitchers, excluding prospects
+        // Separate batters and pitchers (prospects included in normal slots)
         const batters = players.filter(
           (p) =>
-            (p.position_type === "B" ||
+            p.position_type === "B" ||
               (!p.position_type &&
-                !["SP", "RP", "P"].includes(p.primary_position))) &&
-            !p.isProspect,
+                !["SP", "RP", "P"].includes(p.primary_position)),
         );
         const pitchers = players.filter(
           (p) =>
-            (p.position_type === "P" ||
-              ["SP", "RP", "P"].includes(p.primary_position)) &&
-            !p.isProspect,
+            p.position_type === "P" ||
+              ["SP", "RP", "P"].includes(p.primary_position),
         );
 
-        // Get prospects separately
-        const batterProspects = players.filter(
-          (p) =>
-            (p.position_type === "B" ||
-              (!p.position_type &&
-                !["SP", "RP", "P"].includes(p.primary_position))) &&
-            p.isProspect,
-        );
-        const pitcherProspects = players.filter(
-          (p) =>
-            (p.position_type === "P" ||
-              ["SP", "RP", "P"].includes(p.primary_position)) &&
-            p.isProspect,
-        );
+        // Track prospects for badge display (but don't separate them)
+        const batterProspects = [];
+        const pitcherProspects = [];
 
         // Sort all groups by projected points (or actual points if available) descending
         const sortByPoints = (a, b) => {
