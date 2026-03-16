@@ -50661,8 +50661,6 @@
         };
         batters.sort(sortByPoints);
         pitchers.sort(sortByPoints);
-        batterProspects.sort(sortByPoints);
-        pitcherProspects.sort(sortByPoints);
 
         // Placeholder headshot
         const placeholderImg =
@@ -50690,12 +50688,14 @@
           battersHtml += "</div>";
         }
 
-        // Add batter prospects section if any
-        if (batterProspects.length > 0) {
+        // Add any remaining batters (including prospects) that didn't fit in slots
+        const unusedBatters = batters.filter(p => !p._used);
+        if (unusedBatters.length > 0) {
           battersHtml +=
-            '<div class="roster-position-group roster-prospects-group"><div class="roster-position-label">Prospects</div>';
-          for (const prospect of batterProspects) {
-            battersHtml += buildPlayerRow(prospect, placeholderImg);
+            '<div class="roster-position-group"><div class="roster-position-label">NA</div>';
+          for (const player of unusedBatters) {
+            player._used = true;
+            battersHtml += buildPlayerRow(player, placeholderImg);
           }
           battersHtml += "</div>";
         }
@@ -50728,12 +50728,14 @@
           pitchersHtml += "</div>";
         }
 
-        // Add pitcher prospects section if any
-        if (pitcherProspects.length > 0) {
+        // Add any remaining pitchers (including prospects) that didn't fit in slots
+        const unusedPitchers = pitchers.filter(p => !p._used);
+        if (unusedPitchers.length > 0) {
           pitchersHtml +=
-            '<div class="roster-position-group roster-prospects-group"><div class="roster-position-label">Prospects</div>';
-          for (const prospect of pitcherProspects) {
-            pitchersHtml += buildPlayerRow(prospect, placeholderImg);
+            '<div class="roster-position-group"><div class="roster-position-label">NA</div>';
+          for (const player of unusedPitchers) {
+            player._used = true;
+            pitchersHtml += buildPlayerRow(player, placeholderImg);
           }
           pitchersHtml += "</div>";
         }
