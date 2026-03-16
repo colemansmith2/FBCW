@@ -16,6 +16,7 @@ Uses Fangraphs (via pybaseball) for:
 import json
 import os
 import re
+import sys
 import time
 import unicodedata
 from datetime import datetime, date, timedelta
@@ -2672,15 +2673,12 @@ def quick_update():
     except Exception as e:
         print(f"  ⚠ Could not update scoring settings: {e}")
 
-    # 8. Post-draft prep: draft results + rosters + team projection totals
+    # 8. Post-draft prep: rosters + team projection totals
+    # Note: draft.json is no longer re-fetched here (draft is complete, file is static)
     try:
-        draft_results = get_draft_results(oauth, CURRENT_SEASON)
         draft_status = (scoring or {}).get("draft_status", "")
-        if draft_results and (draft_status == "postdraft" or len(draft_results) > 0):
-            with open(f"{current_season_dir}/draft.json", 'w', encoding='utf-8') as f:
-                json.dump(draft_results, f, indent=2, ensure_ascii=False)
-            print(f"  ✓ draft.json updated ({len(draft_results)} picks)")
-
+        draft_json_exists = os.path.exists(f"{current_season_dir}/draft.json")
+        if draft_status == "postdraft" or draft_json_exists:
             print("  Updating rosters for post-draft projections...")
             rosters = get_rosters(oauth, CURRENT_SEASON)
             with open(f"{current_season_dir}/rosters.json", 'w', encoding='utf-8') as f:
@@ -2782,6 +2780,42 @@ def postdraft_update():
     print(f"  - daily_scores.json: Per-day team scores")
     print(f"  - transactions.json: Recent adds/drops/trades")
     print(f"  - player_stats.json: Player fantasy points (YTD)")
+    if teams_changed:
+        print(f"  - Manager profiles: Updated")
+    print("=" * 60)
+
+def ready_update():
+    """One-shot update: projections + quick update + weekly stats."""
+    print("=" * 60)
+    print(f"READY UPDATE - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print("=" * 60)
+
+    # Full-season projections (preseason style)
+    try:
+        subprocess.run([sys.executable, "fetch_projections.py"], check=False)
+    except Exception as e:
+        print(f"  ⚠ Could not run fetch_projections.py: {e}")
+
+    # Rest-of-season projections
+    try:
+        subprocess.run([sys.executable, "fetch_ros_projections.py"], check=False)
+    except Exception as e:
+        print(f"  ⚠ Could not run fetch_ros_projections.py: {e}")
+
+    # Core in-season refresh (teams, standings, scores, rosters, stats)
+    teams_changed = quick_update()
+
+    # Weekly stats (matchups + leaders for weekly view)
+    try:
+        subprocess.run([sys.executable, "collect_weekly_stats.py"], check=False)
+    except Exception as e:
+        print(f"  ⚠ Could not run collect_weekly_stats.py: {e}")
+
+    print("\n" + "=" * 60)
+    print("✓ Ready update complete!")
+    print(f"  - Projections: preseason + ROS")
+    print(f"  - Odds inputs: team_projected_points + team_ros_projected_points")
+    print(f"  - Weekly bets: team_weekly_projected_points + weekly_stats")
     if teams_changed:
         print(f"  - Manager profiles: Updated")
     print("=" * 60)
@@ -3809,6 +3843,8 @@ if __name__ == "__main__":
             quick_update()
         elif command in ("postdraft", "post-draft"):
             postdraft_update()
+        elif command in ("ready", "one-shot", "oneshot"):
+            ready_update()
         elif command == "players":
             player_data_setup()
         elif command == "headshots":
@@ -3864,6 +3900,7 @@ if __name__ == "__main__":
             print("  transactions <yrs...> - Collect transactions only for selected seasons")
             print("  quick              - Quick update (teams, standings, rosters)")
             print("  postdraft          - Post-draft refresh (fetch projections + quick update)")
+            print("  ready              - One-shot refresh (projections + quick + weekly stats)")
             print("  players            - Collect player stats (Fangraphs + Yahoo)")
             print("  headshots          - Update existing player data with headshots only")
             print("  full               - Weekly update with player data")
