@@ -49044,29 +49044,34 @@
 
         const placeholderImg = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
 
-        // Position badge helper (reuse site's getPositionBadge if available, else simple)
-        const posBadge = (pos) => {
-          const colors = { 'C':'#e74c3c','1B':'#3498db','2B':'#2ecc71','3B':'#e67e22','SS':'#9b59b6','OF':'#1abc9c','SP':'#c0392b','RP':'#d35400','DH':'#7f8c8d','P':'#c0392b','Util':'#95a5a6' };
-          const color = colors[pos] || '#7f8c8d';
-          return `<span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:0.65rem;font-weight:700;color:white;background:${color};min-width:22px;text-align:center;">${pos}</span>`;
-        };
-
-        // MLB team logo helper
-        const mlbLogoUrl = (abbr) => abbr ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/mlb/500/${abbr.toLowerCase()}.png&h=40&w=40` : '';
+        // Uses site's existing getPositionBadge() and getMLBTeamLogo() helpers
 
         const topN = 5;
         const buildPlayerList = (players) => players.slice(0, topN).map(p => {
-          const mlbLogo = mlbLogoUrl(p.mlb_team);
+          const mlbLogoHtml = p.mlb_team ? `<img src="${getMLBTeamLogo(p.mlb_team)}" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;" onerror="this.style.display='none'" alt="">` : '';
+          const posBadgeHtml = getPositionBadge(p.position, p.name);
           return `
           <div class="matchup-detail-player-row">
-            <img src="${p.headshot || placeholderImg}" onerror="this.src='${placeholderImg}'" alt="" style="object-fit:cover;">
-            <span class="matchup-detail-player-name">${p.name}</span>
-            ${mlbLogo ? `<img src="${mlbLogo}" style="width:16px;height:16px;border-radius:2px;" onerror="this.style.display='none'" alt="">` : ''}
-            ${posBadge(p.position)}
+            <img src="${p.headshot || placeholderImg}" onerror="this.src='${placeholderImg}'" alt="">
+            <div style="flex:1;min-width:0;">
+              <div class="matchup-detail-player-name">${p.name}</div>
+              <div style="display:flex;align-items:center;gap:3px;margin-top:1px;">
+                ${mlbLogoHtml}<span style="font-size:0.65rem;color:#888;">${p.mlb_team || ''}</span>
+              </div>
+            </div>
+            ${posBadgeHtml}
             <span class="matchup-detail-player-pts">${p.points.toFixed(1)}</span>
           </div>
           `;
         }).join('');
+
+        // Build H2H record text and streak
+        const h2hRecordHtml = h2hHistory.length > 0
+          ? `<div style="font-weight:800;font-size:1rem;color:#333;">${t1Wins} - ${t2Wins}</div>`
+          : '';
+        const streakHtml = streakCount > 1
+          ? `<div style="font-size:0.7rem;color:#666;">Streak: <img src="${streakLogo}" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;object-fit:cover;" alt=""> <strong>${streakManager}</strong> ${streakCount}W</div>`
+          : '';
 
         // Build H2H table (show last 10 matchups) with logos
         const recentH2H = h2hHistory.slice(-10).reverse();
@@ -49094,29 +49099,6 @@
               <button class="matchup-detail-close" onclick="this.closest('.matchup-detail-overlay').remove()">&times;</button>
             </div>
             <div class="matchup-detail-body">
-
-              ${h2hHistory.length > 0 ? `
-              <div class="matchup-detail-section" style="margin-bottom:0.75rem;">
-                <div style="display:flex;justify-content:center;align-items:center;gap:2rem;padding:0.5rem 0;">
-                  <div style="display:flex;align-items:center;gap:0.4rem;">
-                    <img src="${t1Logo}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;" alt="">
-                    <span style="font-weight:700;font-size:0.85rem;">${t1Manager}</span>
-                    <span style="font-weight:800;color:#28a745;font-size:0.95rem;">${t1Wins}</span>
-                  </div>
-                  <span style="color:#999;font-size:0.8rem;font-weight:600;">ALL-TIME</span>
-                  <div style="display:flex;align-items:center;gap:0.4rem;">
-                    <span style="font-weight:800;color:#28a745;font-size:0.95rem;">${t2Wins}</span>
-                    <span style="font-weight:700;font-size:0.85rem;">${t2Manager}</span>
-                    <img src="${t2Logo}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;" alt="">
-                  </div>
-                </div>
-                ${streakCount > 1 ? `
-                <div style="text-align:center;font-size:0.75rem;color:#666;">
-                  Current Streak: <img src="${streakLogo}" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;object-fit:cover;" alt=""> <strong>${streakManager}</strong> — <span style="color:#28a745;font-weight:700;">${streakCount} W</span>
-                </div>` : ''}
-              </div>
-              ` : ''}
-
               <div class="matchup-detail-teams">
                 <div class="matchup-detail-team">
                   <img src="${t1Logo}" alt="${t1Name}">
@@ -49124,7 +49106,11 @@
                   <div class="matchup-detail-team-manager">${t1Manager}</div>
                   ${proj1 > 0 ? `<div class="matchup-detail-team-proj">${proj1.toFixed(1)}</div>` : ''}
                 </div>
-                <div class="matchup-detail-vs">VS</div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                  ${h2hRecordHtml}
+                  <div class="matchup-detail-vs">VS</div>
+                  ${streakHtml}
+                </div>
                 <div class="matchup-detail-team">
                   <img src="${t2Logo}" alt="${t2Name}">
                   <div class="matchup-detail-team-name">${t2Name}</div>
