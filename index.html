@@ -11731,14 +11731,14 @@
 
       .weekly-matchups-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
         gap: 1rem;
       }
 
       .matchup-bet-card {
         background: white;
         border-radius: 12px;
-        padding: 1rem 1.25rem;
+        padding: 1rem 1.5rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         border: 2px solid transparent;
       }
@@ -11816,13 +11816,19 @@
         font-size: 0.85rem;
       }
 
+      .matchup-bet-manager {
+        font-size: 0.7rem;
+        color: #888;
+        margin-bottom: 0.25rem;
+      }
+
       /* O/U projection column in matchup card */
       .matchup-ou-column {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
-        min-width: 55px;
+        gap: 1px;
+        min-width: 50px;
       }
 
       .matchup-ou-btn {
@@ -11831,11 +11837,12 @@
         justify-content: center;
         cursor: pointer;
         border-radius: 4px;
-        padding: 1px 6px;
+        padding: 3px 10px;
         border: 2px solid transparent;
         transition: all 0.2s;
-        font-size: 0.7rem;
-        font-weight: 600;
+        font-size: 0.75rem;
+        font-weight: 700;
+        line-height: 1;
       }
 
       .matchup-ou-btn:hover {
@@ -11848,11 +11855,6 @@
         border-color: #d4af37;
       }
 
-      .matchup-ou-btn .ou-arrow {
-        font-size: 0.65rem;
-        margin-right: 2px;
-      }
-
       .matchup-ou-btn.over {
         color: #28a745;
       }
@@ -11862,10 +11864,11 @@
       }
 
       .matchup-ou-proj {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         font-weight: 700;
         color: #333;
-        line-height: 1;
+        line-height: 1.2;
+        padding: 1px 0;
       }
 
       /* Center O/U (matchup total) */
@@ -11873,21 +11876,25 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
-        min-width: 60px;
+        gap: 1px;
+        min-width: 55px;
+        padding: 0 0.25rem;
+        border-left: 1px solid #e0e0e0;
+        border-right: 1px solid #e0e0e0;
       }
 
       .matchup-center-ou .matchup-ou-proj {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
         color: var(--retro-blue);
+        font-weight: 800;
       }
 
       .matchup-center-ou .ou-label {
-        font-size: 0.6rem;
+        font-size: 0.55rem;
         color: #999;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        font-weight: 600;
+        font-weight: 700;
       }
 
       /* Bet Slip */
@@ -48591,6 +48598,7 @@
                                 <div class="matchup-bet-team">
                                     <img class="matchup-bet-team-logo" src="${team1.logo}" alt="${t1Name}">
                                     <div class="matchup-bet-team-name">${team1.name}</div>
+                                    <div class="matchup-bet-manager">${team1.manager}</div>
                                     <div class="matchup-bet-team-odds ${odds1.toString().startsWith("+") ? "underdog" : "favorite"}"
                                          data-bet-type="weekly_${selectedWeek}"
                                          data-team-key="${matchup.team1_key}"
@@ -48606,18 +48614,14 @@
                                          data-team-key="${matchup.team1_key}"
                                          data-team-name="${t1Name} O${proj1Line}"
                                          data-odds="-110"
-                                         onclick="handleMatchupBetClick(this)">
-                                        <span class="ou-arrow">▲</span> O
-                                    </div>
+                                         onclick="handleMatchupBetClick(this)">▲</div>
                                     <div class="matchup-ou-proj">${proj1.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
                                          data-bet-type="ou_under_${matchup.team1_key}_w${selectedWeek}"
                                          data-team-key="${matchup.team1_key}"
                                          data-team-name="${t1Name} U${proj1Line}"
                                          data-odds="-110"
-                                         onclick="handleMatchupBetClick(this)">
-                                        <span class="ou-arrow">▼</span> U
-                                    </div>
+                                         onclick="handleMatchupBetClick(this)">▼</div>
                                 </div>
 
                                 <div class="matchup-center-ou">
@@ -48627,18 +48631,14 @@
                                          data-team-key="${matchup.team1_key}"
                                          data-team-name="O${matchupTotal} (${t1Name} vs ${t2Name})"
                                          data-odds="-110"
-                                         onclick="handleMatchupBetClick(this)">
-                                        <span class="ou-arrow">▲</span> O
-                                    </div>
+                                         onclick="handleMatchupBetClick(this)">▲</div>
                                     <div class="matchup-ou-proj">${matchupTotal.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
                                          data-bet-type="total_under_${matchup.team1_key}_${matchup.team2_key}_w${selectedWeek}"
                                          data-team-key="${matchup.team1_key}"
                                          data-team-name="U${matchupTotal} (${t1Name} vs ${t2Name})"
                                          data-odds="-110"
-                                         onclick="handleMatchupBetClick(this)">
-                                        <span class="ou-arrow">▼</span> U
-                                    </div>
+                                         onclick="handleMatchupBetClick(this)">▼</div>
                                 </div>
 
                                 <div class="matchup-ou-column">
@@ -48647,23 +48647,20 @@
                                          data-team-key="${matchup.team2_key}"
                                          data-team-name="${t2Name} O${proj2Line}"
                                          data-odds="-110"
-                                         onclick="handleMatchupBetClick(this)">
-                                        <span class="ou-arrow">▲</span> O
-                                    </div>
+                                         onclick="handleMatchupBetClick(this)">▲</div>
                                     <div class="matchup-ou-proj">${proj2.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
                                          data-bet-type="ou_under_${matchup.team2_key}_w${selectedWeek}"
                                          data-team-key="${matchup.team2_key}"
                                          data-team-name="${t2Name} U${proj2Line}"
                                          data-odds="-110"
-                                         onclick="handleMatchupBetClick(this)">
-                                        <span class="ou-arrow">▼</span> U
-                                    </div>
+                                         onclick="handleMatchupBetClick(this)">▼</div>
                                 </div>
 
                                 <div class="matchup-bet-team">
                                     <img class="matchup-bet-team-logo" src="${team2.logo}" alt="${t2Name}">
                                     <div class="matchup-bet-team-name">${team2.name}</div>
+                                    <div class="matchup-bet-manager">${team2.manager}</div>
                                     <div class="matchup-bet-team-odds ${odds2.toString().startsWith("+") ? "underdog" : "favorite"}"
                                          data-bet-type="weekly_${selectedWeek}"
                                          data-team-key="${matchup.team2_key}"
