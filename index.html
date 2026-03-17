@@ -11766,12 +11766,25 @@
         padding: 0.5rem 0.25rem;
         border-radius: 8px;
         transition: all 0.2s;
+        cursor: pointer;
+        border: 2px solid transparent;
+      }
+
+      .matchup-bet-team:hover {
+        background: #f0f4ff;
+        border-color: var(--retro-blue);
+      }
+
+      .matchup-bet-team.selected {
+        background: #fffbeb;
+        border-color: #d4af37;
       }
 
       .matchup-bet-team-logo {
         width: 44px;
         height: 44px;
         border-radius: 50%;
+        object-fit: cover;
         margin: 0 auto 0.4rem;
         border: 2px solid #ddd;
       }
@@ -11911,31 +11924,6 @@
         font-weight: 700;
       }
 
-      .matchup-info-btn {
-        position: absolute;
-        top: 6px;
-        right: 8px;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #e8e8e8;
-        color: #666;
-        font-size: 0.65rem;
-        font-weight: 700;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 0.2s;
-        border: none;
-        font-family: inherit;
-      }
-
-      .matchup-info-btn:hover {
-        background: var(--retro-blue);
-        color: white;
-      }
-
       /* Matchup Detail Modal */
       .matchup-detail-overlay {
         position: fixed;
@@ -12009,6 +11997,7 @@
         border-radius: 50%;
         border: 3px solid #ddd;
         margin-bottom: 0.5rem;
+        object-fit: cover;
       }
 
       .matchup-detail-team-name {
@@ -12090,6 +12079,7 @@
         height: 28px;
         border-radius: 50%;
         border: 1px solid #ddd;
+        object-fit: cover;
       }
 
       .matchup-detail-player-name {
@@ -48823,23 +48813,22 @@
               const t2Name = team2.name.replace(/"/g, '&quot;');
 
               return `
-                        <div class="matchup-bet-card" style="position:relative;">
-                            <button class="matchup-info-btn" onclick="showMatchupDetail('${matchup.team1_key}', '${matchup.team2_key}', ${selectedWeek})" title="Matchup Details">i</button>
+                        <div class="matchup-bet-card" onclick="showMatchupDetail('${matchup.team1_key}', '${matchup.team2_key}', ${selectedWeek})" style="cursor:pointer;">
                             <div class="matchup-bet-vs">
-                                <div class="matchup-bet-team">
+                                <div class="matchup-bet-team"
+                                     data-bet-type="weekly_${selectedWeek}"
+                                     data-team-key="${matchup.team1_key}"
+                                     data-team-name="${t1Name}"
+                                     data-odds="${odds1}"
+                                     data-opponent="${t2Name}"
+                                     onclick="event.stopPropagation(); handleMatchupBetClick(this);">
                                     <img class="matchup-bet-team-logo" src="${team1.logo}" alt="${t1Name}">
                                     <div class="matchup-bet-team-name">${team1.name}</div>
                                     <div class="matchup-bet-manager">${team1.manager}</div>
-                                    <div class="matchup-bet-team-odds ${odds1.toString().startsWith("+") ? "underdog" : "favorite"}"
-                                         data-bet-type="weekly_${selectedWeek}"
-                                         data-team-key="${matchup.team1_key}"
-                                         data-team-name="${t1Name}"
-                                         data-odds="${odds1}"
-                                         data-opponent="${t2Name}"
-                                         onclick="handleMatchupBetClick(this)">${odds1}</div>
+                                    <div class="matchup-bet-team-odds ${odds1.toString().startsWith("+") ? "underdog" : "favorite"}">${odds1}</div>
                                 </div>
 
-                                <div class="matchup-ou-column">
+                                <div class="matchup-ou-column" onclick="event.stopPropagation();">
                                     <div class="ou-label">O/U</div>
                                     <div class="matchup-ou-btn over"
                                          data-bet-type="ou_over_${matchup.team1_key}_w${selectedWeek}"
@@ -48856,7 +48845,7 @@
                                          onclick="handleMatchupBetClick(this)">▼</div>
                                 </div>
 
-                                <div class="matchup-center-ou">
+                                <div class="matchup-center-ou" onclick="event.stopPropagation();">
                                     <div class="ou-label">Total</div>
                                     <div class="matchup-ou-btn over"
                                          data-bet-type="total_over_${matchup.team1_key}_${matchup.team2_key}_w${selectedWeek}"
@@ -48873,7 +48862,7 @@
                                          onclick="handleMatchupBetClick(this)">▼</div>
                                 </div>
 
-                                <div class="matchup-ou-column">
+                                <div class="matchup-ou-column" onclick="event.stopPropagation();">
                                     <div class="ou-label">O/U</div>
                                     <div class="matchup-ou-btn over"
                                          data-bet-type="ou_over_${matchup.team2_key}_w${selectedWeek}"
@@ -48890,17 +48879,17 @@
                                          onclick="handleMatchupBetClick(this)">▼</div>
                                 </div>
 
-                                <div class="matchup-bet-team">
+                                <div class="matchup-bet-team"
+                                     data-bet-type="weekly_${selectedWeek}"
+                                     data-team-key="${matchup.team2_key}"
+                                     data-team-name="${t2Name}"
+                                     data-odds="${odds2}"
+                                     data-opponent="${t1Name}"
+                                     onclick="event.stopPropagation(); handleMatchupBetClick(this);">
                                     <img class="matchup-bet-team-logo" src="${team2.logo}" alt="${t2Name}">
                                     <div class="matchup-bet-team-name">${team2.name}</div>
                                     <div class="matchup-bet-manager">${team2.manager}</div>
-                                    <div class="matchup-bet-team-odds ${odds2.toString().startsWith("+") ? "underdog" : "favorite"}"
-                                         data-bet-type="weekly_${selectedWeek}"
-                                         data-team-key="${matchup.team2_key}"
-                                         data-team-name="${t2Name}"
-                                         data-odds="${odds2}"
-                                         data-opponent="${t1Name}"
-                                         onclick="handleMatchupBetClick(this)">${odds2}</div>
+                                    <div class="matchup-bet-team-odds ${odds2.toString().startsWith("+") ? "underdog" : "favorite"}">${odds2}</div>
                                 </div>
                             </div>
                         </div>
@@ -48916,17 +48905,21 @@
 
       // Click handler using data attributes to avoid apostrophe/quote escaping issues
       function handleMatchupBetClick(el) {
-        const betType = el.dataset.betType;
-        const teamKey = el.dataset.teamKey;
-        const teamName = el.dataset.teamName;
-        const odds = el.dataset.odds;
-        const opponent = el.dataset.opponent || null;
+        // Find the element with data attributes (could be the element itself or a parent)
+        const dataEl = el.dataset.betType ? el : el.closest('[data-bet-type]');
+        if (!dataEl) return;
+
+        const betType = dataEl.dataset.betType;
+        const teamKey = dataEl.dataset.teamKey;
+        const teamName = dataEl.dataset.teamName;
+        const odds = dataEl.dataset.odds;
+        const opponent = dataEl.dataset.opponent || null;
         const category = betType.startsWith('weekly_') ? 'weekly' : 'weekly_ou';
 
         addToBetSlip(betType, teamKey, teamName, odds, category, opponent);
 
-        // Toggle selected state on the clicked element
-        el.classList.toggle('selected');
+        // Toggle selected state
+        dataEl.classList.toggle('selected');
       }
 
       async function showMatchupDetail(team1Key, team2Key, week) {
@@ -48974,6 +48967,7 @@
                   position: p.primary_position || p.display_position || '',
                   headshot: p.headshot_url || match.headshot || '',
                   points: match.avgPoints || p.projected_points || 0,
+                  mlb_team: p.editorial_team_abbr || match.mlb_team || '',
                 };
               }).sort((a, b) => b.points - a.points);
             };
@@ -48991,16 +48985,6 @@
             if (!resp.ok) continue;
             const scores = await resp.json();
 
-            // Find the manager names for this team key pattern in this season
-            // We match by manager name since team keys change year to year
-            const yearMatchups = [];
-            const scoresByWeek = {};
-            scores.forEach(s => {
-              const wk = s.week;
-              if (!scoresByWeek[wk]) scoresByWeek[wk] = [];
-              scoresByWeek[wk].push(s);
-            });
-
             // We need team data for this year to map keys to managers
             let yearTeams = null;
             try {
@@ -49010,7 +48994,6 @@
 
             if (!yearTeams) continue;
 
-            // Find the team keys for these managers in this season
             const findTeamKeyForManager = (mgr) => {
               const team = yearTeams.find(t => {
                 const normalized = normalizeManagerName(t.manager || t.Manager || '', year, t.team_name || t.TeamName || '', t.team_key || '');
@@ -49021,10 +49004,8 @@
 
             const t1YearKey = findTeamKeyForManager(t1Manager);
             const t2YearKey = findTeamKeyForManager(t2Manager);
-
             if (!t1YearKey || !t2YearKey) continue;
 
-            // Find matchups between these two managers
             scores.forEach(s => {
               if (s.team_key === t1YearKey && s.opponent_key === t2YearKey) {
                 h2hHistory.push({
@@ -49039,32 +49020,66 @@
           } catch (e) { /* skip year */ }
         }
 
+        // Sort chronologically
+        h2hHistory.sort((a, b) => a.year - b.year || a.week - b.week);
+
         // Compute H2H summary
         const t1Wins = h2hHistory.filter(h => h.t1Win).length;
         const t2Wins = h2hHistory.filter(h => !h.t1Win).length;
 
+        // Compute current streak
+        let streakCount = 0;
+        let streakWinner = null;
+        for (let i = h2hHistory.length - 1; i >= 0; i--) {
+          const winner = h2hHistory[i].t1Win ? 't1' : 't2';
+          if (streakWinner === null) streakWinner = winner;
+          if (winner === streakWinner) {
+            streakCount++;
+          } else {
+            break;
+          }
+        }
+        const streakManager = streakWinner === 't1' ? t1Manager : t2Manager;
+        const streakLogo = streakWinner === 't1' ? t1Logo : t2Logo;
+
         const placeholderImg = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
 
-        // Build modal
+        // Position badge helper (reuse site's getPositionBadge if available, else simple)
+        const posBadge = (pos) => {
+          const colors = { 'C':'#e74c3c','1B':'#3498db','2B':'#2ecc71','3B':'#e67e22','SS':'#9b59b6','OF':'#1abc9c','SP':'#c0392b','RP':'#d35400','DH':'#7f8c8d','P':'#c0392b','Util':'#95a5a6' };
+          const color = colors[pos] || '#7f8c8d';
+          return `<span style="display:inline-block;padding:1px 5px;border-radius:3px;font-size:0.65rem;font-weight:700;color:white;background:${color};min-width:22px;text-align:center;">${pos}</span>`;
+        };
+
+        // MLB team logo helper
+        const mlbLogoUrl = (abbr) => abbr ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/mlb/500/${abbr.toLowerCase()}.png&h=40&w=40` : '';
+
         const topN = 5;
-        const buildPlayerList = (players) => players.slice(0, topN).map(p => `
+        const buildPlayerList = (players) => players.slice(0, topN).map(p => {
+          const mlbLogo = mlbLogoUrl(p.mlb_team);
+          return `
           <div class="matchup-detail-player-row">
-            <img src="${p.headshot || placeholderImg}" onerror="this.src='${placeholderImg}'" alt="">
+            <img src="${p.headshot || placeholderImg}" onerror="this.src='${placeholderImg}'" alt="" style="object-fit:cover;">
             <span class="matchup-detail-player-name">${p.name}</span>
-            <span class="matchup-detail-player-pos">${p.position}</span>
+            ${mlbLogo ? `<img src="${mlbLogo}" style="width:16px;height:16px;border-radius:2px;" onerror="this.style.display='none'" alt="">` : ''}
+            ${posBadge(p.position)}
             <span class="matchup-detail-player-pts">${p.points.toFixed(1)}</span>
           </div>
-        `).join('');
+          `;
+        }).join('');
 
-        // Build H2H table (show last 10 matchups)
+        // Build H2H table (show last 10 matchups) with logos
         const recentH2H = h2hHistory.slice(-10).reverse();
         const h2hRows = recentH2H.map(h => `
           <div class="matchup-detail-h2h-row">
             <span class="matchup-detail-h2h-year">${h.year}</span>
-            <span>Wk ${h.week}</span>
-            <span class="matchup-detail-h2h-result ${h.t1Win ? 'win' : 'loss'}">${h.t1Score.toFixed(1)}</span>
-            <span>-</span>
-            <span class="matchup-detail-h2h-result ${h.t1Win ? 'loss' : 'win'}">${h.t2Score.toFixed(1)}</span>
+            <span style="color:#888;">Wk ${h.week}</span>
+            <span style="flex:1;"></span>
+            <img src="${t1Logo}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;" alt="">
+            <span class="matchup-detail-h2h-result ${h.t1Win ? 'win' : 'loss'}" style="min-width:45px;text-align:right;">${h.t1Score.toFixed(1)}</span>
+            <span style="color:#ccc;margin:0 4px;">—</span>
+            <span class="matchup-detail-h2h-result ${h.t1Win ? 'loss' : 'win'}" style="min-width:45px;">${h.t2Score.toFixed(1)}</span>
+            <img src="${t2Logo}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;" alt="">
           </div>
         `).join('');
 
@@ -49079,6 +49094,29 @@
               <button class="matchup-detail-close" onclick="this.closest('.matchup-detail-overlay').remove()">&times;</button>
             </div>
             <div class="matchup-detail-body">
+
+              ${h2hHistory.length > 0 ? `
+              <div class="matchup-detail-section" style="margin-bottom:0.75rem;">
+                <div style="display:flex;justify-content:center;align-items:center;gap:2rem;padding:0.5rem 0;">
+                  <div style="display:flex;align-items:center;gap:0.4rem;">
+                    <img src="${t1Logo}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;" alt="">
+                    <span style="font-weight:700;font-size:0.85rem;">${t1Manager}</span>
+                    <span style="font-weight:800;color:#28a745;font-size:0.95rem;">${t1Wins}</span>
+                  </div>
+                  <span style="color:#999;font-size:0.8rem;font-weight:600;">ALL-TIME</span>
+                  <div style="display:flex;align-items:center;gap:0.4rem;">
+                    <span style="font-weight:800;color:#28a745;font-size:0.95rem;">${t2Wins}</span>
+                    <span style="font-weight:700;font-size:0.85rem;">${t2Manager}</span>
+                    <img src="${t2Logo}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;" alt="">
+                  </div>
+                </div>
+                ${streakCount > 1 ? `
+                <div style="text-align:center;font-size:0.75rem;color:#666;">
+                  Current Streak: <img src="${streakLogo}" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;object-fit:cover;" alt=""> <strong>${streakManager}</strong> — <span style="color:#28a745;font-weight:700;">${streakCount} W</span>
+                </div>` : ''}
+              </div>
+              ` : ''}
+
               <div class="matchup-detail-teams">
                 <div class="matchup-detail-team">
                   <img src="${t1Logo}" alt="${t1Name}">
@@ -49106,16 +49144,12 @@
                 </div>
               </div>
 
+              ${h2hHistory.length > 0 ? `
               <div class="matchup-detail-section">
                 <div class="matchup-detail-section-title">HEAD TO HEAD HISTORY</div>
-                ${h2hHistory.length > 0 ? `
-                  <div class="matchup-detail-h2h-summary">
-                    <span>${t1Manager}: <span class="wins">${t1Wins} W</span></span>
-                    <span>${t2Manager}: <span class="wins">${t2Wins} W</span></span>
-                  </div>
-                  ${h2hRows}
-                ` : '<p style="color:#888;font-size:0.8rem;text-align:center;">No head-to-head history found</p>'}
+                ${h2hRows}
               </div>
+              ` : ''}
             </div>
           </div>
         `;
