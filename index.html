@@ -7519,6 +7519,11 @@
         gap: 0.25rem;
       }
 
+      .player-control-row .season-selector select {
+        min-width: auto;
+        width: auto;
+      }
+
       .stat-type-toggle .toggle-buttons {
         display: flex;
         gap: 0;
@@ -24658,6 +24663,39 @@
 
       // ===== PLAYER SCORING FUNCTIONS =====
 
+      // Lightweight loader to populate averageProjectionsMap from projection files
+      // Used as a fallback when Player Scoring loads before Preseason Tools
+      async function ensureProjectionMapLoaded() {
+        if (Object.keys(averageProjectionsMap).length > 0) return;
+        const systems = ["thebatx", "steamer", "zipsdc", "atc", "depthcharts"];
+        const playerAgg = {};
+        for (const system of systems) {
+          try {
+            const resp = await fetch(`data/projections/projections_${system}.json`);
+            if (!resp.ok) continue;
+            const players = await resp.json();
+            players.forEach(p => {
+              const name = (p.name || '').toLowerCase().trim();
+              const type = (p.type || (p.position_type === 'P' ? 'pitcher' : 'batter'));
+              const key = `${name}|${type}`;
+              if (!playerAgg[key]) {
+                playerAgg[key] = { totalPts: 0, count: 0, headshot: p.headshot || p.headshot_url || '', mlb_team: p.mlb_team || p.team || '', position: p.position || '', type };
+              }
+              const pts = parseFloat(p.fantasy_points || p.points || 0);
+              if (pts > 0) { playerAgg[key].totalPts += pts; playerAgg[key].count++; }
+              if (!playerAgg[key].headshot && (p.headshot || p.headshot_url)) playerAgg[key].headshot = p.headshot || p.headshot_url;
+              if (!playerAgg[key].mlb_team && (p.mlb_team || p.team)) playerAgg[key].mlb_team = p.mlb_team || p.team;
+            });
+          } catch (e) { /* skip system */ }
+        }
+        for (const [key, data] of Object.entries(playerAgg)) {
+          const avg = data.count > 0 ? data.totalPts / data.count : 0;
+          averageProjectionsMap[key] = { avgPoints: Math.round(avg * 10) / 10, headshot: data.headshot, mlb_team: data.mlb_team, position: data.position, type: data.type };
+          const nameLower = key.split('|')[0];
+          if (!averageProjectionsMap[nameLower]) averageProjectionsMap[nameLower] = averageProjectionsMap[key];
+        }
+      }
+
       async function loadPlayerScoring() {
         const seasonSelect = document.getElementById("scoring-season");
         const selectedYear = parseInt(seasonSelect.value);
@@ -24685,6 +24723,11 @@
           }
 
           allPlayersData = await response.json();
+
+          // For 2026 (pre-season), ensure averageProjectionsMap is populated for headshot/MLB team fallbacks
+          if (selectedYear === 2026 && Object.keys(averageProjectionsMap).length === 0) {
+            await ensureProjectionMapLoaded();
+          }
 
           // Calculate position ranks for each player
           calculatePositionRanks();
@@ -25268,13 +25311,24 @@
             }
             if (!headshot) headshot = placeholderImg;
 
+            // Resolve MLB team — fallback to averageProjectionsMap for pre-season
+            let resolvedMlbTeam = player.mlb_team || player.editorial_team_abbr || '';
+            if (!resolvedMlbTeam && typeof averageProjectionsMap !== 'undefined') {
+              const nameRaw = (player.name || '').toLowerCase().trim();
+              const nameNorm = nameRaw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              const posType = player.position_type === 'P' ? 'pitcher' : 'batter';
+              const projMatch = averageProjectionsMap[`${nameRaw}|${posType}`] || averageProjectionsMap[nameRaw] ||
+                averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm];
+              if (projMatch && projMatch.mlb_team) resolvedMlbTeam = projMatch.mlb_team;
+            }
+
             // Calculate PPG
             const games = stats.G || 0;
             const ppg = games > 0 ? (fantasyPoints / games).toFixed(2) : "-";
 
             // Get MLB logo URL and normalize team display
-            const mlbLogoUrl = getMLBTeamLogo(player.mlb_team);
-            const mlbTeamText = formatMLBTeamDisplay(player.mlb_team);
+            const mlbLogoUrl = getMLBTeamLogo(resolvedMlbTeam);
+            const mlbTeamText = formatMLBTeamDisplay(resolvedMlbTeam);
             const hasMlbLogo = mlbTeamText !== "FA" && mlbLogoUrl;
             const mlbLogoHtml = hasMlbLogo
               ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">`
