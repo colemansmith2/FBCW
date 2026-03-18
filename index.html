@@ -11706,27 +11706,28 @@
       }
 
       .matchup-bet-card {
-        background: var(--retro-blue);
-        border-radius: 8px;
+        background: #f8f9fa;
+        border-radius: 10px;
         overflow: hidden;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-        border: 2px solid var(--retro-gold-dark, #e6b800);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 2px solid var(--retro-blue);
         cursor: pointer;
-        transition: transform 0.15s, box-shadow 0.15s;
+        transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
       }
 
       .matchup-bet-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+        box-shadow: 0 6px 18px rgba(0, 72, 186, 0.15);
+        border-color: var(--retro-blue-dark, #003a99);
       }
 
       .matchup-card-header {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.35rem 1rem;
-        background: var(--retro-blue-dark, #003a99);
-        border-bottom: 2px solid var(--retro-gold-dark, #e6b800);
+        padding: 0.4rem 1rem;
+        background: var(--retro-blue);
+        border-bottom: 2px solid var(--retro-blue-dark, #003a99);
       }
 
       .matchup-card-header span {
@@ -11749,37 +11750,32 @@
         align-items: center;
         justify-content: center;
         padding: 0.75rem 0.5rem 0.65rem;
-        cursor: pointer;
-        transition: background 0.15s;
-        border: none;
-        border-radius: 0;
         min-width: 0;
-      }
-
-      .matchup-bet-team:hover {
-        background: rgba(255, 255, 255, 0.08);
-      }
-
-      .matchup-bet-team.selected {
-        background: rgba(255, 204, 0, 0.12);
-        box-shadow: inset 0 0 0 2px var(--retro-gold, #ffcc00);
+        cursor: default;
       }
 
       .matchup-bet-team-logo {
-        width: 54px;
-        height: 54px;
+        width: 58px;
+        height: 58px;
         border-radius: 50%;
         object-fit: cover;
         margin-bottom: 0.4rem;
-        border: 2px solid var(--retro-gold-dark, #e6b800);
-        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid #ddd;
+        background: #fff;
+        cursor: pointer;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+
+      .matchup-bet-team-logo:hover {
+        border-color: var(--retro-blue);
+        box-shadow: 0 0 0 2px rgba(0, 72, 186, 0.25);
       }
 
       .matchup-bet-team-name {
         font-family: "Basis33", sans-serif;
-        font-size: 0.82rem;
+        font-size: 0.85rem;
         font-weight: 700;
-        color: #fff;
+        color: #222;
         margin-bottom: 0.05rem;
         white-space: nowrap;
         overflow: hidden;
@@ -11790,8 +11786,8 @@
 
       .matchup-bet-manager {
         font-family: "Basis33", sans-serif;
-        font-size: 0.68rem;
-        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.7rem;
+        color: #888;
         margin-bottom: 0.4rem;
         font-weight: 600;
       }
@@ -11803,29 +11799,29 @@
         padding: 0.25rem 0.6rem;
         border-radius: 4px;
         cursor: pointer;
-        border: 2px solid var(--retro-gold-dark, #e6b800);
+        border: 2px solid var(--retro-blue);
         transition: all 0.15s;
         display: inline-block;
-        background: rgba(0, 0, 0, 0.3);
+        background: #fff;
       }
 
       .matchup-bet-team-odds:hover {
-        background: var(--retro-gold-dark, #e6b800);
-        color: var(--retro-blue) !important;
+        background: var(--retro-blue);
+        color: #fff !important;
       }
 
       .matchup-bet-team-odds.selected {
-        background: var(--retro-gold, #ffcc00);
-        border-color: var(--retro-gold, #ffcc00);
-        color: var(--retro-blue) !important;
+        background: var(--retro-blue);
+        border-color: var(--retro-blue);
+        color: #fff !important;
       }
 
       .matchup-bet-team-odds.favorite {
-        color: #5cff8a;
+        color: #28a745;
       }
 
       .matchup-bet-team-odds.underdog {
-        color: #ff6b6b;
+        color: #dc3545;
       }
 
       .matchup-bet-vs-label {
@@ -11841,9 +11837,11 @@
         align-items: center;
         justify-content: center;
         gap: 2px;
-        min-width: 48px;
-        padding: 0.4rem 0.2rem;
-        background: var(--retro-blue-dark, #003a99);
+        min-width: 50px;
+        padding: 0.4rem 0.25rem;
+        background: #eef1f5;
+        border-left: 1px solid #dde1e6;
+        border-right: 1px solid #dde1e6;
       }
 
       .matchup-ou-btn {
@@ -11861,28 +11859,28 @@
       }
 
       .matchup-ou-btn:hover {
-        background: rgba(255, 255, 255, 0.12);
-        border-color: var(--retro-gold-dark, #e6b800);
+        background: rgba(0, 72, 186, 0.1);
+        border-color: var(--retro-blue);
       }
 
       .matchup-ou-btn.selected {
-        background: rgba(255, 204, 0, 0.2);
-        border-color: var(--retro-gold, #ffcc00);
+        background: rgba(0, 72, 186, 0.15);
+        border-color: var(--retro-blue);
       }
 
       .matchup-ou-btn.over {
-        color: #5cff8a;
+        color: #28a745;
       }
 
       .matchup-ou-btn.under {
-        color: #ff6b6b;
+        color: #dc3545;
       }
 
       .matchup-ou-proj {
         font-family: "Basis33", sans-serif;
-        font-size: 0.82rem;
+        font-size: 0.85rem;
         font-weight: 700;
-        color: #fff;
+        color: #333;
         line-height: 1.2;
         padding: 1px 0;
       }
@@ -11894,24 +11892,24 @@
         align-items: center;
         justify-content: center;
         gap: 2px;
-        min-width: 52px;
+        min-width: 56px;
         padding: 0.4rem 0.3rem;
-        background: var(--retro-blue-dark, #003a99);
-        border-left: 2px solid var(--retro-gold-dark, #e6b800);
-        border-right: 2px solid var(--retro-gold-dark, #e6b800);
+        background: #e8ecf1;
+        border-left: 2px solid var(--retro-blue);
+        border-right: 2px solid var(--retro-blue);
       }
 
       .matchup-center-ou .matchup-ou-proj {
         font-family: "Arcade Gamer", "Press Start 2P", monospace;
         font-size: 0.58rem;
-        color: var(--retro-gold, #ffcc00);
+        color: var(--retro-blue);
         font-weight: 800;
       }
 
       .matchup-center-ou .ou-label {
         font-family: "Arcade Gamer", "Press Start 2P", monospace;
         font-size: 0.4rem;
-        color: rgba(255, 255, 255, 0.5);
+        color: #888;
         text-transform: uppercase;
         letter-spacing: 0.5px;
         font-weight: 700;
@@ -11920,10 +11918,15 @@
       .matchup-ou-column .ou-label {
         font-family: "Arcade Gamer", "Press Start 2P", monospace;
         font-size: 0.4rem;
-        color: rgba(255, 255, 255, 0.5);
+        color: #888;
         text-transform: uppercase;
         letter-spacing: 0.3px;
         font-weight: 700;
+      }
+
+      .matchup-bet-team-logo.selected {
+        border-color: var(--retro-blue);
+        box-shadow: 0 0 0 3px rgba(0, 72, 186, 0.3);
       }
 
       /* Matchup Detail Modal */
@@ -48831,17 +48834,23 @@
                                 <span>Week ${selectedWeek} &bull; Matchup</span>
                             </div>
                             <div class="matchup-card-body">
-                                <div class="matchup-bet-team"
-                                     data-bet-type="weekly_${selectedWeek}"
-                                     data-team-key="${matchup.team1_key}"
-                                     data-team-name="${t1Name}"
-                                     data-odds="${odds1}"
-                                     data-opponent="${t2Name}"
-                                     onclick="event.stopPropagation(); handleMatchupBetClick(this);">
-                                    <img class="matchup-bet-team-logo" src="${team1.logo}" alt="${t1Name}">
+                                <div class="matchup-bet-team">
+                                    <img class="matchup-bet-team-logo" src="${team1.logo}" alt="${t1Name}"
+                                         data-bet-type="weekly_${selectedWeek}"
+                                         data-team-key="${matchup.team1_key}"
+                                         data-team-name="${t1Name}"
+                                         data-odds="${odds1}"
+                                         data-opponent="${t2Name}"
+                                         onclick="event.stopPropagation(); handleMatchupBetClick(this);">
                                     <div class="matchup-bet-team-name">${team1.name}</div>
                                     <div class="matchup-bet-manager">${team1.manager}</div>
-                                    <div class="matchup-bet-team-odds ${odds1.toString().startsWith("+") ? "underdog" : "favorite"}">${odds1}</div>
+                                    <div class="matchup-bet-team-odds ${odds1.toString().startsWith("+") ? "underdog" : "favorite"}"
+                                         data-bet-type="weekly_${selectedWeek}"
+                                         data-team-key="${matchup.team1_key}"
+                                         data-team-name="${t1Name}"
+                                         data-odds="${odds1}"
+                                         data-opponent="${t2Name}"
+                                         onclick="event.stopPropagation(); handleMatchupBetClick(this);">${odds1}</div>
                                 </div>
 
                                 <div class="matchup-ou-column" onclick="event.stopPropagation();">
@@ -48895,17 +48904,23 @@
                                          onclick="handleMatchupBetClick(this)">▼</div>
                                 </div>
 
-                                <div class="matchup-bet-team"
-                                     data-bet-type="weekly_${selectedWeek}"
-                                     data-team-key="${matchup.team2_key}"
-                                     data-team-name="${t2Name}"
-                                     data-odds="${odds2}"
-                                     data-opponent="${t1Name}"
-                                     onclick="event.stopPropagation(); handleMatchupBetClick(this);">
-                                    <img class="matchup-bet-team-logo" src="${team2.logo}" alt="${t2Name}">
+                                <div class="matchup-bet-team">
+                                    <img class="matchup-bet-team-logo" src="${team2.logo}" alt="${t2Name}"
+                                         data-bet-type="weekly_${selectedWeek}"
+                                         data-team-key="${matchup.team2_key}"
+                                         data-team-name="${t2Name}"
+                                         data-odds="${odds2}"
+                                         data-opponent="${t1Name}"
+                                         onclick="event.stopPropagation(); handleMatchupBetClick(this);">
                                     <div class="matchup-bet-team-name">${team2.name}</div>
                                     <div class="matchup-bet-manager">${team2.manager}</div>
-                                    <div class="matchup-bet-team-odds ${odds2.toString().startsWith("+") ? "underdog" : "favorite"}">${odds2}</div>
+                                    <div class="matchup-bet-team-odds ${odds2.toString().startsWith("+") ? "underdog" : "favorite"}"
+                                         data-bet-type="weekly_${selectedWeek}"
+                                         data-team-key="${matchup.team2_key}"
+                                         data-team-name="${t2Name}"
+                                         data-odds="${odds2}"
+                                         data-opponent="${t1Name}"
+                                         onclick="event.stopPropagation(); handleMatchupBetClick(this);">${odds2}</div>
                                 </div>
                             </div>
                         </div>
@@ -48934,8 +48949,16 @@
 
         addToBetSlip(betType, teamKey, teamName, odds, category, opponent);
 
-        // Toggle selected state
-        dataEl.classList.toggle('selected');
+        // Toggle selected state — if logo was clicked, highlight the odds box instead
+        if (dataEl.tagName === 'IMG' && dataEl.classList.contains('matchup-bet-team-logo')) {
+          const oddsBox = dataEl.closest('.matchup-bet-team')?.querySelector('.matchup-bet-team-odds');
+          if (oddsBox) {
+            oddsBox.classList.toggle('selected');
+            dataEl.classList.toggle('selected');
+          }
+        } else {
+          dataEl.classList.toggle('selected');
+        }
       }
 
       async function showMatchupDetail(team1Key, team2Key, week) {
