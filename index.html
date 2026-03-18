@@ -11975,11 +11975,9 @@
 
       .matchup-detail-header-logo {
         position: absolute;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid var(--retro-gold);
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
         top: 50%;
         transform: translateY(-50%);
       }
@@ -12009,7 +12007,7 @@
         align-items: center;
         justify-content: center;
         line-height: 1;
-        z-index: 10;
+        z-index: 10001;
         padding: 0;
         transition: background 0.15s, transform 0.15s;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15);
@@ -48880,7 +48878,7 @@
               return `
                         <div class="matchup-bet-card" onclick="showMatchupDetail('${matchup.team1_key}', '${matchup.team2_key}', ${selectedWeek})">
                             <div class="matchup-card-header">
-                                <span>Week ${selectedWeek} &bull; Matchup</span>
+                                <span>${team1.manager} vs ${team2.manager}</span>
                             </div>
                             <div class="matchup-card-body">
                                 <div class="matchup-bet-team">
@@ -49143,11 +49141,11 @@
             <img src="${p.headshot || placeholderImg}" onerror="this.src='${placeholderImg}'" alt="">
             <div style="flex:1;min-width:0;">
               <div class="matchup-detail-player-name">${p.name}</div>
-              <div style="display:flex;align-items:center;gap:3px;margin-top:2px;">
+              <div style="display:flex;align-items:center;gap:4px;margin-top:2px;">
                 ${mlbLogoHtml}<span style="font-size:0.75rem;color:#888;">${p.mlb_team || ''}</span>
+                ${posBadgeHtml}
               </div>
             </div>
-            ${posBadgeHtml}
             <span class="matchup-detail-player-pts">${p.points.toFixed(1)}</span>
           </div>
           `;
@@ -49193,14 +49191,17 @@
         overlay.className = 'matchup-detail-overlay';
         overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
 
+        const t1Hat = `data/hats/${getManagerHatFilename(t1Manager)}`;
+        const t2Hat = `data/hats/${getManagerHatFilename(t2Manager)}`;
+
         overlay.innerHTML = `
           <div class="matchup-detail-modal">
-            <div class="matchup-detail-header">
-              <img class="matchup-detail-header-logo left" src="${t1Logo}" alt="${t1Manager}">
-              <h3>${t1Manager} vs ${t2Manager}</h3>
-              <img class="matchup-detail-header-logo right" src="${t2Logo}" alt="${t2Manager}">
-            </div>
             <button class="matchup-detail-close" onclick="this.closest('.matchup-detail-overlay').remove()">&times;</button>
+            <div class="matchup-detail-header">
+              <img class="matchup-detail-header-logo left" src="${t1Hat}" alt="${t1Manager}" onerror="this.src='${t1Logo}'; this.style.borderRadius='50%'; this.style.objectFit='cover';">
+              <h3>${t1Manager} vs ${t2Manager}</h3>
+              <img class="matchup-detail-header-logo right" src="${t2Hat}" alt="${t2Manager}" onerror="this.src='${t2Logo}'; this.style.borderRadius='50%'; this.style.objectFit='cover';">
+            </div>
             <div class="matchup-detail-body">
               <div style="text-align:center;margin-bottom:0.5rem;">
                 <span style="font-family:var(--pixel-font);font-size:0.7rem;color:#999;letter-spacing:1px;">WEEK ${week} MATCHUP</span>
