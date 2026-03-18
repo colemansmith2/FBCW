@@ -11944,51 +11944,92 @@
       .matchup-detail-modal {
         background: #f5f0e8;
         border-radius: 16px;
-        max-width: 650px;
+        max-width: 700px;
         width: 100%;
         max-height: 85vh;
         overflow-y: auto;
         box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         border: 3px solid var(--retro-blue);
+        position: relative;
       }
 
       .matchup-detail-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 1.25rem 1.5rem;
+        justify-content: center;
+        padding: 0.9rem 1.5rem;
         background: var(--retro-blue);
         color: white;
         border-radius: 13px 13px 0 0;
+        position: relative;
+        min-height: 52px;
       }
 
       .matchup-detail-header h3 {
         margin: 0;
         font-family: var(--pixel-font);
-        font-size: 1rem;
-        letter-spacing: 1px;
+        font-size: 0.85rem;
+        letter-spacing: 1.5px;
+        text-align: center;
+      }
+
+      .matchup-detail-header-logo {
+        position: absolute;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--retro-gold);
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .matchup-detail-header-logo.left {
+        left: 1rem;
+      }
+
+      .matchup-detail-header-logo.right {
+        right: 1rem;
       }
 
       .matchup-detail-close {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1.5rem;
+        position: absolute;
+        top: -14px;
+        right: -14px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #f5f0e8;
+        border: 2px solid var(--retro-gold);
+        color: var(--retro-blue);
+        font-size: 1.1rem;
+        font-weight: 800;
         cursor: pointer;
-        padding: 0 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         line-height: 1;
+        z-index: 10;
+        padding: 0;
+        transition: background 0.15s, transform 0.15s;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      }
+
+      .matchup-detail-close:hover {
+        background: #ece6dc;
+        transform: scale(1.1);
       }
 
       .matchup-detail-body {
-        padding: 1.25rem 1.5rem;
+        padding: 1.5rem 1.75rem;
       }
 
       .matchup-detail-teams {
         display: flex;
         align-items: center;
         justify-content: space-around;
-        padding: 1rem 0;
-        margin-bottom: 1rem;
+        padding: 1.25rem 0;
+        margin-bottom: 1.25rem;
         border-bottom: 2px solid #ddd;
       }
 
@@ -11997,8 +12038,8 @@
       }
 
       .matchup-detail-team img {
-        width: 60px;
-        height: 60px;
+        width: 72px;
+        height: 72px;
         border-radius: 50%;
         border: 3px solid #ddd;
         margin-bottom: 0.5rem;
@@ -12007,39 +12048,45 @@
 
       .matchup-detail-team-name {
         font-weight: 700;
-        font-size: 0.9rem;
+        font-size: 1rem;
         color: #333;
       }
 
+      .matchup-detail-team-record {
+        font-size: 0.85rem;
+        color: #888;
+        font-weight: 600;
+      }
+
       .matchup-detail-team-manager {
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         color: #888;
       }
 
       .matchup-detail-team-proj {
-        font-size: 1.1rem;
+        font-size: 1.3rem;
         font-weight: 800;
         color: var(--retro-blue);
-        margin-top: 0.25rem;
+        margin-top: 0.3rem;
       }
 
       .matchup-detail-vs {
         font-family: var(--pixel-font);
-        font-size: 0.9rem;
+        font-size: 1rem;
         color: #999;
       }
 
       .matchup-detail-section {
-        margin-bottom: 1.25rem;
+        margin-bottom: 1.5rem;
       }
 
       .matchup-detail-section-title {
         font-family: var(--pixel-font);
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         color: var(--retro-blue);
         letter-spacing: 1px;
-        margin-bottom: 0.5rem;
-        padding-bottom: 0.25rem;
+        margin-bottom: 0.6rem;
+        padding-bottom: 0.3rem;
         border-bottom: 2px solid var(--retro-gold);
       }
 
@@ -12047,19 +12094,20 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.4rem 0;
+        padding: 0.5rem 0;
         border-bottom: 1px solid #eee;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
       }
 
       .matchup-detail-h2h-year {
         font-weight: 700;
         color: #555;
-        min-width: 40px;
+        min-width: 45px;
       }
 
       .matchup-detail-h2h-result {
         font-weight: 600;
+        font-size: 0.9rem;
       }
 
       .matchup-detail-h2h-result.win {
@@ -12073,36 +12121,37 @@
       .matchup-detail-player-row {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
-        padding: 0.35rem 0;
+        gap: 0.6rem;
+        padding: 0.45rem 0;
         border-bottom: 1px solid #eee;
-        font-size: 0.8rem;
+        font-size: 0.9rem;
       }
 
       .matchup-detail-player-row img {
-        width: 28px;
-        height: 28px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
         border: 1px solid #ddd;
         object-fit: cover;
       }
 
       .matchup-detail-player-name {
-        flex: 1;
         font-weight: 600;
+        font-size: 0.9rem;
         color: #333;
       }
 
       .matchup-detail-player-pos {
         color: #888;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         min-width: 30px;
       }
 
       .matchup-detail-player-pts {
         font-weight: 700;
+        font-size: 0.95rem;
         color: var(--retro-blue);
-        min-width: 50px;
+        min-width: 55px;
         text-align: right;
       }
 
@@ -12112,7 +12161,7 @@
         gap: 2rem;
         padding: 0.75rem 0;
         margin-bottom: 0.5rem;
-        font-size: 0.85rem;
+        font-size: 0.95rem;
       }
 
       .matchup-detail-h2h-summary span {
@@ -49087,15 +49136,15 @@
 
         const topN = 5;
         const buildPlayerList = (players) => players.slice(0, topN).map(p => {
-          const mlbLogoHtml = p.mlb_team ? `<img src="${getMLBTeamLogo(p.mlb_team)}" style="width:16px;height:16px;vertical-align:middle;margin-right:2px;" onerror="this.style.display='none'" alt="">` : '';
+          const mlbLogoHtml = p.mlb_team ? `<img src="${getMLBTeamLogo(p.mlb_team)}" style="width:18px;height:18px;vertical-align:middle;margin-right:3px;" onerror="this.style.display='none'" alt="">` : '';
           const posBadgeHtml = getPositionBadge(p.position, p.name);
           return `
           <div class="matchup-detail-player-row">
             <img src="${p.headshot || placeholderImg}" onerror="this.src='${placeholderImg}'" alt="">
             <div style="flex:1;min-width:0;">
               <div class="matchup-detail-player-name">${p.name}</div>
-              <div style="display:flex;align-items:center;gap:3px;margin-top:1px;">
-                ${mlbLogoHtml}<span style="font-size:0.65rem;color:#888;">${p.mlb_team || ''}</span>
+              <div style="display:flex;align-items:center;gap:3px;margin-top:2px;">
+                ${mlbLogoHtml}<span style="font-size:0.75rem;color:#888;">${p.mlb_team || ''}</span>
               </div>
             </div>
             ${posBadgeHtml}
@@ -49104,12 +49153,25 @@
           `;
         }).join('');
 
+        // Load standings for team records
+        let t1Record = '', t2Record = '';
+        try {
+          const standingsResp = await fetch('data/current_season/standings.json');
+          if (standingsResp.ok) {
+            const standingsData = await standingsResp.json();
+            const t1Standing = standingsData.find(s => s.team_key === team1Key);
+            const t2Standing = standingsData.find(s => s.team_key === team2Key);
+            if (t1Standing) t1Record = `(${t1Standing.wins}-${t1Standing.losses})`;
+            if (t2Standing) t2Record = `(${t2Standing.wins}-${t2Standing.losses})`;
+          }
+        } catch (e) { /* ignore */ }
+
         // Build H2H record text and streak
         const h2hRecordHtml = h2hHistory.length > 0
-          ? `<div style="font-weight:800;font-size:1rem;color:#333;">${t1Wins} - ${t2Wins}</div>`
+          ? `<div style="font-weight:800;font-size:1.2rem;color:#333;">${t1Wins} - ${t2Wins}</div>`
           : '';
         const streakHtml = streakCount > 1
-          ? `<div style="font-size:0.7rem;color:#666;">Streak: <img src="${streakLogo}" style="width:14px;height:14px;border-radius:50%;vertical-align:middle;object-fit:cover;" alt=""> <strong>${streakManager}</strong> ${streakCount}W</div>`
+          ? `<div style="font-size:0.8rem;color:#666;">Streak: <img src="${streakLogo}" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;object-fit:cover;" alt=""> <strong>${streakManager}</strong> ${streakCount}W</div>`
           : '';
 
         // Build H2H table (show last 10 matchups) with logos
@@ -49119,11 +49181,11 @@
             <span class="matchup-detail-h2h-year">${h.year}</span>
             <span style="color:#888;">Wk ${h.week}</span>
             <span style="flex:1;"></span>
-            <img src="${t1Logo}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;" alt="">
-            <span class="matchup-detail-h2h-result ${h.t1Win ? 'win' : 'loss'}" style="min-width:45px;text-align:right;">${h.t1Score.toFixed(1)}</span>
-            <span style="color:#ccc;margin:0 4px;">—</span>
-            <span class="matchup-detail-h2h-result ${h.t1Win ? 'loss' : 'win'}" style="min-width:45px;">${h.t2Score.toFixed(1)}</span>
-            <img src="${t2Logo}" style="width:18px;height:18px;border-radius:50%;object-fit:cover;" alt="">
+            <img src="${t1Logo}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;" alt="">
+            <span class="matchup-detail-h2h-result ${h.t1Win ? 'win' : 'loss'}" style="min-width:50px;text-align:right;">${h.t1Score.toFixed(1)}</span>
+            <span style="color:#ccc;margin:0 6px;">—</span>
+            <span class="matchup-detail-h2h-result ${h.t1Win ? 'loss' : 'win'}" style="min-width:50px;">${h.t2Score.toFixed(1)}</span>
+            <img src="${t2Logo}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;" alt="">
           </div>
         `).join('');
 
@@ -49134,25 +49196,30 @@
         overlay.innerHTML = `
           <div class="matchup-detail-modal">
             <div class="matchup-detail-header">
-              <h3>WEEK ${week} MATCHUP</h3>
-              <button class="matchup-detail-close" onclick="this.closest('.matchup-detail-overlay').remove()">&times;</button>
+              <img class="matchup-detail-header-logo left" src="${t1Logo}" alt="${t1Manager}">
+              <h3>${t1Manager} vs ${t2Manager}</h3>
+              <img class="matchup-detail-header-logo right" src="${t2Logo}" alt="${t2Manager}">
             </div>
+            <button class="matchup-detail-close" onclick="this.closest('.matchup-detail-overlay').remove()">&times;</button>
             <div class="matchup-detail-body">
+              <div style="text-align:center;margin-bottom:0.5rem;">
+                <span style="font-family:var(--pixel-font);font-size:0.7rem;color:#999;letter-spacing:1px;">WEEK ${week} MATCHUP</span>
+              </div>
               <div class="matchup-detail-teams">
                 <div class="matchup-detail-team">
                   <img src="${t1Logo}" alt="${t1Name}">
-                  <div class="matchup-detail-team-name">${t1Name}</div>
+                  <div class="matchup-detail-team-name">${t1Name} <span class="matchup-detail-team-record">${t1Record}</span></div>
                   <div class="matchup-detail-team-manager">${t1Manager}</div>
                   ${proj1 > 0 ? `<div class="matchup-detail-team-proj">${proj1.toFixed(1)}</div>` : ''}
                 </div>
-                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
                   ${h2hRecordHtml}
                   <div class="matchup-detail-vs">VS</div>
                   ${streakHtml}
                 </div>
                 <div class="matchup-detail-team">
                   <img src="${t2Logo}" alt="${t2Name}">
-                  <div class="matchup-detail-team-name">${t2Name}</div>
+                  <div class="matchup-detail-team-name">${t2Name} <span class="matchup-detail-team-record">${t2Record}</span></div>
                   <div class="matchup-detail-team-manager">${t2Manager}</div>
                   ${proj2 > 0 ? `<div class="matchup-detail-team-proj">${proj2.toFixed(1)}</div>` : ''}
                 </div>
@@ -49161,11 +49228,11 @@
               <div style="display: flex; gap: 1.5rem;">
                 <div class="matchup-detail-section" style="flex:1;">
                   <div class="matchup-detail-section-title">TOP PLAYERS — ${t1Name}</div>
-                  ${t1Players.length > 0 ? buildPlayerList(t1Players) : '<p style="color:#888;font-size:0.8rem;">No roster data</p>'}
+                  ${t1Players.length > 0 ? buildPlayerList(t1Players) : '<p style="color:#888;font-size:0.9rem;">No roster data</p>'}
                 </div>
                 <div class="matchup-detail-section" style="flex:1;">
                   <div class="matchup-detail-section-title">TOP PLAYERS — ${t2Name}</div>
-                  ${t2Players.length > 0 ? buildPlayerList(t2Players) : '<p style="color:#888;font-size:0.8rem;">No roster data</p>'}
+                  ${t2Players.length > 0 ? buildPlayerList(t2Players) : '<p style="color:#888;font-size:0.9rem;">No roster data</p>'}
                 </div>
               </div>
 
