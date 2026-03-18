@@ -26126,21 +26126,35 @@
 
         // Try to get action shot from MLB CDN using player's MLB ID
         let mlbId = null;
-        if (player.headshot_url && player.headshot_url.includes("/people/")) {
-          const match = player.headshot_url.match(/\/people\/(\d+)\//);
+        let resolvedHeadshot = player.headshot_url && player.headshot_url.trim() ? player.headshot_url : null;
+        let resolvedMlbTeam = player.mlb_team || player.editorial_team_abbr || '';
+
+        // Fallback: use averageProjectionsMap (preseason projections) for missing data
+        if ((!resolvedHeadshot || !resolvedMlbTeam) && typeof averageProjectionsMap !== 'undefined') {
+          const nameRaw = (player.name || '').toLowerCase().trim();
+          const nameNorm = nameRaw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          const posType = player.position_type === 'P' ? 'pitcher' : 'batter';
+          const projMatch = averageProjectionsMap[`${nameRaw}|${posType}`] || averageProjectionsMap[nameRaw] ||
+            averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm];
+          if (projMatch) {
+            if (!resolvedHeadshot && projMatch.headshot) resolvedHeadshot = projMatch.headshot;
+            if (!resolvedMlbTeam && projMatch.mlb_team) resolvedMlbTeam = projMatch.mlb_team;
+          }
+        }
+
+        // Extract MLB ID from headshot URL for action shot
+        if (resolvedHeadshot && resolvedHeadshot.includes("/people/")) {
+          const match = resolvedHeadshot.match(/\/people\/(\d+)\//);
           if (match) mlbId = match[1];
         }
 
         const actionShotUrl = mlbId
           ? `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:action:hero:current.png/q_auto:best/v1/people/${mlbId}/action/hero/current`
           : null;
-        const headshot =
-          player.headshot_url && player.headshot_url.trim()
-            ? player.headshot_url
-            : placeholderHeadshot;
+        const headshot = resolvedHeadshot || placeholderHeadshot;
 
-        const mlbLogoUrl = getMLBTeamLogo(player.mlb_team);
-        const mlbTeamText = formatMLBTeamDisplay(player.mlb_team);
+        const mlbLogoUrl = getMLBTeamLogo(resolvedMlbTeam);
+        const mlbTeamText = formatMLBTeamDisplay(resolvedMlbTeam);
         const hasMlbLogo = mlbTeamText !== "FA" && mlbLogoUrl;
 
         // Check if player has a fantasy team
@@ -27091,7 +27105,7 @@
             availableSeasons.push({
               year: 2026,
               isCurrent: true,
-              label: "2026 (In Progress)",
+              label: "2026",
             });
           }
         } catch (e) {}
@@ -33132,12 +33146,12 @@
         const sectionToIndex = {
           home: 0,
           standings: 1,
-          preseason: 2,
+          scoring: 2,
           mockdraft: 3,
           valuesuite: 4,
           sportsbook: 5,
           prospects: 6,
-          scoring: 7,
+          preseason: 7,
           managers: 8,
           awards: 9,
           champions: 10,
