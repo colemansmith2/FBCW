@@ -11707,42 +11707,40 @@
       }
 
       .matchup-bet-card {
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        border-radius: 10px;
+        background: var(--retro-blue);
+        border-radius: 8px;
         overflow: hidden;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
-        border: 2px solid #2a5298;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        border: 2px solid var(--retro-gold-dark, #e6b800);
         cursor: pointer;
-        transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+        transition: transform 0.15s, box-shadow 0.15s;
       }
 
       .matchup-bet-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-        border-color: #d4af37;
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
       }
 
       .matchup-card-header {
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0.3rem 1rem;
-        background: rgba(0, 0, 0, 0.2);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.35rem 1rem;
+        background: var(--retro-blue-dark, #003a99);
+        border-bottom: 2px solid var(--retro-gold-dark, #e6b800);
       }
 
       .matchup-card-header span {
-        font-family: "Press Start 2P", monospace;
-        font-size: 0.5rem;
-        color: rgba(255, 255, 255, 0.6);
-        letter-spacing: 1px;
+        font-family: "Arcade Gamer", "Press Start 2P", monospace;
+        font-size: 0.55rem;
+        color: var(--retro-gold, #ffcc00);
+        letter-spacing: 1.5px;
         text-transform: uppercase;
       }
 
       .matchup-card-body {
         display: flex;
         align-items: stretch;
-        min-height: 0;
       }
 
       .matchup-bet-team {
@@ -11751,39 +11749,39 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 0.75rem 0.5rem 0.6rem;
+        padding: 0.75rem 0.5rem 0.65rem;
         cursor: pointer;
-        transition: all 0.15s;
-        border: 2px solid transparent;
+        transition: background 0.15s;
+        border: none;
         border-radius: 0;
-        position: relative;
+        min-width: 0;
       }
 
       .matchup-bet-team:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: transparent;
+        background: rgba(255, 255, 255, 0.08);
       }
 
       .matchup-bet-team.selected {
-        background: rgba(212, 175, 55, 0.15);
-        border-color: #d4af37;
+        background: rgba(255, 204, 0, 0.12);
+        box-shadow: inset 0 0 0 2px var(--retro-gold, #ffcc00);
       }
 
       .matchup-bet-team-logo {
-        width: 52px;
-        height: 52px;
+        width: 54px;
+        height: 54px;
         border-radius: 50%;
         object-fit: cover;
         margin-bottom: 0.4rem;
-        border: 2px solid rgba(255, 255, 255, 0.3);
+        border: 2px solid var(--retro-gold-dark, #e6b800);
         background: rgba(255, 255, 255, 0.1);
       }
 
       .matchup-bet-team-name {
-        font-size: 0.72rem;
+        font-family: "Basis33", sans-serif;
+        font-size: 0.82rem;
         font-weight: 700;
         color: #fff;
-        margin-bottom: 0.1rem;
+        margin-bottom: 0.05rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -11792,42 +11790,43 @@
       }
 
       .matchup-bet-manager {
-        font-size: 0.62rem;
+        font-family: "Basis33", sans-serif;
+        font-size: 0.68rem;
         color: rgba(255, 255, 255, 0.5);
-        margin-bottom: 0.35rem;
+        margin-bottom: 0.4rem;
         font-weight: 600;
       }
 
       .matchup-bet-team-odds {
-        font-family: "Press Start 2P", monospace;
-        font-size: 0.7rem;
+        font-family: "Arcade Gamer", "Press Start 2P", monospace;
+        font-size: 0.65rem;
         font-weight: 700;
-        padding: 0.3rem 0.65rem;
+        padding: 0.25rem 0.6rem;
         border-radius: 4px;
         cursor: pointer;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 2px solid var(--retro-gold-dark, #e6b800);
         transition: all 0.15s;
         display: inline-block;
-        background: rgba(0, 0, 0, 0.25);
+        background: rgba(0, 0, 0, 0.3);
       }
 
       .matchup-bet-team-odds:hover {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: #d4af37;
+        background: var(--retro-gold-dark, #e6b800);
+        color: var(--retro-blue) !important;
       }
 
       .matchup-bet-team-odds.selected {
-        background: rgba(212, 175, 55, 0.25);
-        border-color: #d4af37;
-        color: #d4af37 !important;
+        background: var(--retro-gold, #ffcc00);
+        border-color: var(--retro-gold, #ffcc00);
+        color: var(--retro-blue) !important;
       }
 
       .matchup-bet-team-odds.favorite {
-        color: #6dd695;
+        color: #5cff8a;
       }
 
       .matchup-bet-team-odds.underdog {
-        color: #ff8a8a;
+        color: #ff6b6b;
       }
 
       .matchup-bet-vs-label {
@@ -11843,9 +11842,9 @@
         align-items: center;
         justify-content: center;
         gap: 2px;
-        min-width: 44px;
-        padding: 0.4rem 0.15rem;
-        background: rgba(0, 0, 0, 0.15);
+        min-width: 48px;
+        padding: 0.4rem 0.2rem;
+        background: var(--retro-blue-dark, #003a99);
       }
 
       .matchup-ou-btn {
@@ -11854,36 +11853,37 @@
         justify-content: center;
         cursor: pointer;
         border-radius: 3px;
-        padding: 3px 8px;
+        padding: 4px 8px;
         border: 1px solid transparent;
         transition: all 0.15s;
-        font-size: 0.7rem;
+        font-size: 0.72rem;
         font-weight: 700;
         line-height: 1;
       }
 
       .matchup-ou-btn:hover {
-        border-color: rgba(255, 255, 255, 0.4);
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.12);
+        border-color: var(--retro-gold-dark, #e6b800);
       }
 
       .matchup-ou-btn.selected {
-        background: rgba(212, 175, 55, 0.25);
-        border-color: #d4af37;
+        background: rgba(255, 204, 0, 0.2);
+        border-color: var(--retro-gold, #ffcc00);
       }
 
       .matchup-ou-btn.over {
-        color: #6dd695;
+        color: #5cff8a;
       }
 
       .matchup-ou-btn.under {
-        color: #ff8a8a;
+        color: #ff6b6b;
       }
 
       .matchup-ou-proj {
-        font-size: 0.75rem;
+        font-family: "Basis33", sans-serif;
+        font-size: 0.82rem;
         font-weight: 700;
-        color: rgba(255, 255, 255, 0.9);
+        color: #fff;
         line-height: 1.2;
         padding: 1px 0;
       }
@@ -11895,31 +11895,33 @@
         align-items: center;
         justify-content: center;
         gap: 2px;
-        min-width: 50px;
-        padding: 0.4rem 0.25rem;
-        background: rgba(0, 0, 0, 0.3);
-        border-left: 1px solid rgba(255, 255, 255, 0.08);
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        min-width: 52px;
+        padding: 0.4rem 0.3rem;
+        background: var(--retro-blue-dark, #003a99);
+        border-left: 2px solid var(--retro-gold-dark, #e6b800);
+        border-right: 2px solid var(--retro-gold-dark, #e6b800);
       }
 
       .matchup-center-ou .matchup-ou-proj {
-        font-family: "Press Start 2P", monospace;
-        font-size: 0.6rem;
-        color: #d4af37;
+        font-family: "Arcade Gamer", "Press Start 2P", monospace;
+        font-size: 0.58rem;
+        color: var(--retro-gold, #ffcc00);
         font-weight: 800;
       }
 
       .matchup-center-ou .ou-label {
-        font-size: 0.5rem;
-        color: rgba(255, 255, 255, 0.45);
+        font-family: "Arcade Gamer", "Press Start 2P", monospace;
+        font-size: 0.4rem;
+        color: rgba(255, 255, 255, 0.5);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         font-weight: 700;
       }
 
       .matchup-ou-column .ou-label {
-        font-size: 0.5rem;
-        color: rgba(255, 255, 255, 0.45);
+        font-family: "Arcade Gamer", "Press Start 2P", monospace;
+        font-size: 0.4rem;
+        color: rgba(255, 255, 255, 0.5);
         text-transform: uppercase;
         letter-spacing: 0.3px;
         font-weight: 700;
