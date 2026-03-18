@@ -4901,47 +4901,7 @@
         white-space: nowrap;
       }
 
-      .proj-owner-cell {
-        white-space: nowrap;
-        font-size: 0.8rem;
-      }
-
-      .proj-owner-cell .roster-owner-tag img {
-        border-radius: 50%;
-        width: 18px;
-        height: 18px;
-        object-fit: cover;
-      }
-
-      .free-agent-tag {
-        color: #888;
-        font-size: 0.75rem;
-        font-style: italic;
-      }
-
-      #proj-team-filter {
-        background: white;
-        color: #333;
-        border: 1px solid var(--retro-blue);
-        border-radius: 4px;
-        padding: 0.45rem 0.6rem;
-        font-size: 0.85rem;
-        font-family: inherit;
-        cursor: pointer;
-        min-width: 160px;
-        appearance: none;
-        -webkit-appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231a2b5f' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 8px center;
-        padding-right: 28px;
-      }
-
-      #proj-team-filter:focus {
-        outline: none;
-        border-color: var(--retro-blue);
-        box-shadow: 0 0 0 2px rgba(26, 43, 95, 0.15);
-      }
+      /* Owner column and team filter removed - ownership info now on Player Scoring page */
 
       /* Keeper row styling in projections table */
       #proj-table tr.is-keeper {
@@ -20076,8 +20036,8 @@
       <button onclick="showSection('standings')" class="nav-btn">
         Seasons
       </button>
-      <button onclick="showSection('preseason')" class="nav-btn">
-        Preseason Tools
+      <button onclick="showSection('scoring')" class="nav-btn">
+        Player Scoring
       </button>
       <button onclick="showSection('mockdraft')" class="nav-btn">
         Mock Draft
@@ -20091,8 +20051,8 @@
       <button onclick="showSection('prospects')" class="nav-btn">
         Prospect Pavilion
       </button>
-      <button onclick="showSection('scoring')" class="nav-btn">
-        Player Scoring
+      <button onclick="showSection('preseason')" class="nav-btn">
+        Preseason Tools
       </button>
       <button onclick="showSection('managers')" class="nav-btn">
         Manager Profiles
@@ -20119,14 +20079,14 @@
         />
         <span class="side-nav-tooltip">Seasons</span>
       </div>
-      <div class="side-nav-item" onclick="showSection('preseason')">
+      <div class="side-nav-item" onclick="showSection('scoring')">
         <img
-          src="data/page_logos/preseason_tools_logo.png"
-          alt="Preseason Tools"
+          src="data/page_logos/player_scoring_logo.png"
+          alt="Player Scoring"
           loading="lazy"
           decoding="async"
         />
-        <span class="side-nav-tooltip">Preseason Tools</span>
+        <span class="side-nav-tooltip">Player Scoring</span>
       </div>
       <div class="side-nav-item" onclick="showSection('mockdraft')">
         <img
@@ -20164,14 +20124,14 @@
         />
         <span class="side-nav-tooltip">Prospect Pavilion</span>
       </div>
-      <div class="side-nav-item" onclick="showSection('scoring')">
+      <div class="side-nav-item" onclick="showSection('preseason')">
         <img
-          src="data/page_logos/player_scoring_logo.png"
-          alt="Player Scoring"
+          src="data/page_logos/preseason_tools_logo.png"
+          alt="Preseason Tools"
           loading="lazy"
           decoding="async"
         />
-        <span class="side-nav-tooltip">Player Scoring</span>
+        <span class="side-nav-tooltip">Preseason Tools</span>
       </div>
       <div class="side-nav-item" onclick="showSection('managers')">
         <img
@@ -21471,14 +21431,6 @@
               placeholder="Search players..."
               oninput="filterProjections()"
             />
-          </div>
-          <div class="position-filter" style="margin-left:8px;">
-            <label for="proj-team-filter">Team:</label>
-            <select id="proj-team-filter" onchange="filterProjections()">
-              <option value="all">All Teams</option>
-              <option value="rostered">Rostered</option>
-              <option value="free_agent">Free Agents</option>
-            </select>
           </div>
         </div>
 
@@ -25302,10 +25254,19 @@
             const stats = getPlayerStats(player);
             const fantasyPoints = getPlayerFantasyPoints(player);
             const isBatter = player.position_type === "B";
-            const headshot =
-              player.headshot_url && player.headshot_url.trim()
+            // Try headshot_url first, then fall back to averageProjectionsMap (preseason data)
+            let headshot = player.headshot_url && player.headshot_url.trim()
                 ? player.headshot_url
-                : placeholderImg;
+                : null;
+            if (!headshot && typeof averageProjectionsMap !== 'undefined') {
+              const nameRaw = (player.name || '').toLowerCase().trim();
+              const nameNorm = nameRaw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              const posType = player.position_type === 'P' ? 'pitcher' : 'batter';
+              const projMatch = averageProjectionsMap[`${nameRaw}|${posType}`] || averageProjectionsMap[nameRaw] ||
+                averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm];
+              if (projMatch && projMatch.headshot) headshot = projMatch.headshot;
+            }
+            if (!headshot) headshot = placeholderImg;
 
             // Calculate PPG
             const games = stats.G || 0;
@@ -27170,8 +27131,8 @@
         // Populate scoring dropdown the same way
         const scoringSelect = document.getElementById("scoring-season");
         scoringSelect.innerHTML = standingsSelect.innerHTML;
-        // Default scoring to most recent completed season (2025)
-        scoringSelect.value = "2025";
+        // Default scoring to current season (2026)
+        scoringSelect.value = "2026";
 
         return availableSeasons;
       }
@@ -35501,21 +35462,6 @@
           const teamInfoMap = {};
           (teamsData || []).forEach(t => { teamInfoMap[t.team_key] = t; });
 
-          // Populate team filter dropdown
-          const teamFilter = document.getElementById("proj-team-filter");
-          if (teamFilter && teamsData.length > 0) {
-            // Remove old team options (keep All/Rostered/FA)
-            while (teamFilter.options.length > 3) teamFilter.remove(3);
-            const optgroup = document.createElement("optgroup");
-            optgroup.label = "Fantasy Teams";
-            teamsData.forEach(t => {
-              const opt = document.createElement("option");
-              opt.value = t.team_key;
-              opt.textContent = `${t.team_name} (${t.manager})`;
-              optgroup.appendChild(opt);
-            });
-            teamFilter.appendChild(optgroup);
-          }
 
           Object.entries(mergedRosters).forEach(([teamKey, players]) => {
             const teamInfo = teamInfoMap[teamKey] || {};
@@ -35609,23 +35555,6 @@
           );
         }
 
-        // Apply team ownership filter
-        const teamFilterEl = document.getElementById("proj-team-filter");
-        const teamFilter = teamFilterEl ? teamFilterEl.value : "all";
-        if (teamFilter !== "all" && projPlayerTeamMap) {
-          if (teamFilter === "rostered") {
-            data = data.filter(p => getPlayerTeamOwner(p.name) !== null);
-          } else if (teamFilter === "free_agent") {
-            data = data.filter(p => getPlayerTeamOwner(p.name) === null);
-          } else {
-            // Specific team key
-            data = data.filter(p => {
-              const owner = getPlayerTeamOwner(p.name);
-              return owner && owner.teamKey === teamFilter;
-            });
-          }
-        }
-
         // Apply kept player filter
         if (!showKeptPlayers) {
           data = data.filter((p) => getPlayerKeeperInfo(p.name) === null);
@@ -35634,17 +35563,6 @@
         // Sort data
         data.sort((a, b) => {
           const col = projectionSort.column;
-
-          // Special handling for owner sorting
-          if (col === "owner") {
-            const ownerA = getPlayerTeamOwner(a.name);
-            const ownerB = getPlayerTeamOwner(b.name);
-            const nameA = ownerA ? ownerA.manager : "zzz"; // Free agents sort last
-            const nameB = ownerB ? ownerB.manager : "zzz";
-            return projectionSort.direction === "asc"
-              ? nameA.localeCompare(nameB)
-              : nameB.localeCompare(nameA);
-          }
 
           // Special handling for BPA sorting
           if (col === "bpa" && !showKeptPlayers) {
@@ -35755,12 +35673,11 @@
         let headers;
 
         if (isHomeView) {
-          // Home view headers: Player, Owner, Pos, Rank, Avg Pts, Std Dev, Max, Rank, Min, Rank, Avg PPG
+          // Home view headers: Player, Pos, Rank, Avg Pts, Std Dev, Max, Rank, Min, Rank, Avg PPG
           headers = `
                     <tr>
                         <th class="sortable" onclick="sortProjectionTable('rank')">#</th>
                         <th class="sortable" onclick="sortProjectionTable('name')">Player</th>
-                        <th class="sortable" onclick="sortProjectionTable('owner')">Owner</th>
                         <th class="sortable" onclick="sortProjectionTable('position')">Pos</th>
                         <th>Rank</th>
                         <th class="sortable stat-col" onclick="sortProjectionTable('avgPoints')">Avg Pts</th>
@@ -35778,7 +35695,6 @@
                     <tr>
                         <th class="sortable" onclick="sortProjectionTable('rank')">#</th>
                         <th class="sortable" onclick="sortProjectionTable('name')">Player</th>
-                        <th class="sortable" onclick="sortProjectionTable('owner')">Owner</th>
                         <th class="sortable" onclick="sortProjectionTable('position')">Pos</th>
                         <th>Rank</th>
                         <th class="sortable stat-col" onclick="sortProjectionTable('projected_points')">Proj Pts</th>
@@ -35830,9 +35746,9 @@
         // Calculate column count for round divider colspan
         let colCount;
         if (isHomeView) {
-          colCount = 12; // Home view: #, Player, Owner, Pos, Rank, Avg Pts, Std Dev, Max, Rank, Min, Rank, Avg PPG
+          colCount = 11; // Home view: #, Player, Pos, Rank, Avg Pts, Std Dev, Max, Rank, Min, Rank, Avg PPG
         } else {
-          colCount = 9; // Base columns: #, Player, Owner, Pos, Rank, Proj Pts, G, PPG + BPA when shown
+          colCount = 8; // Base columns: #, Player, Pos, Rank, Proj Pts, G, PPG + BPA when shown
           if (!showKeptPlayers) colCount++; // BPA column
           if (hasBatters && !hasPitchers)
             colCount += 6; // Batter stats
@@ -35923,12 +35839,6 @@
           const keeperInfo = getPlayerKeeperInfo(player.name);
           const isKept = keeperInfo !== null;
 
-          // Check team ownership (from merged rosters)
-          const teamOwner = getPlayerTeamOwner(player.name);
-          const ownerCell = teamOwner
-            ? `<td class="proj-owner-cell"><div class="roster-owner-tag" title="${teamOwner.teamName}">${teamOwner.teamLogo ? `<img src="${teamOwner.teamLogo}" style="width:16px;height:16px;border-radius:2px;vertical-align:middle;margin-right:4px;" onerror="this.style.display='none'">` : ""}${teamOwner.manager}</div></td>`
-            : `<td class="proj-owner-cell"><span class="free-agent-tag">Free Agent</span></td>`;
-
           // Escape player name for onclick
           const escapedName = player.name.replace(/'/g, "\\'");
 
@@ -35974,7 +35884,6 @@
                                 </div>
                             </div>
                         </td>
-                        ${ownerCell}
                         <td>${getPositionBadge(positionDisplay, player.name)}</td>
                         <td class="player-position">${positionRank}</td>
                         <td class="stat-col player-points">${avgPts.toFixed(1)}</td>
@@ -36041,7 +35950,6 @@
                                 </div>
                             </div>
                         </td>
-                        ${ownerCell}
                         <td>${getPositionBadge(positionDisplay, player.name)}</td>
                         <td class="player-position">${positionRank}</td>
                         <td class="stat-col player-points">${projPoints.toFixed(1)}</td>
