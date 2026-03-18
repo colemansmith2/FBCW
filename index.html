@@ -11951,6 +11951,7 @@
         text-transform: uppercase;
         letter-spacing: 0.3px;
         font-weight: 700;
+        margin-bottom: 0.15rem;
       }
 
       .matchup-score-value {
@@ -24127,15 +24128,33 @@
         <!-- Bet items populated by JS -->
       </div>
       <div class="bet-slip-footer">
+        <div id="bet-slip-parlay-toggle" style="display:none; padding: 0.5rem 1rem; border-top: 1px solid #eee;">
+          <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-size:0.85rem; font-weight:600; color:#333;">
+            <input type="checkbox" id="bet-slip-parlay-check" onchange="toggleParlayMode()" style="width:16px;height:16px;cursor:pointer;">
+            Parlay (combine all legs)
+          </label>
+          <div id="bet-slip-parlay-info" style="display:none; font-size:0.75rem; color:#666; margin-top:0.25rem;">
+            <span>Combined Odds: <strong id="bet-slip-parlay-odds" style="color:var(--retro-blue);">—</strong></span>
+          </div>
+        </div>
+        <div id="bet-slip-parlay-wager" style="display:none; padding: 0.4rem 1rem;">
+          <div class="bet-slip-item-wager" style="margin:0;">
+            <label>Parlay Wager:</label>
+            <div class="bet-slip-wager-stepper">
+              <button type="button" class="bet-slip-wager-btn minus" onclick="adjustParlayWager(-1)">−</button>
+              <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" value="0" id="parlay-wager-input" oninput="updateParlayWager(this.value)">
+              <button type="button" class="bet-slip-wager-btn plus" onclick="adjustParlayWager(1)">+</button>
+            </div>
+            <span class="bet-slip-item-payout" id="parlay-payout">Win: 0</span>
+          </div>
+        </div>
         <div class="bet-slip-total">
           <span>Total Wager:</span>
           <span id="bet-slip-total-wager">0 units</span>
         </div>
         <div class="bet-slip-total">
           <span>Potential Payout:</span>
-          <span id="bet-slip-potential-payout" style="color: #28a745"
-            >0 units</span
-          >
+          <span id="bet-slip-potential-payout" style="color: #28a745">0 units</span>
         </div>
         <button
           class="bet-slip-submit"
@@ -49052,17 +49071,7 @@
         const category = betType.startsWith('weekly_') ? 'weekly' : 'weekly_ou';
 
         addToBetSlip(betType, teamKey, teamName, odds, category, opponent);
-
-        // Toggle selected state — if logo was clicked, highlight the odds box instead
-        if (dataEl.tagName === 'IMG' && dataEl.classList.contains('matchup-bet-team-logo')) {
-          const oddsBox = dataEl.closest('.matchup-bet-team')?.querySelector('.matchup-bet-team-odds');
-          if (oddsBox) {
-            oddsBox.classList.toggle('selected');
-            dataEl.classList.toggle('selected');
-          }
-        } else {
-          dataEl.classList.toggle('selected');
-        }
+        // Highlights are synced automatically via updateBetSlip -> syncBetHighlights
       }
 
       async function showMatchupDetail(team1Key, team2Key, week) {
@@ -49262,7 +49271,7 @@
             <div class="matchup-detail-scroll">
             <div class="matchup-detail-body">
               <div style="text-align:center;margin-bottom:0.75rem;">
-                <span style="font-family:var(--pixel-font);font-size:1rem;color:var(--retro-blue);letter-spacing:2px;">WEEK ${week} MATCHUP</span>
+                <span style="font-family:var(--pixel-font);font-size:1rem;color:var(--retro-blue);letter-spacing:2px;font-weight:800;">WEEK ${week} MATCHUP</span>
               </div>
               <div class="matchup-detail-teams">
                 <div class="matchup-detail-team">
@@ -49375,9 +49384,25 @@
         updateBetSlip();
       }
 
+      function syncBetHighlights() {
+        // Clear all bet-related highlights
+        document.querySelectorAll('.matchup-bet-team-odds.selected, .matchup-bet-team-logo.selected, .matchup-ou-btn.selected, .season-bet-card.selected').forEach(el => {
+          el.classList.remove('selected');
+        });
+        // Re-apply highlights for bets still in the slip
+        sportsbookBetSlip.forEach(bet => {
+          // Match odds boxes and logos by data attributes
+          document.querySelectorAll(`[data-bet-type="${bet.betType}"][data-team-key="${bet.teamKey}"]`).forEach(el => {
+            el.classList.add('selected');
+          });
+        });
+      }
+
       function updateBetSlip() {
         const slip = document.getElementById("bet-slip");
         const content = document.getElementById("bet-slip-content");
+
+        syncBetHighlights();
 
         if (sportsbookBetSlip.length === 0) {
           slip.classList.remove("active");
@@ -49398,11 +49423,11 @@
                             <span class="bet-slip-item-odds">${bet.odds}</span>
                         </div>
                         <div class="bet-slip-item-type">${betTypeLabel}${bet.opponent ? " vs " + bet.opponent : ""}</div>
-                        <div class="bet-slip-item-wager">
+                        <div class="bet-slip-item-wager" ${parlayMode ? 'style="display:none"' : ''}>
                             <label>Wager:</label>
                             <div class="bet-slip-wager-stepper">
                                 <button type="button" class="bet-slip-wager-btn minus" onclick="adjustBetWager(${idx}, -1, '${bet.odds}')">−</button>
-                                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" value="${bet.wager}" 
+                                <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" value="${bet.wager}"
                                        oninput="updateBetWager(${idx}, this.value, '${bet.odds}')"
                                        id="wager-input-${idx}">
                                 <button type="button" class="bet-slip-wager-btn plus" onclick="adjustBetWager(${idx}, 1, '${bet.odds}')">+</button>
@@ -49414,6 +49439,24 @@
                 `;
           })
           .join("");
+
+        // Show/hide parlay toggle based on number of bets
+        const parlayToggle = document.getElementById('bet-slip-parlay-toggle');
+        if (parlayToggle) {
+          parlayToggle.style.display = sportsbookBetSlip.length >= 2 ? 'block' : 'none';
+          if (sportsbookBetSlip.length < 2 && parlayMode) {
+            parlayMode = false;
+            document.getElementById('bet-slip-parlay-check').checked = false;
+            document.getElementById('bet-slip-parlay-info').style.display = 'none';
+            document.getElementById('bet-slip-parlay-wager').style.display = 'none';
+          }
+          if (parlayMode) {
+            const parlayOdds = calculateParlayOdds(sportsbookBetSlip);
+            document.getElementById('bet-slip-parlay-odds').textContent = parlayOdds || '—';
+            const payout = calculateParlayPayout(parlayWager, sportsbookBetSlip);
+            document.getElementById('parlay-payout').textContent = `Win: ${payout}`;
+          }
+        }
 
         updateBetSlipTotals();
       }
@@ -49489,13 +49532,20 @@
       }
 
       function updateBetSlipTotals() {
-        const totalWager = sportsbookBetSlip.reduce(
-          (sum, bet) => sum + (bet.wager || 0),
-          0,
-        );
-        const totalPayout = sportsbookBetSlip.reduce((sum, bet) => {
-          return sum + parseFloat(calculatePayout(bet.wager, bet.odds) || 0);
-        }, 0);
+        let totalWager, totalPayout;
+
+        if (parlayMode && sportsbookBetSlip.length >= 2) {
+          totalWager = parlayWager;
+          totalPayout = parseFloat(calculateParlayPayout(parlayWager, sportsbookBetSlip) || 0);
+        } else {
+          totalWager = sportsbookBetSlip.reduce(
+            (sum, bet) => sum + (bet.wager || 0),
+            0,
+          );
+          totalPayout = sportsbookBetSlip.reduce((sum, bet) => {
+            return sum + parseFloat(calculatePayout(bet.wager, bet.odds) || 0);
+          }, 0);
+        }
 
         document.getElementById("bet-slip-total-wager").textContent =
           totalWager + " units";
@@ -49508,6 +49558,89 @@
           ) || 0;
         const submitBtn = document.getElementById("bet-slip-submit");
         submitBtn.disabled = totalWager <= 0 || totalWager > balance;
+        submitBtn.textContent = parlayMode && sportsbookBetSlip.length >= 2 ? 'Place Parlay' : 'Place Bets';
+      }
+
+      // Parlay state
+      let parlayMode = false;
+      let parlayWager = 0;
+
+      function calculateParlayOdds(bets) {
+        // Standard sportsbook parlay: multiply decimal odds of each leg
+        if (bets.length < 2) return null;
+        let decimalProduct = 1;
+        for (const bet of bets) {
+          const oddsNum = typeof bet.odds === 'string' ? parseInt(bet.odds.replace('+', '')) : bet.odds;
+          let decimal;
+          if (bet.odds.toString().startsWith('+') || oddsNum > 0) {
+            decimal = 1 + Math.abs(oddsNum) / 100;
+          } else {
+            decimal = 1 + 100 / Math.abs(oddsNum);
+          }
+          decimalProduct *= decimal;
+        }
+        // Convert back to American odds
+        if (decimalProduct >= 2) {
+          return '+' + Math.round((decimalProduct - 1) * 100);
+        } else {
+          return '-' + Math.round(100 / (decimalProduct - 1));
+        }
+      }
+
+      function calculateParlayPayout(wager, bets) {
+        if (!wager || wager <= 0 || bets.length < 2) return 0;
+        let decimalProduct = 1;
+        for (const bet of bets) {
+          const oddsNum = typeof bet.odds === 'string' ? parseInt(bet.odds.replace('+', '')) : bet.odds;
+          let decimal;
+          if (bet.odds.toString().startsWith('+') || oddsNum > 0) {
+            decimal = 1 + Math.abs(oddsNum) / 100;
+          } else {
+            decimal = 1 + 100 / Math.abs(oddsNum);
+          }
+          decimalProduct *= decimal;
+        }
+        return (wager * decimalProduct).toFixed(1);
+      }
+
+      function toggleParlayMode() {
+        parlayMode = document.getElementById('bet-slip-parlay-check').checked;
+        const parlayInfo = document.getElementById('bet-slip-parlay-info');
+        const parlayWagerDiv = document.getElementById('bet-slip-parlay-wager');
+
+        if (parlayMode) {
+          parlayInfo.style.display = 'block';
+          parlayWagerDiv.style.display = 'block';
+          const parlayOdds = calculateParlayOdds(sportsbookBetSlip);
+          document.getElementById('bet-slip-parlay-odds').textContent = parlayOdds || '—';
+          // Hide individual wager inputs
+          document.querySelectorAll('.bet-slip-item-wager').forEach(el => {
+            if (!el.closest('#bet-slip-parlay-wager')) el.style.display = 'none';
+          });
+        } else {
+          parlayInfo.style.display = 'none';
+          parlayWagerDiv.style.display = 'none';
+          parlayWager = 0;
+          document.getElementById('parlay-wager-input').value = 0;
+          // Show individual wager inputs again
+          document.querySelectorAll('.bet-slip-item-wager').forEach(el => el.style.display = '');
+        }
+        updateBetSlipTotals();
+      }
+
+      function updateParlayWager(value) {
+        parlayWager = parseFloat(value) || 0;
+        const payout = calculateParlayPayout(parlayWager, sportsbookBetSlip);
+        document.getElementById('parlay-payout').textContent = `Win: ${payout}`;
+        updateBetSlipTotals();
+      }
+
+      function adjustParlayWager(delta) {
+        const input = document.getElementById('parlay-wager-input');
+        let val = parseInt(input.value) || 0;
+        val = Math.max(0, val + delta);
+        input.value = val;
+        updateParlayWager(val);
       }
 
       // Helper function to sanitize manager keys for sportsbook Firebase paths
@@ -49535,10 +49668,9 @@
           sportsbookBalancesRef = firebaseDb.ref("sportsbook_balances");
         }
 
-        const totalWager = sportsbookBetSlip.reduce(
-          (sum, bet) => sum + (bet.wager || 0),
-          0,
-        );
+        const totalWager = (parlayMode && sportsbookBetSlip.length >= 2)
+          ? parlayWager
+          : sportsbookBetSlip.reduce((sum, bet) => sum + (bet.wager || 0), 0);
         const balance =
           parseFloat(
             document.getElementById("sportsbook-balance").textContent,
@@ -49558,40 +49690,81 @@
         const sanitizedUserKey = sanitizeSportsbookKey(sportsbookUser.manager);
 
         try {
-          // Record each bet
           const timestamp = new Date().toISOString();
-          for (const bet of sportsbookBetSlip) {
-            if (bet.wager > 0) {
-              // Find the manager of the team being bet on
-              const selectionTeam = sportsbookTeamData.find(
-                (t) => t.team_key === bet.teamKey,
-              );
-              const selectionManager = selectionTeam
-                ? normalizeManagerName(
-                    selectionTeam.manager,
-                    2026,
-                    selectionTeam.team_name,
-                    selectionTeam.team_key,
-                  )
-                : null;
 
-              await sportsbookBetsRef.push({
-                manager: sportsbookUser.manager, // Primary identifier (who placed the bet)
-                managerSanitized: sanitizedUserKey,
+          if (parlayMode && sportsbookBetSlip.length >= 2) {
+            // Submit as a single parlay bet
+            const parlayOdds = calculateParlayOdds(sportsbookBetSlip);
+            const parlayPayout = parseFloat(calculateParlayPayout(parlayWager, sportsbookBetSlip));
+            const legs = sportsbookBetSlip.map(bet => {
+              const selectionTeam = sportsbookTeamData.find(t => t.team_key === bet.teamKey);
+              const selectionManager = selectionTeam
+                ? normalizeManagerName(selectionTeam.manager, 2026, selectionTeam.team_name, selectionTeam.team_key)
+                : null;
+              return {
                 betType: bet.betType,
                 selection: bet.teamKey,
                 selectionName: bet.teamName,
-                selectionManager: selectionManager, // Manager of team being bet on (for lookups)
+                selectionManager: selectionManager,
                 opponent: bet.opponent || null,
                 odds: String(bet.odds),
-                wager: bet.wager,
-                potentialPayout: parseFloat(
-                  calculatePayout(bet.wager, bet.odds),
-                ),
-                status: "pending",
-                timestamp: timestamp,
-                season: 2026, // Track which season the bet was placed
-              });
+              };
+            });
+
+            await sportsbookBetsRef.push({
+              manager: sportsbookUser.manager,
+              managerSanitized: sanitizedUserKey,
+              betType: 'parlay',
+              isParlay: true,
+              legs: legs,
+              selectionName: legs.map(l => l.selectionName).join(' + '),
+              odds: String(parlayOdds),
+              wager: parlayWager,
+              potentialPayout: parlayPayout,
+              status: 'pending',
+              timestamp: timestamp,
+              season: 2026,
+            });
+
+            // Reset parlay state
+            parlayMode = false;
+            parlayWager = 0;
+            document.getElementById('bet-slip-parlay-check').checked = false;
+            document.getElementById('parlay-wager-input').value = 0;
+          } else {
+            // Record each bet individually
+            for (const bet of sportsbookBetSlip) {
+              if (bet.wager > 0) {
+                const selectionTeam = sportsbookTeamData.find(
+                  (t) => t.team_key === bet.teamKey,
+                );
+                const selectionManager = selectionTeam
+                  ? normalizeManagerName(
+                      selectionTeam.manager,
+                      2026,
+                      selectionTeam.team_name,
+                      selectionTeam.team_key,
+                    )
+                  : null;
+
+                await sportsbookBetsRef.push({
+                  manager: sportsbookUser.manager,
+                  managerSanitized: sanitizedUserKey,
+                  betType: bet.betType,
+                  selection: bet.teamKey,
+                  selectionName: bet.teamName,
+                  selectionManager: selectionManager,
+                  opponent: bet.opponent || null,
+                  odds: String(bet.odds),
+                  wager: bet.wager,
+                  potentialPayout: parseFloat(
+                    calculatePayout(bet.wager, bet.odds),
+                  ),
+                  status: "pending",
+                  timestamp: timestamp,
+                  season: 2026,
+                });
+              }
             }
           }
 
@@ -49679,13 +49852,37 @@
                 minute: "2-digit",
               });
 
-              // Look up current team name by manager (handles team name changes across seasons)
+              // Handle parlay bets
+              if (bet.isParlay && bet.legs) {
+                const legsList = bet.legs.map(leg => {
+                  const legLabel = getBetTypeLabel(leg.betType);
+                  return `<div style="font-size:0.75rem;padding:2px 0;border-bottom:1px solid #eee;"><strong>${leg.selectionName}</strong> <span style="color:#666;">${legLabel}</span> <span style="color:var(--retro-blue);font-weight:700;">${leg.odds}</span></div>`;
+                }).join('');
+
+                return `
+                        <tr>
+                            <td>${dateStr}</td>
+                            <td>${timeStr}</td>
+                            <td><span style="background:var(--retro-blue);color:#fff;padding:2px 6px;border-radius:3px;font-size:0.7rem;font-weight:700;">🎯 PARLAY (${bet.legs.length} Legs)</span></td>
+                            <td>
+                                <div class="bet-history-selection" style="max-width:250px;">
+                                    ${legsList}
+                                </div>
+                            </td>
+                            <td>—</td>
+                            <td style="font-weight:700;color:var(--retro-blue);">${bet.odds}</td>
+                            <td>${bet.wager} units</td>
+                            <td>${bet.potentialPayout.toFixed ? bet.potentialPayout.toFixed(1) : bet.potentialPayout} units</td>
+                            <td><span class="bet-status ${bet.status}">${bet.status.charAt(0).toUpperCase() + bet.status.slice(1)}</span></td>
+                        </tr>
+                    `;
+              }
+
+              // Standard single bet display
               let displayName = bet.selectionName;
               let managerDisplay = "";
-              let betSuffix = ""; // For over/under bets like "O10.5 W" or "U10.5 W"
+              let betSuffix = "";
 
-              // Parse out bet suffix for over/under bets
-              // Patterns: "Team Name U10.5 W", "Team Name O10.5 W", "Team Name U1234.5 pts", "Team Name O1234.5 pts"
               let teamNameForLookup = bet.selectionName;
               const overUnderMatch = bet.selectionName?.match(
                 /^(.+?)(\s+[OU]\d+\.?\d*\s+(?:W|P|pts))$/i,
@@ -49695,10 +49892,8 @@
                 betSuffix = overUnderMatch[2];
               }
 
-              // First try to use stored selectionManager (new bets)
               let lookupManager = bet.selectionManager;
 
-              // For old bets without selectionManager, look up manager from history by old team name
               if (
                 !lookupManager &&
                 teamNameForLookup &&
@@ -49718,7 +49913,6 @@
               }
 
               if (lookupManager) {
-                // Find current team by manager name
                 const currentTeam = sportsbookTeamData.find((t) => {
                   const teamManager = normalizeManagerName(
                     t.manager,
@@ -49729,7 +49923,6 @@
                   return teamManager === lookupManager;
                 });
                 if (currentTeam) {
-                  // Reconstruct display name with bet suffix if applicable
                   displayName = currentTeam.team_name + betSuffix;
                   managerDisplay = lookupManager;
                 }
