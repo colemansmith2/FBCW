@@ -22696,7 +22696,7 @@
 
         <!-- Not Logged In State -->
         <div id="sportsbook-not-logged-in" class="sportsbook-not-logged-in">
-          <h3>🎰 Welcome to King Dylan's Sportsbook</h3>
+          <h3>Welcome to King Dylan's Sportsbook</h3>
           <p>
             Place bets on season outcomes and weekly matchups using your units!
           </p>
@@ -22713,13 +22713,13 @@
                 class="sportsbook-tab-btn active"
                 onclick="switchSportsbookTab('sportsbook')"
               >
-                🎰 Sportsbook
+                Sportsbook
               </button>
               <button
                 class="sportsbook-tab-btn"
                 onclick="switchSportsbookTab('history')"
               >
-                📜 Bet History
+                Bet History
               </button>
             </div>
             <div class="sportsbook-user-info">
@@ -22753,13 +22753,13 @@
                 class="sportsbook-subtab-btn active"
                 onclick="switchSportsbookSubtab('season')"
               >
-                🏆 Season
+                Season
               </button>
               <button
                 class="sportsbook-subtab-btn"
                 onclick="switchSportsbookSubtab('weekly')"
               >
-                📅 Weekly
+                Weekly
               </button>
             </div>
 
@@ -22856,7 +22856,7 @@
           <!-- Bet History Tab -->
           <div id="sportsbook-tab-history" class="sportsbook-content">
             <h3 style="color: var(--retro-blue); margin-bottom: 1rem">
-              📜 Your Bet History
+              Your Bet History
             </h3>
             <div class="bet-history-wrapper">
               <table class="bet-history-table" id="bet-history-table">
@@ -24121,25 +24121,22 @@
     <!-- Bet Slip -->
     <div id="bet-slip" class="bet-slip">
       <div class="bet-slip-header">
-        <span>🎫 Bet Slip</span>
+        <span>Bet Slip</span>
         <button class="bet-slip-close" onclick="closeBetSlip()">×</button>
       </div>
       <div class="bet-slip-content" id="bet-slip-content">
         <!-- Bet items populated by JS -->
       </div>
       <div class="bet-slip-footer">
-        <div id="bet-slip-parlay-toggle" style="display:none; padding: 0.5rem 1rem; border-top: 1px solid #eee;">
-          <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-size:0.85rem; font-weight:600; color:#333;">
-            <input type="checkbox" id="bet-slip-parlay-check" onchange="toggleParlayMode()" style="width:16px;height:16px;cursor:pointer;">
-            Parlay (combine all legs)
-          </label>
-          <div id="bet-slip-parlay-info" style="display:none; font-size:0.75rem; color:#666; margin-top:0.25rem;">
-            <span>Combined Odds: <strong id="bet-slip-parlay-odds" style="color:var(--retro-blue);">—</strong></span>
+        <div id="bet-slip-parlay-info" style="display:none; padding: 0.5rem 1rem; border-top: 1px solid #eee;">
+          <div style="display:flex; align-items:center; justify-content:space-between; font-size:0.85rem; font-weight:700; color:var(--retro-blue);">
+            <span>PARLAY (<span id="bet-slip-parlay-leg-count">0</span> Legs)</span>
+            <span>Combined Odds: <strong id="bet-slip-parlay-odds">—</strong></span>
           </div>
         </div>
         <div id="bet-slip-parlay-wager" style="display:none; padding: 0.4rem 1rem;">
           <div class="bet-slip-item-wager" style="margin:0;">
-            <label>Parlay Wager:</label>
+            <label>Wager:</label>
             <div class="bet-slip-wager-stepper">
               <button type="button" class="bet-slip-wager-btn minus" onclick="adjustParlayWager(-1)">−</button>
               <input type="number" inputmode="numeric" pattern="[0-9]*" min="0" value="0" id="parlay-wager-input" oninput="updateParlayWager(this.value)">
@@ -49440,21 +49437,30 @@
           })
           .join("");
 
-        // Show/hide parlay toggle based on number of bets
-        const parlayToggle = document.getElementById('bet-slip-parlay-toggle');
-        if (parlayToggle) {
-          parlayToggle.style.display = sportsbookBetSlip.length >= 2 ? 'block' : 'none';
-          if (sportsbookBetSlip.length < 2 && parlayMode) {
-            parlayMode = false;
-            document.getElementById('bet-slip-parlay-check').checked = false;
-            document.getElementById('bet-slip-parlay-info').style.display = 'none';
-            document.getElementById('bet-slip-parlay-wager').style.display = 'none';
-          }
-          if (parlayMode) {
+        // Auto-parlay: 2+ bets = parlay, 1 bet = straight
+        const isParlay = sportsbookBetSlip.length >= 2;
+        parlayMode = isParlay;
+
+        const parlayInfoEl = document.getElementById('bet-slip-parlay-info');
+        const parlayWagerEl = document.getElementById('bet-slip-parlay-wager');
+        if (parlayInfoEl) {
+          parlayInfoEl.style.display = isParlay ? 'block' : 'none';
+          parlayWagerEl.style.display = isParlay ? 'block' : 'none';
+          if (isParlay) {
             const parlayOdds = calculateParlayOdds(sportsbookBetSlip);
             document.getElementById('bet-slip-parlay-odds').textContent = parlayOdds || '—';
+            document.getElementById('bet-slip-parlay-leg-count').textContent = sportsbookBetSlip.length;
             const payout = calculateParlayPayout(parlayWager, sportsbookBetSlip);
             document.getElementById('parlay-payout').textContent = `Win: ${payout}`;
+            // Hide individual wager inputs in parlay mode
+            document.querySelectorAll('.bet-slip-item-wager').forEach(el => {
+              if (!el.closest('#bet-slip-parlay-wager')) el.style.display = 'none';
+            });
+          }
+          if (!isParlay) {
+            parlayWager = 0;
+            const parlayInput = document.getElementById('parlay-wager-input');
+            if (parlayInput) parlayInput.value = 0;
           }
         }
 
@@ -49462,20 +49468,20 @@
       }
 
       function getBetTypeLabel(betType) {
-        if (betType === "champion") return "🏆 FBCW Champion";
-        if (betType === "wins") return "📈 Most Wins";
-        if (betType === "points") return "💯 Most Points";
-        if (betType === "last") return "💩 Last Place";
-        if (betType.startsWith("wins_over_")) return "📊 Wins Over";
-        if (betType.startsWith("wins_under_")) return "📊 Wins Under";
-        if (betType.startsWith("points_over_")) return "📊 Points Over";
-        if (betType.startsWith("points_under_")) return "📊 Points Under";
-        if (betType.startsWith("ou_over_")) return "📊 Player O/U Over";
-        if (betType.startsWith("ou_under_")) return "📊 Player O/U Under";
-        if (betType.startsWith("total_over_")) return "📊 Matchup Total Over";
-        if (betType.startsWith("total_under_")) return "📊 Matchup Total Under";
+        if (betType === "champion") return "FBCW Champion";
+        if (betType === "wins") return "Most Wins";
+        if (betType === "points") return "Most Points";
+        if (betType === "last") return "Last Place";
+        if (betType.startsWith("wins_over_")) return "Wins Over";
+        if (betType.startsWith("wins_under_")) return "Wins Under";
+        if (betType.startsWith("points_over_")) return "Points Over";
+        if (betType.startsWith("points_under_")) return "Points Under";
+        if (betType.startsWith("ou_over_")) return "Player O/U Over";
+        if (betType.startsWith("ou_under_")) return "Player O/U Under";
+        if (betType.startsWith("total_over_")) return "Matchup Total Over";
+        if (betType.startsWith("total_under_")) return "Matchup Total Under";
         if (betType.startsWith("weekly_"))
-          return "📅 Week " + betType.split("_")[1];
+          return "Week " + betType.split("_")[1];
         return betType;
       }
 
@@ -49601,31 +49607,6 @@
           decimalProduct *= decimal;
         }
         return (wager * decimalProduct).toFixed(1);
-      }
-
-      function toggleParlayMode() {
-        parlayMode = document.getElementById('bet-slip-parlay-check').checked;
-        const parlayInfo = document.getElementById('bet-slip-parlay-info');
-        const parlayWagerDiv = document.getElementById('bet-slip-parlay-wager');
-
-        if (parlayMode) {
-          parlayInfo.style.display = 'block';
-          parlayWagerDiv.style.display = 'block';
-          const parlayOdds = calculateParlayOdds(sportsbookBetSlip);
-          document.getElementById('bet-slip-parlay-odds').textContent = parlayOdds || '—';
-          // Hide individual wager inputs
-          document.querySelectorAll('.bet-slip-item-wager').forEach(el => {
-            if (!el.closest('#bet-slip-parlay-wager')) el.style.display = 'none';
-          });
-        } else {
-          parlayInfo.style.display = 'none';
-          parlayWagerDiv.style.display = 'none';
-          parlayWager = 0;
-          document.getElementById('parlay-wager-input').value = 0;
-          // Show individual wager inputs again
-          document.querySelectorAll('.bet-slip-item-wager').forEach(el => el.style.display = '');
-        }
-        updateBetSlipTotals();
       }
 
       function updateParlayWager(value) {
@@ -49863,7 +49844,7 @@
                         <tr>
                             <td>${dateStr}</td>
                             <td>${timeStr}</td>
-                            <td><span style="background:var(--retro-blue);color:#fff;padding:2px 6px;border-radius:3px;font-size:0.7rem;font-weight:700;">🎯 PARLAY (${bet.legs.length} Legs)</span></td>
+                            <td><span style="background:var(--retro-blue);color:#fff;padding:2px 6px;border-radius:3px;font-size:0.7rem;font-weight:700;">PARLAY (${bet.legs.length} Legs)</span></td>
                             <td>
                                 <div class="bet-history-selection" style="max-width:250px;">
                                     ${legsList}
