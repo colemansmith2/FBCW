@@ -11707,91 +11707,127 @@
       }
 
       .matchup-bet-card {
-        background: white;
-        border-radius: 12px;
-        padding: 1rem 1.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        border: 2px solid transparent;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.25);
+        border: 2px solid #2a5298;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
       }
 
       .matchup-bet-card:hover {
-        border-color: var(--retro-blue);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        border-color: #d4af37;
       }
 
-      .matchup-bet-vs {
+      .matchup-card-header {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 0.4rem;
+        justify-content: center;
+        padding: 0.3rem 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .matchup-card-header span {
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.5rem;
+        color: rgba(255, 255, 255, 0.6);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+
+      .matchup-card-body {
+        display: flex;
+        align-items: stretch;
+        min-height: 0;
       }
 
       .matchup-bet-team {
         flex: 1;
-        text-align: center;
-        padding: 0.5rem 0.25rem;
-        border-radius: 8px;
-        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 0.5rem 0.6rem;
         cursor: pointer;
+        transition: all 0.15s;
         border: 2px solid transparent;
+        border-radius: 0;
+        position: relative;
       }
 
       .matchup-bet-team:hover {
-        background: #f0f4ff;
-        border-color: var(--retro-blue);
+        background: rgba(255, 255, 255, 0.1);
+        border-color: transparent;
       }
 
       .matchup-bet-team.selected {
-        background: #fffbeb;
+        background: rgba(212, 175, 55, 0.15);
         border-color: #d4af37;
       }
 
       .matchup-bet-team-logo {
-        width: 44px;
-        height: 44px;
+        width: 52px;
+        height: 52px;
         border-radius: 50%;
         object-fit: cover;
-        margin: 0 auto 0.4rem;
-        border: 2px solid #ddd;
+        margin-bottom: 0.4rem;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
       }
 
       .matchup-bet-team-name {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #333;
-        margin-bottom: 0.15rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 0.1rem;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        max-width: 100%;
+        text-align: center;
+      }
+
+      .matchup-bet-manager {
+        font-size: 0.62rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 0.35rem;
+        font-weight: 600;
       }
 
       .matchup-bet-team-odds {
-        font-size: 0.95rem;
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.7rem;
         font-weight: 700;
-        padding: 0.25rem 0.5rem;
-        border-radius: 6px;
+        padding: 0.3rem 0.65rem;
+        border-radius: 4px;
         cursor: pointer;
-        border: 2px solid transparent;
-        transition: all 0.2s;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        transition: all 0.15s;
         display: inline-block;
-        margin-top: 0.25rem;
+        background: rgba(0, 0, 0, 0.25);
       }
 
       .matchup-bet-team-odds:hover {
-        background: #f0f4ff;
-        border-color: var(--retro-blue);
-      }
-
-      .matchup-bet-team-odds.selected {
-        background: #fffbeb;
+        background: rgba(255, 255, 255, 0.15);
         border-color: #d4af37;
       }
 
+      .matchup-bet-team-odds.selected {
+        background: rgba(212, 175, 55, 0.25);
+        border-color: #d4af37;
+        color: #d4af37 !important;
+      }
+
       .matchup-bet-team-odds.favorite {
-        color: #28a745;
+        color: #6dd695;
       }
 
       .matchup-bet-team-odds.underdog {
-        color: #dc3545;
+        color: #ff8a8a;
       }
 
       .matchup-bet-vs-label {
@@ -11800,19 +11836,16 @@
         font-size: 0.85rem;
       }
 
-      .matchup-bet-manager {
-        font-size: 0.7rem;
-        color: #888;
-        margin-bottom: 0.25rem;
-      }
-
-      /* O/U projection column in matchup card */
+      /* O/U columns */
       .matchup-ou-column {
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1px;
-        min-width: 50px;
+        justify-content: center;
+        gap: 2px;
+        min-width: 44px;
+        padding: 0.4rem 0.15rem;
+        background: rgba(0, 0, 0, 0.15);
       }
 
       .matchup-ou-btn {
@@ -11820,37 +11853,37 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        border-radius: 4px;
-        padding: 3px 10px;
-        border: 2px solid transparent;
-        transition: all 0.2s;
-        font-size: 0.75rem;
+        border-radius: 3px;
+        padding: 3px 8px;
+        border: 1px solid transparent;
+        transition: all 0.15s;
+        font-size: 0.7rem;
         font-weight: 700;
         line-height: 1;
       }
 
       .matchup-ou-btn:hover {
-        border-color: var(--retro-blue);
-        background: #f0f4ff;
+        border-color: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.1);
       }
 
       .matchup-ou-btn.selected {
-        background: #fffbeb;
+        background: rgba(212, 175, 55, 0.25);
         border-color: #d4af37;
       }
 
       .matchup-ou-btn.over {
-        color: #28a745;
+        color: #6dd695;
       }
 
       .matchup-ou-btn.under {
-        color: #dc3545;
+        color: #ff8a8a;
       }
 
       .matchup-ou-proj {
-        font-size: 0.85rem;
+        font-size: 0.75rem;
         font-weight: 700;
-        color: #333;
+        color: rgba(255, 255, 255, 0.9);
         line-height: 1.2;
         padding: 1px 0;
       }
@@ -11860,30 +11893,33 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 1px;
-        min-width: 55px;
-        padding: 0 0.25rem;
-        border-left: 1px solid #e0e0e0;
-        border-right: 1px solid #e0e0e0;
+        justify-content: center;
+        gap: 2px;
+        min-width: 50px;
+        padding: 0.4rem 0.25rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-left: 1px solid rgba(255, 255, 255, 0.08);
+        border-right: 1px solid rgba(255, 255, 255, 0.08);
       }
 
       .matchup-center-ou .matchup-ou-proj {
-        font-size: 0.9rem;
-        color: var(--retro-blue);
+        font-family: "Press Start 2P", monospace;
+        font-size: 0.6rem;
+        color: #d4af37;
         font-weight: 800;
       }
 
       .matchup-center-ou .ou-label {
-        font-size: 0.55rem;
-        color: #999;
+        font-size: 0.5rem;
+        color: rgba(255, 255, 255, 0.45);
         text-transform: uppercase;
         letter-spacing: 0.5px;
         font-weight: 700;
       }
 
       .matchup-ou-column .ou-label {
-        font-size: 0.55rem;
-        color: #999;
+        font-size: 0.5rem;
+        color: rgba(255, 255, 255, 0.45);
         text-transform: uppercase;
         letter-spacing: 0.3px;
         font-weight: 700;
@@ -48789,8 +48825,11 @@
               const t2Name = team2.name.replace(/"/g, '&quot;');
 
               return `
-                        <div class="matchup-bet-card" onclick="showMatchupDetail('${matchup.team1_key}', '${matchup.team2_key}', ${selectedWeek})" style="cursor:pointer;">
-                            <div class="matchup-bet-vs">
+                        <div class="matchup-bet-card" onclick="showMatchupDetail('${matchup.team1_key}', '${matchup.team2_key}', ${selectedWeek})">
+                            <div class="matchup-card-header">
+                                <span>Week ${selectedWeek} &bull; Matchup</span>
+                            </div>
+                            <div class="matchup-card-body">
                                 <div class="matchup-bet-team"
                                      data-bet-type="weekly_${selectedWeek}"
                                      data-team-key="${matchup.team1_key}"
