@@ -11929,6 +11929,31 @@
         box-shadow: 0 0 0 3px rgba(0, 72, 186, 0.3);
       }
 
+      .matchup-score-column {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        padding: 0.3rem 0.15rem;
+      }
+
+      .matchup-score-label {
+        font-family: "Basis33", sans-serif;
+        font-size: 0.55rem;
+        color: #999;
+        text-align: center;
+        line-height: 1.15;
+        margin-bottom: 0.2rem;
+      }
+
+      .matchup-score-value {
+        font-family: "Arcade Gamer", "Press Start 2P", monospace;
+        font-size: 0.6rem;
+        font-weight: 700;
+        color: #333;
+      }
+
       /* Matchup Detail Modal */
       .matchup-detail-overlay {
         position: fixed;
@@ -12069,8 +12094,8 @@
       .matchup-detail-vs {
         font-family: var(--pixel-font);
         font-size: 1.4rem;
-        color: var(--retro-gold);
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        color: var(--retro-blue);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
       }
 
       .matchup-detail-section {
@@ -22812,6 +22837,7 @@
                   >
                     <!-- Populated by JS -->
                   </select>
+                  <span id="sportsbook-updated-at" style="font-family: 'Basis33', sans-serif; font-size: 0.8rem; color: #888; margin-left: 1rem;"></span>
                 </div>
               </div>
               <div class="matchup-bet-grid" id="weekly-matchup-bets">
@@ -48747,6 +48773,19 @@
             weeklyStats = await response.json();
           }
 
+          // Update the "Updated at" timestamp
+          const updatedAtEl = document.getElementById('sportsbook-updated-at');
+          if (updatedAtEl) {
+            const lastUpdated = weeklyStats?.lastUpdated;
+            if (lastUpdated) {
+              const dt = new Date(lastUpdated);
+              const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+              updatedAtEl.textContent = `Updated at: ${timeStr}`;
+            } else {
+              updatedAtEl.textContent = '';
+            }
+          }
+
           const currentWeek = weeklyStats?.currentWeek || 1;
 
           // Build matchup data from weekly_stats or score files
@@ -48861,6 +48900,9 @@
                 matchup.team2_projected ||
                 0;
 
+              const score1 = matchup.team1_score || 0;
+              const score2 = matchup.team2_score || 0;
+
               // Calculate H2H odds with vig
               const odds1 = calculateMatchupOdds(proj1, proj2, matchup.team1_key, weekKey);
               const odds2 = calculateMatchupOdds(proj2, proj1, matchup.team2_key, weekKey);
@@ -48897,6 +48939,11 @@
                                          data-odds="${odds1}"
                                          data-opponent="${t2Name}"
                                          onclick="event.stopPropagation(); handleMatchupBetClick(this);">${odds1}</div>
+                                </div>
+
+                                <div class="matchup-score-column">
+                                    <div class="matchup-score-label">Current<br>Points</div>
+                                    <div class="matchup-score-value">${score1.toFixed(1)}</div>
                                 </div>
 
                                 <div class="matchup-ou-column" onclick="event.stopPropagation();">
@@ -48948,6 +48995,11 @@
                                          data-team-name="${t2Name} U${proj2Line}"
                                          data-odds="-110"
                                          onclick="handleMatchupBetClick(this)">▼</div>
+                                </div>
+
+                                <div class="matchup-score-column">
+                                    <div class="matchup-score-label">Current<br>Points</div>
+                                    <div class="matchup-score-value">${score2.toFixed(1)}</div>
                                 </div>
 
                                 <div class="matchup-bet-team">
