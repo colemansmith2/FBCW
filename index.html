@@ -49408,19 +49408,24 @@
 
         slip.classList.add("active");
 
+        // Auto-parlay: 2+ bets = parlay, 1 bet = straight (set BEFORE rendering)
+        const isParlay = sportsbookBetSlip.length >= 2;
+        parlayMode = isParlay;
+
         content.innerHTML = sportsbookBetSlip
           .map((bet, idx) => {
             const betTypeLabel = getBetTypeLabel(bet.betType);
             const payout = calculatePayout(bet.wager, bet.odds);
 
             return `
-                    <div class="bet-slip-item">
-                        <div class="bet-slip-item-header">
+                    <div class="bet-slip-item" style="position:relative;">
+                        <button class="bet-slip-item-remove" onclick="removeBetFromSlip(${idx})" style="position:absolute;top:6px;right:6px;">✕</button>
+                        <div class="bet-slip-item-header" style="padding-right:24px;">
                             <span class="bet-slip-item-team">${bet.teamName}</span>
                             <span class="bet-slip-item-odds">${bet.odds}</span>
                         </div>
                         <div class="bet-slip-item-type">${betTypeLabel}${bet.opponent ? " vs " + bet.opponent : ""}</div>
-                        <div class="bet-slip-item-wager" ${parlayMode ? 'style="display:none"' : ''}>
+                        <div class="bet-slip-item-wager" ${isParlay ? 'style="display:none"' : ''}>
                             <label>Wager:</label>
                             <div class="bet-slip-wager-stepper">
                                 <button type="button" class="bet-slip-wager-btn minus" onclick="adjustBetWager(${idx}, -1, '${bet.odds}')">−</button>
@@ -49430,16 +49435,11 @@
                                 <button type="button" class="bet-slip-wager-btn plus" onclick="adjustBetWager(${idx}, 1, '${bet.odds}')">+</button>
                             </div>
                             <span class="bet-slip-item-payout" id="payout-${idx}">Win: ${payout}</span>
-                            <button class="bet-slip-item-remove" onclick="removeBetFromSlip(${idx})">✕</button>
                         </div>
                     </div>
                 `;
           })
           .join("");
-
-        // Auto-parlay: 2+ bets = parlay, 1 bet = straight
-        const isParlay = sportsbookBetSlip.length >= 2;
-        parlayMode = isParlay;
 
         const parlayInfoEl = document.getElementById('bet-slip-parlay-info');
         const parlayWagerEl = document.getElementById('bet-slip-parlay-wager');
