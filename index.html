@@ -11947,70 +11947,68 @@
         max-width: 700px;
         width: 100%;
         max-height: 85vh;
-        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
         box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         border: 3px solid var(--retro-blue);
         position: relative;
+        overflow: visible;
+      }
+
+      .matchup-detail-scroll {
+        overflow-y: auto;
+        flex: 1;
+        min-height: 0;
+        border-radius: 0 0 13px 13px;
       }
 
       .matchup-detail-header {
         display: flex;
         align-items: center;
         justify-content: center;
+        gap: 0.75rem;
         padding: 0.9rem 1.5rem;
         background: var(--retro-blue);
         color: white;
         border-radius: 13px 13px 0 0;
-        position: relative;
-        min-height: 52px;
       }
 
       .matchup-detail-header h3 {
         margin: 0;
         font-family: var(--pixel-font);
-        font-size: 0.85rem;
-        letter-spacing: 1.5px;
+        font-size: 1.1rem;
+        letter-spacing: 2px;
         text-align: center;
       }
 
       .matchup-detail-header-logo {
-        position: absolute;
-        width: 40px;
-        height: 40px;
+        width: 38px;
+        height: 38px;
         object-fit: contain;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-
-      .matchup-detail-header-logo.left {
-        left: 1rem;
-      }
-
-      .matchup-detail-header-logo.right {
-        right: 1rem;
+        flex-shrink: 0;
       }
 
       .matchup-detail-close {
         position: absolute;
-        top: -14px;
-        right: -14px;
-        width: 32px;
-        height: 32px;
+        top: -12px;
+        right: -12px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         background: #f5f0e8;
-        border: 2px solid var(--retro-gold);
+        border: 2.5px solid var(--retro-gold);
         color: var(--retro-blue);
-        font-size: 1.1rem;
+        font-size: 1rem;
         font-weight: 800;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
         line-height: 1;
-        z-index: 10001;
+        z-index: 1;
         padding: 0;
         transition: background 0.15s, transform 0.15s;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       }
 
       .matchup-detail-close:hover {
@@ -12070,8 +12068,9 @@
 
       .matchup-detail-vs {
         font-family: var(--pixel-font);
-        font-size: 1rem;
-        color: #999;
+        font-size: 1.4rem;
+        color: var(--retro-gold);
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
       }
 
       .matchup-detail-section {
@@ -49198,13 +49197,14 @@
           <div class="matchup-detail-modal">
             <button class="matchup-detail-close" onclick="this.closest('.matchup-detail-overlay').remove()">&times;</button>
             <div class="matchup-detail-header">
-              <img class="matchup-detail-header-logo left" src="${t1Hat}" alt="${t1Manager}" onerror="this.src='${t1Logo}'; this.style.borderRadius='50%'; this.style.objectFit='cover';">
+              <img class="matchup-detail-header-logo" src="${t1Hat}" alt="${t1Manager}" onerror="this.src='${t1Logo}'; this.style.borderRadius='50%'; this.style.objectFit='cover';">
               <h3>${t1Manager} vs ${t2Manager}</h3>
-              <img class="matchup-detail-header-logo right" src="${t2Hat}" alt="${t2Manager}" onerror="this.src='${t2Logo}'; this.style.borderRadius='50%'; this.style.objectFit='cover';">
+              <img class="matchup-detail-header-logo" src="${t2Hat}" alt="${t2Manager}" onerror="this.src='${t2Logo}'; this.style.borderRadius='50%'; this.style.objectFit='cover';">
             </div>
+            <div class="matchup-detail-scroll">
             <div class="matchup-detail-body">
-              <div style="text-align:center;margin-bottom:0.5rem;">
-                <span style="font-family:var(--pixel-font);font-size:0.7rem;color:#999;letter-spacing:1px;">WEEK ${week} MATCHUP</span>
+              <div style="text-align:center;margin-bottom:0.75rem;">
+                <span style="font-family:var(--pixel-font);font-size:1rem;color:var(--retro-blue);letter-spacing:2px;">WEEK ${week} MATCHUP</span>
               </div>
               <div class="matchup-detail-teams">
                 <div class="matchup-detail-team">
@@ -49213,9 +49213,9 @@
                   <div class="matchup-detail-team-manager">${t1Manager}</div>
                   ${proj1 > 0 ? `<div class="matchup-detail-team-proj">${proj1.toFixed(1)}</div>` : ''}
                 </div>
-                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
-                  ${h2hRecordHtml}
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;padding-bottom:0.3rem;">
                   <div class="matchup-detail-vs">VS</div>
+                  ${h2hRecordHtml}
                   ${streakHtml}
                 </div>
                 <div class="matchup-detail-team">
@@ -49243,6 +49243,7 @@
                 ${h2hRows}
               </div>
               ` : ''}
+            </div>
             </div>
           </div>
         `;
