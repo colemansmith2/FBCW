@@ -11961,6 +11961,119 @@
         color: #333;
       }
 
+      /* Mobile matchup cards */
+      @media (max-width: 768px) {
+        .weekly-matchups-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .matchup-card-header span {
+          font-size: 0.45rem;
+        }
+
+        .matchup-bet-team {
+          padding: 0.5rem 0.2rem 0.4rem;
+        }
+
+        .matchup-bet-team-logo {
+          width: 40px;
+          height: 40px;
+        }
+
+        .matchup-bet-team-name {
+          font-size: 0.72rem;
+        }
+
+        .matchup-bet-manager {
+          font-size: 0.6rem;
+          margin-bottom: 0.2rem;
+        }
+
+        .matchup-bet-team-odds {
+          font-size: 0.5rem;
+          padding: 0.2rem 0.4rem;
+        }
+
+        .matchup-score-column {
+          min-width: 40px;
+          padding: 0.3rem 0.15rem;
+        }
+
+        .matchup-score-label {
+          font-size: 0.3rem;
+        }
+
+        .matchup-score-value {
+          font-size: 0.45rem;
+        }
+
+        .matchup-ou-column {
+          min-width: 36px;
+          padding: 0.3rem 0.1rem;
+        }
+
+        .matchup-ou-column .ou-label {
+          font-size: 0.3rem;
+        }
+
+        .matchup-ou-proj {
+          font-size: 0.7rem;
+        }
+
+        .matchup-ou-btn {
+          font-size: 0.6rem;
+          padding: 2px 4px;
+        }
+
+        .matchup-center-ou {
+          min-width: 42px;
+          padding: 0.3rem 0.15rem;
+        }
+
+        .matchup-center-ou .ou-label {
+          font-size: 0.3rem;
+        }
+
+        .matchup-center-ou .matchup-ou-proj {
+          font-size: 0.45rem;
+        }
+      }
+
+      @media (max-width: 400px) {
+        .matchup-score-column,
+        .matchup-ou-column,
+        .matchup-center-ou {
+          min-width: 0;
+          flex-shrink: 1;
+        }
+
+        .matchup-bet-team-logo {
+          width: 34px;
+          height: 34px;
+        }
+
+        .matchup-bet-team-name {
+          font-size: 0.62rem;
+        }
+
+        .matchup-bet-team-odds {
+          font-size: 0.42rem;
+          padding: 0.15rem 0.3rem;
+        }
+
+        .matchup-ou-proj {
+          font-size: 0.6rem;
+        }
+
+        .matchup-center-ou .matchup-ou-proj {
+          font-size: 0.38rem;
+        }
+
+        .matchup-score-value {
+          font-size: 0.38rem;
+        }
+      }
+
       /* Matchup Detail Modal */
       .matchup-detail-overlay {
         position: fixed;
@@ -12390,6 +12503,15 @@
         cursor: not-allowed;
       }
 
+      @media (max-width: 768px) {
+        .bet-slip {
+          width: calc(100% - 20px);
+          right: 10px;
+          bottom: 10px;
+          left: 10px;
+        }
+      }
+
       /* Bet History */
       .bet-history-wrapper {
         overflow-x: auto;
@@ -12446,6 +12568,11 @@
       .bet-status.lost {
         background: #f8d7da;
         color: #721c24;
+      }
+
+      .bet-status.push {
+        background: #e2e3e5;
+        color: #383d41;
       }
 
       .bet-history-selection {
