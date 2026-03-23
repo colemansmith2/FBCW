@@ -11995,82 +11995,126 @@
         }
 
         .matchup-score-column {
-          min-width: 40px;
-          padding: 0.3rem 0.15rem;
-        }
-
-        .matchup-score-label {
-          font-size: 0.3rem;
-        }
-
-        .matchup-score-value {
-          font-size: 0.45rem;
-        }
-
-        .matchup-ou-column {
           min-width: 36px;
           padding: 0.3rem 0.1rem;
         }
 
-        .matchup-ou-column .ou-label {
-          font-size: 0.3rem;
-        }
-
-        .matchup-ou-proj {
-          font-size: 0.7rem;
-        }
-
-        .matchup-ou-btn {
-          font-size: 0.6rem;
-          padding: 2px 4px;
-        }
-
-        .matchup-center-ou {
-          min-width: 42px;
-          padding: 0.3rem 0.15rem;
-        }
-
-        .matchup-center-ou .ou-label {
-          font-size: 0.3rem;
-        }
-
-        .matchup-center-ou .matchup-ou-proj {
-          font-size: 0.45rem;
-        }
-      }
-
-      @media (max-width: 400px) {
-        .matchup-score-column,
-        .matchup-ou-column,
-        .matchup-center-ou {
-          min-width: 0;
-          flex-shrink: 1;
-        }
-
-        .matchup-bet-team-logo {
-          width: 34px;
-          height: 34px;
-        }
-
-        .matchup-bet-team-name {
-          font-size: 0.62rem;
-        }
-
-        .matchup-bet-team-odds {
-          font-size: 0.42rem;
-          padding: 0.15rem 0.3rem;
-        }
-
-        .matchup-ou-proj {
-          font-size: 0.6rem;
-        }
-
-        .matchup-center-ou .matchup-ou-proj {
-          font-size: 0.38rem;
+        .matchup-score-label {
+          font-size: 0.28rem;
         }
 
         .matchup-score-value {
+          font-size: 0.42rem;
+        }
+
+        .matchup-ou-column {
+          min-width: 32px;
+          padding: 0.3rem 0.05rem;
+        }
+
+        .matchup-ou-column .ou-label {
+          font-size: 0.28rem;
+        }
+
+        .matchup-ou-proj {
+          font-size: 0.65rem;
+        }
+
+        .matchup-ou-btn {
+          font-size: 0.55rem;
+          padding: 2px 3px;
+        }
+
+        .matchup-center-ou {
+          min-width: 38px;
+          padding: 0.3rem 0.1rem;
+        }
+
+        .matchup-center-ou .ou-label {
+          font-size: 0.28rem;
+        }
+
+        .matchup-center-ou .matchup-ou-proj {
+          font-size: 0.42rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .matchup-bet-team {
+          padding: 0.4rem 0.1rem 0.3rem;
+        }
+
+        .matchup-bet-team-logo {
+          width: 32px;
+          height: 32px;
+          margin-bottom: 0.2rem;
+        }
+
+        .matchup-bet-team-name {
+          font-size: 0.6rem;
+          white-space: normal;
+          word-break: break-word;
+          line-height: 1.1;
+        }
+
+        .matchup-bet-manager {
+          font-size: 0.5rem;
+          margin-bottom: 0.15rem;
+        }
+
+        .matchup-bet-team-odds {
+          font-size: 0.4rem;
+          padding: 0.15rem 0.25rem;
+          border-width: 1.5px;
+        }
+
+        .matchup-score-column {
+          min-width: 32px;
+          padding: 0.2rem 0.1rem;
+        }
+
+        .matchup-score-label {
+          font-size: 0.22rem;
+        }
+
+        .matchup-score-value {
+          font-size: 0.4rem;
+        }
+
+        .matchup-ou-column {
+          min-width: 28px;
+          padding: 0.2rem 0.05rem;
+        }
+
+        .matchup-ou-column .ou-label {
+          font-size: 0.22rem;
+        }
+
+        .matchup-ou-proj {
+          font-size: 0.55rem;
+        }
+
+        .matchup-ou-btn {
+          font-size: 0.5rem;
+          padding: 1px 3px;
+        }
+
+        .matchup-center-ou {
+          min-width: 34px;
+          padding: 0.2rem 0.1rem;
+        }
+
+        .matchup-center-ou .ou-label {
+          font-size: 0.22rem;
+        }
+
+        .matchup-center-ou .matchup-ou-proj {
+          font-size: 0.4rem;
+        }
+
+        .matchup-card-header span {
           font-size: 0.38rem;
+          letter-spacing: 1px;
         }
       }
 
@@ -49837,8 +49881,8 @@
             // Reset parlay state
             parlayMode = false;
             parlayWager = 0;
-            document.getElementById('bet-slip-parlay-check').checked = false;
-            document.getElementById('parlay-wager-input').value = 0;
+            const parlayWagerInput = document.getElementById('parlay-wager-input');
+            if (parlayWagerInput) parlayWagerInput.value = 0;
           } else {
             // Record each bet individually
             for (const bet of sportsbookBetSlip) {
