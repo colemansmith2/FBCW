@@ -49872,6 +49872,7 @@
                                          data-team-name="${t1Name}"
                                          data-odds="${odds1}"
                                          data-opponent="${t2Name}"
+                                         data-opponent-key="${matchup.team2_key}"
                                          onclick="event.stopPropagation(); handleMatchupBetClick(this);">
                                     <div class="matchup-bet-team-name">${team1.name}</div>
                                     <div class="matchup-bet-manager">${team1.manager}</div>
@@ -49881,6 +49882,7 @@
                                          data-team-name="${t1Name}"
                                          data-odds="${odds1}"
                                          data-opponent="${t2Name}"
+                                         data-opponent-key="${matchup.team2_key}"
                                          onclick="event.stopPropagation(); handleMatchupBetClick(this);">${odds1}</div>
                                 </div>
 
@@ -49896,6 +49898,7 @@
                                          data-team-key="${matchup.team1_key}"
                                          data-team-name="${t1Name} O${proj1Line}"
                                          data-odds="-110"
+                                         data-opponent-key="${matchup.team2_key}"
                                          onclick="handleMatchupBetClick(this)">▲</div>
                                     <div class="matchup-ou-proj">${proj1.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
@@ -49903,6 +49906,7 @@
                                          data-team-key="${matchup.team1_key}"
                                          data-team-name="${t1Name} U${proj1Line}"
                                          data-odds="-110"
+                                         data-opponent-key="${matchup.team2_key}"
                                          onclick="handleMatchupBetClick(this)">▼</div>
                                 </div>
 
@@ -49913,6 +49917,7 @@
                                          data-team-key="${matchup.team1_key}"
                                          data-team-name="O${matchupTotal} (${t1Name} vs ${t2Name})"
                                          data-odds="-110"
+                                         data-opponent-key="${matchup.team2_key}"
                                          onclick="handleMatchupBetClick(this)">▲</div>
                                     <div class="matchup-ou-proj">${matchupTotal.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
@@ -49920,6 +49925,7 @@
                                          data-team-key="${matchup.team1_key}"
                                          data-team-name="U${matchupTotal} (${t1Name} vs ${t2Name})"
                                          data-odds="-110"
+                                         data-opponent-key="${matchup.team2_key}"
                                          onclick="handleMatchupBetClick(this)">▼</div>
                                 </div>
 
@@ -49930,6 +49936,7 @@
                                          data-team-key="${matchup.team2_key}"
                                          data-team-name="${t2Name} O${proj2Line}"
                                          data-odds="-110"
+                                         data-opponent-key="${matchup.team1_key}"
                                          onclick="handleMatchupBetClick(this)">▲</div>
                                     <div class="matchup-ou-proj">${proj2.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
@@ -49937,6 +49944,7 @@
                                          data-team-key="${matchup.team2_key}"
                                          data-team-name="${t2Name} U${proj2Line}"
                                          data-odds="-110"
+                                         data-opponent-key="${matchup.team1_key}"
                                          onclick="handleMatchupBetClick(this)">▼</div>
                                 </div>
 
@@ -49952,6 +49960,7 @@
                                          data-team-name="${t2Name}"
                                          data-odds="${odds2}"
                                          data-opponent="${t1Name}"
+                                         data-opponent-key="${matchup.team1_key}"
                                          onclick="event.stopPropagation(); handleMatchupBetClick(this);">
                                     <div class="matchup-bet-team-name">${team2.name}</div>
                                     <div class="matchup-bet-manager">${team2.manager}</div>
@@ -49961,6 +49970,7 @@
                                          data-team-name="${t2Name}"
                                          data-odds="${odds2}"
                                          data-opponent="${t1Name}"
+                                         data-opponent-key="${matchup.team1_key}"
                                          onclick="event.stopPropagation(); handleMatchupBetClick(this);">${odds2}</div>
                                 </div>
                             </div>
@@ -49986,9 +49996,10 @@
         const teamName = dataEl.dataset.teamName;
         const odds = dataEl.dataset.odds;
         const opponent = dataEl.dataset.opponent || null;
+        const opponentKey = dataEl.dataset.opponentKey || null;
         const category = betType.startsWith('weekly_') ? 'weekly' : 'weekly_ou';
 
-        addToBetSlip(betType, teamKey, teamName, odds, category, opponent);
+        addToBetSlip(betType, teamKey, teamName, odds, category, opponent, opponentKey);
         // Highlights are synced automatically via updateBetSlip -> syncBetHighlights
       }
 
@@ -50278,6 +50289,7 @@
         odds,
         category,
         opponent = null,
+        opponentKey = null,
       ) {
         // Check if already in slip
         const existingIndex = sportsbookBetSlip.findIndex(
@@ -50295,6 +50307,7 @@
             odds,
             category,
             opponent,
+            opponentKey,
             wager: 0,
           });
         }
@@ -50603,12 +50616,18 @@
               const selectionManager = selectionTeam
                 ? normalizeManagerName(selectionTeam.manager, 2026, selectionTeam.team_name, selectionTeam.team_key)
                 : null;
+              const opponentTeam = bet.opponentKey ? sportsbookTeamData.find(t => t.team_key === bet.opponentKey) : null;
+              const opponentManager = opponentTeam
+                ? normalizeManagerName(opponentTeam.manager, 2026, opponentTeam.team_name, opponentTeam.team_key)
+                : null;
               return {
                 betType: bet.betType,
                 selection: bet.teamKey,
                 selectionName: bet.teamName,
                 selectionManager: selectionManager,
                 opponent: bet.opponent || null,
+                opponentKey: bet.opponentKey || null,
+                opponentManager: opponentManager,
                 odds: String(bet.odds),
               };
             });
@@ -50648,6 +50667,17 @@
                       selectionTeam.team_key,
                     )
                   : null;
+                const opponentTeam = bet.opponentKey
+                  ? sportsbookTeamData.find((t) => t.team_key === bet.opponentKey)
+                  : null;
+                const opponentManager = opponentTeam
+                  ? normalizeManagerName(
+                      opponentTeam.manager,
+                      2026,
+                      opponentTeam.team_name,
+                      opponentTeam.team_key,
+                    )
+                  : null;
 
                 await sportsbookBetsRef.push({
                   manager: sportsbookUser.manager,
@@ -50657,6 +50687,8 @@
                   selectionName: bet.teamName,
                   selectionManager: selectionManager,
                   opponent: bet.opponent || null,
+                  opponentKey: bet.opponentKey || null,
+                  opponentManager: opponentManager,
                   odds: String(bet.odds),
                   wager: bet.wager,
                   potentialPayout: parseFloat(
