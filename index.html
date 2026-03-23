@@ -2553,6 +2553,179 @@
         color: #6c757d;
       }
 
+      /* Team Value View Toggle */
+      .team-value-view-toggle {
+        display: flex;
+        gap: 0;
+        border-radius: 6px;
+        overflow: hidden;
+        border: 2px solid var(--retro-blue);
+      }
+      .tv-toggle-btn {
+        font-family: "Arcade Gamer", "Press Start 2P", monospace;
+        font-size: 0.55rem;
+        padding: 0.4rem 1rem;
+        border: none;
+        background: #fff;
+        color: var(--retro-blue);
+        cursor: pointer;
+        font-weight: 700;
+        letter-spacing: 1px;
+        transition: background 0.15s, color 0.15s;
+      }
+      .tv-toggle-btn:first-child {
+        border-right: 1px solid var(--retro-blue);
+      }
+      .tv-toggle-btn.active {
+        background: var(--retro-blue);
+        color: #fff;
+      }
+      .tv-toggle-btn:hover:not(.active) {
+        background: #e8ecf1;
+      }
+
+      /* Position Rankings Table */
+      .pos-rank-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+      }
+      .pos-rank-table th {
+        background: var(--retro-blue);
+        color: white;
+        padding: 0.45rem 0.4rem;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.72rem;
+        white-space: nowrap;
+      }
+      .pos-rank-table th:first-child {
+        text-align: left;
+        border-radius: 6px 0 0 0;
+        padding-left: 0.6rem;
+      }
+      .pos-rank-table th:last-child {
+        border-radius: 0 6px 0 0;
+      }
+      .pos-rank-table td {
+        padding: 0.4rem 0.3rem;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+        text-align: center;
+      }
+      .pos-rank-table td:first-child {
+        text-align: left;
+        padding-left: 0.6rem;
+      }
+      .pos-rank-table tr:hover {
+        background: #f8f9fa;
+      }
+      .pos-rank-table .team-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+      }
+      .pos-rank-table .team-logo-sm {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+      .pos-rank-cell {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 24px;
+        border-radius: 4px;
+        color: #fff;
+        font-weight: 800;
+        font-size: 0.72rem;
+        font-family: "Basis33", sans-serif;
+        cursor: default;
+        position: relative;
+      }
+      .pos-rank-tooltip {
+        display: none;
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: #1a1a2e;
+        color: #fff;
+        padding: 0.5rem 0.65rem;
+        border-radius: 8px;
+        font-size: 0.68rem;
+        font-family: "Basis33", sans-serif;
+        white-space: nowrap;
+        z-index: 100;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        pointer-events: none;
+        min-width: 120px;
+        text-align: left;
+      }
+      .pos-rank-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #1a1a2e;
+      }
+      .pos-rank-cell:hover .pos-rank-tooltip {
+        display: block;
+      }
+      .pos-rank-tooltip .tooltip-player {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.15rem 0;
+      }
+      .pos-rank-tooltip .tooltip-player img {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .pos-rank-tooltip .tooltip-pts {
+        color: var(--retro-gold);
+        font-weight: 700;
+        margin-left: auto;
+        padding-left: 0.5rem;
+      }
+      .pos-rank-total-cell {
+        font-weight: 800;
+        font-size: 0.82rem;
+        color: var(--retro-blue);
+      }
+
+      @media (max-width: 768px) {
+        .pos-rank-table {
+          font-size: 0.72rem;
+        }
+        .pos-rank-table th {
+          font-size: 0.6rem;
+          padding: 0.35rem 0.2rem;
+        }
+        .pos-rank-table td {
+          padding: 0.35rem 0.15rem;
+        }
+        .pos-rank-cell {
+          width: 24px;
+          height: 20px;
+          font-size: 0.62rem;
+        }
+        .pos-rank-table .team-logo-sm {
+          width: 22px;
+          height: 22px;
+        }
+        .team-value-view-toggle {
+          margin-top: 0.5rem;
+        }
+      }
+
       /* Team Value Cards Grid */
       .team-value-grid {
         display: grid;
@@ -22345,11 +22518,16 @@
         </div>
 
         <div class="keeper-value-section" id="keeper-value-section">
-          <div class="keeper-value-header">
-            <h3>Keeper Value Analysis</h3>
-            <div style="font-size: 0.85rem; color: #666">
-              Comparing keeper projections vs. historical draft pick value
-              (2019-2025)
+          <div class="keeper-value-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <h3 style="margin: 0;">Team Value Analysis</h3>
+              <div style="font-size: 0.85rem; color: #666">
+                Position-by-position team strength rankings
+              </div>
+            </div>
+            <div class="team-value-view-toggle">
+              <button id="tv-season-btn" class="tv-toggle-btn active" onclick="switchTeamValueView('season')">Season</button>
+              <button id="tv-value-btn" class="tv-toggle-btn" onclick="switchTeamValueView('value')">Value</button>
             </div>
           </div>
 
@@ -22358,57 +22536,56 @@
             class="keeper-value-loading"
             style="display: none"
           >
-            Analyzing keeper values...
+            Analyzing team values...
           </div>
 
           <div id="keeper-value-content">
-            <!-- Expected Points Chart + Rankings -->
-            <div class="expected-points-container">
-              <div class="expected-points-chart-wrapper">
-                <h4>Expected Points by Draft Round</h4>
-                <div class="expected-points-chart">
-                  <canvas id="expected-points-chart"></canvas>
-                </div>
-              </div>
-              <div class="value-rankings-wrapper">
-                <h4>Team Value Rankings</h4>
-                <table class="value-rankings-table" id="value-rankings-table">
-                  <thead>
-                    <tr>
-                      <th>Team</th>
-                      <th>Top Value Players</th>
-                      <th
-                        class="sortable-header"
-                        data-sort="keeperValue"
-                        onclick="sortValueRankings('keeperValue')"
-                      >
-                        Keeper<br />Value <span class="sort-icon"></span>
-                      </th>
-                      <th>Top Picks</th>
-                      <th
-                        class="sortable-header"
-                        data-sort="draftValue"
-                        onclick="sortValueRankings('draftValue')"
-                      >
-                        Draft<br />Value <span class="sort-icon"></span>
-                      </th>
-                      <th
-                        class="sortable-header active"
-                        data-sort="total"
-                        onclick="sortValueRankings('total')"
-                      >
-                        Total <span class="sort-icon">▼</span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody id="value-rankings-body">
-                    <!-- Populated by JS -->
-                  </tbody>
-                </table>
+            <!-- Team Position Rankings (NEW) -->
+            <div class="value-rankings-wrapper" style="margin-top: 1rem;">
+              <div id="team-position-rankings-container">
+                <!-- Populated by JS -->
               </div>
             </div>
 
-            <!-- Position Value Chart -->
+            <!-- Team Value Cards -->
+            <h4 style="color: var(--retro-blue); margin: 1.5rem 0 1rem">
+              Team Keeper Breakdown
+            </h4>
+            <div class="team-value-grid" id="team-value-grid">
+              <!-- Populated by JS -->
+            </div>
+
+            <!-- Prospects Section -->
+            <div
+              class="prospects-value-section"
+              id="prospects-value-section"
+              style="display: none"
+            >
+              <h4>Prospect Value (Free Keepers)</h4>
+              <p style="font-size: 0.85rem; color: #666; margin: 0 0 1rem">
+                Prospects cost nothing to keep, so their entire projection is
+                pure value.
+              </p>
+              <div class="prospects-grid" id="prospects-value-grid">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Scatter Plot - Projected Points -->
+            <div class="value-scatter-wrapper">
+              <h4>All Keepers: Projected Points vs. Keeper Cost</h4>
+              <div
+                style="font-size: 0.8rem; color: #666; margin-bottom: 0.75rem"
+              >
+                Hover over points to see player details. Green = above expected,
+                Red = below expected.
+              </div>
+              <div class="value-scatter-chart">
+                <canvas id="value-scatter-chart"></canvas>
+              </div>
+            </div>
+
+            <!-- Position Value Chart (moved to bottom) -->
             <div class="position-value-section" style="margin-top: 2rem">
               <div
                 style="
@@ -22458,41 +22635,13 @@
               </div>
             </div>
 
-            <!-- Team Value Cards -->
-            <h4 style="color: var(--retro-blue); margin: 1.5rem 0 1rem">
-              Team Keeper Breakdown
-            </h4>
-            <div class="team-value-grid" id="team-value-grid">
-              <!-- Populated by JS -->
-            </div>
-
-            <!-- Prospects Section -->
-            <div
-              class="prospects-value-section"
-              id="prospects-value-section"
-              style="display: none"
-            >
-              <h4>🌟 Prospect Value (Free Keepers)</h4>
-              <p style="font-size: 0.85rem; color: #666; margin: 0 0 1rem">
-                Prospects cost nothing to keep, so their entire projection is
-                pure value.
-              </p>
-              <div class="prospects-grid" id="prospects-value-grid">
-                <!-- Populated by JS -->
-              </div>
-            </div>
-
-            <!-- Scatter Plot - Projected Points -->
-            <div class="value-scatter-wrapper">
-              <h4>All Keepers: Projected Points vs. Keeper Cost</h4>
-              <div
-                style="font-size: 0.8rem; color: #666; margin-bottom: 0.75rem"
-              >
-                Hover over points to see player details. Green = above expected,
-                Red = below expected.
-              </div>
-              <div class="value-scatter-chart">
-                <canvas id="value-scatter-chart"></canvas>
+            <!-- Expected Points Chart (moved to bottom) -->
+            <div class="expected-points-container" style="margin-top: 2rem;">
+              <div class="expected-points-chart-wrapper">
+                <h4>Expected Points by Draft Round</h4>
+                <div class="expected-points-chart">
+                  <canvas id="expected-points-chart"></canvas>
+                </div>
               </div>
             </div>
           </div>
@@ -43443,14 +43592,16 @@
         // Step 5: Check if we have keeper selections from Firebase
         const hasKeeperSelections = Object.keys(keeperSelections).length > 0;
 
-        if (!hasKeeperSelections) {
-          // Show placeholder messages but keep the expected points chart visible
-          const rankingsBody = document.getElementById("value-rankings-body");
-          if (rankingsBody) {
-            rankingsBody.innerHTML =
-              '<tr><td colspan="4" style="text-align: center; color: #666; font-style: italic; padding: 1rem;">Waiting for keeper selections from Firebase...</td></tr>';
-          }
+        // Build position rankings regardless of keeper selections (uses roster data)
+        try {
+          await buildTeamPositionRankings();
+          renderTeamPositionRankings();
+        } catch (e) {
+          console.error("Error building position rankings:", e);
+        }
 
+        if (!hasKeeperSelections) {
+          // Show placeholder messages but keep position rankings and expected points visible
           const teamGrid = document.getElementById("team-value-grid");
           if (teamGrid) {
             teamGrid.innerHTML =
@@ -43705,11 +43856,17 @@
           allKeepers: allKeepers,
         };
 
-        // Step 7: Render all components
+        // Step 7: Build and render position rankings (new primary table)
+        try {
+          await buildTeamPositionRankings();
+          renderTeamPositionRankings();
+        } catch (e) {
+          console.error("Error building position rankings:", e);
+        }
+
+        // Step 8: Render legacy components
         try {
           renderValueRankings(teamValues);
-          // Apply initial sort by Total descending
-          // Reset sort state first to ensure descending order
           valueRankingsSortColumn = "";
           sortValueRankings("total");
         } catch (e) {
@@ -43717,8 +43874,7 @@
         }
 
         try {
-          // Render Position Value chart
-          positionValueData = null; // Reset to recalculate
+          positionValueData = null;
           renderPositionValueChart();
         } catch (e) {
           console.error("Error rendering position value chart:", e);
@@ -44634,6 +44790,438 @@
         rows.forEach((row) => {
           tbody.appendChild(row);
         });
+      }
+
+      // ===== TEAM POSITION RANKINGS =====
+      let teamValueCurrentView = 'season';
+      let teamPositionRankingsData = null;
+
+      function switchTeamValueView(view) {
+        teamValueCurrentView = view;
+        document.getElementById('tv-season-btn').classList.toggle('active', view === 'season');
+        document.getElementById('tv-value-btn').classList.toggle('active', view === 'value');
+        renderTeamPositionRankings();
+      }
+
+      // Get rank color: 1=green, 6=yellow, 12=red
+      function getRankColor(rank, total) {
+        const t = (rank - 1) / Math.max(total - 1, 1);
+        // Green -> Yellow -> Red
+        let r, g, b;
+        if (t <= 0.5) {
+          // Green to Yellow
+          const s = t / 0.5;
+          r = Math.round(40 + s * 215);
+          g = Math.round(167 - s * 30);
+          b = Math.round(69 - s * 62);
+        } else {
+          // Yellow to Red
+          const s = (t - 0.5) / 0.5;
+          r = Math.round(255 - s * 35);
+          g = Math.round(137 - s * 84);
+          b = Math.round(7 + s * 46);
+        }
+        return `rgb(${r},${g},${b})`;
+      }
+
+      function getPlayerSeasonScore(playerName) {
+        // Get average projection (works pre-season or as fallback)
+        const avgProj = getAverageProjection(playerName);
+        // TODO: When season is in progress, blend actual stats + ROS projection
+        // For now, preseason: just use average projection
+        return avgProj;
+      }
+
+      function getPlayerHeadshot(playerName) {
+        const nameLower = (playerName || '').toLowerCase().trim();
+        const nameNorm = nameLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const proj = averageProjectionsMap[nameLower] || averageProjectionsMap[nameNorm] || {};
+        return proj.headshot || '';
+      }
+
+      // Optimal position assignment for a team's roster
+      function assignOptimalPositions(players) {
+        const BATTER_SLOTS = ['C', '1B', '2B', '3B', 'SS'];
+        const OF_COUNT = 3;
+        const UTIL_COUNT = 4;
+
+        // Separate batters and pitchers
+        const batters = players.filter(p => p.position_type === 'B');
+        const pitchers = players.filter(p => p.position_type === 'P');
+
+        // Score each player
+        const scoredBatters = batters.map(p => ({
+          ...p,
+          score: getPlayerSeasonScore(p.name)
+        })).sort((a, b) => b.score - a.score);
+
+        const scoredPitchers = pitchers.map(p => ({
+          ...p,
+          score: getPlayerSeasonScore(p.name)
+        })).sort((a, b) => b.score - a.score);
+
+        const assigned = {};
+        const used = new Set();
+
+        // Helper: check if player is eligible for a position
+        function isEligible(player, pos) {
+          const eligible = player.eligible_positions || [];
+          if (pos === 'OF') return eligible.some(p => ['OF', 'LF', 'CF', 'RF'].includes(p));
+          return eligible.includes(pos);
+        }
+
+        // 1) Fill primary batting positions (C, 1B, 2B, 3B, SS)
+        for (const pos of BATTER_SLOTS) {
+          assigned[pos] = [];
+          for (const p of scoredBatters) {
+            if (used.has(p.name) || !isEligible(p, pos)) continue;
+            assigned[pos].push(p);
+            used.add(p.name);
+            break;
+          }
+        }
+
+        // 2) Fill OF (3 slots)
+        assigned['OF'] = [];
+        for (const p of scoredBatters) {
+          if (assigned['OF'].length >= OF_COUNT) break;
+          if (used.has(p.name) || !isEligible(p, 'OF')) continue;
+          assigned['OF'].push(p);
+          used.add(p.name);
+        }
+
+        // 3) Fill Util (4 slots) - next best batters regardless of position
+        assigned['Util'] = [];
+        for (const p of scoredBatters) {
+          if (assigned['Util'].length >= UTIL_COUNT) break;
+          if (used.has(p.name)) continue;
+          assigned['Util'].push(p);
+          used.add(p.name);
+        }
+
+        // 4) All pitchers into P
+        assigned['P'] = scoredPitchers.filter(p => {
+          // Include active roster pitchers (not just starters - all rostered)
+          return p.selected_position !== 'IL' && p.selected_position !== 'NA';
+        });
+
+        return assigned;
+      }
+
+      // Assign players by primary position for Value view (no Util)
+      function assignValuePositions(players, prospects) {
+        const positions = ['C', '1B', '2B', '3B', 'SS', 'OF', 'P'];
+        const assigned = {};
+        positions.forEach(p => assigned[p] = []);
+
+        // Combine roster players + prospects
+        const allPlayers = [...players];
+        if (prospects && prospects.length) {
+          prospects.forEach(pr => {
+            allPlayers.push({
+              name: pr.player_name || pr.name,
+              position_type: ['SP', 'RP', 'P'].includes(pr.position) ? 'P' : 'B',
+              primary_position: pr.position || 'Util',
+              eligible_positions: pr.eligible_positions || [pr.position || 'Util'],
+              is_prospect: true,
+              tradeValue: pr.tradeValue || 0
+            });
+          });
+        }
+
+        // Score using trade value
+        const scored = allPlayers.map(p => ({
+          ...p,
+          value: p.tradeValue || 0
+        }));
+
+        // Sort by value descending
+        scored.sort((a, b) => b.value - a.value);
+
+        const used = new Set();
+
+        // Helper to get primary position category
+        function getPrimaryCat(player) {
+          const primary = (player.primary_position || '').toUpperCase();
+          if (['SP', 'RP', 'P'].includes(primary)) return 'P';
+          if (['LF', 'CF', 'RF', 'OF'].includes(primary)) return 'OF';
+          if (['C', '1B', '2B', '3B', 'SS'].includes(primary)) return primary;
+          return null;
+        }
+
+        // Helper to get secondary positions
+        function getSecondaryPositions(player) {
+          const eligible = (player.eligible_positions || []).map(p => p.toUpperCase());
+          const cats = new Set();
+          eligible.forEach(pos => {
+            if (['SP', 'RP', 'P'].includes(pos)) cats.add('P');
+            else if (['LF', 'CF', 'RF', 'OF'].includes(pos)) cats.add('OF');
+            else if (['C', '1B', '2B', '3B', 'SS'].includes(pos)) cats.add(pos);
+          });
+          return [...cats];
+        }
+
+        // Pass 1: Assign by primary position
+        for (const player of scored) {
+          if (used.has(player.name)) continue;
+          const cat = getPrimaryCat(player);
+          if (cat && assigned[cat] !== undefined) {
+            assigned[cat].push(player);
+            used.add(player.name);
+          }
+        }
+
+        // Pass 2: Fill empty positions using secondary eligibility
+        for (const pos of positions) {
+          if (pos === 'P') continue; // pitchers handled
+          if (assigned[pos].length === 0) {
+            for (const player of scored) {
+              if (used.has(player.name)) continue;
+              const secondaries = getSecondaryPositions(player);
+              if (secondaries.includes(pos)) {
+                assigned[pos].push(player);
+                used.add(player.name);
+                break;
+              }
+            }
+          }
+        }
+
+        return assigned;
+      }
+
+      async function buildTeamPositionRankings() {
+        // Load rosters
+        const mergedRosters = await loadMergedRosters();
+        if (!mergedRosters || Object.keys(mergedRosters).length === 0) return null;
+
+        // Load teams data
+        let teamsData = homeTeamsData;
+        if (!teamsData || teamsData.length === 0) {
+          try {
+            const resp = await fetch('data/current_season/teams.json');
+            if (resp.ok) teamsData = await resp.json();
+          } catch (e) { teamsData = []; }
+        }
+
+        // Load trade analyzer data for Value view
+        await loadAverageProjections();
+
+        // Also try to load player trade values if available
+        // Initialize trade analyzer ZiPS data if needed
+        if (!tradeAnalyzerData.zips2026 || Object.keys(tradeAnalyzerData.zips2026).length === 0) {
+          try {
+            await loadZiPSProjections();
+          } catch(e) {
+            console.log('Could not load ZiPS data:', e);
+          }
+        }
+
+        const seasonPositions = ['C', '1B', '2B', '3B', 'SS', 'OF', 'Util', 'P'];
+        const valuePositions = ['C', '1B', '2B', '3B', 'SS', 'OF', 'P'];
+
+        const teamResults = [];
+
+        for (const team of teamsData) {
+          const roster = mergedRosters[team.team_key] || [];
+          if (roster.length === 0) continue;
+
+          // Filter to active roster (exclude IL)
+          const activePlayers = roster.filter(p =>
+            p.selected_position !== 'IL'
+          );
+
+          // Season view: optimal position assignment
+          const seasonAssigned = assignOptimalPositions(activePlayers);
+
+          // Calculate season scores per position
+          const seasonScores = {};
+          let seasonTotal = 0;
+          for (const pos of seasonPositions) {
+            const players = seasonAssigned[pos] || [];
+            const posScore = players.reduce((sum, p) => sum + (p.score || getPlayerSeasonScore(p.name)), 0);
+            seasonScores[pos] = { score: posScore, players: players };
+            seasonTotal += posScore;
+          }
+
+          // Value view: trade value assignment
+          // Get trade values for all players
+          const playersWithValue = activePlayers.map(p => {
+            const nameLower = (p.name || '').toLowerCase().trim();
+            // Try to calculate trade value
+            let tradeValue = 0;
+            try {
+              const keeperData = {
+                player_name: p.name,
+                roundCost: p.keeper_cost || 20,
+                isProspect: p.is_prospect || p.is_na_player || false,
+                position: p.primary_position
+              };
+              const tv = calculatePlayerTradeValue(keeperData);
+              tradeValue = tv.value || 0;
+            } catch(e) {
+              // Fallback to projection
+              tradeValue = getAverageProjection(p.name);
+            }
+            return { ...p, tradeValue };
+          });
+
+          // Get prospects for this team
+          const teamProspects = roster.filter(p =>
+            p.selected_position === 'NA' || p.is_na_player || p.is_prospect
+          ).map(p => {
+            let tradeValue = 0;
+            try {
+              const keeperData = {
+                player_name: p.name,
+                roundCost: 0,
+                isProspect: true,
+                position: p.primary_position
+              };
+              const tv = calculatePlayerTradeValue(keeperData);
+              tradeValue = tv.value || 0;
+            } catch(e) {
+              tradeValue = getAverageProjection(p.name);
+            }
+            return { ...p, player_name: p.name, tradeValue };
+          });
+
+          const valueAssigned = assignValuePositions(playersWithValue, teamProspects);
+
+          const valueScores = {};
+          let valueTotal = 0;
+          for (const pos of valuePositions) {
+            const players = valueAssigned[pos] || [];
+            const posScore = players.reduce((sum, p) => sum + (p.tradeValue || p.value || 0), 0);
+            valueScores[pos] = { score: posScore, players: players };
+            valueTotal += posScore;
+          }
+
+          teamResults.push({
+            team_key: team.team_key,
+            team_name: team.team_name,
+            team_logo: fixTeamLogo(team.team_logo),
+            manager: capitalizeManagerName(normalizeManagerName(team.manager, 2026, team.team_name, team.team_key)),
+            seasonScores,
+            seasonTotal,
+            valueScores,
+            valueTotal
+          });
+        }
+
+        // Now rank teams at each position
+        function rankTeams(teams, positions, scoreKey, totalKey) {
+          const rankings = {};
+          for (const pos of positions) {
+            const sorted = [...teams].sort((a, b) =>
+              (b[scoreKey][pos]?.score || 0) - (a[scoreKey][pos]?.score || 0)
+            );
+            sorted.forEach((team, idx) => {
+              if (!rankings[team.team_key]) rankings[team.team_key] = {};
+              rankings[team.team_key][pos] = idx + 1;
+            });
+          }
+          // Rank by total
+          const sortedTotal = [...teams].sort((a, b) => b[totalKey] - a[totalKey]);
+          sortedTotal.forEach((team, idx) => {
+            if (!rankings[team.team_key]) rankings[team.team_key] = {};
+            rankings[team.team_key]['Total'] = idx + 1;
+          });
+          return rankings;
+        }
+
+        const seasonRanks = rankTeams(teamResults, seasonPositions, 'seasonScores', 'seasonTotal');
+        const valueRanks = rankTeams(teamResults, valuePositions, 'valueScores', 'valueTotal');
+
+        teamPositionRankingsData = {
+          teams: teamResults,
+          seasonRanks,
+          valueRanks,
+          seasonPositions,
+          valuePositions,
+          totalTeams: teamResults.length
+        };
+
+        return teamPositionRankingsData;
+      }
+
+      function renderTeamPositionRankings() {
+        const container = document.getElementById('team-position-rankings-container');
+        if (!container || !teamPositionRankingsData) return;
+
+        const data = teamPositionRankingsData;
+        const isValue = teamValueCurrentView === 'value';
+        const positions = isValue ? data.valuePositions : data.seasonPositions;
+        const ranks = isValue ? data.valueRanks : data.seasonRanks;
+        const scoreKey = isValue ? 'valueScores' : 'seasonScores';
+        const totalKey = isValue ? 'valueTotal' : 'seasonTotal';
+        const total = data.totalTeams;
+
+        // Sort teams by total (rank 1 first)
+        const sortedTeams = [...data.teams].sort((a, b) => b[totalKey] - a[totalKey]);
+
+        // Build position badge headers
+        const posHeaders = positions.map(pos => {
+          return `<th><span class="position-badge pos-${pos}" style="font-size:0.55rem;padding:0.1rem 0.3rem;">${pos}</span></th>`;
+        }).join('');
+
+        let html = `<table class="pos-rank-table">
+          <thead><tr>
+            <th style="min-width:120px;">Team</th>
+            ${posHeaders}
+            <th style="font-size:0.7rem;">Total</th>
+          </tr></thead><tbody>`;
+
+        for (const team of sortedTeams) {
+          const teamRanks = ranks[team.team_key] || {};
+
+          // Team cell
+          html += `<tr><td><div class="pos-rank-table team-cell">`;
+          if (team.team_logo) {
+            html += `<img src="${team.team_logo}" class="team-logo-sm" alt="" onerror="this.style.display='none'">`;
+          }
+          html += `<div><div style="font-weight:600;font-size:0.78rem;">${team.team_name}</div>
+            <div style="font-size:0.65rem;color:#666;">${team.manager}</div></div>`;
+          html += `</div></td>`;
+
+          // Position rank cells
+          for (const pos of positions) {
+            const rank = teamRanks[pos] || total;
+            const color = getRankColor(rank, total);
+            const posData = team[scoreKey][pos] || { score: 0, players: [] };
+            const players = posData.players || [];
+
+            // Build tooltip HTML
+            let tooltipHtml = '';
+            if (players.length > 0) {
+              const displayPlayers = players.slice(0, 5);
+              tooltipHtml = displayPlayers.map(p => {
+                const headshot = getPlayerHeadshot(p.name || p.player_name);
+                const pts = isValue ? (p.tradeValue || p.value || 0) : (p.score || getPlayerSeasonScore(p.name || p.player_name));
+                const imgTag = headshot ? `<img src="${headshot}" alt="" onerror="this.style.display='none'">` : '';
+                return `<div class="tooltip-player">${imgTag}<span>${(p.name || p.player_name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '')}</span><span class="tooltip-pts">${Math.round(pts)}</span></div>`;
+              }).join('');
+              tooltipHtml = `<div style="font-weight:700;margin-bottom:0.2rem;color:var(--retro-gold);font-size:0.6rem;">${pos} - ${Math.round(posData.score)} pts</div>${tooltipHtml}`;
+            } else {
+              tooltipHtml = `<div style="color:#999;">No players</div>`;
+            }
+
+            html += `<td><div class="pos-rank-cell" style="background:${color};">
+              ${rank}
+              <div class="pos-rank-tooltip">${tooltipHtml}</div>
+            </div></td>`;
+          }
+
+          // Total cell
+          const totalRank = teamRanks['Total'] || total;
+          const totalScore = Math.round(team[totalKey]);
+          html += `<td class="pos-rank-total-cell">${totalScore}</td>`;
+
+          html += `</tr>`;
+        }
+
+        html += `</tbody></table>`;
+        container.innerHTML = html;
       }
 
       function renderTeamValueCards(teamValues) {
