@@ -2645,10 +2645,7 @@
       }
       .pos-rank-tooltip {
         display: none;
-        position: absolute;
-        bottom: calc(100% + 8px);
-        left: 50%;
-        transform: translateX(-50%);
+        position: fixed;
         background: #1a1a2e;
         color: #fff;
         padding: 0.5rem 0.65rem;
@@ -2656,20 +2653,11 @@
         font-size: 0.68rem;
         font-family: "Basis33", sans-serif;
         white-space: nowrap;
-        z-index: 100;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        z-index: 9999;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.35);
         pointer-events: none;
-        min-width: 120px;
+        min-width: 160px;
         text-align: left;
-      }
-      .pos-rank-tooltip::after {
-        content: '';
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        border: 6px solid transparent;
-        border-top-color: #1a1a2e;
       }
       .pos-rank-cell:hover .pos-rank-tooltip {
         display: block;
@@ -2677,25 +2665,69 @@
       .pos-rank-tooltip .tooltip-player {
         display: flex;
         align-items: center;
-        gap: 0.3rem;
-        padding: 0.15rem 0;
+        gap: 0.35rem;
+        padding: 0.2rem 0;
       }
-      .pos-rank-tooltip .tooltip-player img {
-        width: 20px;
-        height: 20px;
+      .pos-rank-tooltip .tooltip-player-headshot {
+        width: 22px;
+        height: 22px;
         border-radius: 50%;
         object-fit: cover;
+        flex-shrink: 0;
+      }
+      .pos-rank-tooltip .tooltip-player-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.05rem;
+        min-width: 0;
+      }
+      .pos-rank-tooltip .tooltip-player-name {
+        font-size: 0.65rem;
+        font-weight: 600;
+      }
+      .pos-rank-tooltip .tooltip-player-mlb {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+        font-size: 0.52rem;
+        color: #aab;
+      }
+      .pos-rank-tooltip .tooltip-player-mlb img {
+        width: 12px;
+        height: 12px;
+        object-fit: contain;
       }
       .pos-rank-tooltip .tooltip-pts {
         color: var(--retro-gold);
         font-weight: 700;
         margin-left: auto;
-        padding-left: 0.5rem;
+        padding-left: 0.75rem;
+        font-size: 0.65rem;
+        white-space: nowrap;
       }
       .pos-rank-total-cell {
         font-weight: 800;
         font-size: 0.82rem;
         color: var(--retro-blue);
+      }
+      .pos-rank-table th.sortable {
+        cursor: pointer;
+        user-select: none;
+        transition: background 0.15s;
+      }
+      .pos-rank-table th.sortable:hover {
+        background: #e9ecef;
+      }
+      .pos-rank-table th.sorted {
+        background: #e2e6ea;
+      }
+      .pos-rank-table th .sort-arrow {
+        font-size: 0.5rem;
+        margin-left: 0.15rem;
+        opacity: 0.5;
+      }
+      .pos-rank-table th.sorted .sort-arrow {
+        opacity: 1;
       }
 
       @media (max-width: 768px) {
@@ -44836,6 +44868,17 @@
         return proj.headshot || '';
       }
 
+      function getPlayerMlbTeam(playerName) {
+        const nameLower = (playerName || '').toLowerCase().trim();
+        const nameNorm = nameLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const proj = averageProjectionsMap[nameLower] || averageProjectionsMap[nameNorm] || {};
+        return proj.mlb_team || '';
+      }
+
+      // Track sort state for position rankings table
+      let posRankSortCol = 'Total';
+      let posRankSortAsc = false; // false = best first
+
       // Optimal position assignment for a team's roster
       function assignOptimalPositions(players) {
         const BATTER_SLOTS = ['C', '1B', '2B', '3B', 'SS'];
@@ -45205,6 +45248,16 @@
         return teamPositionRankingsData;
       }
 
+      function sortPosRankByCol(col) {
+        if (posRankSortCol === col) {
+          posRankSortAsc = !posRankSortAsc;
+        } else {
+          posRankSortCol = col;
+          posRankSortAsc = false; // default: best (lowest rank / highest score) first
+        }
+        renderTeamPositionRankings();
+      }
+
       function renderTeamPositionRankings() {
         const container = document.getElementById('team-position-rankings-container');
         if (!container || !teamPositionRankingsData) return;
@@ -45217,19 +45270,40 @@
         const totalKey = isValue ? 'valueTotal' : 'seasonTotal';
         const total = data.totalTeams;
 
-        // Sort teams by total (rank 1 first)
-        const sortedTeams = [...data.teams].sort((a, b) => b[totalKey] - a[totalKey]);
+        // Sort teams based on current sort column
+        const sortedTeams = [...data.teams].sort((a, b) => {
+          let aVal, bVal;
+          if (posRankSortCol === 'Total') {
+            aVal = a[totalKey];
+            bVal = b[totalKey];
+          } else {
+            // Sort by rank at that position (lower rank = better)
+            const aRank = (ranks[a.team_key] || {})[posRankSortCol] || total;
+            const bRank = (ranks[b.team_key] || {})[posRankSortCol] || total;
+            // For rank sorting, ascending means rank 1 first (best first)
+            return posRankSortAsc ? (bRank - aRank) : (aRank - bRank);
+          }
+          return posRankSortAsc ? (aVal - bVal) : (bVal - aVal);
+        });
 
-        // Build position badge headers
+        // Build position badge headers (clickable for sorting)
         const posHeaders = positions.map(pos => {
-          return `<th><span class="position-badge pos-${pos}">${pos}</span></th>`;
+          const isSorted = posRankSortCol === pos;
+          const arrow = isSorted ? (posRankSortAsc ? '&#9650;' : '&#9660;') : '&#9660;';
+          return `<th class="sortable ${isSorted ? 'sorted' : ''}" onclick="sortPosRankByCol('${pos}')">
+            <span class="position-badge pos-${pos}">${pos}</span>
+            <span class="sort-arrow">${arrow}</span>
+          </th>`;
         }).join('');
+
+        const totalSorted = posRankSortCol === 'Total';
+        const totalArrow = totalSorted ? (posRankSortAsc ? '&#9650;' : '&#9660;') : '&#9660;';
 
         let html = `<table class="pos-rank-table">
           <thead><tr>
             <th style="min-width:120px;">Team</th>
             ${posHeaders}
-            <th style="font-size:0.7rem;font-family:'Basis33',sans-serif;font-weight:800;color:var(--retro-blue);">Total</th>
+            <th class="sortable ${totalSorted ? 'sorted' : ''}" onclick="sortPosRankByCol('Total')" style="font-size:0.7rem;font-family:'Basis33',sans-serif;font-weight:800;color:var(--retro-blue);">Total <span class="sort-arrow">${totalArrow}</span></th>
           </tr></thead><tbody>`;
 
         for (const team of sortedTeams) {
@@ -45251,17 +45325,22 @@
             const posData = team[scoreKey][pos] || { score: 0, players: [] };
             const players = posData.players || [];
 
-            // Build tooltip HTML
+            // Build tooltip HTML with MLB team logos
             let tooltipHtml = '';
             if (players.length > 0) {
               const displayPlayers = players.slice(0, 5);
-              tooltipHtml = displayPlayers.map(p => {
-                const headshot = getPlayerHeadshot(p.name || p.player_name);
-                const pts = isValue ? (p.tradeValue || p.value || 0) : (p.score || getPlayerSeasonScore(p.name || p.player_name));
-                const imgTag = headshot ? `<img src="${headshot}" alt="" onerror="this.style.display='none'">` : '';
-                return `<div class="tooltip-player">${imgTag}<span>${(p.name || p.player_name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '')}</span><span class="tooltip-pts">${Math.round(pts)}</span></div>`;
+              const ptsLabel = isValue ? 'value' : 'pts';
+              tooltipHtml = `<div style="font-weight:700;margin-bottom:0.25rem;color:var(--retro-gold);font-size:0.62rem;">${pos} - ${Math.round(posData.score)} ${ptsLabel}</div>`;
+              tooltipHtml += displayPlayers.map(p => {
+                const pName = (p.name || p.player_name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '');
+                const headshot = getPlayerHeadshot(pName);
+                const mlbTeam = p.mlb_team || p.editorial_team_abbr || getPlayerMlbTeam(pName);
+                const mlbLogo = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
+                const pts = isValue ? (p.tradeValue || p.value || 0) : (p.score || getPlayerSeasonScore(pName));
+                const imgTag = headshot ? `<img class="tooltip-player-headshot" src="${headshot}" alt="" onerror="this.style.display='none'">` : '';
+                const mlbTag = mlbTeam ? `<div class="tooltip-player-mlb">${mlbLogo ? `<img src="${mlbLogo}" alt="" onerror="this.style.display='none'">` : ''}${mlbTeam}</div>` : '';
+                return `<div class="tooltip-player">${imgTag}<div class="tooltip-player-info"><span class="tooltip-player-name">${pName}</span>${mlbTag}</div><span class="tooltip-pts">${Math.round(pts)}</span></div>`;
               }).join('');
-              tooltipHtml = `<div style="font-weight:700;margin-bottom:0.2rem;color:var(--retro-gold);font-size:0.6rem;">${pos} - ${Math.round(posData.score)} pts</div>${tooltipHtml}`;
             } else {
               tooltipHtml = `<div style="color:#999;">No players</div>`;
             }
@@ -45273,7 +45352,6 @@
           }
 
           // Total cell
-          const totalRank = teamRanks['Total'] || total;
           const totalScore = Math.round(team[totalKey]);
           html += `<td class="pos-rank-total-cell">${totalScore}</td>`;
 
@@ -45282,6 +45360,33 @@
 
         html += `</tbody></table>`;
         container.innerHTML = html;
+
+        // Position tooltips using fixed positioning to avoid clipping
+        container.querySelectorAll('.pos-rank-cell').forEach(cell => {
+          cell.addEventListener('mouseenter', function() {
+            const tooltip = this.querySelector('.pos-rank-tooltip');
+            if (!tooltip) return;
+            const rect = this.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+
+            // Show below the cell by default
+            let top = rect.bottom + 6;
+            let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+
+            // If tooltip goes below viewport, show above
+            if (top + tooltipRect.height > window.innerHeight) {
+              top = rect.top - tooltipRect.height - 6;
+            }
+            // Keep within left/right bounds
+            if (left < 8) left = 8;
+            if (left + tooltipRect.width > window.innerWidth - 8) {
+              left = window.innerWidth - tooltipRect.width - 8;
+            }
+
+            tooltip.style.top = top + 'px';
+            tooltip.style.left = left + 'px';
+          });
+        });
       }
 
       function renderTeamValueCards(teamValues) {
