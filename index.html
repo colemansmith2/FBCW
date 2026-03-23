@@ -2591,21 +2591,18 @@
         font-size: 0.82rem;
       }
       .pos-rank-table th {
-        background: var(--retro-blue);
-        color: white;
-        padding: 0.45rem 0.4rem;
+        background: #f8f9fa;
+        color: #333;
+        padding: 0.5rem 0.4rem;
         text-align: center;
         font-weight: 600;
         font-size: 0.72rem;
         white-space: nowrap;
+        border-bottom: 2px solid #dee2e6;
       }
       .pos-rank-table th:first-child {
         text-align: left;
-        border-radius: 6px 0 0 0;
         padding-left: 0.6rem;
-      }
-      .pos-rank-table th:last-child {
-        border-radius: 0 6px 0 0;
       }
       .pos-rank-table td {
         padding: 0.4rem 0.3rem;
@@ -44845,23 +44842,21 @@
         const OF_COUNT = 3;
         const UTIL_COUNT = 4;
 
-        // Separate batters and pitchers
+        // Separate batters and pitchers; mark prospects
         const batters = players.filter(p => p.position_type === 'B');
         const pitchers = players.filter(p => p.position_type === 'P');
 
         // Score each player
         const scoredBatters = batters.map(p => ({
           ...p,
-          score: getPlayerSeasonScore(p.name)
+          score: getPlayerSeasonScore(p.name),
+          isProspect: !!(p.selected_position === 'NA' || p.is_na_player || p.is_prospect)
         })).sort((a, b) => b.score - a.score);
 
         const scoredPitchers = pitchers.map(p => ({
           ...p,
           score: getPlayerSeasonScore(p.name)
         })).sort((a, b) => b.score - a.score);
-
-        const assigned = {};
-        const used = new Set();
 
         // Helper: check if player is eligible for a position
         function isEligible(player, pos) {
@@ -44870,38 +44865,103 @@
           return eligible.includes(pos);
         }
 
-        // 1) Fill primary batting positions (C, 1B, 2B, 3B, SS)
-        for (const pos of BATTER_SLOTS) {
-          assigned[pos] = [];
-          for (const p of scoredBatters) {
-            if (used.has(p.name) || !isEligible(p, pos)) continue;
-            assigned[pos].push(p);
-            used.add(p.name);
-            break;
+        // Optimal assignment strategy:
+        // 1. Fill positions from most constrained (fewest eligible non-prospects) first
+        // 2. Use non-prospects first; only use prospects when absolutely necessary
+        // 3. When a position has only one eligible non-prospect, lock them in
+        // 4. For ties, prefer the player who has fewer position options (more specialized)
+
+        const nonProspectBatters = scoredBatters.filter(p => !p.isProspect);
+        const prospectBatters = scoredBatters.filter(p => p.isProspect);
+
+        // Build slots: C, 1B, 2B, 3B, SS, then 3 OF
+        const singleSlots = [...BATTER_SLOTS]; // one each
+        const assigned = {};
+        for (const pos of BATTER_SLOTS) assigned[pos] = [];
+        assigned['OF'] = [];
+        const used = new Set();
+
+        // Iterative constraint-based assignment for single slots
+        // Repeatedly find the most constrained unfilled position and assign best eligible
+        let changed = true;
+        while (changed) {
+          changed = false;
+          // Build constraint map: for each unfilled slot, which unused non-prospects are eligible?
+          const slotCandidates = [];
+          for (const pos of singleSlots) {
+            if (assigned[pos].length > 0) continue;
+            const eligible = nonProspectBatters.filter(p => !used.has(p.name) && isEligible(p, pos));
+            slotCandidates.push({ pos, eligible });
+          }
+          // Sort by constraint (fewest eligible first)
+          slotCandidates.sort((a, b) => a.eligible.length - b.eligible.length);
+
+          for (const { pos, eligible } of slotCandidates) {
+            if (eligible.length === 0) continue;
+            // Pick the best eligible player, preferring those with fewer other position options
+            const best = eligible.sort((a, b) => {
+              // First by score descending
+              if (b.score !== a.score) return b.score - a.score;
+              // Then by fewer eligible positions (more specialized)
+              return (a.eligible_positions || []).length - (b.eligible_positions || []).length;
+            })[0];
+            assigned[pos].push(best);
+            used.add(best.name);
+            changed = true;
+            break; // Re-evaluate constraints after each assignment
           }
         }
 
-        // 2) Fill OF (3 slots)
-        assigned['OF'] = [];
-        for (const p of scoredBatters) {
+        // Fill OF (3 slots) with best unused non-prospect OF-eligible
+        for (const p of nonProspectBatters) {
           if (assigned['OF'].length >= OF_COUNT) break;
           if (used.has(p.name) || !isEligible(p, 'OF')) continue;
           assigned['OF'].push(p);
           used.add(p.name);
         }
 
-        // 3) Fill Util (4 slots) - next best batters regardless of position
+        // Fill any empty field slots with prospects only if needed
+        for (const pos of BATTER_SLOTS) {
+          if (assigned[pos].length === 0) {
+            for (const p of prospectBatters) {
+              if (used.has(p.name) || !isEligible(p, pos)) continue;
+              assigned[pos].push(p);
+              used.add(p.name);
+              break;
+            }
+          }
+        }
+        while (assigned['OF'].length < OF_COUNT) {
+          let filled = false;
+          for (const p of prospectBatters) {
+            if (used.has(p.name) || !isEligible(p, 'OF')) continue;
+            assigned['OF'].push(p);
+            used.add(p.name);
+            filled = true;
+            break;
+          }
+          if (!filled) break;
+        }
+
+        // Util: next 4 best unused non-prospect batters, then prospects only if needed
         assigned['Util'] = [];
-        for (const p of scoredBatters) {
+        for (const p of nonProspectBatters) {
           if (assigned['Util'].length >= UTIL_COUNT) break;
           if (used.has(p.name)) continue;
           assigned['Util'].push(p);
           used.add(p.name);
         }
+        if (assigned['Util'].length < UTIL_COUNT) {
+          for (const p of prospectBatters) {
+            if (assigned['Util'].length >= UTIL_COUNT) break;
+            if (used.has(p.name)) continue;
+            assigned['Util'].push(p);
+            used.add(p.name);
+          }
+        }
 
-        // 4) All pitchers into P
+        // All pitchers into P
         assigned['P'] = scoredPitchers.filter(p => {
-          // Include active roster pitchers (not just starters - all rostered)
           return p.selected_position !== 'IL' && p.selected_position !== 'NA';
         });
 
@@ -45162,14 +45222,14 @@
 
         // Build position badge headers
         const posHeaders = positions.map(pos => {
-          return `<th><span class="position-badge pos-${pos}" style="font-size:0.55rem;padding:0.1rem 0.3rem;">${pos}</span></th>`;
+          return `<th><span class="position-badge pos-${pos}">${pos}</span></th>`;
         }).join('');
 
         let html = `<table class="pos-rank-table">
           <thead><tr>
             <th style="min-width:120px;">Team</th>
             ${posHeaders}
-            <th style="font-size:0.7rem;">Total</th>
+            <th style="font-size:0.7rem;font-family:'Basis33',sans-serif;font-weight:800;color:var(--retro-blue);">Total</th>
           </tr></thead><tbody>`;
 
         for (const team of sortedTeams) {
