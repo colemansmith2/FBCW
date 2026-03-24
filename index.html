@@ -12469,19 +12469,20 @@
 
       .matchup-detail-header h3 {
         margin: 0;
-        font-family: var(--pixel-font);
-        font-size: 1.1rem;
-        letter-spacing: 2px;
+        font-family: "Arcade Gamer", "Press Start 2P", monospace;
+        font-size: 0.55rem;
+        letter-spacing: 1.5px;
         text-align: center;
         color: var(--retro-gold, #ffcc00);
-        font-weight: 800;
+        text-transform: uppercase;
       }
 
       .matchup-detail-header-logo {
-        width: 52px;
-        height: 52px;
+        width: 64px;
+        height: 64px;
         object-fit: contain;
         flex-shrink: 0;
+        margin: -8px 0;
       }
 
       .matchup-detail-close {
@@ -12555,11 +12556,42 @@
         color: #888;
       }
 
-      .matchup-detail-team-proj {
-        font-size: 1.3rem;
+      .matchup-detail-team-score {
+        font-size: 1.5rem;
         font-weight: 800;
-        color: var(--retro-blue);
+        color: #222;
         margin-top: 0.3rem;
+      }
+
+      .matchup-detail-team-proj {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--retro-blue);
+        margin-top: 0.1rem;
+      }
+
+      .matchup-detail-center-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+        padding-bottom: 0.3rem;
+        min-width: 80px;
+      }
+
+      .matchup-detail-streak {
+        font-size: 0.8rem;
+        color: #666;
+        white-space: nowrap;
+      }
+
+      .matchup-detail-streak img {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        vertical-align: middle;
+        object-fit: cover;
       }
 
       .matchup-detail-vs {
@@ -12690,8 +12722,9 @@
         }
 
         .matchup-detail-header-logo {
-          width: 38px;
-          height: 38px;
+          width: 48px;
+          height: 48px;
+          margin: -6px 0;
         }
 
         .matchup-detail-close {
@@ -12722,15 +12755,36 @@
         }
 
         .matchup-detail-team-record {
-          font-size: 0.7rem;
+          font-size: 0.65rem;
+          display: block;
+        }
+
+        .matchup-detail-team-score {
+          font-size: 1.1rem;
         }
 
         .matchup-detail-team-proj {
-          font-size: 1rem;
+          font-size: 0.85rem;
         }
 
         .matchup-detail-vs {
           font-size: 1rem;
+        }
+
+        .matchup-detail-center-col {
+          min-width: 60px;
+        }
+
+        .matchup-detail-streak {
+          font-size: 0.65rem;
+          white-space: normal;
+          text-align: center;
+          line-height: 1.4;
+        }
+
+        .matchup-detail-streak .streak-label {
+          display: block;
+          margin-bottom: 2px;
         }
 
         .matchup-detail-section-title {
@@ -50235,8 +50289,9 @@
         const t1Logo = fixTeamLogo(t1Data.team_logo) || 'league_logo.png';
         const t2Logo = fixTeamLogo(t2Data.team_logo) || 'league_logo.png';
 
-        // Get projections
+        // Get projections and current scores
         let proj1 = 0, proj2 = 0;
+        let score1 = 0, score2 = 0;
         try {
           const projResp = await fetch('data/current_season/team_weekly_projected_points.json');
           if (projResp.ok) {
@@ -50244,6 +50299,29 @@
             const weeklyProj = projData.weekly || {};
             proj1 = weeklyProj[String(week)]?.[team1Key] || 0;
             proj2 = weeklyProj[String(week)]?.[team2Key] || 0;
+          }
+        } catch (e) { /* ignore */ }
+        try {
+          let statsResp = await fetch('data/current_season/weekly_stats.json');
+          if (!statsResp.ok) statsResp = await fetch('data/2026/weekly_stats.json');
+          if (statsResp.ok) {
+            const statsData = await statsResp.json();
+            const weekData = statsData.weeks?.[String(week)];
+            if (weekData?.matchups) {
+              const m = weekData.matchups.find(mu =>
+                (mu.team1_key === team1Key && mu.team2_key === team2Key) ||
+                (mu.team1_key === team2Key && mu.team2_key === team1Key)
+              );
+              if (m) {
+                if (m.team1_key === team1Key) {
+                  score1 = m.team1_score || 0;
+                  score2 = m.team2_score || 0;
+                } else {
+                  score1 = m.team2_score || 0;
+                  score2 = m.team1_score || 0;
+                }
+              }
+            }
           }
         } catch (e) { /* ignore */ }
 
@@ -50382,7 +50460,7 @@
           ? `<div style="font-weight:800;font-size:1.2rem;color:#333;">${t1Wins} - ${t2Wins}</div>`
           : '';
         const streakHtml = streakCount >= 1
-          ? `<div style="font-size:0.8rem;color:#666;">Current Streak: <img src="${streakLogo}" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;object-fit:cover;" alt=""> <strong>${streakManager}</strong> ${streakCount}W</div>`
+          ? `<div class="matchup-detail-streak"><span class="streak-label">Current Streak:</span> <img src="${streakLogo}" alt=""> <strong>${streakManager}</strong> ${streakCount}W</div>`
           : '';
 
         // Build H2H table (show last 10 matchups) with logos
@@ -50423,22 +50501,26 @@
               <div class="matchup-detail-teams">
                 <div class="matchup-detail-team">
                   <img src="${t1Logo}" alt="${t1Name}">
-                  <div class="matchup-detail-team-name">${t1Name} <span class="matchup-detail-team-record">${t1Record}</span></div>
+                  <div class="matchup-detail-team-name">${t1Name}</div>
+                  <div class="matchup-detail-team-record">${t1Record}</div>
                   <div class="matchup-detail-team-manager">${t1Manager}</div>
+                  <div class="matchup-detail-team-score">${score1.toFixed(1)}</div>
                   ${proj1 > 0 ? `<div class="matchup-detail-team-proj">${proj1.toFixed(1)}</div>` : ''}
                 </div>
-                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+                <div class="matchup-detail-center-col">
                   <div class="matchup-detail-vs">VS</div>
                   ${h2hRecordHtml}
+                  ${streakHtml}
                 </div>
                 <div class="matchup-detail-team">
                   <img src="${t2Logo}" alt="${t2Name}">
-                  <div class="matchup-detail-team-name">${t2Name} <span class="matchup-detail-team-record">${t2Record}</span></div>
+                  <div class="matchup-detail-team-name">${t2Name}</div>
+                  <div class="matchup-detail-team-record">${t2Record}</div>
                   <div class="matchup-detail-team-manager">${t2Manager}</div>
+                  <div class="matchup-detail-team-score">${score2.toFixed(1)}</div>
                   ${proj2 > 0 ? `<div class="matchup-detail-team-proj">${proj2.toFixed(1)}</div>` : ''}
                 </div>
               </div>
-              ${streakHtml ? `<div style="text-align:center;margin-top:-0.5rem;margin-bottom:1rem;">${streakHtml}</div>` : ''}
 
               <div style="display: flex; gap: 1.5rem;">
                 <div class="matchup-detail-section" style="flex:1;">
