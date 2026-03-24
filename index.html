@@ -41883,12 +41883,10 @@
           if (draftResp.ok) draftPicks = await draftResp.json();
         } catch (e) { /* ignore */ }
 
-        // Build lookup: lowercase player name -> draft round for this team
+        // Build lookup: lowercase player name -> draft round (across ALL teams, since players can be traded)
         const draftRoundMap = {};
         draftPicks.forEach(pick => {
-          if (pick.team_key === teamKey) {
-            draftRoundMap[(pick.player_name || '').toLowerCase().trim()] = pick.round;
-          }
+          draftRoundMap[(pick.player_name || '').toLowerCase().trim()] = pick.round;
         });
 
         // Build keeper lookup from Firebase keeper selections for prospect identification & round costs
