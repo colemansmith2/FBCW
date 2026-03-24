@@ -2755,6 +2755,28 @@
         }
       }
 
+      @media (max-width: 600px) {
+        .pos-rank-table .team-cell .team-name-text {
+          display: none;
+        }
+        .pos-rank-table .team-cell {
+          justify-content: center;
+        }
+        .pos-rank-table .team-logo-sm {
+          width: 28px;
+          height: 28px;
+        }
+        .pos-rank-table td:first-child {
+          width: 44px;
+          min-width: 44px;
+          padding: 0.25rem 0.1rem;
+        }
+        .pos-rank-table th:first-child {
+          width: 44px;
+          min-width: 44px;
+        }
+      }
+
       /* Team Value Cards Grid */
       .team-value-grid {
         display: grid;
@@ -45703,7 +45725,7 @@
           if (team.team_logo) {
             html += `<img src="${team.team_logo}" class="team-logo-sm" alt="" onerror="this.style.display='none'">`;
           }
-          html += `<div><div style="font-weight:600;font-size:0.78rem;">${team.team_name}</div>
+          html += `<div class="team-name-text"><div style="font-weight:600;font-size:0.78rem;">${team.team_name}</div>
             <div style="font-size:0.65rem;color:#666;">${team.manager}</div></div>`;
           html += `</div></td>`;
 
