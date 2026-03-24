@@ -2664,6 +2664,63 @@
       .pos-rank-cell:hover .pos-rank-tooltip {
         display: block;
       }
+      .pos-rank-tooltip-close {
+        display: none;
+      }
+
+      /* Mobile: tooltip becomes a tap-to-open modal */
+      @media (max-width: 600px) {
+        .pos-rank-cell:hover .pos-rank-tooltip {
+          display: none;
+        }
+        .pos-rank-tooltip.mobile-open {
+          display: block;
+          pointer-events: auto;
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 10001;
+          min-width: 200px;
+          max-width: 85vw;
+          padding: 0.75rem 0.85rem 0.65rem;
+          font-size: 0.75rem;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+          border: 2px solid var(--retro-blue);
+        }
+        .pos-rank-tooltip.mobile-open .pos-rank-tooltip-close {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: absolute;
+          top: -10px;
+          right: -10px;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: var(--retro-blue);
+          color: #fff;
+          font-size: 0.65rem;
+          font-weight: 800;
+          border: 2px solid var(--retro-gold);
+          cursor: pointer;
+          z-index: 10002;
+          line-height: 1;
+        }
+        .pos-rank-tooltip-overlay {
+          display: none;
+        }
+        .pos-rank-tooltip-overlay.active {
+          display: block;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0,0,0,0.35);
+          z-index: 10000;
+        }
+      }
       .pos-rank-tooltip .tooltip-player {
         display: flex;
         align-items: center;
@@ -2783,29 +2840,29 @@
         .pos-rank-table th:first-child {
           font-size: 0;
         }
-        .pos-rank-table .position-badge.pos-Util {
-          font-size: 0.42rem;
-          padding: 0.1rem 0.12rem;
-        }
         .pos-rank-table th {
           padding: 0.3rem 0.05rem;
         }
         .pos-rank-table th .position-badge {
-          padding: 0.1rem 0.2rem;
-          font-size: 0.5rem;
-          min-width: 18px;
+          padding: 0.12rem 0.25rem;
+          font-size: 0.55rem;
+          min-width: 20px;
           margin-right: 0;
         }
         .pos-rank-table td {
-          padding: 0.3rem 0.05rem;
+          padding: 0.3rem 0.15rem;
         }
         .pos-rank-cell {
-          width: 20px;
-          height: 18px;
-          font-size: 0.55rem;
+          width: 22px;
+          height: 20px;
+          font-size: 0.58rem;
         }
         .pos-rank-table .total-col {
-          font-size: 0.6rem;
+          font-size: 0.65rem;
+        }
+        .pos-rank-table .position-badge.pos-Util {
+          font-size: 0.45rem;
+          padding: 0.12rem 0.15rem;
         }
       }
 
@@ -35627,14 +35684,22 @@
       }
 
       // Get average projection for a player
-      function getAverageProjection(playerName) {
+      function getAverageProjection(playerName, positionType) {
         const nameLower = (playerName || "").toLowerCase().trim();
         const baseName = nameLower
           .replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "")
           .trim();
+        const baseNameNorm = baseName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        // Map position_type to typed key suffix
+        const posType = positionType === 'P' ? 'pitcher' : positionType === 'B' ? 'batter' : null;
+        if (posType) {
+          const typed = averageProjectionsMap[`${baseName}|${posType}`] || averageProjectionsMap[`${baseNameNorm}|${posType}`];
+          if (typed) return typed.avgPoints || 0;
+        }
         return (
           averageProjectionsMap[nameLower]?.avgPoints ||
           averageProjectionsMap[baseName]?.avgPoints ||
+          averageProjectionsMap[baseNameNorm]?.avgPoints ||
           0
         );
       }
@@ -45292,25 +45357,37 @@
         return `rgb(${r},${g},${b})`;
       }
 
-      function getPlayerSeasonScore(playerName) {
+      function getPlayerSeasonScore(playerName, positionType) {
         // Get average projection (works pre-season or as fallback)
-        const avgProj = getAverageProjection(playerName);
+        const avgProj = getAverageProjection(playerName, positionType);
         // TODO: When season is in progress, blend actual stats + ROS projection
         // For now, preseason: just use average projection
         return avgProj;
       }
 
-      function getPlayerHeadshot(playerName) {
+      function getPlayerHeadshot(playerName, positionType) {
         const nameLower = (playerName || '').toLowerCase().trim();
-        const nameNorm = nameLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const proj = averageProjectionsMap[nameLower] || averageProjectionsMap[nameNorm] || {};
+        const baseName = nameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+        const baseNameNorm = baseName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const posType = positionType === 'P' ? 'pitcher' : positionType === 'B' ? 'batter' : null;
+        if (posType) {
+          const typed = averageProjectionsMap[`${baseName}|${posType}`] || averageProjectionsMap[`${baseNameNorm}|${posType}`];
+          if (typed) return typed.headshot || '';
+        }
+        const proj = averageProjectionsMap[nameLower] || averageProjectionsMap[baseName] || averageProjectionsMap[baseNameNorm] || {};
         return proj.headshot || '';
       }
 
-      function getPlayerMlbTeam(playerName) {
+      function getPlayerMlbTeam(playerName, positionType) {
         const nameLower = (playerName || '').toLowerCase().trim();
-        const nameNorm = nameLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        const proj = averageProjectionsMap[nameLower] || averageProjectionsMap[nameNorm] || {};
+        const baseName = nameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+        const baseNameNorm = baseName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const posType = positionType === 'P' ? 'pitcher' : positionType === 'B' ? 'batter' : null;
+        if (posType) {
+          const typed = averageProjectionsMap[`${baseName}|${posType}`] || averageProjectionsMap[`${baseNameNorm}|${posType}`];
+          if (typed) return typed.mlb_team || '';
+        }
+        const proj = averageProjectionsMap[nameLower] || averageProjectionsMap[baseName] || averageProjectionsMap[baseNameNorm] || {};
         return proj.mlb_team || '';
       }
 
@@ -45331,13 +45408,13 @@
         // Score each player
         const scoredBatters = batters.map(p => ({
           ...p,
-          score: getPlayerSeasonScore(p.name),
+          score: getPlayerSeasonScore(p.name, p.position_type),
           isProspect: !!(p.selected_position === 'NA' || p.is_na_player || p.is_prospect)
         })).sort((a, b) => b.score - a.score);
 
         const scoredPitchers = pitchers.map(p => ({
           ...p,
-          score: getPlayerSeasonScore(p.name)
+          score: getPlayerSeasonScore(p.name, p.position_type)
         })).sort((a, b) => b.score - a.score);
 
         // Helper: check if player is eligible for a position
@@ -45584,7 +45661,7 @@
           let seasonTotal = 0;
           for (const pos of seasonPositions) {
             const players = seasonAssigned[pos] || [];
-            const posScore = players.reduce((sum, p) => sum + (p.score || getPlayerSeasonScore(p.name)), 0);
+            const posScore = players.reduce((sum, p) => sum + (p.score || getPlayerSeasonScore(p.name, p.position_type)), 0);
             seasonScores[pos] = { score: posScore, players: players };
             seasonTotal += posScore;
           }
@@ -45606,7 +45683,7 @@
               tradeValue = tv.value || 0;
             } catch(e) {
               // Fallback to projection
-              tradeValue = getAverageProjection(p.name);
+              tradeValue = getAverageProjection(p.name, p.position_type);
             }
             return { ...p, tradeValue };
           });
@@ -45626,7 +45703,7 @@
               const tv = calculatePlayerTradeValue(keeperData);
               tradeValue = tv.value || 0;
             } catch(e) {
-              tradeValue = getAverageProjection(p.name);
+              tradeValue = getAverageProjection(p.name, p.position_type);
             }
             return { ...p, player_name: p.name, tradeValue };
           });
@@ -45776,10 +45853,10 @@
               tooltipHtml = `<div style="font-weight:700;margin-bottom:0.25rem;color:var(--retro-blue);font-size:0.62rem;border-bottom:1px solid #ccc;padding-bottom:0.2rem;">${pos} - ${Math.round(posData.score)} ${ptsLabel}</div>`;
               tooltipHtml += displayPlayers.map(p => {
                 const pName = (p.name || p.player_name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '');
-                const headshot = getPlayerHeadshot(pName);
-                const mlbTeam = p.mlb_team || p.editorial_team_abbr || getPlayerMlbTeam(pName);
+                const headshot = getPlayerHeadshot(pName, p.position_type);
+                const mlbTeam = p.mlb_team || p.editorial_team_abbr || getPlayerMlbTeam(pName, p.position_type);
                 const mlbLogo = mlbTeam ? getMLBTeamLogo(mlbTeam) : '';
-                const pts = isValue ? (p.tradeValue || p.value || 0) : (p.score || getPlayerSeasonScore(pName));
+                const pts = isValue ? (p.tradeValue || p.value || 0) : (p.score || getPlayerSeasonScore(pName, p.position_type));
                 const imgTag = headshot ? `<img class="tooltip-player-headshot" src="${headshot}" alt="" onerror="this.style.display='none'">` : '';
                 const mlbTag = mlbTeam ? `<div class="tooltip-player-mlb">${mlbLogo ? `<img src="${mlbLogo}" alt="" onerror="this.style.display='none'">` : ''}${mlbTeam}</div>` : '';
                 return `<div class="tooltip-player">${imgTag}<div class="tooltip-player-info"><span class="tooltip-player-name">${pName}</span>${mlbTag}</div><span class="tooltip-pts">${Math.round(pts)}</span></div>`;
@@ -45790,7 +45867,7 @@
 
             html += `<td><div class="pos-rank-cell" style="background:${color};">
               ${rank}
-              <div class="pos-rank-tooltip">${tooltipHtml}</div>
+              <div class="pos-rank-tooltip"><span class="pos-rank-tooltip-close" onclick="closePosRankTooltip(event)">✕</span>${tooltipHtml}</div>
             </div></td>`;
           }
 
@@ -45804,32 +45881,62 @@
         html += `</tbody></table>`;
         container.innerHTML = html;
 
-        // Position tooltips using fixed positioning to avoid clipping
+        // Ensure overlay element exists
+        if (!document.getElementById('pos-rank-tooltip-overlay')) {
+          const overlay = document.createElement('div');
+          overlay.id = 'pos-rank-tooltip-overlay';
+          overlay.className = 'pos-rank-tooltip-overlay';
+          overlay.onclick = closePosRankTooltip;
+          document.body.appendChild(overlay);
+        }
+
+        const isMobile = window.innerWidth <= 600;
+
         container.querySelectorAll('.pos-rank-cell').forEach(cell => {
-          cell.addEventListener('mouseenter', function() {
-            const tooltip = this.querySelector('.pos-rank-tooltip');
-            if (!tooltip) return;
-            const rect = this.getBoundingClientRect();
-            const tooltipRect = tooltip.getBoundingClientRect();
+          if (!isMobile) {
+            // Desktop: position tooltips using fixed positioning to avoid clipping
+            cell.addEventListener('mouseenter', function() {
+              const tooltip = this.querySelector('.pos-rank-tooltip');
+              if (!tooltip) return;
+              const rect = this.getBoundingClientRect();
+              const tooltipRect = tooltip.getBoundingClientRect();
 
-            // Show below the cell by default
-            let top = rect.bottom + 6;
-            let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+              let top = rect.bottom + 6;
+              let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
 
-            // If tooltip goes below viewport, show above
-            if (top + tooltipRect.height > window.innerHeight) {
-              top = rect.top - tooltipRect.height - 6;
-            }
-            // Keep within left/right bounds
-            if (left < 8) left = 8;
-            if (left + tooltipRect.width > window.innerWidth - 8) {
-              left = window.innerWidth - tooltipRect.width - 8;
-            }
+              if (top + tooltipRect.height > window.innerHeight) {
+                top = rect.top - tooltipRect.height - 6;
+              }
+              if (left < 8) left = 8;
+              if (left + tooltipRect.width > window.innerWidth - 8) {
+                left = window.innerWidth - tooltipRect.width - 8;
+              }
 
-            tooltip.style.top = top + 'px';
-            tooltip.style.left = left + 'px';
-          });
+              tooltip.style.top = top + 'px';
+              tooltip.style.left = left + 'px';
+            });
+          } else {
+            // Mobile: tap to open tooltip as modal
+            cell.addEventListener('click', function(e) {
+              e.stopPropagation();
+              // Close any currently open tooltip
+              closePosRankTooltip();
+              const tooltip = this.querySelector('.pos-rank-tooltip');
+              if (!tooltip) return;
+              tooltip.classList.add('mobile-open');
+              document.getElementById('pos-rank-tooltip-overlay').classList.add('active');
+            });
+          }
         });
+      }
+
+      function closePosRankTooltip(e) {
+        if (e) e.stopPropagation();
+        document.querySelectorAll('.pos-rank-tooltip.mobile-open').forEach(t => {
+          t.classList.remove('mobile-open');
+        });
+        const overlay = document.getElementById('pos-rank-tooltip-overlay');
+        if (overlay) overlay.classList.remove('active');
       }
 
       function renderTeamValueCards(teamValues) {
