@@ -12473,11 +12473,13 @@
         font-size: 1.1rem;
         letter-spacing: 2px;
         text-align: center;
+        color: var(--retro-gold, #ffcc00);
+        font-weight: 800;
       }
 
       .matchup-detail-header-logo {
-        width: 38px;
-        height: 38px;
+        width: 52px;
+        height: 52px;
         object-fit: contain;
         flex-shrink: 0;
       }
@@ -12688,8 +12690,8 @@
         }
 
         .matchup-detail-header-logo {
-          width: 28px;
-          height: 28px;
+          width: 38px;
+          height: 38px;
         }
 
         .matchup-detail-close {
@@ -50379,8 +50381,8 @@
         const h2hRecordHtml = h2hHistory.length > 0
           ? `<div style="font-weight:800;font-size:1.2rem;color:#333;">${t1Wins} - ${t2Wins}</div>`
           : '';
-        const streakHtml = streakCount > 1
-          ? `<div style="font-size:0.8rem;color:#666;">Streak: <img src="${streakLogo}" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;object-fit:cover;" alt=""> <strong>${streakManager}</strong> ${streakCount}W</div>`
+        const streakHtml = streakCount >= 1
+          ? `<div style="font-size:0.8rem;color:#666;">Current Streak: <img src="${streakLogo}" style="width:18px;height:18px;border-radius:50%;vertical-align:middle;object-fit:cover;" alt=""> <strong>${streakManager}</strong> ${streakCount}W</div>`
           : '';
 
         // Build H2H table (show last 10 matchups) with logos
@@ -50425,10 +50427,9 @@
                   <div class="matchup-detail-team-manager">${t1Manager}</div>
                   ${proj1 > 0 ? `<div class="matchup-detail-team-proj">${proj1.toFixed(1)}</div>` : ''}
                 </div>
-                <div style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;padding-bottom:0.3rem;">
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
                   <div class="matchup-detail-vs">VS</div>
                   ${h2hRecordHtml}
-                  ${streakHtml}
                 </div>
                 <div class="matchup-detail-team">
                   <img src="${t2Logo}" alt="${t2Name}">
@@ -50437,6 +50438,7 @@
                   ${proj2 > 0 ? `<div class="matchup-detail-team-proj">${proj2.toFixed(1)}</div>` : ''}
                 </div>
               </div>
+              ${streakHtml ? `<div style="text-align:center;margin-top:-0.5rem;margin-bottom:1rem;">${streakHtml}</div>` : ''}
 
               <div style="display: flex; gap: 1.5rem;">
                 <div class="matchup-detail-section" style="flex:1;">
