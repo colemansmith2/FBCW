@@ -51804,16 +51804,20 @@
                         </div>
                     `;
           } else {
-            // Preseason - show top projected keepers using average projections
+            // Preseason / no weekly roster - use current roster with avg projections
             await loadAverageProjections();
-            const team1Players = await getKeeperPlayersWithAvgProjections(
-              matchup.team1.team_key,
-              matchup.team1.manager,
-            );
-            const team2Players = await getKeeperPlayersWithAvgProjections(
-              matchup.team2.team_key,
-              matchup.team2.manager,
-            );
+            let team1Players = await getRosterPlayersWithAvgProjections(matchup.team1.team_key);
+            let team2Players = await getRosterPlayersWithAvgProjections(matchup.team2.team_key);
+
+            // Fall back to keepers if current roster not available
+            if (!team1Players || team1Players.length === 0) {
+              team1Players = await getKeeperPlayersWithAvgProjections(
+                matchup.team1.team_key, matchup.team1.manager);
+            }
+            if (!team2Players || team2Players.length === 0) {
+              team2Players = await getKeeperPlayersWithAvgProjections(
+                matchup.team2.team_key, matchup.team2.manager);
+            }
 
             body.innerHTML = `
                         <div class="matchup-popup-team-section">
@@ -52180,6 +52184,40 @@
       }
 
       // Build keeper players list for a team using average projections across all systems
+      async function getRosterPlayersWithAvgProjections(teamKey) {
+        try {
+          const resp = await fetch('data/current_season/rosters.json');
+          if (!resp.ok) return null;
+          const rosters = await resp.json();
+          const players = rosters[teamKey];
+          if (!Array.isArray(players) || players.length === 0) return null;
+
+          return players.map(p => {
+            const nameRaw = (p.name || '').toLowerCase().trim();
+            const nameNorm = nameRaw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const posType = p.position_type === 'P' ? 'pitcher' : 'batter';
+            const match = averageProjectionsMap[`${nameRaw}|${posType}`] ||
+              averageProjectionsMap[nameRaw] ||
+              averageProjectionsMap[`${nameNorm}|${posType}`] ||
+              averageProjectionsMap[nameNorm] || {};
+
+            return {
+              name: p.name,
+              primary_position: p.primary_position || p.display_position || match.position || '',
+              position: p.primary_position || p.display_position || match.position || '',
+              position_type: p.position_type || (match.position && ['SP','RP','P'].includes(match.position) ? 'P' : 'B'),
+              headshot_url: p.headshot_url || match.headshot || '',
+              mlb_team: p.editorial_team_abbr || match.mlb_team || '',
+              projected_points: match.avgPoints || p.projected_points || 0,
+              isProspect: false,
+            };
+          });
+        } catch (e) {
+          console.log('Could not load current roster:', e);
+          return null;
+        }
+      }
+
       async function getKeeperPlayersWithAvgProjections(teamKey, manager) {
         // Reuse the existing keeper loading logic
         const keeperPlayers = await getKeeperPlayersForTeam(teamKey, manager);
@@ -52242,7 +52280,7 @@
                             .slice(0, 5)
                             .map((p) => renderPopupPlayerCard(p, true))
                             .join("") ||
-                          '<div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">No keepers yet</div>'
+                          '<div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">No players yet</div>'
                         }
                     </div>
                 </div>
@@ -52255,7 +52293,7 @@
                             .slice(0, 5)
                             .map((p) => renderPopupPlayerCard(p, true))
                             .join("") ||
-                          '<div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">No keepers yet</div>'
+                          '<div style="color:rgba(255,255,255,0.4);font-size:0.7rem;">No players yet</div>'
                         }
                     </div>
                 </div>
