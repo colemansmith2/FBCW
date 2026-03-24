@@ -37991,8 +37991,8 @@
       }
 
       // Calculate next year's draft round cost for keeping a player
-      function getKeeperRoundCost(previousRound, totalRounds = 20) {
-        if (!previousRound || previousRound < 1) return totalRounds; // Undrafted costs last round
+      function getKeeperRoundCost(previousRound, totalRounds = 22) {
+        if (!previousRound || previousRound < 1) return totalRounds; // Undrafted/waiver costs last round
         // Rounds 1-3: costs a 1st rounder
         if (previousRound <= 3) return 1;
         // Rounds 4-10: costs 3 rounds earlier
@@ -38003,7 +38003,7 @@
 
       // Get the total number of rounds in the draft
       function getTotalDraftRounds() {
-        if (!keeperDraftData || !keeperDraftData.length) return 20; // Default
+        if (!keeperDraftData || !keeperDraftData.length) return 22; // Default
         return Math.max(...keeperDraftData.map((p) => p.round || 0));
       }
 
@@ -41891,6 +41891,20 @@
           }
         });
 
+        // Build keeper lookup from Firebase keeper selections for prospect identification & round costs
+        const teamKeepers = keeperSelections[configKey] || [];
+        const keeperMap = {};
+        teamKeepers.forEach(k => {
+          const kName = (k.player_name || k.name || '').toLowerCase().trim();
+          const kNameNorm = kName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          const entry = {
+            roundCost: k.roundCost || k.round || null,
+            isProspect: k.isProspect || k.is_prospect || false,
+          };
+          if (kName) keeperMap[kName] = entry;
+          if (kNameNorm && kNameNorm !== kName) keeperMap[kNameNorm] = entry;
+        });
+
         // Load average projections for enrichment
         await loadAverageProjections();
 
@@ -41901,11 +41915,13 @@
             const playerNameLc = playerName.toLowerCase().trim();
             const playerNameNorm = playerNameLc.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
-            // NA position on Yahoo = prospect (free keeper)
-            const isProspect = rp.selected_position === 'NA';
+            // Check if player is a prospect: NA on Yahoo OR marked as prospect in keeper selections
+            const keeperEntry = keeperMap[playerNameLc] || keeperMap[playerNameNorm] || null;
+            const isProspect = rp.selected_position === 'NA' || (keeperEntry && keeperEntry.isProspect);
 
-            // Determine round cost from draft data; prospects are free (round 0)
-            let roundCost = isProspect ? 0 : (draftRoundMap[playerNameLc] || draftRoundMap[playerNameNorm] || 20);
+            // Determine round cost: prospects are free, then check draft round, keeper round, default 20
+            let roundCost = isProspect ? 0 : (draftRoundMap[playerNameLc] || draftRoundMap[playerNameNorm] || (keeperEntry && keeperEntry.roundCost) || 22);
+            const isWaiverPickup = !isProspect && !draftRoundMap[playerNameLc] && !draftRoundMap[playerNameNorm] && !(keeperEntry && keeperEntry.roundCost);
 
             const keeperLike = {
               player_name: playerName,
@@ -41918,13 +41934,15 @@
             const valueResult = calculatePlayerTradeValue(keeperLike, "default");
 
             const baseNameLower = playerNameLc.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "").trim();
+            const baseNameNorm = playerNameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "").trim();
             const posType = rp.position_type === 'P' ? 'pitcher' : 'batter';
 
-            const zips2026 = tradeAnalyzerData.zips2026[playerNameLc] || tradeAnalyzerData.zips2026[baseNameLower] || tradeAnalyzerData.zips2026[playerNameNorm] || {};
-            const zips2027 = tradeAnalyzerData.zips2027[playerNameLc] || tradeAnalyzerData.zips2027[baseNameLower] || tradeAnalyzerData.zips2027[playerNameNorm] || {};
-            const zips2028 = tradeAnalyzerData.zips2028[playerNameLc] || tradeAnalyzerData.zips2028[baseNameLower] || tradeAnalyzerData.zips2028[playerNameNorm] || {};
-            const avgProjData = averageProjectionsMap[`${playerNameLc}|${posType}`] || averageProjectionsMap[playerNameLc] ||
-              averageProjectionsMap[`${playerNameNorm}|${posType}`] || averageProjectionsMap[playerNameNorm] || {};
+            const zips2026 = tradeAnalyzerData.zips2026[playerNameLc] || tradeAnalyzerData.zips2026[baseNameLower] || tradeAnalyzerData.zips2026[playerNameNorm] || tradeAnalyzerData.zips2026[baseNameNorm] || {};
+            const zips2027 = tradeAnalyzerData.zips2027[playerNameLc] || tradeAnalyzerData.zips2027[baseNameLower] || tradeAnalyzerData.zips2027[playerNameNorm] || tradeAnalyzerData.zips2027[baseNameNorm] || {};
+            const zips2028 = tradeAnalyzerData.zips2028[playerNameLc] || tradeAnalyzerData.zips2028[baseNameLower] || tradeAnalyzerData.zips2028[playerNameNorm] || tradeAnalyzerData.zips2028[baseNameNorm] || {};
+            const avgProjData = averageProjectionsMap[`${baseNameLower}|${posType}`] || averageProjectionsMap[`${playerNameLc}|${posType}`] ||
+              averageProjectionsMap[baseNameLower] || averageProjectionsMap[playerNameLc] ||
+              averageProjectionsMap[`${baseNameNorm}|${posType}`] || averageProjectionsMap[playerNameNorm] || {};
 
             const mlbTeam = rp.editorial_team_abbr || zips2026.mlb_team || zips2027.mlb_team || zips2028.mlb_team || avgProjData?.mlb_team || "";
             const headshot = rp.headshot_url || zips2026.headshot_url || zips2027.headshot_url || zips2028.headshot_url || avgProjData?.headshot || "";
@@ -41934,6 +41952,7 @@
               name: playerName,
               position: keeperLike.position,
               isProspect: isProspect,
+              isWaiverPickup: isWaiverPickup,
               roundCost: roundCost,
               dollarCost: roundCost,
               headshot: headshot,
@@ -41969,7 +41988,7 @@
                 name: keeper.player_name,
                 position: keeper.position || "UT",
                 isProspect: isProspectKeeperEntry(keeper),
-                roundCost: keeper.roundCost || 20,
+                roundCost: keeper.roundCost || 22,
                 dollarCost: keeper.dollarCost || 1,
                 headshot: headshot,
                 mlbTeam: mlbTeam,
@@ -42051,17 +42070,21 @@
       function calculatePlayerTradeValue(keeper, goal = "default") {
         const name = keeper.player_name.toLowerCase().trim();
         const nameNorm = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        // Strip (Batter)/(Pitcher) suffix for projection lookups (Yahoo uses these for Ohtani)
+        const baseName = name.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+        const baseNameNorm = nameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
 
         // Get projections for each year (data is now an object with points, mlb_team, etc.)
-        const data2026 = tradeAnalyzerData.zips2026[name] || tradeAnalyzerData.zips2026[nameNorm] || {};
-        const data2027 = tradeAnalyzerData.zips2027[name] || tradeAnalyzerData.zips2027[nameNorm] || {};
-        const data2028 = tradeAnalyzerData.zips2028[name] || tradeAnalyzerData.zips2028[nameNorm] || {};
+        const data2026 = tradeAnalyzerData.zips2026[name] || tradeAnalyzerData.zips2026[baseName] || tradeAnalyzerData.zips2026[nameNorm] || tradeAnalyzerData.zips2026[baseNameNorm] || {};
+        const data2027 = tradeAnalyzerData.zips2027[name] || tradeAnalyzerData.zips2027[baseName] || tradeAnalyzerData.zips2027[nameNorm] || tradeAnalyzerData.zips2027[baseNameNorm] || {};
+        const data2028 = tradeAnalyzerData.zips2028[name] || tradeAnalyzerData.zips2028[baseName] || tradeAnalyzerData.zips2028[nameNorm] || tradeAnalyzerData.zips2028[baseNameNorm] || {};
 
         // Also check average projections as fallback for missing ZiPS DC players
         const posType = keeper.position && ['SP','RP','P'].includes(keeper.position) ? 'pitcher' : 'batter';
         const avgProj = (typeof averageProjectionsMap !== 'undefined') ?
-          (averageProjectionsMap[`${name}|${posType}`] || averageProjectionsMap[name] ||
-           averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || null) : null;
+          (averageProjectionsMap[`${baseName}|${posType}`] || averageProjectionsMap[`${name}|${posType}`] ||
+           averageProjectionsMap[baseName] || averageProjectionsMap[name] ||
+           averageProjectionsMap[`${baseNameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || null) : null;
 
         let proj2026, proj2027, proj2028;
 
@@ -42119,9 +42142,9 @@
           }
         } else {
           // Normal keeper progression
-          round2026 = keeper.roundCost || 20;
-          round2027 = getKeeperRoundCost(round2026, 20);
-          round2028 = getKeeperRoundCost(round2027, 20);
+          round2026 = keeper.roundCost || 22;
+          round2027 = getKeeperRoundCost(round2026, 22);
+          round2028 = getKeeperRoundCost(round2027, 22);
         }
 
         // Get expected points for each round
@@ -43622,10 +43645,11 @@
                                                 : year.value < 0
                                                   ? "value-negative"
                                                   : "value-neutral";
+                                            const isWaiver = player.isWaiverPickup && year.year === 2026;
                                             return `
                                         <tr>
                                             <td>${year.year}</td>
-                                            <td>${year.round > 0 ? "R" + year.round : "NA"}</td>
+                                            <td>${isWaiver ? "Waiver" : year.round > 0 ? "R" + year.round : "NA"}</td>
                                             <td>${year.cost > 0 ? "$" + year.cost : "Free"}</td>
                                             <td>${year.expectedPts}</td>
                                             <td>${year.projectedPts}</td>
@@ -43641,8 +43665,8 @@
                                 <div class="trade-card-keeper-row">
                                     <div class="trade-card-keeper-info">
                                         ${isProspect ? '<span class="trade-card-prospect-badge">PROSPECT</span>' : ""}
-                                        ${roundCost > 0 ? `<span class="trade-card-keeper-badge">R${roundCost} KEEPER</span>` : ""}
-                                        ${!isProspect && roundCost === 0 ? '<span style="color: #888;">Free Agent</span>' : ""}
+                                        ${player.isWaiverPickup ? '<span class="trade-card-keeper-badge">WAIVER PICKUP</span>' : roundCost > 0 ? `<span class="trade-card-keeper-badge">R${roundCost} KEEPER</span>` : ""}
+                                        ${!isProspect && !player.isWaiverPickup && roundCost === 0 ? '<span style="color: #888;">Free Agent</span>' : ""}
                                     </div>
                                     <div style="color: #1a3c6e; font-weight: 600;">
                                         ${isProspect ? "NA Status" : dollarCost2026 > 0 ? `$${dollarCost2026} Cost` : "Free"}
@@ -43684,10 +43708,12 @@
           {};
 
         // Fall back to average projections for 2026 if ZiPS DC is missing this player
+        const baseNameNorm = nameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
         const posType = player.position && ['SP','RP','P'].includes(player.position) ? 'pitcher' : 'batter';
         const avgProj = (typeof averageProjectionsMap !== 'undefined') ?
-          (averageProjectionsMap[`${name}|${posType}`] || averageProjectionsMap[name] ||
-           averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || null) : null;
+          (averageProjectionsMap[`${baseName}|${posType}`] || averageProjectionsMap[`${name}|${posType}`] ||
+           averageProjectionsMap[baseName] || averageProjectionsMap[name] ||
+           averageProjectionsMap[`${baseNameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || null) : null;
 
         const proj2026 = data2026.points || (avgProj ? avgProj.avgPoints : 0) || 0;
         const proj2027 = data2027.points || 0;
@@ -43720,8 +43746,8 @@
           }
         } else {
           // Normal keeper progression
-          round2026 = player.roundCost || 20;
-          round2027 = getKeeperRoundCost(round2026, 20);
+          round2026 = player.roundCost || 22;
+          round2027 = getKeeperRoundCost(round2026, 22);
           round2028 = getKeeperRoundCost(round2027, 20);
         }
 
@@ -45497,7 +45523,7 @@
             try {
               const keeperData = {
                 player_name: p.name,
-                roundCost: p.keeper_cost || 20,
+                roundCost: p.keeper_cost || 22,
                 isProspect: p.is_prospect || p.is_na_player || false,
                 position: p.primary_position
               };
