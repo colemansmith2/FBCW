@@ -41927,6 +41927,7 @@
               roundCost: roundCost,
               dollarCost: roundCost,
               isProspect: isProspect,
+              isWaiverPickup: isWaiverPickup,
               isUndrafted: !isProspect && !draftRoundMap[playerNameLc] && !draftRoundMap[playerNameNorm],
             };
             const valueResult = calculatePlayerTradeValue(keeperLike, "default");
@@ -42138,6 +42139,11 @@
             round2027 = 0;
             round2028 = 0;
           }
+        } else if (keeper.isWaiverPickup) {
+          // Waiver pickups: free in 2026, R22 in 2027, R18 in 2028
+          round2026 = 22;
+          round2027 = 22;
+          round2028 = getKeeperRoundCost(22, 22);
         } else {
           // Normal keeper progression
           round2026 = keeper.roundCost || 22;
@@ -43742,11 +43748,16 @@
             round2027 = 0;
             round2028 = 0;
           }
+        } else if (player.isWaiverPickup) {
+          // Waiver pickups: free in 2026, R22 in 2027, R18 in 2028
+          round2026 = 22; // Display as "Waiver" in template
+          round2027 = 22;
+          round2028 = getKeeperRoundCost(22, 22);
         } else {
           // Normal keeper progression
           round2026 = player.roundCost || 22;
           round2027 = getKeeperRoundCost(round2026, 22);
-          round2028 = getKeeperRoundCost(round2027, 20);
+          round2028 = getKeeperRoundCost(round2027, 22);
         }
 
         // Get budget cost for each round
