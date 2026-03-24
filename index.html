@@ -2756,6 +2756,9 @@
       }
 
       @media (max-width: 600px) {
+        .pos-rank-table {
+          table-layout: fixed;
+        }
         .pos-rank-table .team-cell .team-name-text {
           display: none;
         }
@@ -2763,17 +2766,19 @@
           justify-content: center;
         }
         .pos-rank-table .team-logo-sm {
-          width: 28px;
-          height: 28px;
+          width: 30px;
+          height: 30px;
         }
-        .pos-rank-table td:first-child {
-          width: 44px;
-          min-width: 44px;
+        .pos-rank-table td:first-child,
+        .pos-rank-table th:first-child {
+          width: 46px;
+          max-width: 46px;
           padding: 0.25rem 0.1rem;
+          text-align: center;
+          overflow: hidden;
         }
         .pos-rank-table th:first-child {
-          width: 44px;
-          min-width: 44px;
+          font-size: 0;
         }
       }
 
