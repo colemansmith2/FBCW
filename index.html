@@ -11463,12 +11463,18 @@
       }
 
       /* ===== SPORTSBOOK STYLES ===== */
+      .sportsbook-title {
+        text-align: left;
+      }
+
       .sportsbook-header {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         align-items: center;
-        gap: 0.75rem;
+        justify-content: space-between;
+        gap: 1rem;
         margin-bottom: 1.25rem;
+        flex-wrap: wrap;
       }
 
       .sportsbook-user-info {
@@ -11521,28 +11527,19 @@
 
       .sportsbook-tabs {
         display: flex;
-        gap: 0;
+        gap: 0.5rem;
         margin-bottom: 0;
       }
 
       .sportsbook-tab-btn {
-        padding: 0.6rem 1.5rem;
+        padding: 0.65rem 1.5rem;
         border: 2px solid var(--retro-blue);
         background: white;
         color: var(--retro-blue);
         font-weight: 600;
-        border-radius: 0;
+        border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s;
-      }
-
-      .sportsbook-tab-btn:first-child {
-        border-radius: 8px 0 0 8px;
-      }
-
-      .sportsbook-tab-btn:last-child {
-        border-radius: 0 8px 8px 0;
-        border-left: none;
       }
 
       .sportsbook-tab-btn:hover {
@@ -11557,9 +11554,8 @@
 
       .sportsbook-subtabs {
         display: flex;
-        gap: 0;
+        gap: 0.5rem;
         margin-bottom: 1.25rem;
-        justify-content: center;
       }
 
       .sportsbook-subtab-btn {
@@ -11568,19 +11564,10 @@
         background: #f8f9fa;
         color: #555;
         font-weight: 500;
-        border-radius: 0;
+        border-radius: 6px;
         cursor: pointer;
         transition: all 0.2s;
         font-size: 0.85rem;
-      }
-
-      .sportsbook-subtab-btn:first-child {
-        border-radius: 6px 0 0 6px;
-      }
-
-      .sportsbook-subtab-btn:last-child {
-        border-radius: 0 6px 6px 0;
-        border-left: none;
       }
 
       .sportsbook-subtab-btn:hover {
@@ -12184,12 +12171,16 @@
 
       /* Mobile sportsbook top section */
       @media (max-width: 600px) {
-        #sportsbook > h2 {
+        .sportsbook-title {
+          text-align: center;
           font-size: 1.3rem;
           margin-bottom: 0.5rem;
         }
 
         .sportsbook-header {
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
           gap: 0.5rem;
           margin-bottom: 0.75rem;
         }
@@ -12220,6 +12211,7 @@
 
         .sportsbook-tabs {
           width: 100%;
+          gap: 0;
         }
 
         .sportsbook-tab-btn {
@@ -12227,11 +12219,23 @@
           padding: 0.5rem 0;
           font-size: 0.85rem;
           text-align: center;
+          border-radius: 0;
+        }
+
+        .sportsbook-tab-btn:first-child {
+          border-radius: 8px 0 0 8px;
+        }
+
+        .sportsbook-tab-btn:last-child {
+          border-radius: 0 8px 8px 0;
+          border-left: none;
         }
 
         .sportsbook-subtabs {
           width: 100%;
           margin-bottom: 0.75rem;
+          justify-content: center;
+          gap: 0;
         }
 
         .sportsbook-subtab-btn {
@@ -12239,6 +12243,16 @@
           padding: 0.35rem 0;
           font-size: 0.8rem;
           text-align: center;
+          border-radius: 0;
+        }
+
+        .sportsbook-subtab-btn:first-child {
+          border-radius: 6px 0 0 6px;
+        }
+
+        .sportsbook-subtab-btn:last-child {
+          border-radius: 0 6px 6px 0;
+          border-left: none;
         }
 
         #sportsbook-not-logged-in {
@@ -12647,6 +12661,114 @@
 
       .matchup-detail-h2h-summary .wins { color: #28a745; }
       .matchup-detail-h2h-summary .losses { color: #dc3545; }
+
+      /* Mobile matchup detail modal */
+      @media (max-width: 600px) {
+        .matchup-detail-overlay {
+          padding: 0.5rem;
+          align-items: flex-start;
+          padding-top: 2rem;
+        }
+
+        .matchup-detail-modal {
+          max-height: 90vh;
+          border-radius: 12px;
+          border-width: 2px;
+        }
+
+        .matchup-detail-header {
+          padding: 0.6rem 0.75rem;
+          border-radius: 10px 10px 0 0;
+          gap: 0.4rem;
+        }
+
+        .matchup-detail-header h3 {
+          font-size: 0.7rem;
+          letter-spacing: 1px;
+        }
+
+        .matchup-detail-header-logo {
+          width: 28px;
+          height: 28px;
+        }
+
+        .matchup-detail-close {
+          top: -10px;
+          right: -10px;
+          width: 26px;
+          height: 26px;
+          font-size: 0.85rem;
+        }
+
+        .matchup-detail-body {
+          padding: 0.75rem 1rem;
+        }
+
+        .matchup-detail-teams {
+          padding: 0.75rem 0;
+          margin-bottom: 0.75rem;
+          flex-wrap: nowrap;
+        }
+
+        .matchup-detail-team img {
+          width: 50px;
+          height: 50px;
+        }
+
+        .matchup-detail-team-name {
+          font-size: 0.8rem;
+        }
+
+        .matchup-detail-team-record {
+          font-size: 0.7rem;
+        }
+
+        .matchup-detail-team-proj {
+          font-size: 1rem;
+        }
+
+        .matchup-detail-vs {
+          font-size: 1rem;
+        }
+
+        .matchup-detail-section-title {
+          font-size: 0.6rem;
+        }
+
+        .matchup-detail-player-row {
+          gap: 0.35rem;
+          padding: 0.3rem 0;
+          font-size: 0.8rem;
+        }
+
+        .matchup-detail-player-row img {
+          width: 26px;
+          height: 26px;
+        }
+
+        .matchup-detail-player-name {
+          font-size: 0.8rem;
+        }
+
+        .matchup-detail-player-pos {
+          font-size: 0.65rem;
+        }
+
+        .matchup-detail-player-pts {
+          font-size: 0.8rem;
+          min-width: 40px;
+        }
+
+        .matchup-detail-h2h-row {
+          font-size: 0.8rem;
+          padding: 0.35rem 0;
+        }
+
+        .matchup-detail-h2h-summary {
+          gap: 1rem;
+          font-size: 0.8rem;
+        }
+      }
 
       /* Bet Slip */
       .bet-slip {
@@ -23130,7 +23252,7 @@
 
       <!-- Sportsbook Section -->
       <div id="sportsbook" class="section">
-        <h2 style="text-align:center;">King Dylan's Sportsbook</h2>
+        <h2 class="sportsbook-title">King Dylan's Sportsbook</h2>
 
         <!-- Not Logged In State -->
         <div id="sportsbook-not-logged-in" class="sportsbook-not-logged-in">
@@ -49783,6 +49905,7 @@
         try {
           // Load weekly projections (Yahoo or Fangraphs-based)
           let weeklyProjections = null;
+          let projGeneratedAt = null;
           try {
             const projResp = await fetch(
               "data/current_season/team_weekly_projected_points.json",
@@ -49790,6 +49913,7 @@
             if (projResp.ok) {
               const projData = await projResp.json();
               weeklyProjections = projData.weekly || null;
+              projGeneratedAt = projData.generated_at || null;
             }
           } catch (e) {
             /* ignore */
@@ -49805,14 +49929,17 @@
             weeklyStats = await response.json();
           }
 
-          // Update the "Updated at" timestamp
+          // Update the "Updated at" timestamp - use most recent from weekly stats or projections
           const updatedAtEl = document.getElementById('sportsbook-updated-at');
           if (updatedAtEl) {
-            const lastUpdated = weeklyStats?.lastUpdated;
-            if (lastUpdated) {
-              const dt = new Date(lastUpdated);
-              const timeStr = dt.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-              updatedAtEl.textContent = `Updated at: ${timeStr}`;
+            const statsTime = weeklyStats?.lastUpdated ? new Date(weeklyStats.lastUpdated) : null;
+            const projTime = projGeneratedAt ? new Date(projGeneratedAt) : null;
+            const candidates = [statsTime, projTime].filter(d => d && !isNaN(d));
+            if (candidates.length > 0) {
+              const latest = new Date(Math.max(...candidates.map(d => d.getTime())));
+              const timeStr = latest.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+              const dateStr = latest.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+              updatedAtEl.textContent = `Updated: ${dateStr}, ${timeStr}`;
             } else {
               updatedAtEl.textContent = '';
             }
@@ -49980,7 +50107,7 @@
                                     <div class="matchup-score-value">${score1.toFixed(1)}</div>
                                 </div>
 
-                                <div class="matchup-ou-column" onclick="event.stopPropagation();">
+                                <div class="matchup-ou-column">
                                     <div class="ou-label">O/U</div>
                                     <div class="matchup-ou-btn over"
                                          data-bet-type="ou_over_${matchup.team1_key}_w${selectedWeek}"
@@ -49988,7 +50115,7 @@
                                          data-team-name="${t1Name} O${proj1Line}"
                                          data-odds="-110"
                                          data-opponent-key="${matchup.team2_key}"
-                                         onclick="handleMatchupBetClick(this)">▲</div>
+                                         onclick="event.stopPropagation(); handleMatchupBetClick(this)">▲</div>
                                     <div class="matchup-ou-proj">${proj1.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
                                          data-bet-type="ou_under_${matchup.team1_key}_w${selectedWeek}"
@@ -49996,10 +50123,10 @@
                                          data-team-name="${t1Name} U${proj1Line}"
                                          data-odds="-110"
                                          data-opponent-key="${matchup.team2_key}"
-                                         onclick="handleMatchupBetClick(this)">▼</div>
+                                         onclick="event.stopPropagation(); handleMatchupBetClick(this)">▼</div>
                                 </div>
 
-                                <div class="matchup-center-ou" onclick="event.stopPropagation();">
+                                <div class="matchup-center-ou">
                                     <div class="ou-label">Total</div>
                                     <div class="matchup-ou-btn over"
                                          data-bet-type="total_over_${matchup.team1_key}_${matchup.team2_key}_w${selectedWeek}"
@@ -50007,7 +50134,7 @@
                                          data-team-name="O${matchupTotal} (${t1Name} vs ${t2Name})"
                                          data-odds="-110"
                                          data-opponent-key="${matchup.team2_key}"
-                                         onclick="handleMatchupBetClick(this)">▲</div>
+                                         onclick="event.stopPropagation(); handleMatchupBetClick(this)">▲</div>
                                     <div class="matchup-ou-proj">${matchupTotal.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
                                          data-bet-type="total_under_${matchup.team1_key}_${matchup.team2_key}_w${selectedWeek}"
@@ -50015,10 +50142,10 @@
                                          data-team-name="U${matchupTotal} (${t1Name} vs ${t2Name})"
                                          data-odds="-110"
                                          data-opponent-key="${matchup.team2_key}"
-                                         onclick="handleMatchupBetClick(this)">▼</div>
+                                         onclick="event.stopPropagation(); handleMatchupBetClick(this)">▼</div>
                                 </div>
 
-                                <div class="matchup-ou-column" onclick="event.stopPropagation();">
+                                <div class="matchup-ou-column">
                                     <div class="ou-label">O/U</div>
                                     <div class="matchup-ou-btn over"
                                          data-bet-type="ou_over_${matchup.team2_key}_w${selectedWeek}"
@@ -50026,7 +50153,7 @@
                                          data-team-name="${t2Name} O${proj2Line}"
                                          data-odds="-110"
                                          data-opponent-key="${matchup.team1_key}"
-                                         onclick="handleMatchupBetClick(this)">▲</div>
+                                         onclick="event.stopPropagation(); handleMatchupBetClick(this)">▲</div>
                                     <div class="matchup-ou-proj">${proj2.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
                                          data-bet-type="ou_under_${matchup.team2_key}_w${selectedWeek}"
@@ -50034,7 +50161,7 @@
                                          data-team-name="${t2Name} U${proj2Line}"
                                          data-odds="-110"
                                          data-opponent-key="${matchup.team1_key}"
-                                         onclick="handleMatchupBetClick(this)">▼</div>
+                                         onclick="event.stopPropagation(); handleMatchupBetClick(this)">▼</div>
                                 </div>
 
                                 <div class="matchup-score-column">
