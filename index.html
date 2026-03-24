@@ -12519,7 +12519,7 @@
 
       .matchup-detail-teams {
         display: flex;
-        align-items: center;
+        align-items: stretch;
         justify-content: space-around;
         padding: 1.25rem 0;
         margin-bottom: 1.25rem;
@@ -12574,10 +12574,21 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: flex-end;
-        gap: 4px;
-        padding-bottom: 0.3rem;
+        justify-content: center;
         min-width: 80px;
+      }
+
+      .matchup-detail-center-col .matchup-detail-vs {
+        margin-bottom: auto;
+        padding-top: 1.5rem;
+      }
+
+      .matchup-detail-center-bottom {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        margin-top: auto;
       }
 
       .matchup-detail-streak {
@@ -50509,8 +50520,10 @@
                 </div>
                 <div class="matchup-detail-center-col">
                   <div class="matchup-detail-vs">VS</div>
-                  ${h2hRecordHtml}
-                  ${streakHtml}
+                  <div class="matchup-detail-center-bottom">
+                    ${h2hRecordHtml}
+                    ${streakHtml}
+                  </div>
                 </div>
                 <div class="matchup-detail-team">
                   <img src="${t2Logo}" alt="${t2Name}">
