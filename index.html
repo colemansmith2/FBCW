@@ -2603,6 +2603,7 @@
       .pos-rank-table th:first-child {
         text-align: left;
         padding-left: 0.6rem;
+        min-width: 120px;
       }
       .pos-rank-table td {
         padding: 0.4rem 0.3rem;
@@ -2758,6 +2759,7 @@
       @media (max-width: 600px) {
         .pos-rank-table {
           table-layout: fixed;
+          width: 100%;
         }
         .pos-rank-table .team-cell .team-name-text {
           display: none;
@@ -2766,19 +2768,44 @@
           justify-content: center;
         }
         .pos-rank-table .team-logo-sm {
-          width: 30px;
-          height: 30px;
+          width: 28px;
+          height: 28px;
         }
         .pos-rank-table td:first-child,
         .pos-rank-table th:first-child {
-          width: 46px;
-          max-width: 46px;
-          padding: 0.25rem 0.1rem;
+          width: 38px !important;
+          max-width: 38px !important;
+          min-width: 38px !important;
+          padding: 0.2rem 0.05rem;
           text-align: center;
           overflow: hidden;
         }
         .pos-rank-table th:first-child {
           font-size: 0;
+        }
+        .pos-rank-table .position-badge.pos-Util {
+          font-size: 0.42rem;
+          padding: 0.1rem 0.12rem;
+        }
+        .pos-rank-table th {
+          padding: 0.3rem 0.05rem;
+        }
+        .pos-rank-table th .position-badge {
+          padding: 0.1rem 0.2rem;
+          font-size: 0.5rem;
+          min-width: 18px;
+          margin-right: 0;
+        }
+        .pos-rank-table td {
+          padding: 0.3rem 0.05rem;
+        }
+        .pos-rank-cell {
+          width: 20px;
+          height: 18px;
+          font-size: 0.55rem;
+        }
+        .pos-rank-table .total-col {
+          font-size: 0.6rem;
         }
       }
 
@@ -45717,7 +45744,7 @@
 
         let html = `<table class="pos-rank-table">
           <thead><tr>
-            <th style="min-width:120px;">Team</th>
+            <th class="team-header-cell">Team</th>
             ${posHeaders}
             <th class="sortable ${totalSorted ? 'sorted-total' : ''}" onclick="sortPosRankByCol('Total')" style="font-size:0.7rem;font-family:'Basis33',sans-serif;font-weight:800;color:var(--retro-blue);">Total</th>
           </tr></thead><tbody>`;
