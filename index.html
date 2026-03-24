@@ -41632,10 +41632,10 @@
             if (response.ok) {
               const data = await response.json();
               const projMap = {};
-              [...(data.batters || []), ...(data.pitchers || [])].forEach(
-                (p) => {
+              const addToMap = (players, type) => {
+                (players || []).forEach((p) => {
                   const name = p.name.toLowerCase().trim();
-                  projMap[name] = {
+                  const entry = {
                     points: p.projected_points || 0,
                     mlb_team: p.mlb_team || p.team || "",
                     headshot_url: p.headshot_url || "",
@@ -41644,8 +41644,14 @@
                       p.age ?? p.Age ?? p.player_age ?? p.PlayerAge,
                     ),
                   };
-                },
-              );
+                  // Store with type key for disambiguation (e.g. "shohei ohtani|batter")
+                  projMap[`${name}|${type}`] = entry;
+                  // Also store plain name if not already taken (first wins)
+                  if (!projMap[name]) projMap[name] = entry;
+                });
+              };
+              addToMap(data.batters, 'batter');
+              addToMap(data.pitchers, 'pitcher');
               tradeAnalyzerData[targets[i]] = projMap;
               console.log(
                 `Loaded ${Object.keys(projMap).length} ${targets[i]} projections from ${systems[i]}`,
@@ -41936,9 +41942,9 @@
             const baseNameNorm = playerNameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "").trim();
             const posType = rp.position_type === 'P' ? 'pitcher' : 'batter';
 
-            const zips2026 = tradeAnalyzerData.zips2026[playerNameLc] || tradeAnalyzerData.zips2026[baseNameLower] || tradeAnalyzerData.zips2026[playerNameNorm] || tradeAnalyzerData.zips2026[baseNameNorm] || {};
-            const zips2027 = tradeAnalyzerData.zips2027[playerNameLc] || tradeAnalyzerData.zips2027[baseNameLower] || tradeAnalyzerData.zips2027[playerNameNorm] || tradeAnalyzerData.zips2027[baseNameNorm] || {};
-            const zips2028 = tradeAnalyzerData.zips2028[playerNameLc] || tradeAnalyzerData.zips2028[baseNameLower] || tradeAnalyzerData.zips2028[playerNameNorm] || tradeAnalyzerData.zips2028[baseNameNorm] || {};
+            const zips2026 = tradeAnalyzerData.zips2026[`${baseNameLower}|${posType}`] || tradeAnalyzerData.zips2026[playerNameLc] || tradeAnalyzerData.zips2026[baseNameLower] || tradeAnalyzerData.zips2026[playerNameNorm] || tradeAnalyzerData.zips2026[baseNameNorm] || {};
+            const zips2027 = tradeAnalyzerData.zips2027[`${baseNameLower}|${posType}`] || tradeAnalyzerData.zips2027[playerNameLc] || tradeAnalyzerData.zips2027[baseNameLower] || tradeAnalyzerData.zips2027[playerNameNorm] || tradeAnalyzerData.zips2027[baseNameNorm] || {};
+            const zips2028 = tradeAnalyzerData.zips2028[`${baseNameLower}|${posType}`] || tradeAnalyzerData.zips2028[playerNameLc] || tradeAnalyzerData.zips2028[baseNameLower] || tradeAnalyzerData.zips2028[playerNameNorm] || tradeAnalyzerData.zips2028[baseNameNorm] || {};
             const avgProjData = averageProjectionsMap[`${baseNameLower}|${posType}`] || averageProjectionsMap[`${playerNameLc}|${posType}`] ||
               averageProjectionsMap[baseNameLower] || averageProjectionsMap[playerNameLc] ||
               averageProjectionsMap[`${baseNameNorm}|${posType}`] || averageProjectionsMap[playerNameNorm] || {};
@@ -42073,13 +42079,13 @@
         const baseName = name.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
         const baseNameNorm = nameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
 
-        // Get projections for each year (data is now an object with points, mlb_team, etc.)
-        const data2026 = tradeAnalyzerData.zips2026[name] || tradeAnalyzerData.zips2026[baseName] || tradeAnalyzerData.zips2026[nameNorm] || tradeAnalyzerData.zips2026[baseNameNorm] || {};
-        const data2027 = tradeAnalyzerData.zips2027[name] || tradeAnalyzerData.zips2027[baseName] || tradeAnalyzerData.zips2027[nameNorm] || tradeAnalyzerData.zips2027[baseNameNorm] || {};
-        const data2028 = tradeAnalyzerData.zips2028[name] || tradeAnalyzerData.zips2028[baseName] || tradeAnalyzerData.zips2028[nameNorm] || tradeAnalyzerData.zips2028[baseNameNorm] || {};
-
         // Also check average projections as fallback for missing ZiPS DC players
         const posType = keeper.position && ['SP','RP','P'].includes(keeper.position) ? 'pitcher' : 'batter';
+
+        // Get projections for each year — try typed key first for Ohtani disambiguation
+        const data2026 = tradeAnalyzerData.zips2026[`${baseName}|${posType}`] || tradeAnalyzerData.zips2026[name] || tradeAnalyzerData.zips2026[baseName] || tradeAnalyzerData.zips2026[nameNorm] || tradeAnalyzerData.zips2026[baseNameNorm] || {};
+        const data2027 = tradeAnalyzerData.zips2027[`${baseName}|${posType}`] || tradeAnalyzerData.zips2027[name] || tradeAnalyzerData.zips2027[baseName] || tradeAnalyzerData.zips2027[nameNorm] || tradeAnalyzerData.zips2027[baseNameNorm] || {};
+        const data2028 = tradeAnalyzerData.zips2028[`${baseName}|${posType}`] || tradeAnalyzerData.zips2028[name] || tradeAnalyzerData.zips2028[baseName] || tradeAnalyzerData.zips2028[nameNorm] || tradeAnalyzerData.zips2028[baseNameNorm] || {};
         const avgProj = (typeof averageProjectionsMap !== 'undefined') ?
           (averageProjectionsMap[`${baseName}|${posType}`] || averageProjectionsMap[`${name}|${posType}`] ||
            averageProjectionsMap[baseName] || averageProjectionsMap[name] ||
@@ -43694,26 +43700,29 @@
           .replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "")
           .trim();
 
-        // Get projections for each year (data is now an object with points, mlb_team, etc.)
+        // Fall back to average projections for 2026 if ZiPS DC is missing this player
+        const baseNameNorm = nameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+        const posType = player.position && ['SP','RP','P'].includes(player.position) ? 'pitcher' : 'batter';
+
+        // Get projections for each year — try typed key first for Ohtani disambiguation
         const data2026 =
+          tradeAnalyzerData.zips2026[`${baseName}|${posType}`] ||
           tradeAnalyzerData.zips2026[name] ||
           tradeAnalyzerData.zips2026[baseName] ||
           tradeAnalyzerData.zips2026[nameNorm] ||
           {};
         const data2027 =
+          tradeAnalyzerData.zips2027[`${baseName}|${posType}`] ||
           tradeAnalyzerData.zips2027[name] ||
           tradeAnalyzerData.zips2027[baseName] ||
           tradeAnalyzerData.zips2027[nameNorm] ||
           {};
         const data2028 =
+          tradeAnalyzerData.zips2028[`${baseName}|${posType}`] ||
           tradeAnalyzerData.zips2028[name] ||
           tradeAnalyzerData.zips2028[baseName] ||
           tradeAnalyzerData.zips2028[nameNorm] ||
           {};
-
-        // Fall back to average projections for 2026 if ZiPS DC is missing this player
-        const baseNameNorm = nameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
-        const posType = player.position && ['SP','RP','P'].includes(player.position) ? 'pitcher' : 'batter';
         const avgProj = (typeof averageProjectionsMap !== 'undefined') ?
           (averageProjectionsMap[`${baseName}|${posType}`] || averageProjectionsMap[`${name}|${posType}`] ||
            averageProjectionsMap[baseName] || averageProjectionsMap[name] ||
