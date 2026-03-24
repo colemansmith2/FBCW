@@ -49988,6 +49988,9 @@
         const container = document.getElementById("weekly-matchup-bets");
 
         try {
+          // Load historical manager variance for confidence-interval odds
+          await loadManagerWeeklyVariance();
+
           // Load weekly projections (Yahoo or Fangraphs-based)
           let weeklyProjections = null;
           let projGeneratedAt = null;
@@ -50148,8 +50151,8 @@
               const score2 = matchup.team2_score || 0;
 
               // Calculate H2H odds with vig
-              const odds1 = calculateMatchupOdds(proj1, proj2, matchup.team1_key, weekKey);
-              const odds2 = calculateMatchupOdds(proj2, proj1, matchup.team2_key, weekKey);
+              const odds1 = calculateMatchupOdds(proj1, proj2, matchup.team1_key, matchup.team2_key, weekKey);
+              const odds2 = calculateMatchupOdds(proj2, proj1, matchup.team2_key, matchup.team1_key, weekKey);
 
               // Calculate individual O/U odds (slight juice both ways)
               const proj1Line = Math.round(proj1 * 2) / 2; // round to nearest 0.5
@@ -50578,26 +50581,165 @@
         document.body.appendChild(overlay);
       }
 
-      function calculateMatchupOdds(teamProj, oppProj, teamKey, weekKey) {
+      // ===== CONFIDENCE INTERVAL ODDS MODEL =====
+      // Uses historical weekly score distributions to calculate win probability
+      // via the normal CDF of the score difference distribution.
+
+      // Cache for manager weekly score statistics (mean, stdDev, sampleSize)
+      let managerWeeklyStats = null;
+
+      // Standard normal CDF approximation (Abramowitz & Stegun)
+      function normalCDF(x) {
+        const a1 = 0.254829592, a2 = -0.284496736, a3 = 1.421413741;
+        const a4 = -1.453152027, a5 = 1.061405429, p = 0.3275911;
+        const sign = x < 0 ? -1 : 1;
+        x = Math.abs(x) / Math.sqrt(2);
+        const t = 1.0 / (1.0 + p * x);
+        const y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * Math.exp(-x * x);
+        return 0.5 * (1.0 + sign * y);
+      }
+
+      // Load historical weekly scores and compute per-manager variance
+      async function loadManagerWeeklyVariance() {
+        if (managerWeeklyStats) return managerWeeklyStats; // already loaded
+
+        const stats = {};
+        const managerScores = {}; // manager -> [score1, score2, ...]
+        const seasons = [2019, 2021, 2022, 2023, 2024, 2025]; // skip 2020 COVID
+
+        for (const season of seasons) {
+          try {
+            // Load teams to map team_key -> manager
+            const teamsResp = await fetch(`data/historical/${season}/teams.json`);
+            if (!teamsResp.ok) continue;
+            const teams = await teamsResp.json();
+            const keyToManager = {};
+            teams.forEach(t => {
+              const mgr = normalizeManagerName(
+                t.manager || t.Manager || '',
+                season,
+                t.team_name || t.TeamName || '',
+                t.team_key || ''
+              );
+              keyToManager[t.team_key] = mgr;
+            });
+
+            // Load all weekly scores
+            const scoresResp = await fetch(`data/historical/${season}/all_scores.json`);
+            if (!scoresResp.ok) continue;
+            const scores = await scoresResp.json();
+
+            scores.forEach(s => {
+              const mgr = keyToManager[s.team_key];
+              if (!mgr || !s.team_score) return;
+              if (!managerScores[mgr]) managerScores[mgr] = [];
+              managerScores[mgr].push(s.team_score);
+            });
+          } catch (e) { /* skip season */ }
+        }
+
+        // Also load current season scores if available
+        try {
+          const curTeamsResp = await fetch('data/current_season/teams.json');
+          const curScoresResp = await fetch('data/current_season/all_scores.json');
+          if (curTeamsResp.ok && curScoresResp.ok) {
+            const curTeams = await curTeamsResp.json();
+            const curScores = await curScoresResp.json();
+            const keyToManager = {};
+            curTeams.forEach(t => {
+              const mgr = normalizeManagerName(t.manager || '', 2026, t.team_name || '', t.team_key || '');
+              keyToManager[t.team_key] = mgr;
+            });
+            curScores.forEach(s => {
+              const mgr = keyToManager[s.team_key];
+              if (!mgr || !s.team_score) return;
+              if (!managerScores[mgr]) managerScores[mgr] = [];
+              managerScores[mgr].push(s.team_score);
+            });
+          }
+        } catch (e) { /* ignore */ }
+
+        // Calculate mean and stdDev per manager
+        // Weight recent seasons more heavily (exponential decay)
+        let allScores = [];
+        Object.entries(managerScores).forEach(([mgr, scores]) => {
+          if (scores.length < 3) return; // need minimum sample size
+          const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
+          const variance = scores.reduce((sum, s) => sum + Math.pow(s - mean, 2), 0) / (scores.length - 1);
+          const stdDev = Math.sqrt(variance);
+          stats[mgr] = { mean, stdDev, sampleSize: scores.length };
+          allScores.push(...scores);
+        });
+
+        // Calculate league-wide fallback stats
+        if (allScores.length > 0) {
+          const leagueMean = allScores.reduce((a, b) => a + b, 0) / allScores.length;
+          const leagueVar = allScores.reduce((sum, s) => sum + Math.pow(s - leagueMean, 2), 0) / (allScores.length - 1);
+          stats.__league__ = { mean: leagueMean, stdDev: Math.sqrt(leagueVar), sampleSize: allScores.length };
+        } else {
+          // Fallback if no historical data at all
+          stats.__league__ = { mean: 400, stdDev: 80, sampleSize: 0 };
+        }
+
+        managerWeeklyStats = stats;
+        console.log('Manager weekly variance loaded:', Object.keys(stats).length - 1, 'managers');
+        return stats;
+      }
+
+      // Get manager key for a team_key from sportsbookTeamData
+      function getManagerForTeamKey(teamKey) {
+        const team = sportsbookTeamData.find(t => t.team_key === teamKey);
+        if (!team) return null;
+        return normalizeManagerName(team.manager || '', 2026, team.team_name || '', teamKey);
+      }
+
+      function calculateMatchupOdds(teamProj, oppProj, teamKey, oppTeamKey, weekKey) {
         if (teamProj === 0 && oppProj === 0) return "-110";
 
-        const total = teamProj + oppProj;
-        const probability = teamProj / total;
+        // Get manager variance data for both teams
+        const teamManager = getManagerForTeamKey(teamKey);
+        const oppManager = getManagerForTeamKey(oppTeamKey);
+        const league = managerWeeklyStats?.__league__ || { mean: 400, stdDev: 70 };
+        const teamStats = (teamManager && managerWeeklyStats?.[teamManager]) || league;
+        const oppStats = (oppManager && managerWeeklyStats?.[oppManager]) || league;
 
-        // Add deterministic vig based on team/week keys for realistic asymmetry
-        // This creates a consistent "juice" that favors the house, so -120 vs +112 instead of -120 vs +120
+        // Use raw historical stdDev (NOT scaled to projection level)
+        // Fantasy score variance is inherent to the format — a team projected 136
+        // can still explode for 250+ or collapse to 80. The raw stdDev captures
+        // the true week-to-week volatility of each manager's scoring.
+        const teamStdDev = teamStats.stdDev;
+        const oppStdDev = oppStats.stdDev;
+
+        // Score difference distribution: X = teamScore - oppScore
+        // E[X] = teamProj - oppProj
+        // Var[X] = teamVar + oppVar (independent)
+        // StdDev[X] = sqrt(teamStdDev^2 + oppStdDev^2)
+        const diffMean = teamProj - oppProj;
+        const diffStdDev = Math.sqrt(teamStdDev * teamStdDev + oppStdDev * oppStdDev);
+
+        // P(team wins) = P(X > 0) = normalCDF(diffMean / diffStdDev)
+        let probability;
+        if (diffStdDev === 0) {
+          probability = teamProj > oppProj ? 0.95 : teamProj < oppProj ? 0.05 : 0.5;
+        } else {
+          const zScore = diffMean / diffStdDev;
+          probability = normalCDF(zScore);
+        }
+
+        // Clamp probability to realistic sportsbook range (max ~95%)
+        probability = Math.max(0.05, Math.min(0.95, probability));
+
+        // Add deterministic vig based on team/week keys for realistic sportsbook asymmetry
         const vigSeed = hashStringToNumber((teamKey || "") + (weekKey || ""));
         const vigAmount = 3 + (vigSeed % 8); // 3-10 point vig
 
         if (probability >= 0.5) {
-          // Favorite: make more negative (harder to profit)
           const rawOdds = -Math.round((probability / (1 - probability)) * 100);
-          const odds = Math.max(rawOdds - vigAmount, -500);
+          const odds = Math.max(rawOdds - vigAmount, -800);
           return odds;
         } else {
-          // Underdog: reduce payout slightly
           const rawOdds = Math.round(((1 - probability) / probability) * 100);
-          const odds = Math.min(rawOdds - vigAmount, 500);
+          const odds = Math.min(rawOdds - vigAmount, 800);
           return "+" + Math.max(odds, 100);
         }
       }
