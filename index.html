@@ -41851,14 +41851,12 @@
         // Get manager name for this team
         const team = tradeAnalyzerData.teams[teamKey];
         const managerName = team?.manager?.toLowerCase().trim() || "";
-        console.log(`Looking for players for manager: ${managerName}`);
 
-        // Find the keeper_config key for this manager (keepers are stored with 2025 keys)
+        // Find the keeper_config key for this manager (for picks/trades)
         let configKey = null;
         if (keeperConfig?.teams) {
           for (const [key, configTeam] of Object.entries(keeperConfig.teams)) {
-            const configManager =
-              configTeam.manager?.toLowerCase().trim() || "";
+            const configManager = configTeam.manager?.toLowerCase().trim() || "";
             const managerFirst = managerName.split(" ")[0];
             const configFirst = configManager.split(" ")[0];
             if (configManager === managerName || managerFirst === configFirst) {
@@ -41867,60 +41865,89 @@
             }
           }
         }
-        console.log(
-          `Found configKey: ${configKey} for manager: ${managerName}`,
-        );
 
-        // Try merged rosters first (Yahoo + NA keepers), fall back to keeperSelections
-        const mergedRosters = mergedRostersCache || {};
-        const rosterPlayers = mergedRosters[teamKey] || [];
+        // Load Yahoo roster directly — this is the source of truth post-draft
+        let yahooRoster = [];
+        try {
+          const rosterResp = await fetch('data/current_season/rosters.json');
+          if (rosterResp.ok) {
+            const allRosters = await rosterResp.json();
+            yahooRoster = allRosters[teamKey] || [];
+          }
+        } catch (e) { console.log('Could not load rosters.json:', e); }
 
-        if (rosterPlayers.length > 0) {
-          // Use merged roster data (post-draft)
-          console.log(`Using merged roster: ${rosterPlayers.length} players for ${teamKey}`);
-          for (const rp of rosterPlayers) {
+        // Load draft data for round costs
+        let draftPicks = [];
+        try {
+          const draftResp = await fetch('data/current_season/draft.json');
+          if (draftResp.ok) draftPicks = await draftResp.json();
+        } catch (e) { /* ignore */ }
+
+        // Build lookup: lowercase player name -> draft round for this team
+        const draftRoundMap = {};
+        draftPicks.forEach(pick => {
+          if (pick.team_key === teamKey) {
+            draftRoundMap[(pick.player_name || '').toLowerCase().trim()] = pick.round;
+          }
+        });
+
+        // Load average projections for enrichment
+        await loadAverageProjections();
+
+        if (yahooRoster.length > 0) {
+          console.log(`Using Yahoo roster: ${yahooRoster.length} players for ${teamKey}`);
+          for (const rp of yahooRoster) {
             const playerName = rp.name || "Unknown";
-            // Create a keeper-like object for calculatePlayerTradeValue
+            const playerNameLc = playerName.toLowerCase().trim();
+            const playerNameNorm = playerNameLc.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+            // NA position on Yahoo = prospect (free keeper)
+            const isProspect = rp.selected_position === 'NA';
+
+            // Determine round cost from draft data; prospects are free (round 0)
+            let roundCost = isProspect ? 0 : (draftRoundMap[playerNameLc] || draftRoundMap[playerNameNorm] || 20);
+
             const keeperLike = {
               player_name: playerName,
               position: rp.primary_position || rp.eligible_positions?.[0] || "Util",
-              roundCost: rp.keeper_cost || 20,
-              dollarCost: rp.keeper_cost || 1,
-              isProspect: rp.is_prospect || false,
-              isUndrafted: false,
+              roundCost: roundCost,
+              dollarCost: roundCost,
+              isProspect: isProspect,
+              isUndrafted: !isProspect && !draftRoundMap[playerNameLc] && !draftRoundMap[playerNameNorm],
             };
             const valueResult = calculatePlayerTradeValue(keeperLike, "default");
 
-            const playerNameLower = playerName.toLowerCase().trim();
-            const baseNameLower = playerNameLower.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "").trim();
+            const baseNameLower = playerNameLc.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "").trim();
+            const posType = rp.position_type === 'P' ? 'pitcher' : 'batter';
 
-            const zips2026 = tradeAnalyzerData.zips2026[playerNameLower] || tradeAnalyzerData.zips2026[baseNameLower] || {};
-            const zips2027 = tradeAnalyzerData.zips2027[playerNameLower] || tradeAnalyzerData.zips2027[baseNameLower] || {};
-            const zips2028 = tradeAnalyzerData.zips2028[playerNameLower] || tradeAnalyzerData.zips2028[baseNameLower] || {};
-            const avgProjData = averageProjectionsMap[playerNameLower] || averageProjectionsMap[baseNameLower];
+            const zips2026 = tradeAnalyzerData.zips2026[playerNameLc] || tradeAnalyzerData.zips2026[baseNameLower] || tradeAnalyzerData.zips2026[playerNameNorm] || {};
+            const zips2027 = tradeAnalyzerData.zips2027[playerNameLc] || tradeAnalyzerData.zips2027[baseNameLower] || tradeAnalyzerData.zips2027[playerNameNorm] || {};
+            const zips2028 = tradeAnalyzerData.zips2028[playerNameLc] || tradeAnalyzerData.zips2028[baseNameLower] || tradeAnalyzerData.zips2028[playerNameNorm] || {};
+            const avgProjData = averageProjectionsMap[`${playerNameLc}|${posType}`] || averageProjectionsMap[playerNameLc] ||
+              averageProjectionsMap[`${playerNameNorm}|${posType}`] || averageProjectionsMap[playerNameNorm] || {};
 
-            const mlbTeam = zips2026.mlb_team || zips2027.mlb_team || zips2028.mlb_team || avgProjData?.mlb_team || "";
+            const mlbTeam = rp.editorial_team_abbr || zips2026.mlb_team || zips2027.mlb_team || zips2028.mlb_team || avgProjData?.mlb_team || "";
             const headshot = rp.headshot_url || zips2026.headshot_url || zips2027.headshot_url || zips2028.headshot_url || avgProjData?.headshot || "";
 
             players.push({
               type: "player",
               name: playerName,
               position: keeperLike.position,
-              isProspect: rp.is_prospect || false,
-              roundCost: keeperLike.roundCost,
-              dollarCost: keeperLike.dollarCost,
+              isProspect: isProspect,
+              roundCost: roundCost,
+              dollarCost: roundCost,
               headshot: headshot,
               mlbTeam: mlbTeam,
               value: valueResult.value,
               baseValue: valueResult.baseValue,
               rawData: keeperLike,
-              is_na_player: rp.is_na_player || false,
+              is_na_player: isProspect,
             });
           }
         } else {
-          // Fallback to keeperSelections (pre-draft)
+          // Fallback to keeperSelections (pre-draft only)
           const keepers = keeperSelections[configKey] || [];
-          console.log(`Using keeperSelections: ${keepers.length} keepers for ${configKey}`);
+          console.log(`Fallback to keeperSelections: ${keepers.length} keepers for ${configKey}`);
 
           for (const keeper of keepers) {
             if (keeper && keeper.player_name) {
@@ -42023,29 +42050,36 @@
 
       function calculatePlayerTradeValue(keeper, goal = "default") {
         const name = keeper.player_name.toLowerCase().trim();
+        const nameNorm = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
         // Get projections for each year (data is now an object with points, mlb_team, etc.)
-        const data2026 = tradeAnalyzerData.zips2026[name] || {};
-        const data2027 = tradeAnalyzerData.zips2027[name] || {};
-        const data2028 = tradeAnalyzerData.zips2028[name] || {};
+        const data2026 = tradeAnalyzerData.zips2026[name] || tradeAnalyzerData.zips2026[nameNorm] || {};
+        const data2027 = tradeAnalyzerData.zips2027[name] || tradeAnalyzerData.zips2027[nameNorm] || {};
+        const data2028 = tradeAnalyzerData.zips2028[name] || tradeAnalyzerData.zips2028[nameNorm] || {};
+
+        // Also check average projections as fallback for missing ZiPS DC players
+        const posType = keeper.position && ['SP','RP','P'].includes(keeper.position) ? 'pitcher' : 'batter';
+        const avgProj = (typeof averageProjectionsMap !== 'undefined') ?
+          (averageProjectionsMap[`${name}|${posType}`] || averageProjectionsMap[name] ||
+           averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || null) : null;
 
         let proj2026, proj2027, proj2028;
 
         if (tradeAnalyzerData.isInSeason) {
           // In-season mode: 2026 = actual YTD points + ROS projected points
           const actual =
-            (tradeAnalyzerData.actualStats[name] || {}).fantasyPoints || 0;
+            (tradeAnalyzerData.actualStats[name] || tradeAnalyzerData.actualStats[nameNorm] || {}).fantasyPoints || 0;
           const ros =
-            (tradeAnalyzerData.rosProjections[name] || {}).rosPoints || 0;
+            (tradeAnalyzerData.rosProjections[name] || tradeAnalyzerData.rosProjections[nameNorm] || {}).rosPoints || 0;
           proj2026 = actual + ros; // Full season outlook
 
-          // If no ROS or actual data, fall back to preseason ZiPS
+          // If no ROS or actual data, fall back to preseason ZiPS, then avg projections
           if (proj2026 === 0) {
-            proj2026 = data2026.points || 0;
+            proj2026 = data2026.points || (avgProj ? avgProj.avgPoints : 0) || 0;
           }
         } else {
-          // Preseason mode: use ZiPS projection as before
-          proj2026 = data2026.points || 0;
+          // Preseason mode: use ZiPS DC projection, fall back to avg projections
+          proj2026 = data2026.points || (avgProj ? avgProj.avgPoints : 0) || 0;
         }
 
         // 2027 and 2028 always use ZiPS multi-year projections
@@ -43627,6 +43661,7 @@
 
       function calculatePlayerForecast(player) {
         const name = (player.name || "").toLowerCase().trim();
+        const nameNorm = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         const baseName = name
           .replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "")
           .trim();
@@ -43635,16 +43670,26 @@
         const data2026 =
           tradeAnalyzerData.zips2026[name] ||
           tradeAnalyzerData.zips2026[baseName] ||
+          tradeAnalyzerData.zips2026[nameNorm] ||
           {};
         const data2027 =
           tradeAnalyzerData.zips2027[name] ||
           tradeAnalyzerData.zips2027[baseName] ||
+          tradeAnalyzerData.zips2027[nameNorm] ||
           {};
         const data2028 =
           tradeAnalyzerData.zips2028[name] ||
           tradeAnalyzerData.zips2028[baseName] ||
+          tradeAnalyzerData.zips2028[nameNorm] ||
           {};
-        const proj2026 = data2026.points || 0;
+
+        // Fall back to average projections for 2026 if ZiPS DC is missing this player
+        const posType = player.position && ['SP','RP','P'].includes(player.position) ? 'pitcher' : 'batter';
+        const avgProj = (typeof averageProjectionsMap !== 'undefined') ?
+          (averageProjectionsMap[`${name}|${posType}`] || averageProjectionsMap[name] ||
+           averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || null) : null;
+
+        const proj2026 = data2026.points || (avgProj ? avgProj.avgPoints : 0) || 0;
         const proj2027 = data2027.points || 0;
         const proj2028 = data2028.points || 0;
 
