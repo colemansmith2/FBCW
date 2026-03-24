@@ -12624,10 +12624,11 @@
       }
 
       .matchup-detail-section-title {
-        font-family: var(--pixel-font);
-        font-size: 0.8rem;
+        font-family: "Arcade Gamer", "Press Start 2P", monospace;
+        font-size: 0.45rem;
         color: var(--retro-blue);
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
         margin-bottom: 0.6rem;
         padding-bottom: 0.3rem;
         border-bottom: 2px solid var(--retro-gold);
@@ -50524,7 +50525,7 @@
             <div class="matchup-detail-scroll">
             <div class="matchup-detail-body">
               <div style="text-align:center;margin-bottom:0.75rem;">
-                <span style="font-family:var(--pixel-font);font-size:1rem;color:var(--retro-blue);letter-spacing:2px;font-weight:800;">WEEK ${week} MATCHUP</span>
+                <span style="font-family:'Arcade Gamer','Press Start 2P',monospace;font-size:0.55rem;color:var(--retro-blue);letter-spacing:1.5px;text-transform:uppercase;">WEEK ${week} MATCHUP</span>
               </div>
               <div class="matchup-detail-teams">
                 <div class="matchup-detail-team">
@@ -50554,11 +50555,11 @@
 
               <div style="display: flex; gap: 1.5rem;">
                 <div class="matchup-detail-section" style="flex:1;">
-                  <div class="matchup-detail-section-title">TOP PLAYERS — ${t1Name}</div>
+                  <div class="matchup-detail-section-title">Top Players</div>
                   ${t1Players.length > 0 ? buildPlayerList(t1Players) : '<p style="color:#888;font-size:0.9rem;">No roster data</p>'}
                 </div>
                 <div class="matchup-detail-section" style="flex:1;">
-                  <div class="matchup-detail-section-title">TOP PLAYERS — ${t2Name}</div>
+                  <div class="matchup-detail-section-title">Top Players</div>
                   ${t2Players.length > 0 ? buildPlayerList(t2Players) : '<p style="color:#888;font-size:0.9rem;">No roster data</p>'}
                 </div>
               </div>
