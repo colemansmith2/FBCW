@@ -12540,23 +12540,27 @@
       }
 
       .matchup-detail-team-name {
+        font-family: "Basis33", sans-serif;
         font-weight: 700;
         font-size: 1rem;
         color: #333;
       }
 
       .matchup-detail-team-record {
+        font-family: "Basis33", sans-serif;
         font-size: 0.85rem;
         color: #888;
         font-weight: 600;
       }
 
       .matchup-detail-team-manager {
+        font-family: "Basis33", sans-serif;
         font-size: 0.8rem;
         color: #888;
       }
 
       .matchup-detail-team-score {
+        font-family: "Basis33", sans-serif;
         font-size: 1.5rem;
         font-weight: 800;
         color: #222;
@@ -12564,6 +12568,7 @@
       }
 
       .matchup-detail-team-proj {
+        font-family: "Basis33", sans-serif;
         font-size: 1.1rem;
         font-weight: 700;
         color: var(--retro-blue);
@@ -12578,20 +12583,22 @@
         min-width: 80px;
       }
 
-      .matchup-detail-center-col .matchup-detail-vs {
-        margin-bottom: auto;
-        padding-top: 1.5rem;
-      }
-
-      .matchup-detail-center-bottom {
+      .matchup-detail-center-top {
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2px;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .matchup-detail-center-bottom {
         margin-top: auto;
+        text-align: center;
       }
 
       .matchup-detail-streak {
+        font-family: "Basis33", sans-serif;
         font-size: 0.8rem;
         color: #666;
         white-space: nowrap;
@@ -12632,6 +12639,7 @@
         align-items: center;
         padding: 0.5rem 0;
         border-bottom: 1px solid #eee;
+        font-family: "Basis33", sans-serif;
         font-size: 0.9rem;
       }
 
@@ -12663,7 +12671,7 @@
         font-size: 0.9rem;
       }
 
-      .matchup-detail-player-row img {
+      .matchup-detail-player-row img.player-headshot {
         width: 34px;
         height: 34px;
         border-radius: 50%;
@@ -12672,18 +12680,27 @@
       }
 
       .matchup-detail-player-name {
+        font-family: "Basis33", sans-serif;
         font-weight: 600;
         font-size: 0.9rem;
         color: #333;
       }
 
+      .matchup-detail-player-mlb {
+        font-family: "Basis33", sans-serif;
+        font-size: 0.75rem;
+        color: #888;
+      }
+
       .matchup-detail-player-pos {
+        font-family: "Basis33", sans-serif;
         color: #888;
         font-size: 0.75rem;
         min-width: 30px;
       }
 
       .matchup-detail-player-pts {
+        font-family: "Basis33", sans-serif;
         font-weight: 700;
         font-size: 0.95rem;
         color: var(--retro-blue);
@@ -12808,7 +12825,7 @@
           font-size: 0.8rem;
         }
 
-        .matchup-detail-player-row img {
+        .matchup-detail-player-row img.player-headshot {
           width: 26px;
           height: 26px;
         }
@@ -50440,11 +50457,11 @@
           const posBadgeHtml = getPositionBadge(p.position, p.name);
           return `
           <div class="matchup-detail-player-row">
-            <img src="${p.headshot || placeholderImg}" onerror="this.src='${placeholderImg}'" alt="">
+            <img class="player-headshot" src="${p.headshot || placeholderImg}" onerror="this.src='${placeholderImg}'" alt="">
             <div style="flex:1;min-width:0;">
               <div class="matchup-detail-player-name">${p.name}</div>
               <div style="display:flex;align-items:center;gap:4px;margin-top:2px;">
-                ${mlbLogoHtml}<span style="font-size:0.75rem;color:#888;">${p.mlb_team || ''}</span>
+                ${mlbLogoHtml}<span class="matchup-detail-player-mlb">${p.mlb_team || ''}</span>
                 ${posBadgeHtml}
               </div>
             </div>
@@ -50468,7 +50485,7 @@
 
         // Build H2H record text and streak
         const h2hRecordHtml = h2hHistory.length > 0
-          ? `<div style="font-weight:800;font-size:1.2rem;color:#333;">${t1Wins} - ${t2Wins}</div>`
+          ? `<div style="font-family:'Basis33',sans-serif;font-weight:800;font-size:1.2rem;color:#333;">${t1Wins} - ${t2Wins}</div>`
           : '';
         const streakHtml = streakCount >= 1
           ? `<div class="matchup-detail-streak"><span class="streak-label">Current Streak:</span> <img src="${streakLogo}" alt=""> <strong>${streakManager}</strong> ${streakCount}W</div>`
@@ -50519,11 +50536,11 @@
                   ${proj1 > 0 ? `<div class="matchup-detail-team-proj">${proj1.toFixed(1)}</div>` : ''}
                 </div>
                 <div class="matchup-detail-center-col">
-                  <div class="matchup-detail-vs">VS</div>
-                  <div class="matchup-detail-center-bottom">
+                  <div class="matchup-detail-center-top">
+                    <div class="matchup-detail-vs">VS</div>
                     ${h2hRecordHtml}
-                    ${streakHtml}
                   </div>
+                  ${streakHtml ? `<div class="matchup-detail-center-bottom">${streakHtml}</div>` : ''}
                 </div>
                 <div class="matchup-detail-team">
                   <img src="${t2Logo}" alt="${t2Name}">
