@@ -45475,6 +45475,9 @@
           }
         }
 
+        // Collect unassigned players (Util-only, DH, etc.) so they count toward team total
+        assigned['_unassigned'] = scored.filter(p => !used.has(p.name));
+
         return assigned;
       }
 
@@ -45584,6 +45587,10 @@
             valueScores[pos] = { score: posScore, players: players };
             valueTotal += posScore;
           }
+          // Include unassigned players (Util-only like Ohtani Batter) in the total
+          const unassigned = valueAssigned['_unassigned'] || [];
+          const unassignedScore = unassigned.reduce((sum, p) => sum + (p.tradeValue || p.value || 0), 0);
+          valueTotal += unassignedScore;
 
           teamResults.push({
             team_key: team.team_key,
