@@ -53024,16 +53024,6 @@
           .join("");
       }
 
-      function upgradeHeadshotUrl(url) {
-        // Yahoo headshot URLs use a base64-encoded resize param that defaults to h=60;w=46 (tiny).
-        // Replace with h=96;w=96 for sharper images at small display sizes on retina screens.
-        if (!url || !url.includes('s.yimg.com/iu/api/res')) return url;
-        return url.replace(
-          /aD02MDtxPTEwMDt3PTQ2/g,
-          'aD05NjtxPTEwMDt3PTk2'
-        );
-      }
-
       async function renderHomeTopPlayers() {
         const tbody = document.getElementById("home-top-players-body");
 
@@ -53107,7 +53097,7 @@
 
           tbody.innerHTML = topByPosition
             .map((player) => {
-              const headshot = upgradeHeadshotUrl(player.headshot_url) || placeholderImg;
+              const headshot = player.headshot_url || placeholderImg;
               const pos = player.display_position;
               const mlbTeam = player.mlb_team || "";
               const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : "";
@@ -53213,7 +53203,7 @@
 
           tbody.innerHTML = topByPosition
             .map((player) => {
-              const headshot = upgradeHeadshotUrl(player.headshot_url) || placeholderImg;
+              const headshot = player.headshot_url || placeholderImg;
               const pos = player.display_position;
               const mlbTeam =
                 player.mlb_team || player.team || player.Team || "";
