@@ -52076,12 +52076,15 @@
                 matchup.team2.team_key, matchup.team2.manager);
             }
 
+            // Load transactions for streams/adds display
+            const transactionData = await loadWeekTransactionData(matchup.week);
+
             body.innerHTML = `
                         <div class="matchup-popup-team-section">
-                            ${renderTeamPopupSectionProjected(matchup.team1, team1Players)}
+                            ${renderTeamPopupSectionProjected(matchup.team1, team1Players, transactionData)}
                         </div>
                         <div class="matchup-popup-team-section">
-                            ${renderTeamPopupSectionProjected(matchup.team2, team2Players)}
+                            ${renderTeamPopupSectionProjected(matchup.team2, team2Players, transactionData)}
                         </div>
                     `;
           }
@@ -52121,14 +52124,27 @@
 
       async function loadWeekTransactionData(week) {
         try {
-          // Use the transactions we already have loaded
-          if (homeTransactionsData && homeTransactionsData.length > 0) {
-            // Filter to adds from the current week
-            // Transactions have a timestamp, need to determine if it falls within the week
-            return homeTransactionsData.filter(
-              (t) => t.type === "add" || t.type === "add/drop",
-            );
+          if (!homeTransactionsData || homeTransactionsData.length === 0) return [];
+
+          // Get week date range from daily scores data
+          const dailyData = await loadDailyScores();
+          const weekData = dailyData?.weeks?.[String(week)];
+          let weekStart = null, weekEnd = null;
+
+          if (weekData?.start_date && weekData?.end_date) {
+            weekStart = new Date(weekData.start_date + 'T00:00:00');
+            weekEnd = new Date(weekData.end_date + 'T23:59:59');
           }
+
+          return homeTransactionsData.filter((t) => {
+            if (t.type !== "add" && t.type !== "add/drop") return false;
+            // Filter by week date range if available
+            if (weekStart && weekEnd && t.timestamp) {
+              const txDate = new Date(parseInt(t.timestamp) * 1000);
+              return txDate >= weekStart && txDate <= weekEnd;
+            }
+            return true; // If no date range, include all
+          });
         } catch (e) {
           console.log("Error processing transaction data");
         }
@@ -52157,7 +52173,7 @@
               const players = t.players || [];
               return players.some(
                 (p) =>
-                  p.destination_team_key === team.team_key && p.type === "add",
+                  p.destination_team_key === team.team_key && p.transaction_type === "add",
               );
             })
           : [];
@@ -52170,7 +52186,7 @@
         teamAdds.forEach((t) => {
           const players = t.players || [];
           players.forEach((p) => {
-            if (p.destination_team_key === team.team_key && p.type === "add") {
+            if (p.destination_team_key === team.team_key && p.transaction_type === "add") {
               const pos = p.position || "";
               const isStream = pos === "SP";
               if (isStream) {
@@ -52179,10 +52195,10 @@
                 regularAddCount++;
               }
               addedPlayers.push({
-                name: p.name,
+                name: p.player_name || p.name || "",
                 position: pos,
                 headshot_url: p.headshot_url || "",
-                mlb_team: p.mlb_team || p.team || "",
+                mlb_team: p.team_abbr || p.mlb_team || p.team || "",
                 points: 0, // Would need to look up from roster
                 isStream: isStream,
               });
@@ -52501,7 +52517,7 @@
       }
 
       // Render team section for preseason - shows top projected keepers
-      function renderTeamPopupSectionProjected(team, players) {
+      function renderTeamPopupSectionProjected(team, players, transactionData) {
         const batters = players
           .filter(
             (p) =>
@@ -52518,6 +52534,54 @@
             (a, b) => (b.projected_points || 0) - (a.projected_points || 0),
           );
 
+        // Process transactions for streams/adds
+        const teamAdds = transactionData
+          ? transactionData.filter((t) => {
+              const txPlayers = t.players || [];
+              return txPlayers.some(
+                (p) =>
+                  p.destination_team_key === team.team_key && p.transaction_type === "add",
+              );
+            })
+          : [];
+
+        let streamCount = 0;
+        let regularAddCount = 0;
+        const addedPlayers = [];
+
+        teamAdds.forEach((t) => {
+          const txPlayers = t.players || [];
+          txPlayers.forEach((p) => {
+            if (p.destination_team_key === team.team_key && p.transaction_type === "add") {
+              const pos = p.position || "";
+              const isStream = pos === "SP";
+              if (isStream) {
+                streamCount++;
+              } else {
+                regularAddCount++;
+              }
+              addedPlayers.push({
+                name: p.player_name || p.name || "",
+                position: pos,
+                headshot_url: p.headshot_url || "",
+                mlb_team: p.team_abbr || p.mlb_team || "",
+                points: 0,
+                isStream: isStream,
+              });
+            }
+          });
+        });
+
+        streamCount = Math.min(streamCount, 3);
+        regularAddCount = Math.min(regularAddCount, 5);
+
+        const streamPlayers = addedPlayers.filter((p) => p.isStream);
+        const regularAddPlayers = addedPlayers.filter((p) => !p.isStream);
+
+        const actualAdds = Math.min(regularAddPlayers.length, 5);
+        const addSlots = Math.max(2, actualAdds);
+        const streamSlots = 5 - addSlots;
+
         const hatFilename = getManagerHatFilename(team.manager);
         const hatUrl = `data/hats/${hatFilename}`;
 
@@ -52526,6 +52590,16 @@
                     <div style="display:flex;align-items:center;gap:0.4rem;">
                         <img src="${hatUrl}" class="matchup-section-hat" alt="" onerror="this.style.display='none'">
                         <span class="matchup-popup-section-title">${team.name}</span>
+                    </div>
+                    <div class="add-tracker">
+                        <div class="add-tracker-group">
+                            <span class="add-tracker-label">STR</span>
+                            ${[0, 1, 2].map((i) => `<div class="add-dot stream ${i < streamCount ? "used" : ""}"></div>`).join("")}
+                        </div>
+                        <div class="add-tracker-group">
+                            <span class="add-tracker-label">ADD</span>
+                            ${[0, 1, 2, 3, 4].map((i) => `<div class="add-dot regular ${i < regularAddCount ? "used" : ""}"></div>`).join("")}
+                        </div>
                     </div>
                 </div>
 
@@ -52557,16 +52631,21 @@
 
                 <div class="matchup-popup-adds-row">
                     <div class="matchup-popup-adds-grid">
-                        <div class="matchup-popup-adds-group streams-group placeholder-group">
+                        ${
+                          streamSlots > 0
+                            ? `
+                        <div class="matchup-popup-adds-group streams-group ${streamPlayers.length === 0 ? "placeholder-group" : ""}">
                             <span class="matchup-popup-adds-row-title streams">Streams</span>
                             <div class="matchup-popup-adds-group-cards">
-                                ${[0, 1, 2].map(() => renderPlaceholderAddCard()).join("")}
+                                ${Array.from({ length: streamSlots }, (_, i) => (streamPlayers[i] ? renderAddPlayerCard(streamPlayers[i]) : renderPlaceholderAddCard())).join("")}
                             </div>
-                        </div>
-                        <div class="matchup-popup-adds-group adds-group placeholder-group">
+                        </div>`
+                            : ""
+                        }
+                        <div class="matchup-popup-adds-group adds-group ${regularAddPlayers.length === 0 ? "placeholder-group" : ""}">
                             <span class="matchup-popup-adds-row-title adds">Adds</span>
                             <div class="matchup-popup-adds-group-cards">
-                                ${[0, 1].map(() => renderPlaceholderAddCard()).join("")}
+                                ${Array.from({ length: addSlots }, (_, i) => (regularAddPlayers[i] ? renderAddPlayerCard(regularAddPlayers[i]) : renderPlaceholderAddCard())).join("")}
                             </div>
                         </div>
                     </div>
@@ -52714,40 +52793,110 @@
           .join("");
       }
 
-      function renderHomeTopTeams() {
+      async function renderHomeTopTeams() {
         const tbody = document.getElementById("home-top-teams-body");
         const dateSpan = document.getElementById("home-top-teams-date");
 
-        // Set the date to yesterday (or today if no data)
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const dateStr = `${yesterday.getMonth() + 1}/${yesterday.getDate()}`;
-        if (dateSpan) dateSpan.textContent = dateStr;
+        // Try to load daily scores for the most recent scoring day
+        const dailyData = await loadDailyScores();
+        const currentWeek = dailyData?.current_week || 1;
+        const weekData = dailyData?.weeks?.[String(currentWeek)];
+        const teamScores = weekData?.team_scores || {};
 
-        // For now, use standings data sorted by points_for as proxy for "top teams"
-        // In-season this would be daily/weekly team scores
-        if (!homeStandingsData || homeStandingsData.length === 0) {
-          tbody.innerHTML =
-            '<tr><td colspan="2" class="homepage-placeholder">Top teams will appear once the season starts.</td></tr>';
-          return;
+        // Find the most recent day with scores
+        const today = new Date();
+        const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+
+        // Build team daily scores list - try yesterday first, then today, then weekly totals
+        let scoringDate = null;
+        let teamDailyScores = [];
+        let useWeeklyFallback = false;
+
+        // Check if we have daily scores for any recent day
+        if (Object.keys(teamScores).length > 0) {
+          // Find the most recent day with non-zero scores
+          const allDates = new Set();
+          Object.values(teamScores).forEach(ts => Object.keys(ts).forEach(d => allDates.add(d)));
+          const sortedDates = [...allDates].sort().reverse();
+
+          for (const dateKey of sortedDates) {
+            const hasNonZero = Object.values(teamScores).some(ts => (ts[dateKey] || 0) !== 0);
+            if (hasNonZero) {
+              scoringDate = dateKey;
+              break;
+            }
+          }
+
+          if (scoringDate) {
+            // Use daily scores for the most recent scoring day
+            const parts = scoringDate.split('-');
+            const displayDate = `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+            if (dateSpan) dateSpan.textContent = displayDate;
+
+            for (const teamKey of Object.keys(teamScores)) {
+              teamDailyScores.push({
+                team_key: teamKey,
+                score: teamScores[teamKey][scoringDate] || 0
+              });
+            }
+          }
         }
 
-        // Sort by points_for (highest first)
-        const sorted = [...homeStandingsData].sort(
-          (a, b) => (b.points_for || 0) - (a.points_for || 0),
-        );
+        // Fall back to weekly scores if no daily data
+        if (teamDailyScores.length === 0) {
+          useWeeklyFallback = true;
+          // Use week scores (from homeScoresData)
+          if (homeScoresData && homeScoresData.length > 0) {
+            const weekScores = homeScoresData.filter(s => s.week === currentWeek);
+            const processed = new Set();
+            weekScores.forEach(s => {
+              if (!processed.has(s.team_key)) {
+                processed.add(s.team_key);
+                teamDailyScores.push({
+                  team_key: s.team_key,
+                  score: s.points || s.team_score || 0
+                });
+              }
+            });
+          }
+          if (dateSpan) dateSpan.textContent = `Week ${currentWeek}`;
+        }
 
-        tbody.innerHTML = sorted
-          .map((team, idx) => {
+        if (teamDailyScores.length === 0) {
+          // Fall back to standings
+          if (!homeStandingsData || homeStandingsData.length === 0) {
+            tbody.innerHTML =
+              '<tr><td colspan="2" class="homepage-placeholder">Top teams will appear once the season starts.</td></tr>';
+            return;
+          }
+          const dateStr = `${yesterday.getMonth() + 1}/${yesterday.getDate()}`;
+          if (dateSpan) dateSpan.textContent = dateStr;
+          teamDailyScores = homeStandingsData.map(t => ({
+            team_key: t.team_key,
+            score: t.points_for || 0
+          }));
+        }
+
+        // Sort by score (highest first)
+        teamDailyScores.sort((a, b) => b.score - a.score);
+
+        tbody.innerHTML = teamDailyScores
+          .map((entry, idx) => {
             const teamData =
-              homeTeamsData.find((t) => t.team_key === team.team_key) || {};
+              homeTeamsData.find((t) => t.team_key === entry.team_key) || {};
+            const standingsData =
+              homeStandingsData?.find((t) => t.team_key === entry.team_key) || {};
             const logo = fixTeamLogo(teamData.team_logo) || "league_logo.png";
-            const rawManager = team.manager || teamData.manager || "";
+            const teamName = teamData.team_name || standingsData.team_name || "Unknown";
+            const rawManager = teamData.manager || standingsData.manager || "";
             const manager = normalizeManagerName(
               rawManager,
               2026,
-              team.team_name,
-              team.team_key,
+              teamName,
+              entry.team_key,
             );
 
             return `
@@ -52757,12 +52906,12 @@
                                 <span class="top-teams-rank">${idx + 1}</span>
                                 <img src="${logo}" class="top-teams-logo" alt="" onerror="this.src='league_logo.png'">
                                 <div class="top-teams-info">
-                                    <div class="top-teams-name">${team.team_name || "Unknown"}</div>
+                                    <div class="top-teams-name">${teamName}</div>
                                     <div class="top-teams-manager">${capitalizeManagerName(manager)}</div>
                                 </div>
                             </div>
                         </td>
-                        <td>${(team.points_for || 0).toFixed(0)}</td>
+                        <td>${entry.score.toFixed(1)}</td>
                     </tr>
                 `;
           })

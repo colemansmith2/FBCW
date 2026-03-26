@@ -2291,8 +2291,10 @@ def collect_daily_scores(oauth, year: int, lg):
     """
     Collect daily team fantasy point totals for the current week.
 
-    Uses the Yahoo API raw endpoint to fetch each team's roster with player stats
-    for each day of the current week, summing up fantasy points per team per day.
+    Uses the Yahoo API to fetch each team's roster with player stats for each
+    day, reading player_points.total directly from the response. The stats
+    live at a dynamic index in the player array (after selected_position and
+    optionally starting_status), so we search for the 'player_points' key.
 
     Saves to data/current_season/daily_scores.json with structure:
     {
@@ -2371,29 +2373,6 @@ def collect_daily_scores(oauth, year: int, lg):
         teams = lg.teams()
         today = date.today()
 
-        # Scoring settings - use the ones from collect_weekly_stats
-        batting_scoring = {
-            '1B': 2.6, '2B': 5.2, '3B': 7.8, 'HR': 10.4,
-            'RBI': 1.9, 'R': 1.9, 'BB': 2.6, 'HBP': 2.6,
-            'SB': 4.2, 'CS': -2.6, 'SO': -1, 'IBB': 0
-        }
-        pitching_scoring = {
-            'IP': 5, 'W': 4, 'L': -4, 'SV': 8, 'HLD': 4,
-            'ER': -3, 'HA': -1, 'BBA': -1, 'K': 3,
-            'QS': 4, 'CG': 5, 'ShO': 5, 'NH': 10
-        }
-
-        batting_stat_ids = {
-            '60': '1B', '61': '2B', '62': '3B', '63': 'HR',
-            '13': 'RBI', '12': 'R', '18': 'BB', '17': 'HBP',
-            '15': 'SB', '16': 'CS', '14': 'SO', '76': 'IBB'
-        }
-        pitching_stat_ids = {
-            '50': 'IP', '28': 'W', '29': 'L', '32': 'SV', '48': 'HLD',
-            '27': 'ER', '25': 'HA', '39': 'BBA', '42': 'K',
-            '63': 'QS', '34': 'CG', '35': 'ShO', '54': 'NH'
-        }
-
         # Only fetch days that have already passed (or are today)
         days_to_fetch = [d for d in days if d["date"] <= today.strftime("%Y-%m-%d")]
 
@@ -2436,11 +2415,11 @@ def collect_daily_scores(oauth, year: int, lg):
 
                             player = players_data[player_key]['player']
 
-                            # Check if player is on bench (BN) or injured list (IL/IL+/DL)
+                            # Get selected position from player[1]
                             selected_pos = ''
                             try:
-                                pos_data = player[1]['selected_position']
-                                if isinstance(pos_data, list):
+                                pos_data = player[1].get('selected_position', [])
+                                if isinstance(pos_data, list) and len(pos_data) > 1:
                                     selected_pos = pos_data[1].get('position', '')
                                 elif isinstance(pos_data, dict):
                                     selected_pos = pos_data.get('position', '')
@@ -2450,47 +2429,24 @@ def collect_daily_scores(oauth, year: int, lg):
                             if selected_pos in ('BN', 'IL', 'IL+', 'DL', 'NA'):
                                 continue
 
-                            # Get player stats
-                            player_stats = {}
-                            try:
-                                stats_data = player[1].get('player_stats', {}).get('stats', [])
-                                if isinstance(stats_data, list):
-                                    for stat in stats_data:
-                                        stat_id = str(stat.get('stat', {}).get('stat_id', ''))
-                                        stat_value = stat.get('stat', {}).get('value', '0')
-                                        try:
-                                            player_stats[stat_id] = float(stat_value) if stat_value and stat_value != '-' else 0
-                                        except (ValueError, TypeError):
-                                            player_stats[stat_id] = 0
-                            except (KeyError, IndexError):
-                                pass
-
-                            # Determine if batter or pitcher based on position type
-                            position_type = ''
-                            try:
-                                for item in player[0]:
-                                    if isinstance(item, dict) and 'position_type' in item:
-                                        position_type = item['position_type']
-                                        break
-                            except:
-                                pass
-
-                            # Calculate fantasy points
+                            # Find player_points at dynamic index
+                            # Yahoo response structure varies: player_points can be at
+                            # player[2] or player[3] depending on whether starting_status
+                            # is present. Search for it dynamically.
                             points = 0.0
-                            if position_type == 'P':
-                                for stat_id, yahoo_stat in pitching_stat_ids.items():
-                                    if stat_id in player_stats and yahoo_stat in pitching_scoring:
-                                        points += player_stats[stat_id] * pitching_scoring[yahoo_stat]
-                            else:
-                                for stat_id, yahoo_stat in batting_stat_ids.items():
-                                    if stat_id in player_stats and yahoo_stat in batting_scoring:
-                                        points += player_stats[stat_id] * batting_scoring[yahoo_stat]
+                            for item in player:
+                                if isinstance(item, dict) and 'player_points' in item:
+                                    try:
+                                        points = float(item['player_points'].get('total', 0))
+                                    except (ValueError, TypeError):
+                                        points = 0.0
+                                    break
 
                             day_total += points
                     except (KeyError, IndexError, TypeError):
                         pass
 
-                    week_data["team_scores"][team_key][day_str] = round(day_total, 1)
+                    week_data["team_scores"][team_key][day_str] = round(day_total, 2)
 
                 except Exception as e:
                     print(f"    ⚠ Could not fetch {team_name} for {day_str}: {e}")
@@ -2508,6 +2464,116 @@ def collect_daily_scores(oauth, year: int, lg):
 
     except Exception as e:
         print(f"  ⚠ Could not collect daily scores: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def collect_week_rosters(oauth, year: int, lg):
+    """
+    Collect per-player roster stats for the current week.
+
+    Uses the Yahoo API week-based roster stats endpoint which returns
+    actual fantasy points per player for the week.
+
+    Saves to data/current_season/week_X_rosters.json as a flat list
+    of player objects with team_key, name, position, fantasy_points, etc.
+    """
+    print("\nCollecting week roster stats...")
+
+    current_season_dir = f"{DATA_DIR}/current_season"
+
+    try:
+        current_week = lg.current_week()
+        teams = lg.teams()
+
+        output_file = f"{current_season_dir}/week_{current_week}_rosters.json"
+        all_players = []
+
+        for team_key in teams:
+            team_name = teams[team_key].get('name', team_key)
+
+            try:
+                raw = lg.yhandler.get(
+                    f"team/{team_key}/roster/players/stats;type=week;week={current_week}"
+                )
+
+                players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
+                player_count = int(players_data.get('count', 0))
+
+                for i in range(player_count):
+                    try:
+                        player = players_data[str(i)]['player']
+
+                        # Player info from player[0] (list of dicts)
+                        name = ''
+                        position_type = ''
+                        editorial_team = ''
+                        headshot_url = ''
+                        eligible_positions = []
+
+                        for item in player[0]:
+                            if isinstance(item, dict):
+                                if 'name' in item:
+                                    name = item['name'].get('full', '')
+                                elif 'position_type' in item:
+                                    position_type = item['position_type']
+                                elif 'editorial_team_abbr' in item:
+                                    editorial_team = item['editorial_team_abbr']
+                                elif 'headshot' in item:
+                                    headshot_url = item['headshot'].get('url', '') if isinstance(item['headshot'], dict) else ''
+                                elif 'eligible_positions' in item:
+                                    eps = item['eligible_positions']
+                                    if isinstance(eps, list):
+                                        for ep in eps:
+                                            if isinstance(ep, dict) and 'position' in ep:
+                                                eligible_positions.append(ep['position'])
+                                            elif isinstance(ep, str):
+                                                eligible_positions.append(ep)
+
+                        # Selected position from player[1]
+                        selected_position = ''
+                        try:
+                            pos_data = player[1]['selected_position']
+                            if isinstance(pos_data, list):
+                                selected_position = pos_data[1].get('position', '')
+                        except (KeyError, IndexError):
+                            pass
+
+                        # Fantasy points from player[3]
+                        fantasy_points = 0.0
+                        try:
+                            fantasy_points = float(player[3].get('player_points', {}).get('total', 0))
+                        except (KeyError, IndexError, ValueError, TypeError):
+                            pass
+
+                        all_players.append({
+                            'name': name,
+                            'team_key': team_key,
+                            'team_name': team_name,
+                            'position_type': position_type,
+                            'selected_position': selected_position,
+                            'eligible_positions': eligible_positions,
+                            'mlb_team': editorial_team,
+                            'headshot_url': headshot_url,
+                            'fantasy_points': fantasy_points
+                        })
+                    except (KeyError, IndexError):
+                        continue
+
+                active_pts = sum(p['fantasy_points'] for p in all_players
+                               if p['team_key'] == team_key and p['selected_position'] not in ('BN', 'IL', 'IL+', 'DL', 'NA'))
+                print(f"  ✓ {team_name}: {player_count} players ({active_pts:.1f} active pts)")
+
+            except Exception as e:
+                print(f"  ⚠ Could not fetch roster for {team_name}: {e}")
+
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(all_players, f, indent=2, ensure_ascii=False)
+
+        print(f"  ✓ week_{current_week}_rosters.json saved ({len(all_players)} players)")
+
+    except Exception as e:
+        print(f"  ⚠ Could not collect week rosters: {e}")
         import traceback
         traceback.print_exc()
 
@@ -2697,6 +2763,12 @@ def quick_update():
         collect_daily_scores(oauth, CURRENT_SEASON, lg)
     except Exception as e:
         print(f"  ⚠ Could not update daily scores: {e}")
+
+    # 5b. Update week rosters with per-player stats (for matchup modal)
+    try:
+        collect_week_rosters(oauth, CURRENT_SEASON, lg)
+    except Exception as e:
+        print(f"  ⚠ Could not update week rosters: {e}")
 
     # 6. Update player stats (for trade analyzer actual points)
     print("Updating player stats...")
