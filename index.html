@@ -50593,13 +50593,13 @@
 
               const weekKey = String(selectedWeek);
               const proj1 = Number(
-                weeklyProjections?.[weekKey]?.[matchup.team1_key] ??
-                  matchup.team1_projected ??
+                matchup.team1_projected ??
+                  weeklyProjections?.[weekKey]?.[matchup.team1_key] ??
                   0,
               ) || 0;
               const proj2 = Number(
-                weeklyProjections?.[weekKey]?.[matchup.team2_key] ??
-                  matchup.team2_projected ??
+                matchup.team2_projected ??
+                  weeklyProjections?.[weekKey]?.[matchup.team2_key] ??
                   0,
               ) || 0;
 
@@ -50787,17 +50787,17 @@
           const weekKey = String(week);
 
           proj1 = Number(
-            weeklyProjections?.[weekKey]?.[team1Key] ??
-              (matchup?.team1_key === team1Key
+            (matchup?.team1_key === team1Key
                 ? matchup?.team1_projected
                 : matchup?.team2_projected) ??
+              weeklyProjections?.[weekKey]?.[team1Key] ??
               0,
           ) || 0;
           proj2 = Number(
-            weeklyProjections?.[weekKey]?.[team2Key] ??
-              (matchup?.team1_key === team2Key
+            (matchup?.team1_key === team2Key
                 ? matchup?.team1_projected
                 : matchup?.team2_projected) ??
+              weeklyProjections?.[weekKey]?.[team2Key] ??
               0,
           ) || 0;
 

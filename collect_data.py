@@ -2539,12 +2539,15 @@ def collect_week_rosters(oauth, year: int, lg):
                         except (KeyError, IndexError):
                             pass
 
-                        # Fantasy points from player[3]
+                        # Fantasy points - search dynamically since index varies
                         fantasy_points = 0.0
-                        try:
-                            fantasy_points = float(player[3].get('player_points', {}).get('total', 0))
-                        except (KeyError, IndexError, ValueError, TypeError):
-                            pass
+                        for item in player:
+                            if isinstance(item, dict) and 'player_points' in item:
+                                try:
+                                    fantasy_points = float(item['player_points'].get('total', 0))
+                                except (ValueError, TypeError):
+                                    pass
+                                break
 
                         all_players.append({
                             'name': name,
@@ -2846,16 +2849,43 @@ def quick_update():
                     current_week,
                     end_week,
                 )
+
+                # Preserve any Yahoo matchup projections already written earlier in the update.
+                # ROS-based per-week values are only a fallback for weeks Yahoo does not expose.
+                weekly_proj_file = f"{current_season_dir}/team_weekly_projected_points.json"
+                existing_weekly = {}
+                existing_source = None
+                if os.path.exists(weekly_proj_file):
+                    try:
+                        with open(weekly_proj_file, 'r', encoding='utf-8') as f:
+                            existing_data = json.load(f)
+                        existing_weekly = existing_data.get('weekly', {}) or {}
+                        existing_source = existing_data.get('source')
+                    except Exception:
+                        existing_weekly = {}
+                        existing_source = None
+
+                merged_weekly = {}
+                all_weeks = sorted(
+                    set(existing_weekly.keys()) | set(weekly_proj.keys()),
+                    key=lambda wk: int(wk),
+                )
+                for week_num in all_weeks:
+                    merged_weekly[week_num] = dict(weekly_proj.get(week_num, {}))
+                    # Existing data wins so Yahoo matchup projections stay intact.
+                    merged_weekly[week_num].update(existing_weekly.get(week_num, {}))
+
                 weekly_out = {
                     "season": CURRENT_SEASON,
                     "generated_at": datetime.now().isoformat(),
                     "current_week": current_week,
                     "end_week": end_week,
-                    "weekly": weekly_proj
+                    "source": existing_source or "ros_fallback",
+                    "weekly": merged_weekly
                 }
-                with open(f"{current_season_dir}/team_weekly_projected_points.json", 'w', encoding='utf-8') as f:
+                with open(weekly_proj_file, 'w', encoding='utf-8') as f:
                     json.dump(weekly_out, f, indent=2, ensure_ascii=False)
-                print("  ✓ team_weekly_projected_points.json updated")
+                print("  ✓ team_weekly_projected_points.json updated (Yahoo preserved, ROS fallback filled)")
             else:
                 print("  ⚠ No ROS projections found for post-draft team totals")
         else:
