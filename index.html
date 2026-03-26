@@ -52194,12 +52194,17 @@
               } else {
                 regularAddCount++;
               }
+              // Look up headshot from roster or projections
+              const addName = (p.player_name || p.name || "").toLowerCase().trim();
+              const addNameNorm = addName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              const rosterMatch = teamRoster.find(r => (r.name || '').toLowerCase().trim() === addName);
+              const projMatch = averageProjectionsMap?.[addName] || averageProjectionsMap?.[addNameNorm] || {};
               addedPlayers.push({
                 name: p.player_name || p.name || "",
                 position: pos,
-                headshot_url: p.headshot_url || "",
+                headshot_url: p.headshot_url || (rosterMatch && rosterMatch.headshot_url) || projMatch.headshot || "",
                 mlb_team: p.team_abbr || p.mlb_team || p.team || "",
-                points: 0, // Would need to look up from roster
+                points: 0,
                 isStream: isStream,
               });
             }
@@ -52245,11 +52250,11 @@
                     <div class="add-tracker">
                         <div class="add-tracker-group">
                             <span class="add-tracker-label">STR</span>
-                            ${[0, 1, 2].map((i) => `<div class="add-dot stream ${i < streamCount ? "used" : ""}"></div>`).join("")}
+                            ${Array.from({ length: 3 }, (_, i) => `<div class="add-dot stream ${i < streamCount ? "used" : ""}"></div>`).join("")}
                         </div>
                         <div class="add-tracker-group">
                             <span class="add-tracker-label">ADD</span>
-                            ${[0, 1, 2, 3, 4].map((i) => `<div class="add-dot regular ${i < regularAddCount ? "used" : ""}"></div>`).join("")}
+                            ${Array.from({ length: Math.max(2, regularAddCount) }, (_, i) => `<div class="add-dot regular ${i < regularAddCount ? "used" : ""}"></div>`).join("")}
                         </div>
                     </div>
                 </div>
@@ -52316,11 +52321,11 @@
                     <div class="add-tracker">
                         <div class="add-tracker-group">
                             <span class="add-tracker-label">STR</span>
-                            ${[0, 1, 2].map(() => `<div class="add-dot stream"></div>`).join("")}
+                            ${Array.from({ length: 3 }, () => `<div class="add-dot stream"></div>`).join("")}
                         </div>
                         <div class="add-tracker-group">
                             <span class="add-tracker-label">ADD</span>
-                            ${[0, 1, 2, 3, 4].map(() => `<div class="add-dot regular"></div>`).join("")}
+                            ${Array.from({ length: 2 }, () => `<div class="add-dot regular"></div>`).join("")}
                         </div>
                     </div>
                 </div>
@@ -52560,10 +52565,15 @@
               } else {
                 regularAddCount++;
               }
+              // Look up headshot from roster players or projections
+              const addName = (p.player_name || p.name || "").toLowerCase().trim();
+              const addNameNorm = addName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              const rosterMatch = players.find(r => (r.name || '').toLowerCase().trim() === addName);
+              const projMatch = averageProjectionsMap?.[addName] || averageProjectionsMap?.[addNameNorm] || {};
               addedPlayers.push({
                 name: p.player_name || p.name || "",
                 position: pos,
-                headshot_url: p.headshot_url || "",
+                headshot_url: p.headshot_url || (rosterMatch && rosterMatch.headshot_url) || projMatch.headshot || "",
                 mlb_team: p.team_abbr || p.mlb_team || "",
                 points: 0,
                 isStream: isStream,
@@ -52594,11 +52604,11 @@
                     <div class="add-tracker">
                         <div class="add-tracker-group">
                             <span class="add-tracker-label">STR</span>
-                            ${[0, 1, 2].map((i) => `<div class="add-dot stream ${i < streamCount ? "used" : ""}"></div>`).join("")}
+                            ${Array.from({ length: 3 }, (_, i) => `<div class="add-dot stream ${i < streamCount ? "used" : ""}"></div>`).join("")}
                         </div>
                         <div class="add-tracker-group">
                             <span class="add-tracker-label">ADD</span>
-                            ${[0, 1, 2, 3, 4].map((i) => `<div class="add-dot regular ${i < regularAddCount ? "used" : ""}"></div>`).join("")}
+                            ${Array.from({ length: Math.max(2, regularAddCount) }, (_, i) => `<div class="add-dot regular ${i < regularAddCount ? "used" : ""}"></div>`).join("")}
                         </div>
                     </div>
                 </div>
@@ -52817,16 +52827,28 @@
 
         // Check if we have daily scores for any recent day
         if (Object.keys(teamScores).length > 0) {
-          // Find the most recent day with non-zero scores
+          // Find the most recent COMPLETED day with non-zero scores (prefer yesterday over today)
           const allDates = new Set();
           Object.values(teamScores).forEach(ts => Object.keys(ts).forEach(d => allDates.add(d)));
           const sortedDates = [...allDates].sort().reverse();
 
+          // First pass: look for most recent completed day (before today) with scores
           for (const dateKey of sortedDates) {
+            if (dateKey >= todayStr) continue; // skip today
             const hasNonZero = Object.values(teamScores).some(ts => (ts[dateKey] || 0) !== 0);
             if (hasNonZero) {
               scoringDate = dateKey;
               break;
+            }
+          }
+          // If no completed day has scores, fall back to today
+          if (!scoringDate) {
+            for (const dateKey of sortedDates) {
+              const hasNonZero = Object.values(teamScores).some(ts => (ts[dateKey] || 0) !== 0);
+              if (hasNonZero) {
+                scoringDate = dateKey;
+                break;
+              }
             }
           }
 
@@ -52862,7 +52884,9 @@
               }
             });
           }
-          if (dateSpan) dateSpan.textContent = `Week ${currentWeek}`;
+          // Show yesterday's date even when using weekly fallback
+          const fallbackDate = `${yesterday.getMonth() + 1}/${yesterday.getDate()}`;
+          if (dateSpan) dateSpan.textContent = fallbackDate;
         }
 
         if (teamDailyScores.length === 0) {
