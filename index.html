@@ -20434,7 +20434,7 @@
       .top-players-table td:last-child {
         text-align: right;
         font-weight: 600;
-        color: #22c55e;
+        color: #111;
       }
 
       .top-players-player {
@@ -20540,8 +20540,8 @@
       .top-players-mgr-logo {
         width: 24px;
         height: 24px;
-        border-radius: 4px;
-        object-fit: contain;
+        border-radius: 50%;
+        object-fit: cover;
         cursor: pointer;
         transition: transform 0.15s ease;
       }
@@ -53024,6 +53024,16 @@
           .join("");
       }
 
+      function upgradeHeadshotUrl(url) {
+        // Yahoo headshot URLs use a base64-encoded resize param that defaults to h=60;w=46 (tiny).
+        // Replace with h=96;w=96 for sharper images at small display sizes on retina screens.
+        if (!url || !url.includes('s.yimg.com/iu/api/res')) return url;
+        return url.replace(
+          /aD02MDtxPTEwMDt3PTQ2/g,
+          'aD05NjtxPTEwMDt3PTk2'
+        );
+      }
+
       async function renderHomeTopPlayers() {
         const tbody = document.getElementById("home-top-players-body");
 
@@ -53097,7 +53107,7 @@
 
           tbody.innerHTML = topByPosition
             .map((player) => {
-              const headshot = player.headshot_url || placeholderImg;
+              const headshot = upgradeHeadshotUrl(player.headshot_url) || placeholderImg;
               const pos = player.display_position;
               const mlbTeam = player.mlb_team || "";
               const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : "";
@@ -53203,7 +53213,7 @@
 
           tbody.innerHTML = topByPosition
             .map((player) => {
-              const headshot = player.headshot_url || placeholderImg;
+              const headshot = upgradeHeadshotUrl(player.headshot_url) || placeholderImg;
               const pos = player.display_position;
               const mlbTeam =
                 player.mlb_team || player.team || player.Team || "";
