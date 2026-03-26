@@ -28736,9 +28736,11 @@
           if (!matchupMap[matchupKey]) {
             matchupMap[matchupKey] = {
               team1_key: score.team_key,
-              team1_score: score.team_score,
+              team1_score: Number(score.team_score ?? score.points ?? 0) || 0,
+              team1_projected: Number(score.team_projected ?? 0) || 0,
               team2_key: score.opponent_key,
-              team2_score: score.opponent_score,
+              team2_score: Number(score.opponent_score ?? 0) || 0,
+              team2_projected: Number(score.opponent_projected ?? 0) || 0,
             };
           }
         });
@@ -50322,6 +50324,176 @@
           .join("");
       }
 
+      function getLatestWeekWithScores(scoresData) {
+        const weeks = [...new Set(
+          (scoresData || [])
+            .map((score) => Number(score.week))
+            .filter(Number.isFinite),
+        )].sort((a, b) => a - b);
+
+        if (weeks.length === 0) return 1;
+
+        for (let i = weeks.length - 1; i >= 0; i--) {
+          const week = weeks[i];
+          const hasScores = (scoresData || []).some(
+            (score) =>
+              Number(score.week) === week &&
+              ((Number(score.team_score ?? score.points ?? 0) || 0) !== 0 ||
+                (Number(score.opponent_score ?? 0) || 0) !== 0),
+          );
+          if (hasScores) return week;
+        }
+
+        return weeks[0];
+      }
+
+      async function loadSportsbookWeeklySources() {
+        const [projData, weeklyStats, dailyScores, baseScores] =
+          await Promise.all([
+            (async () => {
+              try {
+                const response = await fetch(
+                  "data/current_season/team_weekly_projected_points.json",
+                );
+                if (response.ok) return await response.json();
+              } catch (e) {
+                /* ignore */
+              }
+              return null;
+            })(),
+            (async () => {
+              try {
+                let response = await fetch("data/current_season/weekly_stats.json");
+                if (!response.ok) {
+                  response = await fetch("data/2026/weekly_stats.json");
+                }
+                if (response.ok) return await response.json();
+              } catch (e) {
+                /* ignore */
+              }
+              return null;
+            })(),
+            (async () => {
+              try {
+                const response = await fetch("data/current_season/daily_scores.json");
+                if (response.ok) return await response.json();
+              } catch (e) {
+                /* ignore */
+              }
+              return null;
+            })(),
+            (async () => {
+              try {
+                const response = await fetch("data/current_season/all_scores.json");
+                if (response.ok) return await response.json();
+              } catch (e) {
+                /* ignore */
+              }
+              return [];
+            })(),
+          ]);
+
+        let scoresData = Array.isArray(baseScores) ? [...baseScores] : [];
+        const maxWeekToLoad = Math.max(
+          Number(dailyScores?.current_week) || 0,
+          Number(projData?.current_week) || 0,
+          Number(weeklyStats?.currentWeek) || 0,
+          getLatestWeekWithScores(scoresData),
+          1,
+        );
+
+        const loadedWeeks = new Set(
+          scoresData
+            .map((score) => Number(score.week))
+            .filter(Number.isFinite),
+        );
+        const missingWeeks = [];
+
+        for (let week = 1; week <= maxWeekToLoad; week++) {
+          if (!loadedWeeks.has(week)) {
+            missingWeeks.push(week);
+          }
+        }
+
+        if (missingWeeks.length > 0) {
+          const missingWeekResults = await Promise.all(
+            missingWeeks.map(async (week) => {
+              try {
+                const response = await fetch(
+                  `data/current_season/week_${week}_scores.json`,
+                );
+                if (response.ok) return await response.json();
+              } catch (e) {
+                /* ignore */
+              }
+              return [];
+            }),
+          );
+
+          missingWeekResults.forEach((weekScores) => {
+            if (Array.isArray(weekScores) && weekScores.length > 0) {
+              scoresData = scoresData.concat(weekScores);
+            }
+          });
+        }
+
+        const matchupsByWeek = {};
+        scoresData.forEach((score) => {
+          const week = String(score.week ?? "");
+          if (!week) return;
+          if (!matchupsByWeek[week]) {
+            matchupsByWeek[week] = [];
+          }
+          matchupsByWeek[week].push(score);
+        });
+
+        Object.keys(matchupsByWeek).forEach((week) => {
+          matchupsByWeek[week] = convertScoresToMatchups(matchupsByWeek[week]);
+        });
+
+        if (weeklyStats?.weeks) {
+          Object.entries(weeklyStats.weeks).forEach(([week, data]) => {
+            if (
+              (!matchupsByWeek[week] || matchupsByWeek[week].length === 0) &&
+              Array.isArray(data?.matchups) &&
+              data.matchups.length > 0
+            ) {
+              matchupsByWeek[week] = data.matchups.map((matchup) => ({
+                ...matchup,
+              }));
+            }
+          });
+        }
+
+        const currentWeek =
+          Number(dailyScores?.current_week) ||
+          Number(projData?.current_week) ||
+          getLatestWeekWithScores(scoresData) ||
+          Number(weeklyStats?.currentWeek) ||
+          1;
+
+        return {
+          currentWeek,
+          matchupsByWeek,
+          projGeneratedAt: projData?.generated_at || null,
+          weeklyProjections: projData?.weekly || null,
+          weeklyStats,
+        };
+      }
+
+      function findWeeklyMatchup(matchupsByWeek, week, team1Key, team2Key) {
+        const weekMatchups = matchupsByWeek?.[String(week)] || [];
+        return (
+          weekMatchups.find(
+            (matchup) =>
+              (matchup.team1_key === team1Key &&
+                matchup.team2_key === team2Key) ||
+              (matchup.team1_key === team2Key &&
+                matchup.team2_key === team1Key),
+          ) || null
+        );
+      }
+
       async function loadWeeklyMatchupBets() {
         const weekSelect = document.getElementById("sportsbook-week-select");
         const container = document.getElementById("weekly-matchup-bets");
@@ -50329,32 +50501,13 @@
         try {
           // Load historical manager variance for confidence-interval odds
           await loadManagerWeeklyVariance();
-
-          // Load weekly projections (Yahoo or Fangraphs-based)
-          let weeklyProjections = null;
-          let projGeneratedAt = null;
-          try {
-            const projResp = await fetch(
-              "data/current_season/team_weekly_projected_points.json",
-            );
-            if (projResp.ok) {
-              const projData = await projResp.json();
-              weeklyProjections = projData.weekly || null;
-              projGeneratedAt = projData.generated_at || null;
-            }
-          } catch (e) {
-            /* ignore */
-          }
-
-          // Try to load weekly stats for matchup pairings
-          let weeklyStats = null;
-          let response = await fetch("data/current_season/weekly_stats.json");
-          if (!response.ok) {
-            response = await fetch("data/2026/weekly_stats.json");
-          }
-          if (response.ok) {
-            weeklyStats = await response.json();
-          }
+          const {
+            currentWeek,
+            matchupsByWeek,
+            projGeneratedAt,
+            weeklyProjections,
+            weeklyStats,
+          } = await loadSportsbookWeeklySources();
 
           // Update the "Updated at" timestamp - use most recent from weekly stats or projections
           const updatedAtEl = document.getElementById('sportsbook-updated-at');
@@ -50369,48 +50522,6 @@
               updatedAtEl.textContent = `Updated: ${dateStr}, ${timeStr}`;
             } else {
               updatedAtEl.textContent = '';
-            }
-          }
-
-          const currentWeek = weeklyStats?.currentWeek || 1;
-
-          // Build matchup data from weekly_stats or score files
-          let matchupsByWeek = {};
-
-          if (weeklyStats?.weeks) {
-            // Use weekly stats matchups
-            Object.entries(weeklyStats.weeks).forEach(([wk, data]) => {
-              if (data?.matchups) matchupsByWeek[wk] = data.matchups;
-            });
-          }
-
-          // Fallback: build matchups from score files if no weekly stats
-          if (Object.keys(matchupsByWeek).length === 0) {
-            for (let wk = 1; wk <= 3; wk++) {
-              try {
-                const scoreResp = await fetch(`data/current_season/week_${wk}_scores.json`);
-                if (scoreResp.ok) {
-                  const scores = await scoreResp.json();
-                  // Convert score pairs into matchup format (dedup by pair)
-                  const seen = new Set();
-                  const matchups = [];
-                  scores.forEach(s => {
-                    const pairKey = [s.team_key, s.opponent_key].sort().join('|');
-                    if (!seen.has(pairKey)) {
-                      seen.add(pairKey);
-                      matchups.push({
-                        team1_key: s.team_key,
-                        team1_score: s.team_score,
-                        team1_projected: s.team_projected || 0,
-                        team2_key: s.opponent_key,
-                        team2_score: s.opponent_score,
-                        team2_projected: s.opponent_projected || 0,
-                      });
-                    }
-                  });
-                  if (matchups.length > 0) matchupsByWeek[String(wk)] = matchups;
-                }
-              } catch (e) { /* skip */ }
             }
           }
 
@@ -50429,18 +50540,22 @@
             return;
           }
 
-          // Populate week selector
-          if (weekSelect.options.length === 0) {
-            availableWeeks.forEach((week) => {
-              const option = document.createElement("option");
-              option.value = week;
-              option.textContent = `Week ${week}`;
-              if (week === currentWeek) option.selected = true;
-              weekSelect.appendChild(option);
-            });
-          }
+          const previousWeek = parseInt(weekSelect.value, 10);
+          const selectedWeek = availableWeeks.includes(previousWeek)
+            ? previousWeek
+            : availableWeeks.includes(currentWeek)
+              ? currentWeek
+              : availableWeeks[availableWeeks.length - 1];
 
-          const selectedWeek = parseInt(weekSelect.value) || currentWeek;
+          weekSelect.innerHTML = "";
+          availableWeeks.forEach((week) => {
+            const option = document.createElement("option");
+            option.value = week;
+            option.textContent = `Week ${week}`;
+            option.selected = week === selectedWeek;
+            weekSelect.appendChild(option);
+          });
+
           const weekMatchups = matchupsByWeek[String(selectedWeek)];
 
           if (!weekMatchups || weekMatchups.length === 0) {
@@ -50477,17 +50592,19 @@
               };
 
               const weekKey = String(selectedWeek);
-              const proj1 =
-                weeklyProjections?.[weekKey]?.[matchup.team1_key] ||
-                matchup.team1_projected ||
-                0;
-              const proj2 =
-                weeklyProjections?.[weekKey]?.[matchup.team2_key] ||
-                matchup.team2_projected ||
-                0;
+              const proj1 = Number(
+                weeklyProjections?.[weekKey]?.[matchup.team1_key] ??
+                  matchup.team1_projected ??
+                  0,
+              ) || 0;
+              const proj2 = Number(
+                weeklyProjections?.[weekKey]?.[matchup.team2_key] ??
+                  matchup.team2_projected ??
+                  0,
+              ) || 0;
 
-              const score1 = matchup.team1_score || 0;
-              const score2 = matchup.team2_score || 0;
+              const score1 = Number(matchup.team1_score ?? 0) || 0;
+              const score2 = Number(matchup.team2_score ?? 0) || 0;
 
               // Calculate H2H odds with vig
               const odds1 = calculateMatchupOdds(proj1, proj2, matchup.team1_key, matchup.team2_key, weekKey);
@@ -50664,34 +50781,33 @@
         let proj1 = 0, proj2 = 0;
         let score1 = 0, score2 = 0;
         try {
-          const projResp = await fetch('data/current_season/team_weekly_projected_points.json');
-          if (projResp.ok) {
-            const projData = await projResp.json();
-            const weeklyProj = projData.weekly || {};
-            proj1 = weeklyProj[String(week)]?.[team1Key] || 0;
-            proj2 = weeklyProj[String(week)]?.[team2Key] || 0;
-          }
-        } catch (e) { /* ignore */ }
-        try {
-          let statsResp = await fetch('data/current_season/weekly_stats.json');
-          if (!statsResp.ok) statsResp = await fetch('data/2026/weekly_stats.json');
-          if (statsResp.ok) {
-            const statsData = await statsResp.json();
-            const weekData = statsData.weeks?.[String(week)];
-            if (weekData?.matchups) {
-              const m = weekData.matchups.find(mu =>
-                (mu.team1_key === team1Key && mu.team2_key === team2Key) ||
-                (mu.team1_key === team2Key && mu.team2_key === team1Key)
-              );
-              if (m) {
-                if (m.team1_key === team1Key) {
-                  score1 = m.team1_score || 0;
-                  score2 = m.team2_score || 0;
-                } else {
-                  score1 = m.team2_score || 0;
-                  score2 = m.team1_score || 0;
-                }
-              }
+          const { matchupsByWeek, weeklyProjections } =
+            await loadSportsbookWeeklySources();
+          const matchup = findWeeklyMatchup(matchupsByWeek, week, team1Key, team2Key);
+          const weekKey = String(week);
+
+          proj1 = Number(
+            weeklyProjections?.[weekKey]?.[team1Key] ??
+              (matchup?.team1_key === team1Key
+                ? matchup?.team1_projected
+                : matchup?.team2_projected) ??
+              0,
+          ) || 0;
+          proj2 = Number(
+            weeklyProjections?.[weekKey]?.[team2Key] ??
+              (matchup?.team1_key === team2Key
+                ? matchup?.team1_projected
+                : matchup?.team2_projected) ??
+              0,
+          ) || 0;
+
+          if (matchup) {
+            if (matchup.team1_key === team1Key) {
+              score1 = Number(matchup.team1_score ?? 0) || 0;
+              score2 = Number(matchup.team2_score ?? 0) || 0;
+            } else {
+              score1 = Number(matchup.team2_score ?? 0) || 0;
+              score2 = Number(matchup.team1_score ?? 0) || 0;
             }
           }
         } catch (e) { /* ignore */ }
