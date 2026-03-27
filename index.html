@@ -27181,6 +27181,41 @@
             `;
       }
 
+      const _transPlaceholderHs = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
+
+      function _lookupTransPlayerInfo(playerName) {
+        const pNameLower = (playerName || "").toLowerCase().trim();
+        const pNameNorm = pNameLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        let mlbTeam = "", primaryPos = "";
+        if (typeof allPlayersData !== 'undefined') {
+          const apMatch = allPlayersData.find(ap => (ap.name || "").toLowerCase().trim() === pNameLower);
+          if (apMatch) {
+            mlbTeam = apMatch.mlb_team || apMatch.editorial_team_abbr || "";
+            primaryPos = apMatch.primary_position || "";
+          }
+        }
+        if ((!mlbTeam || !primaryPos) && typeof averageProjectionsMap !== 'undefined') {
+          const projMatch = averageProjectionsMap[pNameLower] || averageProjectionsMap[pNameNorm];
+          if (projMatch) {
+            if (!mlbTeam) mlbTeam = projMatch.mlb_team || "";
+            if (!primaryPos) primaryPos = projMatch.position || "";
+          }
+        }
+        return { mlbTeam, primaryPos };
+      }
+
+      function _renderTransPlayerLine(playerName, headshot, actionSymbol) {
+        const hsSrc = headshot || _transPlaceholderHs;
+        const info = _lookupTransPlayerInfo(playerName);
+        const mlbLogo = info.mlbTeam ? getMLBTeamLogo(info.mlbTeam) : "";
+        const mlbInfoHtml = info.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${info.mlbTeam}</span>${info.primaryPos ? `<span class="position-badge pos-${info.primaryPos}" style="font-size:0.5rem;padding:1px 3px;margin-left:2px;">${info.primaryPos}</span>` : ""}</div>` : "";
+        return `<div class="trans-main-row" style="align-items:flex-start;">
+            <img src="${hsSrc}" class="trans-player-headshot" alt="" onerror="this.src='${_transPlaceholderHs}'">
+            <span class="trans-action">${actionSymbol}</span>
+            <div class="trans-player-info-col"><span class="trans-player-name">${playerName}</span>${mlbInfoHtml}</div>
+        </div>`;
+      }
+
       function renderSimpleEntry(txn, action) {
         const player = txn.players[0];
         if (!player) return "";
@@ -27194,15 +27229,14 @@
           action === "add"
             ? player.destManager || ""
             : player.sourceManager || "";
-        const label = action === "add" ? "Added" : "Dropped";
+        const symbol = action === "add" ? "+" : "-";
+        const headshot = player ? getAnyAvailablePlayerHeadshot(player) : "";
 
         return `
                 <div class="trans-entry trans-type-${action}">
                     <div class="trans-date">${txn.date}</div>
                     ${renderTransTeamHeader(teamLogo, teamName, managerName)}
-                    <div class="trans-main-row">
-                        <span class="trans-action">${label}</span>
-                    </div>
+                    ${player.player_name ? _renderTransPlayerLine(player.player_name, headshot, symbol) : `<div class="trans-main-row"><span class="trans-action">${action === "add" ? "Added" : "Dropped"}</span></div>`}
                 </div>
             `;
       }
@@ -27223,49 +27257,15 @@
         const managerName =
           addPlayer?.destManager || dropPlayer?.sourceManager || "";
 
-        // Build headshot for each player
-        const addHeadshot = addPlayer
-          ? getAnyAvailablePlayerHeadshot(addPlayer)
-          : "";
-        const dropHeadshot = dropPlayer
-          ? getAnyAvailablePlayerHeadshot(dropPlayer)
-          : "";
-
-        const addHeadshotHtml = addHeadshot
-          ? `<img src="${addHeadshot}" class="trans-player-headshot" alt="" onerror="this.style.display='none'">`
-          : "";
-        const dropHeadshotHtml = dropHeadshot
-          ? `<img src="${dropHeadshot}" class="trans-player-headshot" alt="" onerror="this.style.display='none'">`
-          : "";
+        const addHeadshot = addPlayer ? getAnyAvailablePlayerHeadshot(addPlayer) : "";
+        const dropHeadshot = dropPlayer ? getAnyAvailablePlayerHeadshot(dropPlayer) : "";
 
         return `
                 <div class="trans-entry trans-type-add-drop">
                     <div class="trans-date">${txn.date}</div>
                     ${renderTransTeamHeader(teamLogo, teamName, managerName)}
-                    ${
-                      addPlayer
-                        ? `
-                    <div class="trans-add-part">
-                        <div class="trans-main-row">
-                            ${addHeadshotHtml}
-                            <span class="trans-action">+</span>
-                            <span>${addPlayer.player_name}</span>
-                        </div>
-                    </div>`
-                        : ""
-                    }
-                    ${
-                      dropPlayer
-                        ? `
-                    <div class="trans-drop-part">
-                        <div class="trans-main-row">
-                            ${dropHeadshotHtml}
-                            <span class="trans-action">-</span>
-                            <span>${dropPlayer.player_name}</span>
-                        </div>
-                    </div>`
-                        : ""
-                    }
+                    ${addPlayer ? `<div class="trans-add-part">${_renderTransPlayerLine(addPlayer.player_name, addHeadshot, "+")}</div>` : ""}
+                    ${dropPlayer ? `<div class="trans-drop-part">${_renderTransPlayerLine(dropPlayer.player_name, dropHeadshot, "-")}</div>` : ""}
                 </div>
             `;
       }
@@ -27372,11 +27372,10 @@
           const logoHtml = side.logo
             ? `<img src="${side.logo}" class="trans-team-logo" alt="" onerror="this.style.display='none'">`
             : "";
-          const placeholderHs = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
           const playersHtml = side.players
             .map((p) => {
-              const hsSrc = p.headshot || placeholderHs;
-              const hsHtml = `<img src="${hsSrc}" class="trans-player-headshot" alt="" onerror="this.src='${placeholderHs}'">`;
+              const hsSrc = p.headshot || _transPlaceholderHs;
+              const hsHtml = `<img src="${hsSrc}" class="trans-player-headshot" alt="" onerror="this.src='${_transPlaceholderHs}'">`;
               const mlbLogo = p.mlbTeam ? getMLBTeamLogo(p.mlbTeam) : "";
               const mlbInfoHtml = p.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${p.mlbTeam}</span>${p.primaryPos ? `<span class="position-badge pos-${p.primaryPos}" style="font-size:0.5rem;padding:1px 3px;margin-left:2px;">${p.primaryPos}</span>` : ""}</div>` : "";
               return `<div class="trans-trade-player">${hsHtml}<div class="trans-player-info-col"><span class="trans-player-name">${p.name}</span>${mlbInfoHtml}</div></div>`;
@@ -27450,6 +27449,12 @@
         );
         if (match?.headshot_url) return match.headshot_url;
         if (match?.headshot) return match.headshot;
+
+        // Check averageProjectionsMap
+        if (typeof averageProjectionsMap !== 'undefined') {
+          const projMatch = averageProjectionsMap[normalized];
+          if (projMatch?.headshot) return projMatch.headshot;
+        }
 
         if (playerData.player_id)
           return getMLBPlayerHeadshot(playerData.player_id);
