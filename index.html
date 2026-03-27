@@ -8553,6 +8553,31 @@
         width: 18px;
         height: 18px;
       }
+      .trans-player-info-col {
+        display: flex;
+        flex-direction: column;
+        gap: 0px;
+        line-height: 1.2;
+      }
+      .trans-player-name {
+        font-size: 0.65rem;
+      }
+      .trans-player-mlb-info {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        margin-top: 1px;
+      }
+      .trans-mlb-team-logo {
+        width: 12px;
+        height: 12px;
+        object-fit: contain;
+      }
+      .trans-mlb-abbr {
+        font-size: 0.52rem;
+        color: #888;
+        font-weight: 600;
+      }
       .trans-trade-pick {
         display: flex;
         align-items: center;
@@ -27292,9 +27317,30 @@
           const playerKey = `${p.player_id || ""}:${p.player_name || ""}`;
           if (!side.seenPlayers.has(playerKey)) {
             side.seenPlayers.add(playerKey);
+            // Look up extra info from allPlayersData or averageProjectionsMap
+            let mlbTeam = p.mlb_team || p.editorial_team_abbr || "";
+            let primaryPos = p.primary_position || p.position || "";
+            const pNameLower = (p.player_name || "").toLowerCase().trim();
+            const pNameNorm = pNameLower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            if ((!mlbTeam || !primaryPos) && typeof allPlayersData !== 'undefined') {
+              const apMatch = allPlayersData.find(ap => (ap.name || "").toLowerCase().trim() === pNameLower);
+              if (apMatch) {
+                if (!mlbTeam) mlbTeam = apMatch.mlb_team || apMatch.editorial_team_abbr || "";
+                if (!primaryPos) primaryPos = apMatch.primary_position || "";
+              }
+            }
+            if ((!mlbTeam || !primaryPos) && typeof averageProjectionsMap !== 'undefined') {
+              const projMatch = averageProjectionsMap[pNameLower] || averageProjectionsMap[pNameNorm];
+              if (projMatch) {
+                if (!mlbTeam) mlbTeam = projMatch.mlb_team || "";
+                if (!primaryPos) primaryPos = projMatch.position || "";
+              }
+            }
             side.players.push({
               name: p.player_name,
               headshot: getAnyAvailablePlayerHeadshot(p),
+              mlbTeam: mlbTeam,
+              primaryPos: primaryPos,
             });
           }
         });
@@ -27326,12 +27372,14 @@
           const logoHtml = side.logo
             ? `<img src="${side.logo}" class="trans-team-logo" alt="" onerror="this.style.display='none'">`
             : "";
+          const placeholderHs = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
           const playersHtml = side.players
             .map((p) => {
-              const hsHtml = p.headshot
-                ? `<img src="${p.headshot}" class="trans-player-headshot" alt="" onerror="this.style.display='none'">`
-                : "";
-              return `<div class="trans-trade-player">${hsHtml} ${p.name}</div>`;
+              const hsSrc = p.headshot || placeholderHs;
+              const hsHtml = `<img src="${hsSrc}" class="trans-player-headshot" alt="" onerror="this.src='${placeholderHs}'">`;
+              const mlbLogo = p.mlbTeam ? getMLBTeamLogo(p.mlbTeam) : "";
+              const mlbInfoHtml = p.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${p.mlbTeam}</span>${p.primaryPos ? `<span class="position-badge pos-${p.primaryPos}" style="font-size:0.5rem;padding:1px 3px;margin-left:2px;">${p.primaryPos}</span>` : ""}</div>` : "";
+              return `<div class="trans-trade-player">${hsHtml}<div class="trans-player-info-col"><span class="trans-player-name">${p.name}</span>${mlbInfoHtml}</div></div>`;
             })
             .join("");
           const picksHtml = side.picks
@@ -28036,11 +28084,14 @@
         const targetHeight = Math.round(cardWrapper.offsetHeight || 0);
         if (targetHeight <= 0) return;
 
-        panel.style.height = `${targetHeight}px`;
-        panel.style.maxHeight = `${targetHeight}px`;
-        panel.style.minHeight = `${targetHeight}px`;
+        // Transaction panel: cap to charts container height or 480px, whichever is smaller
+        const chartsHeight = chartsContainer ? Math.round(chartsContainer.scrollHeight || 0) : 0;
+        const panelMaxH = chartsHeight > 0 ? Math.min(chartsHeight, targetHeight) : Math.min(480, targetHeight);
+        panel.style.height = "";
+        panel.style.maxHeight = `${panelMaxH}px`;
+        panel.style.minHeight = "";
         if (chartsContainer) {
-          chartsContainer.style.height = `${targetHeight}px`;
+          chartsContainer.style.height = "";
           chartsContainer.style.maxHeight = `${targetHeight}px`;
         }
       }
@@ -28250,7 +28301,7 @@
 
         const coreMax = coreValues.length > 0 ? Math.max(...coreValues) : 100;
         const yMin = 175;
-        const yMax = coreMax >= 600 ? 650 : 600;
+        const yMax = coreMax >= 600 ? Math.ceil((coreMax + 25) / 50) * 50 : 600;
 
         // Clamp outlier bars
         barData.forEach((val, i) => {
