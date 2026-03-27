@@ -8315,7 +8315,7 @@
 
       /* Player Modal Styles */
       .player-modal-content {
-        max-width: 1300px;
+        max-width: 1350px;
         width: 95vw;
         background: transparent;
         box-shadow: none;
@@ -8370,8 +8370,8 @@
         font-size: 0.78rem;
       }
       .player-charts-container {
-        flex: 0 0 350px;
-        max-width: 350px;
+        flex: 0 0 400px;
+        max-width: 400px;
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
@@ -8397,7 +8397,7 @@
       .player-chart-canvas-wrap {
         position: relative;
         width: 100%;
-        height: 200px;
+        height: 220px;
       }
       .player-chart-canvas-wrap canvas {
         width: 100% !important;
@@ -25843,10 +25843,7 @@
         }
 
         const label = getPlayerWindowButtonLabel(currentPlayerWindow);
-        const range = windowData.display_range
-          ? ` (${windowData.display_range})`
-          : "";
-        return `${selectedYear} Statistics • ${label}${range}`;
+        return `${selectedYear} Statistics • ${label}`;
       }
 
       function getCurrentPlayerStatsHeaderLabel() {
@@ -28319,7 +28316,7 @@
               if (!bar) return;
               const realVal = realValues[i];
               drawCtx.save();
-              drawCtx.font = "bold 9px 'Basis33', monospace";
+              drawCtx.font = "bold 11px 'Basis33', monospace";
               drawCtx.textAlign = "center";
               drawCtx.textBaseline = "bottom";
               if (info.type === "covid") drawCtx.fillStyle = covidColor;
@@ -28411,7 +28408,7 @@
                 ticks: {
                   maxRotation: 45,
                   minRotation: 45,
-                  font: { family: "'Basis33', monospace", size: 9, weight: "bold" },
+                  font: { family: "'Basis33', monospace", size: 12, weight: "bold" },
                   padding: 0,
                   labelOffset: 4,
                   color: function(context) { return labelColors[context.index] || historicalColor; }
@@ -28427,8 +28424,8 @@
                   for (let v = 200; v <= scale.max; v += 50) ticks.push({ value: v });
                   scale.ticks = ticks;
                 },
-                ticks: { font: { family: "'Basis33', monospace", size: 9 } },
-                title: { display: true, text: "Fantasy Points", font: { family: "'Basis33', monospace", size: 9 } }
+                ticks: { font: { family: "'Basis33', monospace", size: 11 } },
+                title: { display: true, text: "Fantasy Points", font: { family: "'Basis33', monospace", size: 11 } }
               }
             }
           },
@@ -28574,7 +28571,7 @@
                 display: true,
                 position: 'bottom',
                 labels: {
-                  font: { family: "'Basis33', monospace", size: 9 },
+                  font: { family: "'Basis33', monospace", size: 11 },
                   boxWidth: 10,
                   padding: 8
                 }
@@ -28595,14 +28592,15 @@
                 max: 100,
                 ticks: {
                   stepSize: 25,
-                  font: { family: "'Basis33', monospace", size: 9 },
+                  font: { family: "'Basis33', monospace", size: 11 },
                   callback: val => val + '%'
                 },
-                title: { display: true, text: 'Percentile', font: { family: "'Basis33', monospace", size: 9 } }
+                title: { display: true, text: 'Percentile', font: { family: "'Basis33', monospace", size: 11 } }
               },
               x: {
+                grid: { display: false },
                 ticks: {
-                  font: { family: "'Basis33', monospace", size: 9, weight: 'bold' }
+                  font: { family: "'Basis33', monospace", size: 12, weight: 'bold' }
                 }
               }
             }
