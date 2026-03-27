@@ -8315,7 +8315,7 @@
 
       /* Player Modal Styles */
       .player-modal-content {
-        max-width: 900px;
+        max-width: 1300px;
         width: 95vw;
         background: transparent;
         box-shadow: none;
@@ -8368,6 +8368,39 @@
         color: #aaa;
         padding: 2rem 1rem;
         font-size: 0.78rem;
+      }
+      .player-charts-container {
+        flex: 0 0 350px;
+        max-width: 350px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .player-chart-box {
+        background: white;
+        border: 3px solid var(--retro-blue);
+        border-radius: 12px;
+        overflow: hidden;
+        padding: 0.5rem;
+      }
+      .player-chart-title {
+        font-size: 0.85rem;
+        font-weight: bold;
+        color: var(--retro-blue);
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 0.3rem 0;
+        margin-bottom: 0.25rem;
+      }
+      .player-chart-canvas-wrap {
+        position: relative;
+        width: 100%;
+        height: 200px;
+      }
+      .player-chart-canvas-wrap canvas {
+        width: 100% !important;
+        height: 100% !important;
       }
       .trans-year-divider {
         font-size: 0.7rem;
@@ -9973,6 +10006,9 @@
         }
         #player-modal-card-wrapper {
           order: 0;
+        }
+        .player-charts-container {
+          display: none;
         }
         #projection-trans-panel {
           order: 99;
@@ -22244,16 +22280,24 @@
         <div class="modal-content player-modal-content">
           <span class="modal-close" onclick="closePlayerModal()">&times;</span>
           <div class="player-modal-layout">
+            <div class="player-trans-panel" id="player-trans-panel"></div>
             <div id="player-modal-card-wrapper">
-              <div id="player-modal-header">
-                <!-- Header loaded dynamically -->
-              </div>
-              <div class="modal-body-scroll" id="player-modal-body">
-                <!-- Body content loaded dynamically -->
-              </div>
+              <div id="player-modal-header"></div>
+              <div class="modal-body-scroll" id="player-modal-body"></div>
             </div>
-            <div class="player-trans-panel" id="player-trans-panel">
-              <!-- Transaction history loaded dynamically -->
+            <div class="player-charts-container" id="player-charts-container">
+              <div class="player-chart-box" id="player-history-chart-box">
+                <div class="player-chart-title">Historical &amp; Projected Points</div>
+                <div class="player-chart-canvas-wrap">
+                  <canvas id="player-history-canvas"></canvas>
+                </div>
+              </div>
+              <div class="player-chart-box" id="player-percentile-chart-box">
+                <div class="player-chart-title">Percentile Rank</div>
+                <div class="player-chart-canvas-wrap">
+                  <canvas id="player-percentile-canvas"></canvas>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -27953,10 +27997,27 @@
           renderTransactionPanel(txns, "player-trans-panel");
           requestAnimationFrame(syncPlayerTransactionPanelHeight);
         });
+
+        // Render charts (only for 2026 season view)
+        const seasonSelect2 = document.getElementById("scoring-season");
+        const chartYear = parseInt(seasonSelect2?.value || 2026);
+        const chartsContainer = document.getElementById("player-charts-container");
+        if (chartsContainer) {
+          if (chartYear === 2026) {
+            chartsContainer.style.display = "";
+            const histCanvas = document.getElementById("player-history-canvas");
+            const pctCanvas = document.getElementById("player-percentile-canvas");
+            if (histCanvas) renderPlayerHistoryChart(player, histCanvas);
+            if (pctCanvas) renderPlayerPercentileChart(player, pctCanvas);
+          } else {
+            chartsContainer.style.display = "none";
+          }
+        }
       }
 
       function syncPlayerTransactionPanelHeight() {
         const panel = document.getElementById("player-trans-panel");
+        const chartsContainer = document.getElementById("player-charts-container");
         const cardWrapper = document.getElementById(
           "player-modal-card-wrapper",
         );
@@ -27967,6 +28028,10 @@
           panel.style.height = "";
           panel.style.maxHeight = "";
           panel.style.minHeight = "";
+          if (chartsContainer) {
+            chartsContainer.style.height = "";
+            chartsContainer.style.maxHeight = "";
+          }
           return;
         }
 
@@ -27976,6 +28041,567 @@
         panel.style.height = `${targetHeight}px`;
         panel.style.maxHeight = `${targetHeight}px`;
         panel.style.minHeight = `${targetHeight}px`;
+        if (chartsContainer) {
+          chartsContainer.style.height = `${targetHeight}px`;
+          chartsContainer.style.maxHeight = `${targetHeight}px`;
+        }
+      }
+
+      let playerHistoryChartInstance = null;
+
+      async function renderPlayerHistoryChart(player, canvasEl) {
+        if (playerHistoryChartInstance) {
+          playerHistoryChartInstance.destroy();
+          playerHistoryChartInstance = null;
+        }
+
+        const ctx = canvasEl.getContext("2d");
+        const playerKey = player.name.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        // Gather historical data
+        const history = playerHistoryData[playerKey];
+        const historicalSeasons = [];
+        if (history && history.seasons) {
+          history.seasons
+            .filter(s => s.year < 2026 && (s.fantasy_points || 0) > 0)
+            .sort((a, b) => a.year - b.year)
+            .forEach(s => {
+              historicalSeasons.push({ year: s.year, points: s.fantasy_points || 0 });
+            });
+        }
+
+        // Get actual season points from player_stats_windows (ytd)
+        let actualSeasonPts = 0;
+        try {
+          if (!window._playerStatsWindowsCache) {
+            const resp = await fetch("data/current_season/player_stats_windows.json");
+            if (resp.ok) window._playerStatsWindowsCache = await resp.json();
+          }
+          if (window._playerStatsWindowsCache) {
+            const ytdPlayers = window._playerStatsWindowsCache.windows?.ytd?.players || [];
+            const match = ytdPlayers.find(p => p.name === player.name);
+            if (match) actualSeasonPts = match.fantasy_points || 0;
+          }
+        } catch(e) { console.log("Could not load player stats windows for chart"); }
+
+        // Load ROS projections (try ros/ folder first, fall back to preseason)
+        let rosAvg = 0, rosMin = 0, rosMax = 0;
+        try {
+          const rosFiles = ['ros_steamer', 'ros_zipsdc', 'ros_atcdc', 'ros_thebat', 'ros_thebatx', 'ros_oopsydc', 'ros_fangraphsdc'];
+          const rosPoints = [];
+
+          for (const fname of rosFiles) {
+            try {
+              const resp = await fetch(`data/projections/ros/projections_${fname}.json`);
+              if (!resp.ok) continue;
+              const data = await resp.json();
+              const allPlayers = [...(data.batters || []), ...(data.pitchers || [])];
+              const match = allPlayers.find(p => {
+                const pName = (p.name || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                return pName === playerKey;
+              });
+              if (match && match.fantasy_points) rosPoints.push(match.fantasy_points);
+            } catch(e) {}
+          }
+
+          if (rosPoints.length > 0) {
+            rosAvg = rosPoints.reduce((a, b) => a + b, 0) / rosPoints.length;
+            rosMin = Math.min(...rosPoints);
+            rosMax = Math.max(...rosPoints);
+          } else {
+            const preseasonFiles = ['steamer', 'zips', 'zipsdc', 'atc', 'thebat', 'thebatx', 'depthcharts', 'oopsy'];
+            const prePoints = [];
+            for (const fname of preseasonFiles) {
+              try {
+                const resp = await fetch(`data/projections/projections_${fname}.json`);
+                if (!resp.ok) continue;
+                const data = await resp.json();
+                const allPlayers = [...(data.batters || []), ...(data.pitchers || [])];
+                const match = allPlayers.find(p => {
+                  const pName = (p.name || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                  return pName === playerKey;
+                });
+                if (match && match.fantasy_points) prePoints.push(match.fantasy_points);
+              } catch(e) {}
+            }
+            if (prePoints.length > 0) {
+              rosAvg = prePoints.reduce((a, b) => a + b, 0) / prePoints.length;
+              rosMin = Math.min(...prePoints);
+              rosMax = Math.max(...prePoints);
+            }
+          }
+        } catch(e) { console.log("Could not load ROS projections"); }
+
+        // 2027/2028 from ZiPS
+        const zips2027Map = await _loadZiPSProjectionFile("zips2027");
+        const zips2028Map = await _loadZiPSProjectionFile("zips2028");
+        const pts2027 = zips2027Map[playerKey] || 0;
+        const pts2028 = zips2028Map[playerKey] || 0;
+
+        // Colors
+        const historicalColor = "#0048ba";
+        const projectedColor = "#d4a017";
+        const projectedColorLight = "rgba(212, 160, 23, 0.3)";
+        const projectedBorderColor = "#b8860b";
+        const prospectColor = "#17a2b8";
+        const injuryColor = "#dc3545";
+        const covidColor = "#4caf50";
+        const covidBgColor = "rgba(76, 175, 80, 0.15)";
+        const injuryBgColor = "rgba(220, 53, 69, 0.12)";
+        const prospectBgColor = "rgba(23, 162, 184, 0.12)";
+
+        // Outlier detection
+        const historicalPointsNon2020 = historicalSeasons.filter(s => s.year !== 2020).map(s => s.points).filter(p => p > 0);
+        const total2026 = actualSeasonPts + rosAvg;
+        const allProjectedPts = [total2026, pts2027, pts2028].filter(p => p > 0);
+        const allNonZeroPts = [...historicalPointsNon2020, ...allProjectedPts];
+
+        let median = 0;
+        if (allNonZeroPts.length > 0) {
+          const sorted = [...allNonZeroPts].sort((a, b) => a - b);
+          const mid = Math.floor(sorted.length / 2);
+          median = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+        }
+        const outlierThreshold = median * 0.55;
+
+        const seasonOutliers = historicalSeasons.map((s, i) => {
+          if (s.year === 2020) return { type: "covid", value: s.points };
+          if (s.points >= outlierThreshold) return null;
+          const priorNon2020 = historicalSeasons.slice(0, i).filter(ps => ps.year !== 2020);
+          if (priorNon2020.length === 0) return { type: "prospect", value: s.points };
+          if (priorNon2020.length === 1 && priorNon2020[0].points < outlierThreshold) return { type: "prospect", value: s.points };
+          return { type: "injury", value: s.points };
+        });
+
+        // Build chart data
+        const labels = [];
+        const barData = [];
+        const goldBarData = [];
+        const realValues = [];
+        const sdBandData = [];
+        const barColors = [];
+        const outlierInfo = [];
+        const projectedIndices = [];
+
+        // Historical bars
+        historicalSeasons.forEach((s, i) => {
+          labels.push(String(s.year));
+          realValues.push(s.points);
+          barData.push(s.points);
+          goldBarData.push(0);
+          sdBandData.push(null);
+          const outlier = seasonOutliers[i];
+          outlierInfo.push(outlier);
+          if (outlier) {
+            if (outlier.type === "covid") barColors.push(covidColor);
+            else if (outlier.type === "prospect") barColors.push(prospectColor);
+            else barColors.push(injuryColor);
+          } else {
+            barColors.push(historicalColor);
+          }
+        });
+
+        // 2026 - TWO-TONE bar
+        const idx2026 = labels.length;
+        labels.push("2026");
+        barData.push(actualSeasonPts);
+        goldBarData.push(rosAvg);
+        realValues.push(actualSeasonPts + rosAvg);
+        sdBandData.push(rosMin !== rosMax ? [actualSeasonPts + rosMin, actualSeasonPts + rosMax] : null);
+        barColors.push(historicalColor);
+        projectedIndices.push({ index: idx2026 });
+        outlierInfo.push(null);
+
+        // 2027
+        if (pts2027 > 0) {
+          const idx = labels.length;
+          labels.push("2027");
+          barData.push(0);
+          goldBarData.push(pts2027);
+          realValues.push(pts2027);
+          sdBandData.push(null);
+          barColors.push(projectedColor);
+          projectedIndices.push({ index: idx });
+          outlierInfo.push(null);
+        }
+
+        // 2028
+        if (pts2028 > 0) {
+          const idx = labels.length;
+          labels.push("2028");
+          barData.push(0);
+          goldBarData.push(pts2028);
+          realValues.push(pts2028);
+          sdBandData.push(null);
+          barColors.push(projectedColor);
+          projectedIndices.push({ index: idx });
+          outlierInfo.push(null);
+        }
+
+        if (labels.length === 0) {
+          canvasEl.parentElement.innerHTML = '<div style="text-align:center;color:#999;padding:2rem;font-size:0.75rem;">No historical data available</div>';
+          return;
+        }
+
+        // Compute y-axis from non-outlier values
+        const coreValues = [];
+        realValues.forEach((val, i) => { if (!outlierInfo[i] && val > 0) coreValues.push(val); });
+        sdBandData.forEach((band, i) => { if (band && !outlierInfo[i]) { coreValues.push(band[0], band[1]); } });
+
+        const coreMax = coreValues.length > 0 ? Math.max(...coreValues) : 100;
+        const yMin = 175;
+        const yMax = coreMax >= 600 ? 650 : 600;
+
+        // Clamp outlier bars
+        barData.forEach((val, i) => {
+          if (outlierInfo[i]) {
+            barData[i] = yMin + (yMax - yMin) * 0.04;
+            goldBarData[i] = 0;
+          }
+        });
+
+        // Chart overlay plugin
+        const chartOverlayPlugin = {
+          id: "playerChartOverlay",
+          beforeDatasetsDraw: function(chart) {
+            const drawCtx = chart.ctx;
+            const mainMeta = chart.getDatasetMeta(0);
+            const chartArea = chart.chartArea;
+            outlierInfo.forEach((info, i) => {
+              if (!info) return;
+              const bar = mainMeta.data[i];
+              if (!bar) return;
+              const barWidth = bar.width || 20;
+              const colHalfW = barWidth * 0.9;
+              let bgColor;
+              if (info.type === "covid") bgColor = covidBgColor;
+              else if (info.type === "injury") bgColor = injuryBgColor;
+              else if (info.type === "prospect") bgColor = prospectBgColor;
+              else return;
+              drawCtx.save();
+              drawCtx.fillStyle = bgColor;
+              drawCtx.fillRect(bar.x - colHalfW, chartArea.top, colHalfW * 2, chartArea.bottom - chartArea.top);
+              drawCtx.restore();
+            });
+          },
+          afterDatasetsDraw: function(chart) {
+            const drawCtx = chart.ctx;
+            const mainMeta = chart.getDatasetMeta(0);
+            const goldMeta = chart.getDatasetMeta(1);
+            const yScale = chart.scales.y;
+
+            // Draw SD band rectangles for 2026
+            projectedIndices.forEach(info => {
+              const bandRaw = sdBandData[info.index];
+              if (!bandRaw) return;
+              const blueBar = mainMeta.data[info.index];
+              if (!blueBar) return;
+              const barWidth = blueBar.width || 20;
+              const bandHalfW = barWidth * 0.65;
+              const bandTopPx = yScale.getPixelForValue(bandRaw[1]);
+              const bandBottomPx = yScale.getPixelForValue(bandRaw[0]);
+              drawCtx.save();
+              drawCtx.fillStyle = projectedColorLight;
+              drawCtx.fillRect(blueBar.x - bandHalfW, bandTopPx, bandHalfW * 2, bandBottomPx - bandTopPx);
+              drawCtx.strokeStyle = projectedBorderColor;
+              drawCtx.lineWidth = 1;
+              drawCtx.strokeRect(blueBar.x - bandHalfW, bandTopPx, bandHalfW * 2, bandBottomPx - bandTopPx);
+              drawCtx.restore();
+            });
+
+            // Draw outlier value labels
+            outlierInfo.forEach((info, i) => {
+              if (!info) return;
+              const bar = mainMeta.data[i];
+              if (!bar) return;
+              const realVal = realValues[i];
+              drawCtx.save();
+              drawCtx.font = "bold 9px sans-serif";
+              drawCtx.textAlign = "center";
+              drawCtx.textBaseline = "bottom";
+              if (info.type === "covid") drawCtx.fillStyle = covidColor;
+              else if (info.type === "prospect") drawCtx.fillStyle = prospectColor;
+              else drawCtx.fillStyle = injuryColor;
+              drawCtx.fillText(Math.round(realVal).toString(), bar.x, bar.y - 3);
+              drawCtx.restore();
+            });
+          }
+        };
+
+        // Build gold bar colors
+        const goldBarColors = goldBarData.map((v, i) => {
+          return projectedColor;
+        });
+
+        // Label colors for x-axis
+        const labelColors = labels.map((lbl, i) => {
+          const info = outlierInfo[i];
+          if (info) {
+            if (info.type === "covid") return covidColor;
+            if (info.type === "prospect") return prospectColor;
+            return injuryColor;
+          }
+          const yr = parseInt(lbl);
+          return yr >= 2027 ? projectedColor : historicalColor;
+        });
+
+        playerHistoryChartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Actual",
+                data: barData,
+                backgroundColor: barColors,
+                borderColor: barColors,
+                borderWidth: 1,
+                barPercentage: 0.6,
+                categoryPercentage: 0.85,
+              },
+              {
+                label: "Projected",
+                data: goldBarData,
+                backgroundColor: goldBarColors,
+                borderColor: goldBarColors.map(() => projectedBorderColor),
+                borderWidth: 1,
+                barPercentage: 0.6,
+                categoryPercentage: 0.85,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: ctx2 => ctx2[0].label,
+                  label: function(context) {
+                    const idx = context.dataIndex;
+                    const info = outlierInfo[idx];
+                    const realVal = Math.round(realValues[idx]);
+                    if (info) {
+                      if (info.type === "covid") return `COVID Season: ${realVal} pts`;
+                      if (info.type === "prospect") return `Prospect/Callup: ${realVal} pts`;
+                      return `Injury Season: ${realVal} pts`;
+                    }
+                    if (parseInt(context.chart.data.labels[idx]) === 2026) {
+                      const actual = Math.round(actualSeasonPts);
+                      const ros = Math.round(rosAvg);
+                      return `Actual: ${actual} + ROS: ${ros} = ${actual + ros} pts`;
+                    }
+                    if (parseInt(context.chart.data.labels[idx]) >= 2027) return `Projected: ${realVal} pts`;
+                    return `Actual: ${realVal} pts`;
+                  }
+                }
+              }
+            },
+            scales: {
+              x: {
+                stacked: true,
+                offset: true,
+                ticks: {
+                  maxRotation: 45,
+                  minRotation: 45,
+                  font: { size: 9, weight: "bold" },
+                  padding: 0,
+                  labelOffset: 4,
+                  color: function(context) { return labelColors[context.index] || historicalColor; }
+                }
+              },
+              y: {
+                stacked: true,
+                beginAtZero: false,
+                min: Math.max(0, yMin),
+                max: yMax,
+                afterBuildTicks: function(scale) {
+                  const ticks = [];
+                  for (let v = 200; v <= scale.max; v += 50) ticks.push({ value: v });
+                  scale.ticks = ticks;
+                },
+                ticks: { font: { size: 9 } },
+                title: { display: true, text: "Fantasy Points", font: { size: 9 } }
+              }
+            }
+          },
+          plugins: [chartOverlayPlugin]
+        });
+      }
+
+      let playerPercentileChartInstance = null;
+
+      async function renderPlayerPercentileChart(player, canvasEl) {
+        if (playerPercentileChartInstance) {
+          playerPercentileChartInstance.destroy();
+          playerPercentileChartInstance = null;
+        }
+
+        const ctx = canvasEl.getContext("2d");
+
+        // Load player stats windows if not cached
+        if (!window._playerStatsWindowsCache) {
+          try {
+            const resp = await fetch("data/current_season/player_stats_windows.json");
+            if (resp.ok) window._playerStatsWindowsCache = await resp.json();
+          } catch(e) {}
+        }
+
+        const windowsData = window._playerStatsWindowsCache?.windows;
+        if (!windowsData) {
+          canvasEl.parentElement.innerHTML = '<div style="text-align:center;color:#999;padding:2rem;font-size:0.75rem;">No ranking data available</div>';
+          return;
+        }
+
+        // Position badge color mapping
+        const posColors = {
+          'C': '#e74c3c', '1B': '#e67e22', '2B': '#f1c40f', '3B': '#e74c3c',
+          'SS': '#9b59b6', 'OF': '#2ecc71', 'SP': '#3498db', 'RP': '#8e44ad',
+          'P': '#3498db', 'DH': '#e67e22', 'Util': '#95a5a6'
+        };
+
+        const primaryPos = player.primary_position || 'Util';
+        const posColor = posColors[primaryPos] || '#95a5a6';
+        const blueColor = '#0048ba';
+        const goldColor = '#d4a017';
+
+        // Windows to process
+        const windowKeys = ['ytd', 'last7', 'last14', 'last30'];
+        const windowLabels = ['Season', 'Last 7', 'Last 14', 'Last 30'];
+
+        const posPercentiles = [];
+        const groupPercentiles = [];
+        const overallPercentiles = [];
+
+        for (const wk of windowKeys) {
+          const players = windowsData[wk]?.players || [];
+          const activePlayers = players.filter(p => (p.fantasy_points || 0) !== 0);
+
+          const allSorted = [...activePlayers].sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+          const overallRank = allSorted.findIndex(p => p.name === player.name) + 1;
+          const overallTotal = allSorted.length;
+
+          const sameGroup = activePlayers.filter(p => p.position_type === player.position_type)
+            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+          const groupRank = sameGroup.findIndex(p => p.name === player.name) + 1;
+          const groupTotal = sameGroup.length;
+
+          const samePos = activePlayers.filter(p => p.eligible_positions && p.eligible_positions.includes(primaryPos))
+            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+          const posRank = samePos.findIndex(p => p.name === player.name) + 1;
+          const posTotal = samePos.length;
+
+          const calcPct = (rank, total) => {
+            if (rank <= 0 || total <= 0) return 0;
+            return ((1 - (rank - 1) / total) * 100);
+          };
+
+          posPercentiles.push(calcPct(posRank, posTotal));
+          groupPercentiles.push(calcPct(groupRank, groupTotal));
+          overallPercentiles.push(calcPct(overallRank, overallTotal));
+        }
+
+        // Reference lines plugin
+        const refLinesPlugin = {
+          id: "percentileRefLines",
+          beforeDatasetsDraw: function(chart) {
+            const drawCtx = chart.ctx;
+            const yScale = chart.scales.y;
+            const chartArea = chart.chartArea;
+
+            [25, 50, 75].forEach(val => {
+              const y = yScale.getPixelForValue(val);
+              drawCtx.save();
+              drawCtx.strokeStyle = "rgba(0, 0, 0, 0.1)";
+              drawCtx.lineWidth = 1;
+              drawCtx.setLineDash([3, 3]);
+              drawCtx.beginPath();
+              drawCtx.moveTo(chartArea.left, y);
+              drawCtx.lineTo(chartArea.right, y);
+              drawCtx.stroke();
+              drawCtx.restore();
+            });
+          }
+        };
+
+        playerPercentileChartInstance = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: windowLabels,
+            datasets: [
+              {
+                label: primaryPos,
+                data: posPercentiles,
+                backgroundColor: posColor,
+                borderColor: posColor,
+                borderWidth: 1,
+                barPercentage: 0.85,
+                categoryPercentage: 0.7,
+              },
+              {
+                label: player.position_type === 'B' ? 'Batters' : 'Pitchers',
+                data: groupPercentiles,
+                backgroundColor: blueColor,
+                borderColor: blueColor,
+                borderWidth: 1,
+                barPercentage: 0.85,
+                categoryPercentage: 0.7,
+              },
+              {
+                label: 'Overall',
+                data: overallPercentiles,
+                backgroundColor: 'rgba(0, 72, 186, 0.5)',
+                borderColor: blueColor,
+                borderWidth: 1,
+                barPercentage: 0.85,
+                categoryPercentage: 0.7,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                  font: { size: 9 },
+                  boxWidth: 10,
+                  padding: 8
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.dataset.label}: ${context.raw.toFixed(0)}th percentile`;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                  stepSize: 25,
+                  font: { size: 9 },
+                  callback: val => val + '%'
+                },
+                title: { display: true, text: 'Percentile', font: { size: 9 } }
+              },
+              x: {
+                ticks: {
+                  font: { size: 9, weight: 'bold' }
+                }
+              }
+            }
+          },
+          plugins: [refLinesPlugin]
+        });
       }
 
       function closePlayerModal() {
