@@ -7824,6 +7824,7 @@
       }
 
       .player-control-row .season-selector,
+      .player-control-row .window-filter,
       .player-control-row .position-filter,
       .player-control-row .manager-filter,
       .player-control-row .stat-type-toggle {
@@ -7868,6 +7869,12 @@
       .toggle-btn.active {
         background: var(--retro-blue);
         color: white;
+      }
+
+      .toggle-btn:disabled {
+        background: #f3f5f7;
+        color: #9aa4b2;
+        cursor: not-allowed;
       }
 
       .player-control-row label {
@@ -22069,22 +22076,43 @@
               </select>
             </div>
 
-            <div class="stat-type-toggle">
+            <div class="stat-type-toggle" id="player-window-control">
               <label>Stats:</label>
               <div class="toggle-buttons">
                 <button
-                  id="fantasy-season-btn"
+                  id="player-window-ytd-btn"
+                  data-window-key="ytd"
                   class="toggle-btn active"
-                  onclick="setStatType('fantasy')"
+                  onclick="setPlayerWindow('ytd')"
                 >
-                  Fantasy Season
+                  Season
                 </button>
                 <button
-                  id="full-season-btn"
+                  id="player-window-last7-btn"
+                  data-window-key="last7"
                   class="toggle-btn"
-                  onclick="setStatType('full')"
+                  onclick="setPlayerWindow('last7')"
+                  disabled
                 >
-                  Full MLB Season
+                  Last 7
+                </button>
+                <button
+                  id="player-window-last14-btn"
+                  data-window-key="last14"
+                  class="toggle-btn"
+                  onclick="setPlayerWindow('last14')"
+                  disabled
+                >
+                  Last 14
+                </button>
+                <button
+                  id="player-window-last30-btn"
+                  data-window-key="last30"
+                  class="toggle-btn"
+                  onclick="setPlayerWindow('last30')"
+                  disabled
+                >
+                  Last 30
                 </button>
               </div>
             </div>
@@ -25568,7 +25596,19 @@
       let filteredPlayersData = [];
       let playerHistoryData = {};
       let currentPlayerSort = { column: "fantasy_points", direction: "desc" };
-      let currentStatType = "fantasy"; // 'fantasy' for fantasy season, 'full' for full MLB season
+      let currentStatType = "fantasy";
+      let currentPlayerWindow = "ytd";
+      let currentSeasonPlayerWindows = null;
+      const CURRENT_SEASON_PLAYER_WINDOW_BUTTONS = [
+        { key: "ytd", label: "Season" },
+        { key: "last7", label: "Last 7" },
+        { key: "last14", label: "Last 14" },
+        { key: "last30", label: "Last 30" },
+      ];
+      const HISTORICAL_PLAYER_STAT_BUTTONS = [
+        { key: "fantasy", label: "Fantasy Season" },
+        { key: "full", label: "Full MLB Season" },
+      ];
 
       // Chart state
       let currentChartData = null;
@@ -25668,9 +25708,192 @@
         }
       }
 
+      function getCurrentPlayerScoringYear() {
+        const seasonSelect = document.getElementById("scoring-season");
+        return parseInt(seasonSelect?.value || window.selectedYear || "2025");
+      }
+
+      function isCurrentSeasonPlayerWindowMode(
+        selectedYear = getCurrentPlayerScoringYear(),
+      ) {
+        return selectedYear === 2026;
+      }
+
+      function getPlayerWindowButtonLabel(windowKey) {
+        return (
+          CURRENT_SEASON_PLAYER_WINDOW_BUTTONS.find(
+            (button) => button.key === windowKey,
+          )?.label || windowKey
+        );
+      }
+
+      function getHistoricalPlayerStatLabel(statType) {
+        return (
+          HISTORICAL_PLAYER_STAT_BUTTONS.find((button) => button.key === statType)
+            ?.label || statType
+        );
+      }
+
+      function getAvailablePlayerWindowButtons(
+        selectedYear = getCurrentPlayerScoringYear(),
+      ) {
+        if (!isCurrentSeasonPlayerWindowMode(selectedYear)) {
+          return [];
+        }
+
+        const windows = currentSeasonPlayerWindows?.windows || {};
+        return CURRENT_SEASON_PLAYER_WINDOW_BUTTONS.filter(
+          (button) => button.key === "ytd" || windows[button.key],
+        );
+      }
+
+      function getCurrentPlayerWindowData() {
+        if (getCurrentPlayerScoringYear() !== 2026) return null;
+
+        const windows = currentSeasonPlayerWindows?.windows || {};
+        if (windows[currentPlayerWindow]) {
+          return windows[currentPlayerWindow];
+        }
+
+        const fallbackKey = currentSeasonPlayerWindows?.default_window || "ytd";
+        return windows[fallbackKey] || windows.ytd || null;
+      }
+
+      function getCurrentPlayerWindowLabel() {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (!isCurrentSeasonPlayerWindowMode(selectedYear)) {
+          return getHistoricalPlayerStatLabel(currentStatType);
+        }
+
+        const windowData = getCurrentPlayerWindowData();
+        if (!windowData) return "";
+        return getPlayerWindowButtonLabel(currentPlayerWindow);
+      }
+
+      function getCurrentPlayerWindowShortLabel() {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (!isCurrentSeasonPlayerWindowMode(selectedYear)) {
+          return currentStatType === "full" ? "Full MLB" : "Fantasy";
+        }
+
+        const windowData = getCurrentPlayerWindowData();
+        if (!windowData) return `${window.selectedYear || "2025"}`;
+        return getPlayerWindowButtonLabel(currentPlayerWindow);
+      }
+
+      function getCurrentPlayerWindowRange() {
+        const windowData = getCurrentPlayerWindowData();
+        return windowData?.display_range || "";
+      }
+
+      function getCurrentPlayerStatsTitle() {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (!isCurrentSeasonPlayerWindowMode(selectedYear)) {
+          return `${selectedYear} Statistics • ${getHistoricalPlayerStatLabel(currentStatType)}`;
+        }
+
+        const windowData = getCurrentPlayerWindowData();
+        if (!windowData) {
+          return `${selectedYear} Statistics`;
+        }
+
+        const label = getPlayerWindowButtonLabel(currentPlayerWindow);
+        const range = windowData.display_range
+          ? ` (${windowData.display_range})`
+          : "";
+        return `${selectedYear} Statistics • ${label}${range}`;
+      }
+
+      function getCurrentPlayerStatsHeaderLabel() {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (!isCurrentSeasonPlayerWindowMode(selectedYear)) {
+          return currentStatType === "full" ? "FULL" : "SEASON";
+        }
+
+        const windowData = getCurrentPlayerWindowData();
+        if (!windowData) return "SEASON";
+        return currentPlayerWindow === "ytd" ? "SEASON" : "RANGE";
+      }
+
+      function updatePlayerWindowControls(selectedYear) {
+        const control = document.getElementById("player-window-control");
+        if (!control) return;
+
+        const buttons = Array.from(control.querySelectorAll(".toggle-btn"));
+
+        if (!isCurrentSeasonPlayerWindowMode(selectedYear)) {
+          if (!["fantasy", "full"].includes(currentStatType)) {
+            currentStatType = "fantasy";
+          }
+
+          buttons.forEach((button, index) => {
+            const config = HISTORICAL_PLAYER_STAT_BUTTONS[index];
+            if (!config) {
+              button.style.display = "none";
+              button.disabled = true;
+              button.classList.remove("active");
+              return;
+            }
+
+            button.style.display = "";
+            button.textContent = config.label;
+            button.disabled = false;
+            button.classList.toggle("active", config.key === currentStatType);
+            button.onclick = () => setStatType(config.key);
+          });
+          return;
+        }
+
+        const availableButtons = getAvailablePlayerWindowButtons(selectedYear);
+        const availableKeys = availableButtons.map((button) => button.key);
+
+        if (!availableKeys.includes(currentPlayerWindow)) {
+          currentPlayerWindow = "ytd";
+        }
+
+        buttons.forEach((button, index) => {
+          const config = CURRENT_SEASON_PLAYER_WINDOW_BUTTONS[index];
+          if (!config) {
+            button.style.display = "none";
+            button.disabled = true;
+            button.classList.remove("active");
+            return;
+          }
+
+          button.style.display = "";
+          button.textContent = config.label;
+          button.onclick = () => setPlayerWindow(config.key);
+          const isEnabled = availableKeys.includes(config.key);
+          button.classList.toggle(
+            "active",
+            isEnabled && config.key === currentPlayerWindow,
+          );
+          button.disabled = !isEnabled;
+        });
+      }
+
+      function setPlayerWindow(windowKey) {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (selectedYear !== 2026) {
+          currentPlayerWindow = "ytd";
+          updatePlayerWindowControls(selectedYear);
+          return;
+        }
+
+        const windows = currentSeasonPlayerWindows?.windows || {};
+        if (!windows[windowKey]) return;
+
+        currentPlayerWindow = windowKey;
+        updatePlayerWindowControls(selectedYear);
+
+        allPlayersData = windows[windowKey].players || [];
+        refreshPlayerScoringView();
+      }
+
       async function loadPlayerScoring() {
         const seasonSelect = document.getElementById("scoring-season");
         const selectedYear = parseInt(seasonSelect.value);
+        window.selectedYear = selectedYear;
 
         const loadingEl = document.getElementById("player-loading");
         const errorEl = document.getElementById("player-error");
@@ -25681,33 +25904,52 @@
         containerEl.style.display = "none";
 
         try {
-          // Determine the path based on year
-          let playerStatsPath;
+          let playerData = null;
+          currentSeasonPlayerWindows = null;
+
           if (selectedYear === 2026) {
-            playerStatsPath = "data/current_season/player_stats.json";
-          } else {
-            playerStatsPath = `data/historical/${selectedYear}/player_stats.json`;
+            try {
+              const windowsResponse = await fetch(
+                "data/current_season/player_stats_windows.json",
+              );
+              if (windowsResponse.ok) {
+                currentSeasonPlayerWindows = await windowsResponse.json();
+                updatePlayerWindowControls(selectedYear);
+                playerData = getCurrentPlayerWindowData()?.players || null;
+              }
+            } catch (e) {
+              console.log("Could not load player scoring windows");
+            }
           }
 
-          const response = await fetch(playerStatsPath);
-          if (!response.ok) {
-            throw new Error(`No player data available for ${selectedYear}`);
+          if (!playerData) {
+            currentPlayerWindow = "ytd";
+            updatePlayerWindowControls(selectedYear);
+
+            const playerStatsPath =
+              selectedYear === 2026
+                ? "data/current_season/player_stats.json"
+                : `data/historical/${selectedYear}/player_stats.json`;
+
+            const response = await fetch(playerStatsPath);
+            if (!response.ok) {
+              throw new Error(`No player data available for ${selectedYear}`);
+            }
+
+            playerData = await response.json();
           }
 
-          allPlayersData = await response.json();
+          allPlayersData = playerData;
 
-          // For 2026 (pre-season), ensure averageProjectionsMap is populated for headshot/MLB team fallbacks
-          if (selectedYear === 2026 && Object.keys(averageProjectionsMap).length === 0) {
+          if (
+            selectedYear === 2026 &&
+            Object.keys(averageProjectionsMap).length === 0
+          ) {
             await ensureProjectionMapLoaded();
           }
 
-          // Calculate position ranks for each player
           calculatePositionRanks();
-
-          // Populate manager filter
           populateManagerFilter();
-
-          // Apply filters and render
           filterPlayers();
 
           loadingEl.style.display = "none";
@@ -25823,8 +26065,9 @@
 
       function populateManagerFilter() {
         const managerFilter = document.getElementById("manager-filter");
+        const previousValue = managerFilter.value || "all";
         const managers = [
-          ...new Set(allPlayersData.map((p) => p.manager)),
+          ...new Set(allPlayersData.map((p) => p.manager).filter(Boolean)),
         ].sort();
 
         // Keep the "All Managers" option and add the rest
@@ -25835,60 +26078,53 @@
           option.textContent = manager;
           managerFilter.appendChild(option);
         });
+
+        if (previousValue !== "all" && managers.includes(previousValue)) {
+          managerFilter.value = previousValue;
+        } else {
+          managerFilter.value = "all";
+        }
+      }
+
+      function refreshPlayerScoringView() {
+        calculatePositionRanks();
+        populateManagerFilter();
+        filterPlayers();
+
+        const modal = document.getElementById("player-modal");
+        if (
+          modal &&
+          modal.style.display !== "none" &&
+          window.currentModalPlayer?.name
+        ) {
+          showPlayerDetail(window.currentModalPlayer.name);
+        }
       }
 
       function setStatType(type) {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (isCurrentSeasonPlayerWindowMode(selectedYear)) {
+          setPlayerWindow(type === "full" ? "ytd" : type);
+          return;
+        }
+
+        if (!["fantasy", "full"].includes(type)) return;
         currentStatType = type;
-
-        // Update button states
-        document
-          .getElementById("fantasy-season-btn")
-          .classList.toggle("active", type === "fantasy");
-        document
-          .getElementById("full-season-btn")
-          .classList.toggle("active", type === "full");
-
-        // Re-calculate position ranks and re-render
-        calculatePositionRanks();
-        filterPlayers();
+        updatePlayerWindowControls(selectedYear);
+        refreshPlayerScoringView();
       }
 
       function setModalStatType(type) {
-        currentStatType = type;
-
-        // Update main page toggle buttons too
-        document
-          .getElementById("fantasy-season-btn")
-          .classList.toggle("active", type === "fantasy");
-        document
-          .getElementById("full-season-btn")
-          .classList.toggle("active", type === "full");
-
-        // Update modal toggle buttons
-        document.querySelectorAll(".card-toggle-btn").forEach((btn) => {
-          btn.classList.toggle(
-            "active",
-            btn.textContent
-              .toLowerCase()
-              .includes(type === "fantasy" ? "fantasy" : "full"),
-          );
-        });
-
-        // Re-render the modal with the current player
-        if (window.currentModalPlayer) {
-          updateModalStats(window.currentModalPlayer);
-        }
-        requestAnimationFrame(syncPlayerTransactionPanelHeight);
-
-        // Re-calculate position ranks and re-render main table
-        calculatePositionRanks();
-        filterPlayers();
+        setStatType(type);
       }
 
       function updateModalStats(player) {
         const stats = getPlayerStats(player);
         const fantasyPts = getPlayerFantasyPoints(player);
         const isBatter = player.position_type === "B";
+        const statsLabel = getCurrentPlayerWindowShortLabel();
+        const statsHeaderLabel = getCurrentPlayerStatsHeaderLabel();
+        const statsTitle = getCurrentPlayerStatsTitle();
 
         // Update points display in the card
         const ptsValueEl = document.querySelector(".card-points-value");
@@ -25915,13 +26151,18 @@
           rankEl.textContent = posRankDisplay;
         }
 
+        const statsTitleEl = document.querySelector(".card-stats-title");
+        if (statsTitleEl) {
+          statsTitleEl.textContent = statsTitle;
+        }
+
         // Update stats content
         const statsContent = document.getElementById("modal-stats-content");
         if (statsContent) {
           if (isBatter) {
             statsContent.innerHTML = `
                         <div class="card-stats-row">
-                            <div class="card-stats-label">SEASON</div>
+                            <div class="card-stats-label">${statsHeaderLabel}</div>
                             <div class="card-stats-cells">
                                 <div class="card-stats-header-cell">G</div>
                                 <div class="card-stats-header-cell">AB</div>
@@ -25933,7 +26174,7 @@
                             </div>
                         </div>
                         <div class="card-stats-data-row">
-                            <div class="card-stats-data-label">${window.selectedYear || "2025"}</div>
+                            <div class="card-stats-data-label">${statsLabel}</div>
                             <div class="card-stats-data-cells">
                                 <div class="card-stats-data-cell">${stats.G || 0}</div>
                                 <div class="card-stats-data-cell">${stats.AB || 0}</div>
@@ -25971,7 +26212,7 @@
           } else {
             statsContent.innerHTML = `
                         <div class="card-stats-row">
-                            <div class="card-stats-label">SEASON</div>
+                            <div class="card-stats-label">${statsHeaderLabel}</div>
                             <div class="card-stats-cells">
                                 <div class="card-stats-header-cell">W</div>
                                 <div class="card-stats-header-cell">L</div>
@@ -25983,7 +26224,7 @@
                             </div>
                         </div>
                         <div class="card-stats-data-row">
-                            <div class="card-stats-data-label">${window.selectedYear || "2025"}</div>
+                            <div class="card-stats-data-label">${statsLabel}</div>
                             <div class="card-stats-data-cells">
                                 <div class="card-stats-data-cell">${stats.W || 0}</div>
                                 <div class="card-stats-data-cell">${stats.L || 0}</div>
@@ -26023,20 +26264,24 @@
       }
 
       function getPlayerStats(player) {
-        // Returns the appropriate stats object based on currentStatType
-        if (currentStatType === "full") {
-          return player.full_season_stats || player.stats || {};
+        if (!isCurrentSeasonPlayerWindowMode()) {
+          if (currentStatType === "full") {
+            return player.full_season_stats || player.stats || {};
+          }
         }
+
         return player.stats || {};
       }
 
       function getPlayerFantasyPoints(player) {
-        // Returns the appropriate fantasy points based on currentStatType
-        if (currentStatType === "full") {
-          return (
-            player.full_season_fantasy_points || player.fantasy_points || 0
-          );
+        if (!isCurrentSeasonPlayerWindowMode()) {
+          if (currentStatType === "full") {
+            return (
+              player.full_season_fantasy_points || player.fantasy_points || 0
+            );
+          }
         }
+
         return player.fantasy_points || 0;
       }
 
@@ -26251,8 +26496,14 @@
       function renderPlayerTable() {
         const tbody = document.getElementById("player-table-body");
         const countEl = document.getElementById("player-count");
+        const selectedYear = getCurrentPlayerScoringYear();
 
-        countEl.textContent = `${filteredPlayersData.length} player${filteredPlayersData.length !== 1 ? "s" : ""}`;
+        const windowLabel = getCurrentPlayerWindowLabel();
+        const windowRange = getCurrentPlayerWindowRange();
+        countEl.textContent =
+          selectedYear === 2026 && windowLabel
+            ? `${filteredPlayersData.length} player${filteredPlayersData.length !== 1 ? "s" : ""} • ${windowLabel}${windowRange ? ` (${windowRange})` : ""}`
+            : `${filteredPlayersData.length} player${filteredPlayersData.length !== 1 ? "s" : ""}`;
 
         if (filteredPlayersData.length === 0) {
           tbody.innerHTML =
@@ -27196,6 +27447,12 @@
         const stats = getPlayerStats(player);
         const isBatter = player.position_type === "B";
         const fantasyPts = getPlayerFantasyPoints(player).toFixed(1);
+        const statsLabel = getCurrentPlayerWindowShortLabel();
+        const statsHeaderLabel = getCurrentPlayerStatsHeaderLabel();
+        const statsTitle = getCurrentPlayerStatsTitle();
+        const availableWindowButtons = getAvailablePlayerWindowButtons(
+          selectedYear,
+        );
 
         // Calculate position rank for current season (using current stat type)
         const primaryPos = player.primary_position;
@@ -27409,11 +27666,22 @@
                         
                         <!-- Stats Toggle -->
                         <div class="card-stats-toggle">
-                            <span class="card-stats-title">${selectedYear} Statistics</span>
-                            <div class="card-toggle-btns">
-                                <button class="card-toggle-btn ${currentStatType === "fantasy" ? "active" : ""}" onclick="setModalStatType('fantasy')">Fantasy</button>
-                                <button class="card-toggle-btn ${currentStatType === "full" ? "active" : ""}" onclick="setModalStatType('full')">Full MLB</button>
-                            </div>
+                            <span class="card-stats-title">${statsTitle}</span>
+                            ${selectedYear === 2026
+                              ? `<div class="card-toggle-btns">
+                                ${availableWindowButtons
+                                  .map(
+                                    (button) =>
+                                      `<button class="card-toggle-btn ${currentPlayerWindow === button.key ? "active" : ""}" onclick="setPlayerWindow('${button.key}')">${button.label}</button>`,
+                                  )
+                                  .join("")}
+                            </div>`
+                              : `<div class="card-toggle-btns">
+                                ${HISTORICAL_PLAYER_STAT_BUTTONS.map(
+                                  (button) =>
+                                    `<button class="card-toggle-btn ${currentStatType === button.key ? "active" : ""}" onclick="setModalStatType('${button.key}')">${button.label}</button>`,
+                                ).join("")}
+                            </div>`}
                         </div>
                         
                         <div id="modal-stats-content">`;
@@ -27421,7 +27689,7 @@
         if (isBatter) {
           cardHTML += `
                         <div class="card-stats-row">
-                            <div class="card-stats-label">SEASON</div>
+                            <div class="card-stats-label">${statsHeaderLabel}</div>
                             <div class="card-stats-cells">
                                 <div class="card-stats-header-cell">G</div>
                                 <div class="card-stats-header-cell">PA</div>
@@ -27433,7 +27701,7 @@
                             </div>
                         </div>
                         <div class="card-stats-data-row">
-                            <div class="card-stats-data-label">${selectedYear}</div>
+                            <div class="card-stats-data-label">${statsLabel}</div>
                             <div class="card-stats-data-cells">
                                 <div class="card-stats-data-cell">${stats.G || 0}</div>
                                 <div class="card-stats-data-cell">${stats.PA || 0}</div>
@@ -27471,7 +27739,7 @@
         } else {
           cardHTML += `
                         <div class="card-stats-row">
-                            <div class="card-stats-label">SEASON</div>
+                            <div class="card-stats-label">${statsHeaderLabel}</div>
                             <div class="card-stats-cells">
                                 <div class="card-stats-header-cell">G</div>
                                 <div class="card-stats-header-cell">GS</div>
@@ -27483,7 +27751,7 @@
                             </div>
                         </div>
                         <div class="card-stats-data-row">
-                            <div class="card-stats-data-label">${selectedYear}</div>
+                            <div class="card-stats-data-label">${statsLabel}</div>
                             <div class="card-stats-data-cells">
                                 <div class="card-stats-data-cell">${stats.G || 0}</div>
                                 <div class="card-stats-data-cell">${stats.GS || 0}</div>

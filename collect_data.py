@@ -8,6 +8,9 @@ Uses Yahoo Fantasy API for:
 - Transactions
 - Scoring settings
 
+Uses MLB Stats API for:
+- Current-season daily player stats windows
+
 Uses Fangraphs (via pybaseball) for:
 - Player batting stats
 - Player pitching stats
@@ -22,6 +25,7 @@ import unicodedata
 from datetime import datetime, date, timedelta
 from typing import Any, List, Dict, Optional, Tuple
 import subprocess
+import requests
 from yahoo_oauth import OAuth2
 from yahoo_fantasy_api import Game, League
 import pandas as pd
@@ -43,6 +47,13 @@ except ImportError:
 CURRENT_SEASON = 2026
 HISTORICAL_SEASONS = [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
 DATA_DIR = "data"
+CURRENT_SEASON_PLAYER_DAILY_STATS_FILE = os.path.join(
+    DATA_DIR,
+    "current_season",
+    "player_daily_stats.json",
+)
+MLB_STATS_API_BASE_URL = "https://statsapi.mlb.com/api/v1"
+MLB_DAILY_CACHE_BACKFILL_DAYS = 2
 
 # Override league IDs for specific years (if needed)
 LEAGUE_ID_OVERRIDES = {
@@ -1415,8 +1426,8 @@ def get_fangraphs_batting_stats(year: int, start_date: str = None, end_date: str
                 from pybaseball import batting_stats_range
                 batters = batting_stats_range(start_date, end_date)
             else:
-                # Fall back to full season
-                batters = batting_stats(year, qual=1)
+                # Use season-to-date totals for the requested year
+                batters = batting_stats(year, qual=0)
         finally:
             # Reset alarm
             if hasattr(signal, 'SIGALRM'):
@@ -1472,8 +1483,8 @@ def get_fangraphs_pitching_stats(year: int, start_date: str = None, end_date: st
                 from pybaseball import pitching_stats_range
                 pitchers = pitching_stats_range(start_date, end_date)
             else:
-                # Fall back to full season
-                pitchers = pitching_stats(year, qual=1)
+                # Use season-to-date totals for the requested year
+                pitchers = pitching_stats(year, qual=0)
         finally:
             # Reset alarm
             if hasattr(signal, 'SIGALRM'):
@@ -1570,12 +1581,1057 @@ def calculate_pitching_fantasy_points(stats: Dict, scoring: Dict) -> float:
 # PLAYER STATS INTEGRATION
 # =============================================================================
 
+PLAYER_STATS_WINDOW_DEFINITIONS = [
+    {'key': 'ytd', 'label': 'Year to Date', 'short_label': 'YTD', 'button_label': 'YTD'},
+    {'key': 'current_week', 'label': 'Current Week', 'short_label': 'Current Week', 'button_label': 'Current Week'},
+    {'key': 'last7', 'label': 'Last 7 Days', 'short_label': 'Last 7', 'button_label': 'Last 7'},
+    {'key': 'last14', 'label': 'Last 14 Days', 'short_label': 'Last 14', 'button_label': 'Last 14'},
+    {'key': 'last30', 'label': 'Last 30 Days', 'short_label': 'Last 30', 'button_label': 'Last 30'},
+]
+
+
+def parse_iso_date(value: Optional[str]) -> Optional[date]:
+    """Parse an ISO yyyy-mm-dd date string."""
+    if not value:
+        return None
+
+    try:
+        return datetime.strptime(str(value), "%Y-%m-%d").date()
+    except (TypeError, ValueError):
+        return None
+
+
+def format_iso_date(value: Optional[date]) -> Optional[str]:
+    """Format a Python date as yyyy-mm-dd."""
+    if not value:
+        return None
+    return value.strftime("%Y-%m-%d")
+
+
+def format_display_date(value: Optional[date]) -> str:
+    """Format dates for Player Scoring window metadata."""
+    if not value:
+        return ""
+    return value.strftime("%b %d").replace(" 0", " ")
+
+
+def get_effective_stats_end_date(year: int, settings: Dict) -> Optional[date]:
+    """Return the last date that should be used for stats collection."""
+    season_end = parse_iso_date(settings.get('end_date'))
+    league_current = parse_iso_date(
+        settings.get('raw_settings', {}).get('current_date')
+    ) or date.today()
+
+    if year == CURRENT_SEASON:
+        if season_end:
+            return min(season_end, league_current)
+        return league_current
+
+    return season_end or league_current
+
+
+def clamp_date_range_to_season(
+    start_dt: Optional[date],
+    end_dt: Optional[date],
+    season_start_dt: Optional[date],
+    season_end_dt: Optional[date],
+) -> Tuple[Optional[date], Optional[date]]:
+    """Clamp a date range to the active fantasy season."""
+    if not start_dt or not end_dt:
+        return None, None
+
+    if season_start_dt and start_dt < season_start_dt:
+        start_dt = season_start_dt
+    if season_end_dt and end_dt > season_end_dt:
+        end_dt = season_end_dt
+
+    if start_dt > end_dt:
+        return None, None
+
+    return start_dt, end_dt
+
+
+def get_empty_batter_stats() -> Dict[str, Any]:
+    """Return a zeroed batter stats payload that matches the UI schema."""
+    return {
+        'G': 0,
+        'AB': 0,
+        'PA': 0,
+        'H': 0,
+        '1B': 0,
+        '2B': 0,
+        '3B': 0,
+        'HR': 0,
+        'R': 0,
+        'RBI': 0,
+        'BB': 0,
+        'IBB': 0,
+        'SO': 0,
+        'SB': 0,
+        'CS': 0,
+        'HBP': 0,
+        'AVG': 0.0,
+        'OBP': 0.0,
+        'SLG': 0.0,
+        'OPS': 0.0,
+    }
+
+
+def get_empty_pitcher_stats() -> Dict[str, Any]:
+    """Return a zeroed pitcher stats payload that matches the UI schema."""
+    return {
+        'G': 0,
+        'GS': 0,
+        'W': 0,
+        'L': 0,
+        'SV': 0,
+        'HLD': 0,
+        'QS': 0,
+        'CG': 0,
+        'ShO': 0,
+        'IP': 0.0,
+        'H': 0,
+        'ER': 0,
+        'HR': 0,
+        'BB': 0,
+        'SO': 0,
+        'TBF': 0,
+        'ERA': 0.0,
+        'WHIP': 0.0,
+        'K/9': 0.0,
+        'BB/9': 0.0,
+        'K%': 0.0,
+        'BB%': 0.0,
+    }
+
+
+def get_mlb_headshot_url(mlb_id: Any) -> str:
+    """Build the MLB CDN headshot URL for an MLBAM player id."""
+    numeric_id = safe_int(mlb_id, 0)
+    if numeric_id <= 0:
+        return ''
+
+    return (
+        "https://img.mlbstatic.com/mlb-photos/image/upload/"
+        "d_people:generic:headshot:67:current.png/"
+        f"w_213,q_auto:best/v1/people/{numeric_id}/headshot/67/current"
+    )
+
+
+def iter_dates_inclusive(start_dt: date, end_dt: date):
+    """Yield each date in a closed range."""
+    current_dt = start_dt
+    while current_dt <= end_dt:
+        yield current_dt
+        current_dt += timedelta(days=1)
+
+
+def convert_outs_to_ip_display(outs: int) -> float:
+    """Convert outs to baseball-style IP display (e.g. 19 outs -> 6.1)."""
+    outs = safe_int(outs, 0)
+    whole_innings = outs // 3
+    remainder_outs = outs % 3
+    return round(whole_innings + (remainder_outs / 10), 1)
+
+
+def convert_ip_display_to_decimal_innings(ip_value: Any) -> float:
+    """Convert baseball-style IP display to decimal innings."""
+    innings = safe_float(ip_value, 0.0)
+    whole_innings = int(innings)
+    remainder_outs = int(round((innings - whole_innings) * 10))
+
+    if remainder_outs in (0, 1, 2):
+        return whole_innings + (remainder_outs / 3.0)
+
+    return innings
+
+
+def get_empty_mlb_daily_batter_stats() -> Dict[str, int]:
+    """Return the compact daily batting counts stored in the MLB cache."""
+    return {
+        'G': 0,
+        'AB': 0,
+        'PA': 0,
+        'H': 0,
+        '2B': 0,
+        '3B': 0,
+        'HR': 0,
+        'R': 0,
+        'RBI': 0,
+        'BB': 0,
+        'IBB': 0,
+        'SO': 0,
+        'SB': 0,
+        'CS': 0,
+        'HBP': 0,
+        'SF': 0,
+        'TB': 0,
+    }
+
+
+def get_empty_mlb_daily_pitcher_stats() -> Dict[str, int]:
+    """Return the compact daily pitching counts stored in the MLB cache."""
+    return {
+        'G': 0,
+        'GS': 0,
+        'W': 0,
+        'L': 0,
+        'SV': 0,
+        'HLD': 0,
+        'QS': 0,
+        'CG': 0,
+        'ShO': 0,
+        'OUTS': 0,
+        'H': 0,
+        'ER': 0,
+        'HR': 0,
+        'BB': 0,
+        'SO': 0,
+        'TBF': 0,
+        'PICK': 0,
+        'NH': 0,
+    }
+
+
+def merge_counting_stats(
+    current_stats: Optional[Dict[str, Any]],
+    delta_stats: Optional[Dict[str, Any]],
+) -> Dict[str, Any]:
+    """Add a counting-stat delta into an existing stat line."""
+    merged = dict(current_stats or {})
+    for key, value in (delta_stats or {}).items():
+        if isinstance(value, (int, float)):
+            merged[key] = merged.get(key, 0) + value
+    return merged
+
+
+def fetch_mlb_stats_api_json(endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Fetch a JSON payload from the MLB Stats API."""
+    url = f"{MLB_STATS_API_BASE_URL}{endpoint}"
+    response = requests.get(url, params=params, timeout=30)
+    response.raise_for_status()
+    return response.json()
+
+
+def extract_mlb_daily_batter_stats(player_data: Dict[str, Any]) -> Dict[str, int]:
+    """Normalize a boxscore batting line into the compact cache schema."""
+    batting = (player_data.get('stats') or {}).get('batting') or {}
+    if not isinstance(batting, dict):
+        return {}
+
+    stats = {
+        'G': safe_int(batting.get('gamesPlayed', 0)),
+        'AB': safe_int(batting.get('atBats', 0)),
+        'PA': safe_int(batting.get('plateAppearances', 0)),
+        'H': safe_int(batting.get('hits', 0)),
+        '2B': safe_int(batting.get('doubles', 0)),
+        '3B': safe_int(batting.get('triples', 0)),
+        'HR': safe_int(batting.get('homeRuns', 0)),
+        'R': safe_int(batting.get('runs', 0)),
+        'RBI': safe_int(batting.get('rbi', 0)),
+        'BB': safe_int(batting.get('baseOnBalls', 0)),
+        'IBB': safe_int(batting.get('intentionalWalks', 0)),
+        'SO': safe_int(batting.get('strikeOuts', 0)),
+        'SB': safe_int(batting.get('stolenBases', 0)),
+        'CS': safe_int(batting.get('caughtStealing', 0)),
+        'HBP': safe_int(batting.get('hitByPitch', 0)),
+        'SF': safe_int(batting.get('sacFlies', 0)),
+        'TB': safe_int(batting.get('totalBases', 0)),
+    }
+
+    if stats['PA'] == 0:
+        stats['PA'] = stats['AB'] + stats['BB'] + stats['HBP'] + stats['SF']
+
+    if stats['TB'] == 0 and stats['H'] > 0:
+        singles = stats['H'] - stats['2B'] - stats['3B'] - stats['HR']
+        stats['TB'] = singles + (stats['2B'] * 2) + (stats['3B'] * 3) + (stats['HR'] * 4)
+
+    return stats if any(value != 0 for value in stats.values()) else {}
+
+
+def extract_mlb_daily_pitcher_stats(player_data: Dict[str, Any]) -> Dict[str, int]:
+    """Normalize a boxscore pitching line into the compact cache schema."""
+    pitching = (player_data.get('stats') or {}).get('pitching') or {}
+    if not isinstance(pitching, dict):
+        return {}
+
+    outs_recorded = safe_int(pitching.get('outs', 0))
+    hits_allowed = safe_int(pitching.get('hits', 0))
+    shutouts = safe_int(pitching.get('shutouts', 0))
+
+    stats = {
+        'G': safe_int(pitching.get('gamesPlayed', 0)),
+        'GS': safe_int(pitching.get('gamesStarted', 0)),
+        'W': safe_int(pitching.get('wins', 0)),
+        'L': safe_int(pitching.get('losses', 0)),
+        'SV': safe_int(pitching.get('saves', 0)),
+        'HLD': safe_int(pitching.get('holds', 0)),
+        'CG': safe_int(pitching.get('completeGames', 0)),
+        'ShO': shutouts,
+        'OUTS': outs_recorded,
+        'H': hits_allowed,
+        'ER': safe_int(pitching.get('earnedRuns', 0)),
+        'HR': safe_int(pitching.get('homeRuns', 0)),
+        'BB': safe_int(pitching.get('baseOnBalls', 0)),
+        'SO': safe_int(pitching.get('strikeOuts', 0)),
+        'TBF': safe_int(pitching.get('battersFaced', 0)),
+        'PICK': safe_int(pitching.get('pickoffs', 0) or pitching.get('pickOffs', 0)),
+        'NH': 1 if hits_allowed == 0 and outs_recorded >= 27 and shutouts > 0 else 0,
+    }
+    stats['QS'] = 1 if stats['GS'] > 0 and outs_recorded >= 18 and stats['ER'] <= 3 else 0
+
+    return stats if any(value != 0 for value in stats.values()) else {}
+
+
+def build_empty_current_season_player_daily_cache(year: int) -> Dict[str, Any]:
+    """Create the base cache structure for MLB current-season player stats."""
+    return {
+        'season': year,
+        'updated': datetime.utcnow().isoformat(),
+        'dates': {},
+        'players': {},
+    }
+
+
+def load_current_season_player_daily_cache(year: int) -> Dict[str, Any]:
+    """Load the current-season MLB daily cache if it exists and matches the season."""
+    if not os.path.exists(CURRENT_SEASON_PLAYER_DAILY_STATS_FILE):
+        return build_empty_current_season_player_daily_cache(year)
+
+    try:
+        with open(CURRENT_SEASON_PLAYER_DAILY_STATS_FILE, 'r', encoding='utf-8') as f:
+            cache = json.load(f)
+    except Exception as e:
+        print(f"    ⚠ Could not load MLB daily cache: {e}")
+        return build_empty_current_season_player_daily_cache(year)
+
+    if safe_int(cache.get('season', 0), 0) != year:
+        return build_empty_current_season_player_daily_cache(year)
+
+    cache.setdefault('dates', {})
+    cache.setdefault('players', {})
+    return cache
+
+
+def save_current_season_player_daily_cache(cache: Dict[str, Any]):
+    """Persist the MLB current-season player daily cache."""
+    cache['updated'] = datetime.utcnow().isoformat()
+    os.makedirs(os.path.dirname(CURRENT_SEASON_PLAYER_DAILY_STATS_FILE), exist_ok=True)
+    with open(CURRENT_SEASON_PLAYER_DAILY_STATS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(cache, f, indent=2, ensure_ascii=False)
+
+
+def fetch_mlb_game_pks_for_date(game_date: date) -> List[int]:
+    """Fetch MLB game IDs for a specific date."""
+    payload = fetch_mlb_stats_api_json(
+        "/schedule",
+        params={'sportId': 1, 'date': format_iso_date(game_date)},
+    )
+    dates_payload = payload.get('dates', []) or []
+    if not dates_payload:
+        return []
+
+    return [
+        safe_int(game.get('gamePk'), 0)
+        for game in dates_payload[0].get('games', []) or []
+        if safe_int(game.get('gamePk'), 0) > 0
+    ]
+
+
+def fetch_mlb_boxscore(game_pk: int) -> Dict[str, Any]:
+    """Fetch a single MLB game boxscore."""
+    return fetch_mlb_stats_api_json(f"/game/{game_pk}/boxscore")
+
+
+def fetch_mlb_player_day_stats(game_date: date, cache_players: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    """Fetch all MLB player stat lines for one date from boxscores."""
+    date_key = format_iso_date(game_date)
+    game_pks = fetch_mlb_game_pks_for_date(game_date)
+    day_players: Dict[str, Dict[str, Dict[str, Any]]] = {}
+
+    for game_pk in game_pks:
+        boxscore = fetch_mlb_boxscore(game_pk)
+        teams = boxscore.get('teams', {}) or {}
+
+        for side in ('away', 'home'):
+            team_data = teams.get(side, {}) or {}
+            team_info = team_data.get('team', {}) or {}
+            team_abbr = team_info.get('abbreviation') or team_info.get('teamName') or ''
+            players = team_data.get('players', {}) or {}
+
+            for player_data in players.values():
+                person = player_data.get('person', {}) or {}
+                player_id = safe_int(person.get('id'), 0)
+                if player_id <= 0:
+                    continue
+
+                batting_stats = extract_mlb_daily_batter_stats(player_data)
+                pitching_stats = extract_mlb_daily_pitcher_stats(player_data)
+                if not batting_stats and not pitching_stats:
+                    continue
+
+                player_key = str(player_id)
+                day_entry = day_players.setdefault(player_key, {})
+                if batting_stats:
+                    day_entry['batting'] = merge_counting_stats(
+                        day_entry.get('batting', get_empty_mlb_daily_batter_stats()),
+                        batting_stats,
+                    )
+                if pitching_stats:
+                    day_entry['pitching'] = merge_counting_stats(
+                        day_entry.get('pitching', get_empty_mlb_daily_pitcher_stats()),
+                        pitching_stats,
+                    )
+
+                position_info = (
+                    player_data.get('position')
+                    or player_data.get('primaryPosition')
+                    or {}
+                )
+                cache_meta = cache_players.setdefault(player_key, {})
+                cache_meta['name'] = person.get('fullName') or cache_meta.get('name', '')
+                cache_meta['mlb_team'] = team_abbr or cache_meta.get('mlb_team', '')
+                cache_meta['headshot_url'] = get_mlb_headshot_url(player_id)
+                cache_meta['primary_position'] = (
+                    position_info.get('abbreviation')
+                    or cache_meta.get('primary_position', '')
+                )
+                cache_meta['has_batting_stats'] = (
+                    cache_meta.get('has_batting_stats', False) or bool(batting_stats)
+                )
+                cache_meta['has_pitching_stats'] = (
+                    cache_meta.get('has_pitching_stats', False) or bool(pitching_stats)
+                )
+
+    return {
+        'date': date_key,
+        'game_pks': game_pks,
+        'player_count': len(day_players),
+        'players': day_players,
+    }
+
+
+def refresh_current_season_player_daily_cache(
+    year: int,
+    season_start_dt: date,
+    end_dt: date,
+) -> Dict[str, Any]:
+    """Refresh the current-season MLB player daily cache through the target date."""
+    cache = load_current_season_player_daily_cache(year)
+    cache_players = cache.setdefault('players', {})
+    cache_dates = cache.setdefault('dates', {})
+    cache['season'] = year
+    cache['start_date'] = format_iso_date(season_start_dt)
+    cache['end_date'] = format_iso_date(end_dt)
+
+    cached_dates = [
+        parse_iso_date(date_key)
+        for date_key in cache_dates.keys()
+        if parse_iso_date(date_key)
+    ]
+    if cached_dates:
+        refresh_start = max(
+            season_start_dt,
+            max(cached_dates) - timedelta(days=MLB_DAILY_CACHE_BACKFILL_DAYS - 1),
+        )
+    else:
+        refresh_start = season_start_dt
+
+    if refresh_start > end_dt:
+        refresh_start = end_dt
+
+    for game_date in iter_dates_inclusive(refresh_start, end_dt):
+        date_key = format_iso_date(game_date)
+        print(f"    Refreshing MLB daily stats for {date_key}...")
+        cache_dates[date_key] = fetch_mlb_player_day_stats(game_date, cache_players)
+
+    save_current_season_player_daily_cache(cache)
+    return cache
+
+
+def aggregate_mlb_cache_window_stats(
+    cache: Dict[str, Any],
+    start_dt: date,
+    end_dt: date,
+) -> Dict[str, Dict[str, Dict[str, Any]]]:
+    """Aggregate cached daily MLB stat lines across a requested date window."""
+    aggregated: Dict[str, Dict[str, Dict[str, Any]]] = {}
+
+    for date_key, date_payload in (cache.get('dates') or {}).items():
+        current_dt = parse_iso_date(date_key)
+        if not current_dt or current_dt < start_dt or current_dt > end_dt:
+            continue
+
+        for player_id, day_stats in (date_payload.get('players') or {}).items():
+            player_entry = aggregated.setdefault(player_id, {})
+
+            batting_stats = day_stats.get('batting')
+            if batting_stats:
+                player_entry['batting'] = merge_counting_stats(
+                    player_entry.get('batting', get_empty_mlb_daily_batter_stats()),
+                    batting_stats,
+                )
+
+            pitching_stats = day_stats.get('pitching')
+            if pitching_stats:
+                player_entry['pitching'] = merge_counting_stats(
+                    player_entry.get('pitching', get_empty_mlb_daily_pitcher_stats()),
+                    pitching_stats,
+                )
+
+    return aggregated
+
+
+def finalize_mlb_batter_stats(stats: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert aggregated MLB batting counts into the public UI schema."""
+    finalized = get_empty_batter_stats()
+    for key in ('G', 'AB', 'PA', 'H', '2B', '3B', 'HR', 'R', 'RBI', 'BB', 'IBB', 'SO', 'SB', 'CS', 'HBP'):
+        finalized[key] = safe_int(stats.get(key, 0))
+
+    if finalized['PA'] == 0:
+        finalized['PA'] = (
+            finalized['AB']
+            + finalized['BB']
+            + finalized['HBP']
+            + safe_int(stats.get('SF', 0))
+        )
+
+    finalized['1B'] = max(
+        0,
+        finalized['H'] - finalized['2B'] - finalized['3B'] - finalized['HR'],
+    )
+
+    singles = finalized['1B']
+    total_bases = safe_int(
+        stats.get('TB', 0),
+        singles + (finalized['2B'] * 2) + (finalized['3B'] * 3) + (finalized['HR'] * 4),
+    )
+    sac_flies = safe_int(stats.get('SF', 0))
+
+    if finalized['AB'] > 0:
+        finalized['AVG'] = round(finalized['H'] / finalized['AB'], 3)
+        finalized['SLG'] = round(total_bases / finalized['AB'], 3)
+
+    obp_denominator = finalized['AB'] + finalized['BB'] + finalized['HBP'] + sac_flies
+    if obp_denominator > 0:
+        finalized['OBP'] = round(
+            (finalized['H'] + finalized['BB'] + finalized['HBP']) / obp_denominator,
+            3,
+        )
+
+    finalized['OPS'] = round(finalized['OBP'] + finalized['SLG'], 3)
+    return finalized
+
+
+def finalize_mlb_pitcher_stats(stats: Dict[str, Any]) -> Dict[str, Any]:
+    """Convert aggregated MLB pitching counts into the public UI schema."""
+    finalized = get_empty_pitcher_stats()
+    outs_recorded = safe_int(stats.get('OUTS', 0))
+
+    for key in ('G', 'GS', 'W', 'L', 'SV', 'HLD', 'QS', 'CG', 'ShO', 'H', 'ER', 'HR', 'BB', 'SO', 'TBF'):
+        finalized[key] = safe_int(stats.get(key, 0))
+
+    finalized['OUTS'] = outs_recorded
+    finalized['PICK'] = safe_int(stats.get('PICK', 0))
+    finalized['NH'] = safe_int(stats.get('NH', 0))
+    finalized['IP'] = convert_outs_to_ip_display(outs_recorded)
+
+    if outs_recorded > 0:
+        innings_decimal = outs_recorded / 3.0
+        finalized['ERA'] = round((finalized['ER'] * 9) / innings_decimal, 2)
+        finalized['WHIP'] = round((finalized['H'] + finalized['BB']) / innings_decimal, 2)
+        finalized['K/9'] = round((finalized['SO'] * 9) / innings_decimal, 2)
+        finalized['BB/9'] = round((finalized['BB'] * 9) / innings_decimal, 2)
+
+    if finalized['TBF'] > 0:
+        finalized['K%'] = round((finalized['SO'] / finalized['TBF']) * 100, 1)
+        finalized['BB%'] = round((finalized['BB'] / finalized['TBF']) * 100, 1)
+
+    return finalized
+
+
+def calculate_pitching_fantasy_points_from_outs(stats: Dict, scoring: Dict) -> float:
+    """Calculate pitcher fantasy points using true decimal innings from outs."""
+    innings_pitched = (
+        safe_int(stats.get('OUTS', 0), 0) / 3.0
+        if safe_int(stats.get('OUTS', 0), 0) > 0
+        else convert_ip_display_to_decimal_innings(stats.get('IP', 0))
+    )
+
+    stat_values = {
+        'IP': innings_pitched,
+        'W': safe_float(stats.get('W', 0)),
+        'L': safe_float(stats.get('L', 0)),
+        'SV': safe_float(stats.get('SV', 0)),
+        'HLD': safe_float(stats.get('HLD', 0)),
+        'ER': safe_float(stats.get('ER', 0)),
+        'HA': safe_float(stats.get('H', 0)),
+        'BBA': safe_float(stats.get('BB', 0)),
+        'K': safe_float(stats.get('SO', 0)),
+        'QS': safe_float(stats.get('QS', 0)),
+        'CG': safe_float(stats.get('CG', 0)),
+        'ShO': safe_float(stats.get('ShO', 0)),
+        'PICK': safe_float(stats.get('PICK', 0)),
+        'NH': safe_float(stats.get('NH', 0)),
+    }
+
+    points = 0.0
+    for stat_key, stat_value in stat_values.items():
+        if stat_key in scoring:
+            points += stat_value * scoring[stat_key]
+
+    return round(points, 1)
+
+
+def build_mlb_cache_player_lookup(cache: Dict[str, Any]) -> Dict[str, List[Dict[str, Any]]]:
+    """Index cached MLB players by normalized name for roster matching."""
+    lookup: Dict[str, List[Dict[str, Any]]] = {}
+    for player_id, meta in (cache.get('players') or {}).items():
+        normalized_name = normalize_player_name(meta.get('name', ''))
+        if not normalized_name:
+            continue
+
+        candidate = dict(meta)
+        candidate['player_id'] = str(player_id)
+        lookup.setdefault(normalized_name, []).append(candidate)
+
+    return lookup
+
+
+def get_mlb_cache_candidates_for_name(
+    normalized_name: str,
+    player_lookup: Dict[str, List[Dict[str, Any]]],
+) -> List[Dict[str, Any]]:
+    """Return potential MLB cache matches for a normalized player name."""
+    candidates = list(player_lookup.get(normalized_name, []))
+    if candidates:
+        return candidates
+
+    suffix_pattern = r'\s+(jr\.?|sr\.?|ii|iii|iv)$'
+    normalized_no_suffix = re.sub(suffix_pattern, '', normalized_name, flags=re.IGNORECASE)
+    for candidate_name, entries in player_lookup.items():
+        candidate_no_suffix = re.sub(
+            suffix_pattern,
+            '',
+            candidate_name,
+            flags=re.IGNORECASE,
+        )
+        if candidate_no_suffix == normalized_no_suffix:
+            candidates.extend(entries)
+
+    return candidates
+
+
+def resolve_roster_player_mlb_id(
+    roster_player: Dict[str, Any],
+    supplemental_player: Dict[str, Any],
+    aggregated_stats: Dict[str, Dict[str, Dict[str, Any]]],
+    player_lookup: Dict[str, List[Dict[str, Any]]],
+) -> Optional[str]:
+    """Best-effort match from a Yahoo roster player to an MLB cache player id."""
+    normalized_name = normalize_player_name(roster_player.get('name', ''))
+    if not normalized_name:
+        return None
+
+    candidates = get_mlb_cache_candidates_for_name(normalized_name, player_lookup)
+    if not candidates:
+        return None
+
+    roster_team = supplemental_player.get('mlb_team') or roster_player.get('mlb_team') or ''
+    roster_position_type = roster_player.get('position_type', '')
+
+    def candidate_score(candidate: Dict[str, Any]) -> Tuple[int, int]:
+        player_id = str(candidate.get('player_id', ''))
+        score = 0
+        aggregate = aggregated_stats.get(player_id, {})
+
+        if roster_team and roster_team == candidate.get('mlb_team'):
+            score += 5
+        if roster_position_type == 'B' and candidate.get('has_batting_stats'):
+            score += 3
+        if roster_position_type == 'P' and candidate.get('has_pitching_stats'):
+            score += 3
+        if roster_position_type == 'B' and aggregate.get('batting'):
+            score += 2
+        if roster_position_type == 'P' and aggregate.get('pitching'):
+            score += 2
+
+        return score, safe_int(player_id, 0)
+
+    best_candidate = max(candidates, key=candidate_score)
+    return str(best_candidate.get('player_id', '')) or None
+
+
+def build_current_season_window_players_from_mlb(
+    rosters: Dict[str, List[Dict[str, Any]]],
+    batting_scoring: Dict[str, Any],
+    pitching_scoring: Dict[str, Any],
+    aggregated_stats: Dict[str, Dict[str, Dict[str, Any]]],
+    cache: Dict[str, Any],
+    supplemental_players: Dict[str, Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Build the public player rows for a single current-season window."""
+    player_lookup = build_mlb_cache_player_lookup(cache)
+    cache_players = cache.get('players', {}) or {}
+
+    all_players: List[Dict[str, Any]] = []
+    for roster_players in rosters.values():
+        for original_player in roster_players:
+            player = dict(original_player)
+            supplemental = supplemental_players.get(
+                normalize_player_name(player.get('name', '')),
+                {},
+            )
+            player['stats'] = (
+                get_empty_batter_stats()
+                if player.get('position_type') == 'B'
+                else get_empty_pitcher_stats()
+            )
+            player['fantasy_points'] = 0.0
+            player['headshot_url'] = supplemental.get('headshot_url', '') or player.get('headshot_url', '')
+            player['mlb_team'] = supplemental.get('mlb_team', '') or player.get('mlb_team', '')
+
+            matched_player_id = resolve_roster_player_mlb_id(
+                player,
+                supplemental,
+                aggregated_stats,
+                player_lookup,
+            )
+
+            if matched_player_id:
+                cache_meta = cache_players.get(matched_player_id, {})
+                player['headshot_url'] = (
+                    cache_meta.get('headshot_url')
+                    or player.get('headshot_url', '')
+                )
+                player['mlb_team'] = (
+                    cache_meta.get('mlb_team')
+                    or player.get('mlb_team', '')
+                )
+
+                stats_payload = aggregated_stats.get(matched_player_id, {})
+                if player.get('position_type') == 'B' and stats_payload.get('batting'):
+                    player['stats'] = finalize_mlb_batter_stats(stats_payload['batting'])
+                    player['fantasy_points'] = calculate_batting_fantasy_points(
+                        player['stats'],
+                        batting_scoring,
+                    )
+                elif player.get('position_type') == 'P' and stats_payload.get('pitching'):
+                    player['stats'] = finalize_mlb_pitcher_stats(stats_payload['pitching'])
+                    player['fantasy_points'] = calculate_pitching_fantasy_points_from_outs(
+                        player['stats'],
+                        pitching_scoring,
+                    )
+
+            all_players.append(player)
+
+    all_players.sort(key=lambda x: x.get('fantasy_points', 0), reverse=True)
+    return all_players
+
+
+def build_current_season_player_stats_windows_from_mlb(oauth, year: int) -> Dict[str, Any]:
+    """Build current-season player stat windows from the MLB daily cache."""
+    print(f"\n  Building player stat windows for {year} from MLB API...")
+
+    rosters = get_rosters(oauth, year)
+    settings = get_league_settings(oauth, year)
+
+    batting_scoring = settings.get('batting', DEFAULT_BATTING_SCORING)
+    pitching_scoring = settings.get('pitching', DEFAULT_PITCHING_SCORING)
+    season_start_dt = parse_iso_date(settings.get('start_date'))
+    effective_end_dt = get_effective_stats_end_date(year, settings)
+    raw_settings = settings.get('raw_settings', {}) or {}
+    current_week = safe_int(
+        raw_settings.get('current_week') or raw_settings.get('matchup_week'),
+        0,
+    )
+
+    if not season_start_dt or not effective_end_dt:
+        raise ValueError("Current-season MLB player stats require valid league start/end dates")
+
+    supplemental_players = load_player_roster_fallbacks(current_week or None)
+    daily_cache = refresh_current_season_player_daily_cache(
+        year,
+        season_start_dt,
+        effective_end_dt,
+    )
+
+    current_week_start = None
+    current_week_end = None
+    if current_week:
+        try:
+            league_id = get_league_id_by_name(oauth, year)
+            if league_id:
+                lg = League(oauth, league_id)
+                current_week_start, current_week_end = lg.week_date_range(current_week)
+        except Exception as e:
+            print(f"    ⚠ Could not determine current week date range: {e}")
+
+    payload = {
+        'season': year,
+        'default_window': 'ytd',
+        'current_week': current_week or None,
+        'generated_at': datetime.utcnow().isoformat(),
+        'windows': {},
+    }
+
+    window_configs: List[Dict[str, Any]] = []
+    ytd_start, ytd_end = clamp_date_range_to_season(
+        season_start_dt,
+        effective_end_dt,
+        season_start_dt,
+        effective_end_dt,
+    )
+    if ytd_start and ytd_end:
+        window_configs.append({
+            'key': 'ytd',
+            'label': 'Year to Date',
+            'short_label': 'YTD',
+            'button_label': 'YTD',
+            'start_date': ytd_start,
+            'end_date': ytd_end,
+        })
+
+    if current_week and current_week_start and current_week_end:
+        week_start, week_end = clamp_date_range_to_season(
+            current_week_start,
+            min(current_week_end, effective_end_dt),
+            season_start_dt,
+            effective_end_dt,
+        )
+        if week_start and week_end:
+            window_configs.append({
+                'key': 'current_week',
+                'label': f"Week {current_week}",
+                'short_label': f"Wk {current_week}",
+                'button_label': 'Current Week',
+                'start_date': week_start,
+                'end_date': week_end,
+            })
+
+    for days, definition in zip(
+        [7, 14, 30],
+        [PLAYER_STATS_WINDOW_DEFINITIONS[2], PLAYER_STATS_WINDOW_DEFINITIONS[3], PLAYER_STATS_WINDOW_DEFINITIONS[4]],
+    ):
+        window_start = effective_end_dt - timedelta(days=days - 1)
+        clamped_start, clamped_end = clamp_date_range_to_season(
+            window_start,
+            effective_end_dt,
+            season_start_dt,
+            effective_end_dt,
+        )
+        if not clamped_start or not clamped_end:
+            continue
+        window_configs.append({
+            'key': definition['key'],
+            'label': definition['label'],
+            'short_label': definition['short_label'],
+            'button_label': definition['button_label'],
+            'start_date': clamped_start,
+            'end_date': clamped_end,
+        })
+
+    for window in window_configs:
+        aggregated_stats = aggregate_mlb_cache_window_stats(
+            daily_cache,
+            window['start_date'],
+            window['end_date'],
+        )
+        players = build_current_season_window_players_from_mlb(
+            rosters,
+            batting_scoring,
+            pitching_scoring,
+            aggregated_stats,
+            daily_cache,
+            supplemental_players,
+        )
+
+        payload['windows'][window['key']] = {
+            'label': window['label'],
+            'short_label': window['short_label'],
+            'button_label': window['button_label'],
+            'start_date': format_iso_date(window['start_date']),
+            'end_date': format_iso_date(window['end_date']),
+            'display_range': (
+                f"{format_display_date(window['start_date'])} - "
+                f"{format_display_date(window['end_date'])}"
+            ),
+            'players': players,
+            'player_count': len(players),
+        }
+
+    return payload
+
+
+def extract_batter_stats(player_row: pd.Series) -> Dict[str, Any]:
+    """Normalize Fangraphs batting columns into the site's stats schema."""
+    stats = {
+        'G': safe_int(player_row.get('G', 0)),
+        'AB': safe_int(player_row.get('AB', 0)),
+        'PA': safe_int(player_row.get('PA', 0)),
+        'H': safe_int(player_row.get('H', 0)),
+        '2B': safe_int(player_row.get('2B', 0)),
+        '3B': safe_int(player_row.get('3B', 0)),
+        'HR': safe_int(player_row.get('HR', 0)),
+        'R': safe_int(player_row.get('R', 0)),
+        'RBI': safe_int(player_row.get('RBI', 0)),
+        'BB': safe_int(player_row.get('BB', 0)),
+        'IBB': safe_int(player_row.get('IBB', 0)),
+        'SO': safe_int(player_row.get('SO', 0)),
+        'SB': safe_int(player_row.get('SB', 0)),
+        'CS': safe_int(player_row.get('CS', 0)),
+        'HBP': safe_int(player_row.get('HBP', 0)),
+        'AVG': round(
+            safe_float(player_row.get('BA', 0) or player_row.get('AVG', 0)),
+            3,
+        ),
+        'OBP': round(safe_float(player_row.get('OBP', 0)), 3),
+        'SLG': round(safe_float(player_row.get('SLG', 0)), 3),
+        'OPS': round(safe_float(player_row.get('OPS', 0)), 3),
+    }
+
+    if stats['AVG'] == 0 and stats['AB'] > 0 and stats['H'] > 0:
+        stats['AVG'] = round(stats['H'] / stats['AB'], 3)
+
+    stats['1B'] = stats['H'] - stats['2B'] - stats['3B'] - stats['HR']
+    return stats
+
+
+def extract_pitcher_stats(player_row: pd.Series) -> Dict[str, Any]:
+    """Normalize Fangraphs pitching columns into the site's stats schema."""
+    stats = {
+        'G': safe_int(player_row.get('G', 0)),
+        'GS': safe_int(player_row.get('GS', 0)),
+        'W': safe_int(player_row.get('W', 0)),
+        'L': safe_int(player_row.get('L', 0)),
+        'SV': safe_int(player_row.get('SV', 0)),
+        'HLD': safe_int(player_row.get('HLD', 0)),
+        'QS': safe_int(player_row.get('QS', 0)),
+        'CG': safe_int(player_row.get('CG', 0)),
+        'ShO': safe_int(player_row.get('ShO', 0) or player_row.get('SHO', 0)),
+        'IP': round(safe_float(player_row.get('IP', 0)), 1),
+        'H': safe_int(player_row.get('H', 0)),
+        'ER': safe_int(player_row.get('ER', 0)),
+        'HR': safe_int(player_row.get('HR', 0)),
+        'BB': safe_int(player_row.get('BB', 0)),
+        'SO': safe_int(player_row.get('SO', 0)),
+        'TBF': safe_int(player_row.get('TBF', 0) or player_row.get('BF', 0)),
+        'ERA': round(safe_float(player_row.get('ERA', 0)), 2),
+        'WHIP': round(safe_float(player_row.get('WHIP', 0)), 2),
+        'K/9': round(
+            safe_float(
+                player_row.get('K/9', 0)
+                or player_row.get('K9', 0)
+                or player_row.get('SO9', 0)
+            ),
+            2,
+        ),
+        'BB/9': round(
+            safe_float(player_row.get('BB/9', 0) or player_row.get('BB9', 0)),
+            2,
+        ),
+    }
+
+    if stats['K/9'] == 0 and stats['IP'] > 0 and stats['SO'] > 0:
+        stats['K/9'] = round((stats['SO'] * 9) / stats['IP'], 2)
+    if stats['BB/9'] == 0 and stats['IP'] > 0 and stats['BB'] > 0:
+        stats['BB/9'] = round((stats['BB'] * 9) / stats['IP'], 2)
+
+    if stats['TBF'] > 0:
+        stats['K%'] = round((stats['SO'] / stats['TBF']) * 100, 1)
+        stats['BB%'] = round((stats['BB'] / stats['TBF']) * 100, 1)
+    else:
+        stats['K%'] = 0.0
+        stats['BB%'] = 0.0
+
+    return stats
+
+
+def load_player_roster_fallbacks(current_week: Optional[int]) -> Dict[str, Dict[str, Any]]:
+    """Load Yahoo roster metadata that can supplement Fangraphs player records."""
+    if not current_week:
+        return {}
+
+    roster_file = f"{DATA_DIR}/current_season/week_{current_week}_rosters.json"
+    if not os.path.exists(roster_file):
+        return {}
+
+    try:
+        with open(roster_file, 'r', encoding='utf-8') as f:
+            roster_players = json.load(f)
+    except Exception as e:
+        print(f"    ⚠ Could not load roster fallbacks from {roster_file}: {e}")
+        return {}
+
+    fallback_map: Dict[str, Dict[str, Any]] = {}
+    for player in roster_players:
+        name_key = normalize_player_name(player.get('name', ''))
+        if not name_key:
+            continue
+        fallback_map[name_key] = player
+
+    return fallback_map
+
+
 def build_player_stats(oauth, year: int) -> List[Dict]:
     """Build complete player stats using Fangraphs with league date range and scoring."""
     print(f"\n  Building player stats for {year}...")
-    
-    # Always use Fangraphs with proper league settings
-    return build_player_stats_with_fangraphs(oauth, year)
+
+    if year == CURRENT_SEASON:
+        player_windows = build_current_season_player_stats_windows_from_mlb(oauth, year)
+        return player_windows.get('windows', {}).get('ytd', {}).get('players', [])
+
+    return build_player_stats_with_fangraphs(
+        oauth,
+        year,
+        prefer_season_endpoint=(year == CURRENT_SEASON),
+    )
+
+
+def has_complete_player_stats_payload(player_stats: List[Dict]) -> bool:
+    """Return True when the player stats payload contains usable stat lines.
+
+    We sometimes still have Yahoo roster metadata even when the Fangraphs step
+    fails. In that case the output rows exist, but they do not contain the
+    `stats` and `fantasy_points` payload the Player Scoring page needs.
+    """
+    if not player_stats:
+        return False
+
+    players_with_stats = 0
+    for player in player_stats:
+        stats = player.get('stats')
+        if isinstance(stats, dict) and stats:
+            players_with_stats += 1
+
+    # Historical/current files normally have stats for the large majority of
+    # rostered players. Requiring a reasonable floor avoids overwriting a good
+    # file with a roster-only shell when the upstream stats fetch fails.
+    return players_with_stats >= max(25, int(len(player_stats) * 0.5))
+
+
+def has_complete_player_stats_windows_payload(player_windows: Dict[str, Any]) -> bool:
+    """Return True when the current-season windows payload contains usable YTD stats."""
+    if not isinstance(player_windows, dict):
+        return False
+
+    windows = player_windows.get('windows', {})
+    ytd_players = windows.get('ytd', {}).get('players', [])
+    return has_complete_player_stats_payload(ytd_players)
+
+
+def has_nonzero_player_stats(player_stats: List[Dict[str, Any]]) -> bool:
+    """Return True if at least one player row contains non-zero stat totals."""
+    for player in player_stats or []:
+        stats = player.get('stats')
+        if not isinstance(stats, dict):
+            continue
+
+        for value in stats.values():
+            if isinstance(value, (int, float)) and value != 0:
+                return True
+
+    return False
 
 
 def get_player_headshots(oauth, year: int, player_ids: List[str]) -> Dict[str, str]:
@@ -1672,163 +2728,297 @@ def get_player_headshots(oauth, year: int, player_ids: List[str]) -> Dict[str, s
     return headshots
 
 
-def build_player_stats_with_fangraphs(oauth, year: int) -> List[Dict]:
+def build_player_stats_with_fangraphs(
+    oauth,
+    year: int,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    rosters: Optional[Dict[str, List[Dict[str, Any]]]] = None,
+    settings: Optional[Dict[str, Any]] = None,
+    supplemental_players: Optional[Dict[str, Dict[str, Any]]] = None,
+    override_points_from_supplemental: bool = False,
+    allow_zero_stats_fallback: bool = False,
+    prefer_season_endpoint: bool = False,
+) -> List[Dict]:
     """Build player stats using Fangraphs with league-specific dates and scoring."""
     print(f"\n  Building player stats with Fangraphs for {year}...")
-    
-    # Get rosters from Yahoo
-    print(f"  Step 1: Fetching rosters from Yahoo...")
-    rosters = get_rosters(oauth, year)
-    
-    all_players = []
-    for team_key, players in rosters.items():
-        all_players.extend(players)
-    
+
+    if rosters is None:
+        print(f"  Step 1: Fetching rosters from Yahoo...")
+        rosters = get_rosters(oauth, year)
+    else:
+        print(f"  Step 1: Using cached Yahoo rosters...")
+
+    all_players: List[Dict[str, Any]] = []
+    for players in rosters.values():
+        all_players.extend(dict(player) for player in players)
+
     print(f"    ✓ Got {len(all_players)} rostered players from Yahoo")
-    
-    # Get league settings (scoring + dates)
-    print(f"  Step 2: Fetching league settings (scoring & dates)...")
-    settings = get_league_settings(oauth, year)
+
+    if settings is None:
+        print(f"  Step 2: Fetching league settings (scoring & dates)...")
+        settings = get_league_settings(oauth, year)
+    else:
+        print(f"  Step 2: Using cached league settings...")
+
     batting_scoring = settings.get('batting', DEFAULT_BATTING_SCORING)
     pitching_scoring = settings.get('pitching', DEFAULT_PITCHING_SCORING)
-    start_date = settings.get('start_date')
-    end_date = settings.get('end_date')
-    
-    # Get Fangraphs stats using league date range
-    print(f"  Step 3: Fetching stats from Fangraphs...")
-    batting_df = get_fangraphs_batting_stats(year, start_date, end_date)
-    pitching_df = get_fangraphs_pitching_stats(year, start_date, end_date)
-    
-    if batting_df.empty and pitching_df.empty:
+    if not start_date:
+        start_date = settings.get('start_date')
+    if not end_date:
+        effective_end = get_effective_stats_end_date(year, settings)
+        end_date = format_iso_date(effective_end)
+
+    if prefer_season_endpoint:
+        print(f"  Step 3: Fetching season-to-date stats from Fangraphs ({year})...")
+        batting_df = get_fangraphs_batting_stats(year)
+        pitching_df = get_fangraphs_pitching_stats(year)
+    else:
+        print(f"  Step 3: Fetching stats from Fangraphs ({start_date} to {end_date})...")
+        batting_df = get_fangraphs_batting_stats(year, start_date, end_date)
+        pitching_df = get_fangraphs_pitching_stats(year, start_date, end_date)
+
+    if batting_df.empty and pitching_df.empty and not allow_zero_stats_fallback:
         print("  ⚠ No Fangraphs data available, returning roster-only data")
         return all_players
-    
+
     batting_names = batting_df['Name'].tolist() if not batting_df.empty else []
     pitching_names = pitching_df['Name'].tolist() if not pitching_df.empty else []
-    
-    # Match players and add stats (headshots from MLB using mlbID)
+    batting_rows = {
+        name: batting_df[batting_df['Name'] == name].iloc[0]
+        for name in batting_names
+    } if not batting_df.empty else {}
+    pitching_rows = {
+        name: pitching_df[pitching_df['Name'] == name].iloc[0]
+        for name in pitching_names
+    } if not pitching_df.empty else {}
+
     print(f"  Step 4: Matching players and calculating fantasy points...")
     matched_count = 0
     unmatched_players = []
-    
+    supplemental_players = supplemental_players or {}
+
     for player in all_players:
         player_name = player.get('name', '')
         position_type = player.get('position_type', '')
-        
-        player['stats'] = {}
-        player['fantasy_points'] = 0
-        player['headshot_url'] = ''
-        player['mlb_team'] = ''
-        
+        supplemental = supplemental_players.get(normalize_player_name(player_name), {})
+
+        player['stats'] = (
+            get_empty_batter_stats()
+            if position_type == 'B'
+            else get_empty_pitcher_stats()
+        )
+        player['fantasy_points'] = round(
+            safe_float(supplemental.get('fantasy_points', 0.0)), 1
+        ) if override_points_from_supplemental else 0.0
+        player['headshot_url'] = supplemental.get('headshot_url', '')
+        player['mlb_team'] = supplemental.get('mlb_team', '')
+
         if position_type == 'B':
             fg_name = match_player_name(player_name, batting_names)
-            if fg_name and not batting_df.empty:
-                player_row = batting_df[batting_df['Name'] == fg_name].iloc[0]
-                
-                # Get MLB ID for headshot
-                if 'mlbID' in player_row.index:
-                    mlb_id = player_row.get('mlbID')
-                    if mlb_id and not pd.isna(mlb_id):
-                        player['headshot_url'] = f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/{int(mlb_id)}/headshot/67/current"
-                
-                stats = {
-                    'G': safe_int(player_row.get('G', 0)),
-                    'AB': safe_int(player_row.get('AB', 0)),
-                    'PA': safe_int(player_row.get('PA', 0)),
-                    'H': safe_int(player_row.get('H', 0)),
-                    '2B': safe_int(player_row.get('2B', 0)),
-                    '3B': safe_int(player_row.get('3B', 0)),
-                    'HR': safe_int(player_row.get('HR', 0)),
-                    'R': safe_int(player_row.get('R', 0)),
-                    'RBI': safe_int(player_row.get('RBI', 0)),
-                    'BB': safe_int(player_row.get('BB', 0)),
-                    'SO': safe_int(player_row.get('SO', 0)),
-                    'SB': safe_int(player_row.get('SB', 0)),
-                    'CS': safe_int(player_row.get('CS', 0)),
-                    'HBP': safe_int(player_row.get('HBP', 0)),
-                    # Fangraphs uses 'BA' for batting average, not 'AVG'
-                    'AVG': round(safe_float(player_row.get('BA', 0) or player_row.get('AVG', 0)), 3),
-                    'OBP': round(safe_float(player_row.get('OBP', 0)), 3),
-                    'SLG': round(safe_float(player_row.get('SLG', 0)), 3),
-                    'OPS': round(safe_float(player_row.get('OPS', 0)), 3),
-                }
-                
-                # Calculate AVG if not available but we have H and AB
-                if stats['AVG'] == 0 and stats['AB'] > 0 and stats['H'] > 0:
-                    stats['AVG'] = round(stats['H'] / stats['AB'], 3)
-                
-                stats['1B'] = stats['H'] - stats['2B'] - stats['3B'] - stats['HR']
-                
+            if fg_name and fg_name in batting_rows:
+                player_row = batting_rows[fg_name]
+                stats = extract_batter_stats(player_row)
+
                 player['stats'] = stats
-                player['fantasy_points'] = calculate_batting_fantasy_points(stats, batting_scoring)
-                player['mlb_team'] = player_row.get('Team', '') or player_row.get('Tm', '')
+                if not override_points_from_supplemental:
+                    player['fantasy_points'] = calculate_batting_fantasy_points(
+                        stats,
+                        batting_scoring,
+                    )
+                player['headshot_url'] = (
+                    get_mlb_headshot_url(player_row.get('mlbID'))
+                    or player.get('headshot_url', '')
+                )
+                player['mlb_team'] = (
+                    player_row.get('Team', '')
+                    or player_row.get('Tm', '')
+                    or player.get('mlb_team', '')
+                )
                 matched_count += 1
             else:
                 unmatched_players.append(f"{player_name} (B)")
-                
+
         elif position_type == 'P':
             fg_name = match_player_name(player_name, pitching_names)
-            if fg_name and not pitching_df.empty:
-                player_row = pitching_df[pitching_df['Name'] == fg_name].iloc[0]
-                
-                # Get MLB ID for headshot
-                if 'mlbID' in player_row.index:
-                    mlb_id = player_row.get('mlbID')
-                    if mlb_id and not pd.isna(mlb_id):
-                        player['headshot_url'] = f"https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/{int(mlb_id)}/headshot/67/current"
-                
-                stats = {
-                    'G': safe_int(player_row.get('G', 0)),
-                    'GS': safe_int(player_row.get('GS', 0)),
-                    'W': safe_int(player_row.get('W', 0)),
-                    'L': safe_int(player_row.get('L', 0)),
-                    'SV': safe_int(player_row.get('SV', 0)),
-                    'HLD': safe_int(player_row.get('HLD', 0)) if 'HLD' in player_row else 0,
-                    'IP': round(safe_float(player_row.get('IP', 0)), 1),
-                    'H': safe_int(player_row.get('H', 0)),
-                    'ER': safe_int(player_row.get('ER', 0)),
-                    'HR': safe_int(player_row.get('HR', 0)),
-                    'BB': safe_int(player_row.get('BB', 0)),
-                    'SO': safe_int(player_row.get('SO', 0)),
-                    # TBF = Total Batters Faced (Fangraphs uses 'TBF' or 'BF')
-                    'TBF': safe_int(player_row.get('TBF', 0) or player_row.get('BF', 0)),
-                    'ERA': round(safe_float(player_row.get('ERA', 0)), 2),
-                    'WHIP': round(safe_float(player_row.get('WHIP', 0)), 2),
-                    # Try multiple possible column names for K/9 and BB/9
-                    'K/9': round(safe_float(player_row.get('K/9', 0) or player_row.get('K9', 0) or player_row.get('SO9', 0)), 2),
-                    'BB/9': round(safe_float(player_row.get('BB/9', 0) or player_row.get('BB9', 0)), 2),
-                }
-                
-                # Calculate K/9 and BB/9 if not available but we have IP and SO/BB
-                if stats['K/9'] == 0 and stats['IP'] > 0 and stats['SO'] > 0:
-                    stats['K/9'] = round((stats['SO'] * 9) / stats['IP'], 2)
-                if stats['BB/9'] == 0 and stats['IP'] > 0 and stats['BB'] > 0:
-                    stats['BB/9'] = round((stats['BB'] * 9) / stats['IP'], 2)
-                
-                # Calculate K% and BB% if we have TBF
-                if stats['TBF'] > 0:
-                    stats['K%'] = round((stats['SO'] / stats['TBF']) * 100, 1)
-                    stats['BB%'] = round((stats['BB'] / stats['TBF']) * 100, 1)
-                else:
-                    stats['K%'] = 0.0
-                    stats['BB%'] = 0.0
-                
+            if fg_name and fg_name in pitching_rows:
+                player_row = pitching_rows[fg_name]
+                stats = extract_pitcher_stats(player_row)
+
                 player['stats'] = stats
-                player['fantasy_points'] = calculate_pitching_fantasy_points(stats, pitching_scoring)
-                player['mlb_team'] = player_row.get('Team', '') or player_row.get('Tm', '')
+                if not override_points_from_supplemental:
+                    player['fantasy_points'] = calculate_pitching_fantasy_points(
+                        stats,
+                        pitching_scoring,
+                    )
+                player['headshot_url'] = (
+                    get_mlb_headshot_url(player_row.get('mlbID'))
+                    or player.get('headshot_url', '')
+                )
+                player['mlb_team'] = (
+                    player_row.get('Team', '')
+                    or player_row.get('Tm', '')
+                    or player.get('mlb_team', '')
+                )
                 matched_count += 1
             else:
                 unmatched_players.append(f"{player_name} (P)")
-    
+
     print(f"    ✓ Matched {matched_count}/{len(all_players)} players")
-    
+
     if unmatched_players and len(unmatched_players) <= 20:
         print(f"    Unmatched: {', '.join(unmatched_players)}")
     elif unmatched_players:
         print(f"    {len(unmatched_players)} unmatched players")
-    
+
     all_players.sort(key=lambda x: x.get('fantasy_points', 0), reverse=True)
     return all_players
+
+
+def build_player_stats_windows(oauth, year: int) -> Dict[str, Any]:
+    """Build current-season player stats windows for the Player Scoring page."""
+    print(f"\n  Building player stat windows for {year}...")
+
+    if year == CURRENT_SEASON:
+        return build_current_season_player_stats_windows_from_mlb(oauth, year)
+
+    rosters = get_rosters(oauth, year)
+    settings = get_league_settings(oauth, year)
+
+    season_start_dt = parse_iso_date(settings.get('start_date'))
+    effective_end_dt = get_effective_stats_end_date(year, settings)
+    raw_settings = settings.get('raw_settings', {}) or {}
+    current_week = safe_int(
+        raw_settings.get('current_week') or raw_settings.get('matchup_week'),
+        0,
+    )
+
+    supplemental_players = load_player_roster_fallbacks(current_week or None)
+
+    current_week_start = None
+    current_week_end = None
+    if current_week:
+        try:
+            league_id = get_league_id_by_name(oauth, year)
+            if league_id:
+                lg = League(oauth, league_id)
+                current_week_start, current_week_end = lg.week_date_range(current_week)
+        except Exception as e:
+            print(f"    ⚠ Could not determine current week date range: {e}")
+
+    payload = {
+        'season': year,
+        'default_window': 'ytd',
+        'current_week': current_week or None,
+        'generated_at': datetime.utcnow().isoformat(),
+        'windows': {},
+    }
+
+    window_configs: List[Dict[str, Any]] = []
+
+    ytd_start, ytd_end = clamp_date_range_to_season(
+        season_start_dt,
+        effective_end_dt,
+        season_start_dt,
+        effective_end_dt,
+    )
+    if ytd_start and ytd_end:
+        window_configs.append({
+            'key': 'ytd',
+            'label': 'Year to Date',
+            'short_label': 'YTD',
+            'button_label': 'YTD',
+            'start_date': ytd_start,
+            'end_date': ytd_end,
+            'override_points': False,
+            'allow_zero_fallback': False,
+            'prefer_season_endpoint': year == CURRENT_SEASON,
+        })
+
+    if current_week and current_week_start and current_week_end:
+        week_start, week_end = clamp_date_range_to_season(
+            current_week_start,
+            min(current_week_end, effective_end_dt)
+            if effective_end_dt
+            else current_week_end,
+            season_start_dt,
+            effective_end_dt,
+        )
+        if week_start and week_end:
+            window_configs.append({
+                'key': 'current_week',
+                'label': f"Week {current_week}",
+                'short_label': f"Wk {current_week}",
+                'button_label': 'Current Week',
+                'start_date': week_start,
+                'end_date': week_end,
+                'override_points': True,
+                'allow_zero_fallback': True,
+                'prefer_season_endpoint': False,
+            })
+
+    if effective_end_dt:
+        for days, definition in zip(
+            [7, 14, 30],
+            [PLAYER_STATS_WINDOW_DEFINITIONS[2], PLAYER_STATS_WINDOW_DEFINITIONS[3], PLAYER_STATS_WINDOW_DEFINITIONS[4]],
+        ):
+            window_start = effective_end_dt - timedelta(days=days - 1)
+            clamped_start, clamped_end = clamp_date_range_to_season(
+                window_start,
+                effective_end_dt,
+                season_start_dt,
+                effective_end_dt,
+            )
+            if not clamped_start or not clamped_end:
+                continue
+            window_configs.append({
+                'key': definition['key'],
+                'label': definition['label'],
+                'short_label': definition['short_label'],
+                'button_label': definition['button_label'],
+                'start_date': clamped_start,
+                'end_date': clamped_end,
+                'override_points': False,
+                'allow_zero_fallback': True,
+                'prefer_season_endpoint': False,
+            })
+
+    for window in window_configs:
+        players = build_player_stats_with_fangraphs(
+            oauth,
+            year,
+            start_date=format_iso_date(window['start_date']),
+            end_date=format_iso_date(window['end_date']),
+            rosters=rosters,
+            settings=settings,
+            supplemental_players=supplemental_players,
+            override_points_from_supplemental=window['override_points'],
+            allow_zero_stats_fallback=window['allow_zero_fallback'],
+            prefer_season_endpoint=window.get('prefer_season_endpoint', False),
+        )
+
+        if window['key'] != 'ytd' and not has_nonzero_player_stats(players):
+            print(
+                f"    ⚠ Skipping {window['key']} window because no live stats "
+                "were available yet"
+            )
+            continue
+
+        payload['windows'][window['key']] = {
+            'label': window['label'],
+            'short_label': window['short_label'],
+            'button_label': window['button_label'],
+            'start_date': format_iso_date(window['start_date']),
+            'end_date': format_iso_date(window['end_date']),
+            'display_range': (
+                f"{format_display_date(window['start_date'])} - "
+                f"{format_display_date(window['end_date'])}"
+            ),
+            'players': players,
+            'player_count': len(players),
+        }
+
+    return payload
 
 # =============================================================================
 # MANAGER STATS FUNCTIONS
@@ -2105,10 +3295,20 @@ def collect_current_season_player_data(oauth):
     os.makedirs(current_season_dir, exist_ok=True)
     
     try:
-        player_stats = build_player_stats(oauth, CURRENT_SEASON)
-        with open(f"{current_season_dir}/player_stats.json", 'w', encoding='utf-8') as f:
-            json.dump(player_stats, f, indent=2, ensure_ascii=False)
-        print(f"  ✓ Player stats saved ({len(player_stats)} players)")
+        player_windows = build_player_stats_windows(oauth, CURRENT_SEASON)
+        ytd_players = player_windows.get('windows', {}).get('ytd', {}).get('players', [])
+
+        if has_complete_player_stats_windows_payload(player_windows):
+            with open(f"{current_season_dir}/player_stats.json", 'w', encoding='utf-8') as f:
+                json.dump(ytd_players, f, indent=2, ensure_ascii=False)
+            with open(f"{current_season_dir}/player_stats_windows.json", 'w', encoding='utf-8') as f:
+                json.dump(player_windows, f, indent=2, ensure_ascii=False)
+            print(
+                f"  ✓ Player stats saved ({len(ytd_players)} YTD players, "
+                f"{len(player_windows.get('windows', {}))} windows)"
+            )
+        else:
+            print("  ⚠ Player stats payload was incomplete; keeping existing player_stats.json")
     except Exception as e:
         print(f"  ⚠ Could not collect player stats: {e}")
         import traceback
@@ -2776,13 +3976,20 @@ def quick_update():
     # 6. Update player stats (for trade analyzer actual points)
     print("Updating player stats...")
     try:
-        player_stats = build_player_stats(oauth, CURRENT_SEASON)
-        if player_stats:
+        player_windows = build_player_stats_windows(oauth, CURRENT_SEASON)
+        ytd_players = player_windows.get('windows', {}).get('ytd', {}).get('players', [])
+
+        if has_complete_player_stats_windows_payload(player_windows):
             with open(f"{current_season_dir}/player_stats.json", 'w', encoding='utf-8') as f:
-                json.dump(player_stats, f, indent=2, ensure_ascii=False)
-            print(f"  ✓ player_stats.json updated ({len(player_stats)} players)")
+                json.dump(ytd_players, f, indent=2, ensure_ascii=False)
+            with open(f"{current_season_dir}/player_stats_windows.json", 'w', encoding='utf-8') as f:
+                json.dump(player_windows, f, indent=2, ensure_ascii=False)
+            print(
+                f"  ✓ player_stats.json updated ({len(ytd_players)} players, "
+                f"{len(player_windows.get('windows', {}))} windows)"
+            )
         else:
-            print("  ⚠ No player stats returned")
+            print("  ⚠ Player stats were incomplete; existing player_stats files were not overwritten")
     except Exception as e:
         print(f"  ⚠ Could not update player stats: {e}")
 
