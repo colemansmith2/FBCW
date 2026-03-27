@@ -8384,7 +8384,8 @@
         padding: 0.5rem;
       }
       .player-chart-title {
-        font-size: 0.85rem;
+        font-family: 'Arcade Gamer', 'Basis33', monospace;
+        font-size: 0.55rem;
         font-weight: bold;
         color: var(--retro-blue);
         text-align: center;
@@ -28100,7 +28101,8 @@
                 const pName = (p.name || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 return pName === playerKey;
               });
-              if (match && match.fantasy_points) rosPoints.push(match.fantasy_points);
+              const pts = match && (match.projected_points || match.fantasy_points);
+              if (pts) rosPoints.push(pts);
             } catch(e) {}
           }
 
@@ -28121,7 +28123,8 @@
                   const pName = (p.name || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                   return pName === playerKey;
                 });
-                if (match && match.fantasy_points) prePoints.push(match.fantasy_points);
+                const pts = match && (match.projected_points || match.fantasy_points);
+                if (pts) prePoints.push(pts);
               } catch(e) {}
             }
             if (prePoints.length > 0) {
@@ -28316,7 +28319,7 @@
               if (!bar) return;
               const realVal = realValues[i];
               drawCtx.save();
-              drawCtx.font = "bold 9px sans-serif";
+              drawCtx.font = "bold 9px 'Basis33', monospace";
               drawCtx.textAlign = "center";
               drawCtx.textBaseline = "bottom";
               if (info.type === "covid") drawCtx.fillStyle = covidColor;
@@ -28377,6 +28380,8 @@
             plugins: {
               legend: { display: false },
               tooltip: {
+                titleFont: { family: "'Basis33', monospace" },
+                bodyFont: { family: "'Basis33', monospace" },
                 callbacks: {
                   title: ctx2 => ctx2[0].label,
                   label: function(context) {
@@ -28406,7 +28411,7 @@
                 ticks: {
                   maxRotation: 45,
                   minRotation: 45,
-                  font: { size: 9, weight: "bold" },
+                  font: { family: "'Basis33', monospace", size: 9, weight: "bold" },
                   padding: 0,
                   labelOffset: 4,
                   color: function(context) { return labelColors[context.index] || historicalColor; }
@@ -28422,8 +28427,8 @@
                   for (let v = 200; v <= scale.max; v += 50) ticks.push({ value: v });
                   scale.ticks = ticks;
                 },
-                ticks: { font: { size: 9 } },
-                title: { display: true, text: "Fantasy Points", font: { size: 9 } }
+                ticks: { font: { family: "'Basis33', monospace", size: 9 } },
+                title: { display: true, text: "Fantasy Points", font: { family: "'Basis33', monospace", size: 9 } }
               }
             }
           },
@@ -28455,11 +28460,11 @@
           return;
         }
 
-        // Position badge color mapping
+        // Position badge colors — must match CSS variables --pos-*-dark
         const posColors = {
-          'C': '#e74c3c', '1B': '#e67e22', '2B': '#f1c40f', '3B': '#e74c3c',
-          'SS': '#9b59b6', 'OF': '#2ecc71', 'SP': '#3498db', 'RP': '#8e44ad',
-          'P': '#3498db', 'DH': '#e67e22', 'Util': '#95a5a6'
+          'C': '#4a148c', '1B': '#1565c0', '2B': '#e65100', '3B': '#b71c1c',
+          'SS': '#9c7c00', 'OF': '#2e7d32', 'SP': '#7e57c2', 'RP': '#00838f',
+          'P': '#7e57c2', 'DH': '#6d4c41', 'Util': '#6d4c41'
         };
 
         const primaryPos = player.primary_position || 'Util';
@@ -28569,12 +28574,14 @@
                 display: true,
                 position: 'bottom',
                 labels: {
-                  font: { size: 9 },
+                  font: { family: "'Basis33', monospace", size: 9 },
                   boxWidth: 10,
                   padding: 8
                 }
               },
               tooltip: {
+                titleFont: { family: "'Basis33', monospace" },
+                bodyFont: { family: "'Basis33', monospace" },
                 callbacks: {
                   label: function(context) {
                     return `${context.dataset.label}: ${context.raw.toFixed(0)}th percentile`;
@@ -28588,14 +28595,14 @@
                 max: 100,
                 ticks: {
                   stepSize: 25,
-                  font: { size: 9 },
+                  font: { family: "'Basis33', monospace", size: 9 },
                   callback: val => val + '%'
                 },
-                title: { display: true, text: 'Percentile', font: { size: 9 } }
+                title: { display: true, text: 'Percentile', font: { family: "'Basis33', monospace", size: 9 } }
               },
               x: {
                 ticks: {
-                  font: { size: 9, weight: 'bold' }
+                  font: { family: "'Basis33', monospace", size: 9, weight: 'bold' }
                 }
               }
             }
