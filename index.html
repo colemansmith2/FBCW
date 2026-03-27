@@ -8502,32 +8502,44 @@
         font-size: 0.65rem;
         color: #666;
       }
-      .trans-entry.trans-type-add {
-        background: #e8f5e9;
+      .trans-entry.trans-type-add,
+      .trans-entry.trans-type-drop,
+      .trans-entry.trans-type-add-drop {
+        background: transparent;
       }
-      .trans-entry.trans-type-drop {
-        background: #ffebee;
+      .trans-entry.trans-type-draft {
+        background: #f0f0f0;
       }
       .trans-entry.trans-type-trade {
         background: #f5f5f5;
       }
       .trans-entry.trans-type-add-drop .trans-add-part {
-        background: #e8f5e9;
-        padding: 2px 0.4rem;
-        border-radius: 3px;
+        padding: 2px 0;
         margin-bottom: 2px;
       }
       .trans-entry.trans-type-add-drop .trans-drop-part {
-        background: #ffebee;
-        padding: 2px 0.4rem;
-        border-radius: 3px;
+        padding: 2px 0;
+      }
+      .trans-add-drop-symbol {
+        font-size: 1.1rem;
+        font-weight: 900;
+        flex-shrink: 0;
+        line-height: 1;
+        width: 14px;
+        text-align: center;
+      }
+      .trans-add-drop-symbol.add-symbol {
+        color: #2e7d32;
+      }
+      .trans-add-drop-symbol.drop-symbol {
+        color: #c62828;
       }
       .trans-player-headshot {
         width: 24px;
         height: 24px;
         border-radius: 50%;
         object-fit: cover;
-        object-position: center top;
+        object-position: center 15%;
         flex-shrink: 0;
         background: #e8e8e8;
       }
@@ -27204,14 +27216,24 @@
         return { mlbTeam, primaryPos };
       }
 
+      function _renderPosBadges(posStr) {
+        if (!posStr) return "";
+        // Split "3B,Util" or "SP,RP" into individual badges
+        return posStr.split(/[,\/]/).map(p => p.trim()).filter(Boolean)
+          .map(p => `<span class="position-badge pos-${p}" style="font-size:0.5rem;padding:1px 3px;">${p}</span>`)
+          .join("");
+      }
+
       function _renderTransPlayerLine(playerName, headshot, actionSymbol) {
         const hsSrc = headshot || _transPlaceholderHs;
         const info = _lookupTransPlayerInfo(playerName);
         const mlbLogo = info.mlbTeam ? getMLBTeamLogo(info.mlbTeam) : "";
-        const mlbInfoHtml = info.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${info.mlbTeam}</span>${info.primaryPos ? `<span class="position-badge pos-${info.primaryPos}" style="font-size:0.5rem;padding:1px 3px;margin-left:2px;">${info.primaryPos}</span>` : ""}</div>` : "";
+        const posBadges = _renderPosBadges(info.primaryPos);
+        const mlbInfoHtml = info.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${info.mlbTeam}</span>${posBadges}</div>` : (posBadges ? `<div class="trans-player-mlb-info">${posBadges}</div>` : "");
+        const symbolClass = actionSymbol === "+" ? "add-symbol" : "drop-symbol";
         return `<div class="trans-main-row" style="align-items:flex-start;">
+            <span class="trans-add-drop-symbol ${symbolClass}">${actionSymbol}</span>
             <img src="${hsSrc}" class="trans-player-headshot" alt="" onerror="this.src='${_transPlaceholderHs}'">
-            <span class="trans-action">${actionSymbol}</span>
             <div class="trans-player-info-col"><span class="trans-player-name">${playerName}</span>${mlbInfoHtml}</div>
         </div>`;
       }
@@ -27308,11 +27330,12 @@
         };
 
         (txn.players || []).forEach((p) => {
+          // Group by DESTINATION team (what each team acquired)
           const side = ensureSide(
-            p.source_team_key || p.source_team_name,
-            p.source_team_name,
-            p.sourceLogo,
-            p.sourceManager,
+            p.destination_team_key || p.destination_team_name || p.source_team_key || p.source_team_name,
+            p.destination_team_name || p.source_team_name,
+            p.destLogo || p.sourceLogo,
+            p.destManager || p.sourceManager,
           );
           const playerKey = `${p.player_id || ""}:${p.player_name || ""}`;
           if (!side.seenPlayers.has(playerKey)) {
@@ -27346,11 +27369,12 @@
         });
 
         (txn.draftPicks || []).forEach((pick) => {
+          // Group by DESTINATION team (what each team acquired)
           const side = ensureSide(
-            pick.source_team_key || pick.source_team_name,
-            pick.source_team_name,
-            pick.sourceLogo,
-            pick.sourceManager,
+            pick.destination_team_key || pick.destination_team_name || pick.source_team_key || pick.source_team_name,
+            pick.destination_team_name || pick.source_team_name,
+            pick.destLogo || pick.sourceLogo,
+            pick.destManager || pick.sourceManager,
           );
           const pickLabel = formatTradePickLabel(pick);
           const pickKey = `${pickLabel}:${pick.round || ""}:${pick.source_team_key || ""}:${pick.destination_team_key || ""}`;
@@ -27377,7 +27401,8 @@
               const hsSrc = p.headshot || _transPlaceholderHs;
               const hsHtml = `<img src="${hsSrc}" class="trans-player-headshot" alt="" onerror="this.src='${_transPlaceholderHs}'">`;
               const mlbLogo = p.mlbTeam ? getMLBTeamLogo(p.mlbTeam) : "";
-              const mlbInfoHtml = p.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${p.mlbTeam}</span>${p.primaryPos ? `<span class="position-badge pos-${p.primaryPos}" style="font-size:0.5rem;padding:1px 3px;margin-left:2px;">${p.primaryPos}</span>` : ""}</div>` : "";
+              const posBadges = _renderPosBadges(p.primaryPos);
+              const mlbInfoHtml = p.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${p.mlbTeam}</span>${posBadges}</div>` : (posBadges ? `<div class="trans-player-mlb-info">${posBadges}</div>` : "");
               return `<div class="trans-trade-player">${hsHtml}<div class="trans-player-info-col"><span class="trans-player-name">${p.name}</span>${mlbInfoHtml}</div></div>`;
             })
             .join("");
