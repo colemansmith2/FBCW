@@ -3572,9 +3572,12 @@ def collect_daily_scores(oauth, year: int, lg):
         week_data = existing["weeks"][week_key]
         teams = lg.teams()
         today = date.today()
+        yesterday = today - timedelta(days=1)
+        today_str = today.strftime("%Y-%m-%d")
+        yesterday_str = yesterday.strftime("%Y-%m-%d")
 
         # Only fetch days that have already passed (or are today)
-        days_to_fetch = [d for d in days if d["date"] <= today.strftime("%Y-%m-%d")]
+        days_to_fetch = [d for d in days if d["date"] <= today_str]
 
         if not days_to_fetch:
             print("  No days to fetch yet (week hasn't started)")
@@ -3592,10 +3595,12 @@ def collect_daily_scores(oauth, year: int, lg):
             for day_info in days_to_fetch:
                 day_str = day_info["date"]
 
-                # Skip if we already have this day's score (unless it's today - re-fetch today)
-                # Also re-fetch days with exactly 0 score, as they may be from failed API calls
+                # Skip if we already have this day's score, UNLESS:
+                # - It's today (scores still updating)
+                # - It's yesterday (late games may not have been finalized on prior run)
+                # - The score is 0 (may be from a failed API call)
                 existing_score = week_data["team_scores"][team_key].get(day_str)
-                if existing_score is not None and existing_score != 0 and day_str != today.strftime("%Y-%m-%d"):
+                if existing_score is not None and existing_score != 0 and day_str != today_str and day_str != yesterday_str:
                     continue
 
                 try:
