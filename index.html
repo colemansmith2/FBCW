@@ -15844,32 +15844,6 @@
         background: rgba(244, 67, 54, 0.2) !important;
       }
 
-      .mobile-user-dropdown {
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 8px;
-        margin: 0 0.5rem 0.5rem 0.5rem;
-        overflow: hidden;
-      }
-
-      .mobile-user-dropdown-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
-        cursor: pointer;
-        color: white;
-        font-size: 0.95rem;
-        transition: background 0.15s ease;
-      }
-
-      .mobile-user-dropdown-item:hover {
-        background: rgba(255, 255, 255, 0.1);
-      }
-
-      .mobile-user-dropdown-logout:hover {
-        background: rgba(244, 67, 54, 0.25) !important;
-      }
-
       .auth-modal-overlay {
         display: none;
         position: fixed;
@@ -20972,27 +20946,13 @@
           id="auth-mobile-user"
           class="mobile-menu-item auth-user-chip-mobile"
           style="display: none"
-          onclick="toggleMobileUserMenu()"
+          onclick="
+            logoutSession();
+            closeMobileMenu();
+          "
         >
-          <img src="data/page_logos/login_logo.png" alt="User Menu" />
-          <span id="auth-mobile-name">Account</span>
-        </div>
-        <!-- Mobile User Dropdown -->
-        <div id="auth-mobile-user-menu" class="mobile-user-dropdown" style="display: none;">
-          <div
-            class="mobile-user-dropdown-item"
-            onclick="showSection('opt-in'); closeMobileMenu(); closeMobileUserMenu();"
-          >
-            <span>💬</span>
-            <span>SMS Opt-In</span>
-          </div>
-          <div
-            class="mobile-user-dropdown-item mobile-user-dropdown-logout"
-            onclick="logoutSession(); closeMobileMenu(); closeMobileUserMenu();"
-          >
-            <span>🚪</span>
-            <span>Logout</span>
-          </div>
+          <img src="data/page_logos/login_logo.png" alt="Logout" />
+          <span id="auth-mobile-name">Logout</span>
         </div>
         <div
           class="mobile-menu-item"
@@ -34829,19 +34789,6 @@
 
         // Restore scroll position
         window.scrollTo(0, mobileMenuScrollPosition);
-
-        // Also close user dropdown if open
-        closeMobileUserMenu();
-      }
-
-      function toggleMobileUserMenu() {
-        const menu = document.getElementById("auth-mobile-user-menu");
-        menu.style.display = menu.style.display === "none" ? "block" : "none";
-      }
-
-      function closeMobileUserMenu() {
-        const menu = document.getElementById("auth-mobile-user-menu");
-        if (menu) menu.style.display = "none";
       }
 
       function updateMobileMenuActiveState() {
@@ -54193,10 +54140,10 @@
           console.log("Could not load week rosters for top players:", e);
         }
 
-        // Filter to only active roster players (not BN, IL, NA) with points > 0
+        // Include all rostered players with points > 0 (including bench)
         const activePlayers = rosterPlayers.filter(p => {
           const pos = (p.selected_position || "").toUpperCase();
-          return !["BN", "IL", "IL+", "NA", "DL"].includes(pos) && (p.fantasy_points || 0) > 0;
+          return !["IL", "IL+", "NA", "DL"].includes(pos) && (p.fantasy_points || 0) > 0;
         });
 
         if (activePlayers.length > 0) {

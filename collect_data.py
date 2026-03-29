@@ -3593,7 +3593,9 @@ def collect_daily_scores(oauth, year: int, lg):
                 day_str = day_info["date"]
 
                 # Skip if we already have this day's score (unless it's today - re-fetch today)
-                if day_str in week_data["team_scores"][team_key] and day_str != today.strftime("%Y-%m-%d"):
+                # Also re-fetch days with exactly 0 score, as they may be from failed API calls
+                existing_score = week_data["team_scores"][team_key].get(day_str)
+                if existing_score is not None and existing_score != 0 and day_str != today.strftime("%Y-%m-%d"):
                     continue
 
                 try:
@@ -3650,7 +3652,7 @@ def collect_daily_scores(oauth, year: int, lg):
 
                 except Exception as e:
                     print(f"    ⚠ Could not fetch {team_name} for {day_str}: {e}")
-                    week_data["team_scores"][team_key][day_str] = 0
+                    # Don't record 0 on failure — leave the day missing so it gets retried
 
             # Count days fetched for this team
             fetched = len(week_data["team_scores"].get(team_key, {}))
