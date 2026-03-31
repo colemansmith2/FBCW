@@ -37,7 +37,10 @@ from yahoo_fantasy_api import Game, League
 
 SEASON = 2026
 DATA_DIR = "data"
-OUTPUT_FILE = f"{DATA_DIR}/{SEASON}/weekly_stats.json"
+# Write to current_season so the frontend can find it
+OUTPUT_FILE = f"{DATA_DIR}/current_season/weekly_stats.json"
+# Also write a copy to the year-specific directory for archival
+OUTPUT_FILE_ARCHIVE = f"{DATA_DIR}/{SEASON}/weekly_stats.json"
 
 # Scoring settings (adjust to match your league)
 BATTING_SCORING = {
@@ -376,8 +379,10 @@ def get_matchups(lg, week: int) -> List[Dict]:
             matchups.append({
                 'team1_key': team1[0][0]['team_key'],
                 'team1_score': safe_float(team1[1].get('team_points', {}).get('total', 0)),
+                'team1_projected': safe_float(team1[1].get('team_projected_points', {}).get('total', 0)),
                 'team2_key': team2[0][0]['team_key'],
-                'team2_score': safe_float(team2[1].get('team_points', {}).get('total', 0))
+                'team2_score': safe_float(team2[1].get('team_points', {}).get('total', 0)),
+                'team2_projected': safe_float(team2[1].get('team_projected_points', {}).get('total', 0))
             })
             
     except Exception as e:
@@ -546,8 +551,14 @@ def collect_weekly_stats():
     
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         json.dump(existing_data, f, indent=2, ensure_ascii=False)
-    
+
+    # Also save archival copy to year-specific directory
+    os.makedirs(os.path.dirname(OUTPUT_FILE_ARCHIVE), exist_ok=True)
+    with open(OUTPUT_FILE_ARCHIVE, 'w', encoding='utf-8') as f:
+        json.dump(existing_data, f, indent=2, ensure_ascii=False)
+
     print(f"\n✓ Saved to {OUTPUT_FILE}")
+    print(f"  ✓ Archive copy saved to {OUTPUT_FILE_ARCHIVE}")
     print(f"  - Weeks collected: {len(existing_data['weeks'])}")
     print(f"  - Current week: {completed_week}")
     print(f"  - Matchups this week: {len(matchups)}")
