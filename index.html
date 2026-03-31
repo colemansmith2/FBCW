@@ -54123,27 +54123,22 @@
       async function renderHomeTopPlayers() {
         const tbody = document.getElementById("home-top-players-body");
 
-        // Try to load week rosters for in-season top players by position
+        // Use player_stats.json (same source as Player Scoring page) for accurate season totals
         const positions = ["C", "1B", "2B", "3B", "SS", "OF", "SP", "RP"];
-        let rosterPlayers = [];
+        let allPlayers = [];
 
         try {
-          // Determine current week from daily scores or default to 1
-          const dailyData = await loadDailyScores();
-          const currentWeek = dailyData?.current_week || 1;
-
-          const rosterResp = await fetch(`data/current_season/week_${currentWeek}_rosters.json`);
-          if (rosterResp.ok) {
-            rosterPlayers = await rosterResp.json();
+          const statsResp = await fetch("data/current_season/player_stats.json");
+          if (statsResp.ok) {
+            allPlayers = await statsResp.json();
           }
         } catch (e) {
-          console.log("Could not load week rosters for top players:", e);
+          console.log("Could not load player stats for top players:", e);
         }
 
-        // Include all rostered players with points > 0 (including bench)
-        const activePlayers = rosterPlayers.filter(p => {
-          const pos = (p.selected_position || "").toUpperCase();
-          return !["IL", "IL+", "NA", "DL"].includes(pos) && (p.fantasy_points || 0) > 0;
+        // Include all rostered players with points > 0
+        const activePlayers = allPlayers.filter(p => {
+          return (p.fantasy_points || 0) > 0;
         });
 
         if (activePlayers.length > 0) {
@@ -54158,36 +54153,38 @@
           const placeholderImg =
             "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
 
-          // Find top player at each position
+          // Find top player at each position (no duplicates)
           const topByPosition = [];
+          const usedPlayerIds = new Set();
           for (const pos of positions) {
             let candidates;
             if (pos === "SP" || pos === "RP") {
-              // Match SP/RP by selected_position or eligible_positions
               candidates = activePlayers.filter(p => {
-                const selPos = (p.selected_position || "").toUpperCase();
                 const eligible = (p.eligible_positions || []).map(e => e.toUpperCase());
-                return selPos === pos || eligible.includes(pos);
+                return eligible.includes(pos);
               });
             } else if (pos === "OF") {
               candidates = activePlayers.filter(p => {
-                const selPos = (p.selected_position || "").toUpperCase();
                 const eligible = (p.eligible_positions || []).map(e => e.toUpperCase());
-                return selPos === "OF" || eligible.includes("OF") ||
+                return eligible.includes("OF") ||
                   eligible.includes("LF") || eligible.includes("CF") || eligible.includes("RF");
               });
             } else {
               candidates = activePlayers.filter(p => {
-                const selPos = (p.selected_position || "").toUpperCase();
                 const eligible = (p.eligible_positions || []).map(e => e.toUpperCase());
-                return selPos === pos || eligible.includes(pos);
+                return eligible.includes(pos);
               });
             }
+
+            // Exclude players already picked for a prior position
+            candidates = candidates.filter(p => !usedPlayerIds.has(p.player_id || p.name));
 
             // Sort by fantasy points descending and take top scorer
             candidates.sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
             if (candidates.length > 0) {
-              topByPosition.push({ ...candidates[0], display_position: pos });
+              const pick = candidates[0];
+              usedPlayerIds.add(pick.player_id || pick.name);
+              topByPosition.push({ ...pick, display_position: pos });
             }
           }
 
