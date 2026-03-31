@@ -3595,18 +3595,18 @@ def collect_daily_scores(oauth, year: int, lg):
             for day_info in days_to_fetch:
                 day_str = day_info["date"]
 
-                # Skip if we already have this day's score, UNLESS:
-                # - It's today (scores still updating)
-                # - It's yesterday (late games may not have been finalized on prior run)
-                # - The score is 0 (may be from a failed API call)
-                existing_score = week_data["team_scores"][team_key].get(day_str)
-                if existing_score is not None and existing_score != 0 and day_str != today_str and day_str != yesterday_str:
-                    continue
+                # Always re-fetch all days in the current week to ensure accuracy.
+                # The roster endpoint includes ;date= to get the lineup AS IT WAS
+                # on that day, so we need fresh data for every day.
+                # Only skip if it's a past week's finalized data (not the current week).
+                # For the current week, we re-fetch everything every run since
+                # lineups change daily and late games may not have been finalized.
 
                 try:
-                    # Use raw API: team/{team_key}/roster/players/stats;type=date;date=YYYY-MM-DD
+                    # Use raw API with date on BOTH roster and stats so Yahoo returns
+                    # the roster as it was configured on that day (not current lineup)
                     raw = lg.yhandler.get(
-                        f"team/{team_key}/roster/players/stats;type=date;date={day_str}"
+                        f"team/{team_key}/roster;date={day_str}/players/stats;type=date;date={day_str}"
                     )
 
                     # Parse the response to sum up fantasy points
