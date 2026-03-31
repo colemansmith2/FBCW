@@ -53337,11 +53337,13 @@
         }
 
         // Sort by fantasy points and split by position type
+        // Use position_type ("B"/"P") instead of selected_position so bench
+        // players are categorized correctly (BN pitchers won't appear as batters)
         const batters = teamRoster
-          .filter((p) => !["SP", "RP", "P"].includes(p.selected_position))
+          .filter((p) => p.position_type === "B")
           .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
         const pitchers = teamRoster
-          .filter((p) => ["SP", "RP", "P"].includes(p.selected_position))
+          .filter((p) => p.position_type === "P")
           .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
 
         // Get adds for this team this week
@@ -53542,7 +53544,22 @@
         "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
 
       // Extract primary position from multi-position strings like "OF, Util" or "1B, 3B"
+      // For bench/IL players, uses eligible_positions to show their real position
       function getPrimaryPosition(player) {
+        const selPos = (player.selected_position || "").toUpperCase();
+        const nonActive = ["BN", "IL", "IL+", "NA", "DL"];
+
+        // If player is on bench/IL, use eligible_positions instead of selected_position
+        if (nonActive.includes(selPos) && player.eligible_positions && player.eligible_positions.length > 0) {
+          let positions = player.eligible_positions.map(p => p.toUpperCase());
+          // Strip generic P if specific pitching role exists
+          const hasSpecificPitcher = positions.some(p => p === "SP" || p === "RP");
+          if (hasSpecificPitcher) {
+            positions = positions.filter(p => p !== "P");
+          }
+          return positions.find(p => p !== "UTIL" && p !== "DH" && p !== "BN") || positions[0] || "?";
+        }
+
         const raw =
           player.selected_position ||
           player.primary_position ||
