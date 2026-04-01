@@ -27990,17 +27990,58 @@
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "");
         const playerHistory = playerHistoryData[normalizedName];
+        const normalizeHistoryName = (name) =>
+          (name || "")
+            .toLowerCase()
+            .trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+        const historySeasons = Array.isArray(playerHistory?.seasons)
+          ? playerHistory.seasons.map((season) => ({ ...season }))
+          : [];
 
-        if (
-          playerHistory &&
-          playerHistory.seasons &&
-          playerHistory.seasons.length > 0
-        ) {
+        try {
+          const currentSeasonPlayers = await getPlayerStatsData(2026);
+          const currentSeasonPlayer =
+            currentSeasonPlayers?.find(
+              (seasonPlayer) =>
+                normalizeHistoryName(seasonPlayer.name) === normalizedName,
+            ) ||
+            (selectedYear === 2026 ? player : null);
+
+          if (currentSeasonPlayer) {
+            const currentSeasonEntry = {
+              year: 2026,
+              team_name: currentSeasonPlayer.team_name || "Free Agent",
+              manager: currentSeasonPlayer.manager || "",
+              fantasy_points: currentSeasonPlayer.fantasy_points || 0,
+              position_type:
+                currentSeasonPlayer.position_type || player.position_type,
+              stats: currentSeasonPlayer.stats || {},
+            };
+            const existing2026Index = historySeasons.findIndex(
+              (season) => Number(season.year) === 2026,
+            );
+
+            if (existing2026Index >= 0) {
+              historySeasons[existing2026Index] = {
+                ...historySeasons[existing2026Index],
+                ...currentSeasonEntry,
+              };
+            } else {
+              historySeasons.push(currentSeasonEntry);
+            }
+          }
+        } catch (e) {
+          console.log("Could not merge current season player history");
+        }
+
+        if (historySeasons.length > 0) {
           const historyLogos = {};
           const historyRanks = {};
           const primaryPos = player.primary_position;
 
-          for (const season of playerHistory.seasons) {
+          for (const season of historySeasons) {
             const teams = await getTeamData(season.year);
             if (teams) {
               const team = teams.find((t) => t.team_name === season.team_name);
@@ -28013,11 +28054,13 @@
             const yearPlayers = await getPlayerStatsData(season.year);
             if (yearPlayers) {
               // Overall rank (all players)
-              const allPlayersSorted = yearPlayers.sort(
+              const allPlayersSorted = [...yearPlayers].sort(
                 (a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0),
               );
               const ovrRank =
-                allPlayersSorted.findIndex((p) => p.name === player.name) + 1;
+                allPlayersSorted.findIndex(
+                  (p) => normalizeHistoryName(p.name) === normalizedName,
+                ) + 1;
 
               // Type rank (batters or pitchers)
               const sameType = yearPlayers
@@ -28026,7 +28069,9 @@
                   (a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0),
                 );
               const typeRank =
-                sameType.findIndex((p) => p.name === player.name) + 1;
+                sameType.findIndex(
+                  (p) => normalizeHistoryName(p.name) === normalizedName,
+                ) + 1;
 
               // Position rank
               const samePos = yearPlayers
@@ -28039,7 +28084,9 @@
                   (a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0),
                 );
               const posRank =
-                samePos.findIndex((p) => p.name === player.name) + 1;
+                samePos.findIndex(
+                  (p) => normalizeHistoryName(p.name) === normalizedName,
+                ) + 1;
 
               historyRanks[season.year] = {
                 overall: ovrRank > 0 ? ovrRank : "-",
@@ -28068,7 +28115,7 @@
                                 <span class="card-history-header-col pts">Points</span>
                             </div>`;
 
-          playerHistory.seasons
+          historySeasons
             .sort((a, b) => b.year - a.year)
             .forEach((season) => {
               const logo =
@@ -28286,6 +28333,9 @@
         const total2026 = actualSeasonPts + rosAvg;
         const allProjectedPts = [total2026, pts2027, pts2028].filter(p => p > 0);
         const allNonZeroPts = [...historicalPointsNon2020, ...allProjectedPts];
+        const hasProjectionBand = rosMin !== rosMax;
+        const futureBandLowDelta = hasProjectionBand ? Math.max(0, rosAvg - rosMin) : 0;
+        const futureBandHighDelta = hasProjectionBand ? Math.max(0, rosMax - rosAvg) : 0;
 
         let median = 0;
         if (allNonZeroPts.length > 0) {
@@ -28338,7 +28388,7 @@
         barData.push(actualSeasonPts);
         goldBarData.push(rosAvg);
         realValues.push(actualSeasonPts + rosAvg);
-        sdBandData.push(rosMin !== rosMax ? [actualSeasonPts + rosMin, actualSeasonPts + rosMax] : null);
+        sdBandData.push(hasProjectionBand ? [actualSeasonPts + rosMin, actualSeasonPts + rosMax] : null);
         barColors.push(historicalColor);
         projectedIndices.push({ index: idx2026 });
         outlierInfo.push(null);
@@ -28350,7 +28400,14 @@
           barData.push(0);
           goldBarData.push(pts2027);
           realValues.push(pts2027);
-          sdBandData.push(null);
+          sdBandData.push(
+            hasProjectionBand
+              ? [
+                  Math.max(0, pts2027 - futureBandLowDelta),
+                  pts2027 + futureBandHighDelta,
+                ]
+              : null,
+          );
           barColors.push(projectedColor);
           projectedIndices.push({ index: idx });
           outlierInfo.push(null);
@@ -28363,7 +28420,14 @@
           barData.push(0);
           goldBarData.push(pts2028);
           realValues.push(pts2028);
-          sdBandData.push(null);
+          sdBandData.push(
+            hasProjectionBand
+              ? [
+                  Math.max(0, pts2028 - futureBandLowDelta),
+                  pts2028 + futureBandHighDelta,
+                ]
+              : null,
+          );
           barColors.push(projectedColor);
           projectedIndices.push({ index: idx });
           outlierInfo.push(null);
