@@ -30595,6 +30595,7 @@
           document.fonts.load('36px "Arcade Gamer"'),
           document.fonts.load('32px "Arcade Gamer"'),
           document.fonts.load('24px "Arcade Gamer"'),
+          document.fonts.load('20px "Arcade Gamer"'),
           document.fonts.load('20px "Basis33"'),
           document.fonts.load('17px "Basis33"'),
           document.fonts.load('16px "Basis33"'),
@@ -30776,13 +30777,28 @@
         const rowHeight = 60;
         const rankWidth = 34;
         const teamWidth = 278;
-        const pointsWidth = 94;
-        const regularStatWidth =
-          (width - rankWidth - teamWidth - pointsWidth) /
-          (config.columns.length - 1);
-        const statColumnWidths = config.columns.map((col) =>
-          col === "Points" ? pointsWidth : regularStatWidth,
-        );
+        const statAreaWidth = width - rankWidth - teamWidth;
+        let statColumnWidths;
+
+        if (config.type === "pitching") {
+          const pointsWidth = 88;
+          const k9Width = 58;
+          const regularStatWidth =
+            (statAreaWidth - pointsWidth - k9Width) /
+            (config.columns.length - 2);
+          statColumnWidths = config.columns.map((col) => {
+            if (col === "Points") return pointsWidth;
+            if (col === "K/9") return k9Width;
+            return regularStatWidth;
+          });
+        } else {
+          const pointsWidth = 88;
+          const regularStatWidth =
+            (statAreaWidth - pointsWidth) / (config.columns.length - 1);
+          statColumnWidths = config.columns.map((col) =>
+            col === "Points" ? pointsWidth : regularStatWidth,
+          );
+        }
         const colRanks = getColumnRanks(stats, config.columns);
         const sortedStats = [...stats].sort(
           (a, b) => (b.Points || 0) - (a.Points || 0),
@@ -31026,7 +31042,7 @@
             align: "left",
             baseline: "top",
             fillStyle: "#d4af37",
-            font: '24px "Arcade Gamer", sans-serif',
+            font: '20px "Arcade Gamer", sans-serif',
             fauxBold: true,
             offset: 0.9,
           },
