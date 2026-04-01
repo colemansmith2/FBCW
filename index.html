@@ -30585,6 +30585,7 @@
         await Promise.allSettled([
           document.fonts.load('32px "Arcade Gamer"'),
           document.fonts.load('24px "Arcade Gamer"'),
+          document.fonts.load('17px "Basis33"'),
           document.fonts.load('16px "Basis33"'),
           document.fonts.load('15px "Basis33"'),
           document.fonts.load('14px "Basis33"'),
@@ -30662,6 +30663,36 @@
         }
 
         return text;
+      }
+
+      function fitCanvasTextWithFont(ctx, font, text, maxWidth) {
+        ctx.save();
+        ctx.font = font;
+        const fitted = fitCanvasText(ctx, text, maxWidth);
+        ctx.restore();
+        return fitted;
+      }
+
+      function drawCanvasText(ctx, text, x, y, options = {}) {
+        const {
+          align = "left",
+          baseline = "alphabetic",
+          fillStyle = "#000000",
+          font = '12px "Basis33", sans-serif',
+          fauxBold = false,
+          offset = 0.65,
+        } = options;
+
+        ctx.save();
+        ctx.textAlign = align;
+        ctx.textBaseline = baseline;
+        ctx.fillStyle = fillStyle;
+        ctx.font = font;
+        ctx.fillText(text, x, y);
+        if (fauxBold) {
+          ctx.fillText(text, x + offset, y);
+        }
+        ctx.restore();
       }
 
       function formatScreenshotStatValue(column, value) {
@@ -30775,18 +30806,27 @@
 
         let cursorX = x;
         headerCells.forEach((header, index) => {
-          ctx.fillStyle = "#ffffff";
-          ctx.font = '14px "Basis33", sans-serif';
-          ctx.textBaseline = "middle";
           if (index === 1) {
-            ctx.textAlign = "left";
-            ctx.fillText(header, cursorX + 10, tableY + tableHeaderHeight / 2);
+            drawCanvasText(ctx, header, cursorX + 10, tableY + tableHeaderHeight / 2, {
+              align: "left",
+              baseline: "middle",
+              fillStyle: "#ffffff",
+              font: '16px "Basis33", sans-serif',
+              fauxBold: true,
+            });
           } else {
-            ctx.textAlign = "center";
-            ctx.fillText(
+            drawCanvasText(
+              ctx,
               header,
               cursorX + columnWidths[index] / 2,
               tableY + tableHeaderHeight / 2,
+              {
+                align: "center",
+                baseline: "middle",
+                fillStyle: "#ffffff",
+                font: '16px "Basis33", sans-serif',
+                fauxBold: true,
+              },
             );
           }
           cursorX += columnWidths[index];
@@ -30802,31 +30842,61 @@
           ctx.lineTo(x + width, rowY + rowHeight);
           ctx.stroke();
 
-          ctx.fillStyle = "#1f4a87";
-          ctx.font = '17px "Basis33", sans-serif';
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(`${rowIndex + 1}`, x + rankWidth / 2, rowY + rowHeight / 2);
+          drawCanvasText(
+            ctx,
+            `${rowIndex + 1}`,
+            x + rankWidth / 2,
+            rowY + rowHeight / 2,
+            {
+              align: "center",
+              baseline: "middle",
+              fillStyle: "#1f4a87",
+              font: '17px "Basis33", sans-serif',
+              fauxBold: true,
+            },
+          );
 
           const teamX = x + rankWidth;
           const logoSize = 26;
           const logoUrl = resolveCanvasAssetUrl(teamLogos?.[team.team_key] || "");
           const teamLogo = imageMap.get(logoUrl);
           drawCircularCanvasImage(ctx, teamLogo, teamX + 10, rowY + 17, logoSize);
-          ctx.textAlign = "left";
-          ctx.fillStyle = "#10233c";
-          ctx.font = '15px "Basis33", sans-serif';
-          ctx.fillText(
-            fitCanvasText(ctx, team.team_name || "Unknown", teamWidth - 54),
+          drawCanvasText(
+            ctx,
+            fitCanvasTextWithFont(
+              ctx,
+              '15px "Basis33", sans-serif',
+              team.team_name || "Unknown",
+              teamWidth - 54,
+            ),
             teamX + 44,
             rowY + 20,
+            {
+              align: "left",
+              baseline: "alphabetic",
+              fillStyle: "#10233c",
+              font: '15px "Basis33", sans-serif',
+              fauxBold: true,
+            },
           );
-          ctx.fillStyle = "#74819a";
-          ctx.font = '12px "Basis33", sans-serif';
-          ctx.fillText(
-            fitCanvasText(ctx, team.manager || "", teamWidth - 54),
+          drawCanvasText(
+            ctx,
+            fitCanvasTextWithFont(
+              ctx,
+              '12px "Basis33", sans-serif',
+              team.manager || "",
+              teamWidth - 54,
+            ),
             teamX + 44,
             rowY + 38,
+            {
+              align: "left",
+              baseline: "alphabetic",
+              fillStyle: "#74819a",
+              font: '12px "Basis33", sans-serif',
+              fauxBold: true,
+              offset: 0.45,
+            },
           );
 
           config.columns.forEach((col, columnIndex) => {
@@ -30840,14 +30910,18 @@
 
             ctx.fillStyle = style.background;
             ctx.fillRect(cellX, rowY, statWidth, rowHeight);
-            ctx.fillStyle = style.color;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.font = '14px "Basis33", sans-serif';
-            ctx.fillText(
+            drawCanvasText(
+              ctx,
               `${formatScreenshotStatValue(col, value)}`,
               cellX + statWidth / 2,
               rowY + rowHeight / 2,
+              {
+                align: "center",
+                baseline: "middle",
+                fillStyle: style.color,
+                font: '17px "Basis33", sans-serif',
+                fauxBold: true,
+              },
             );
           });
         });
@@ -30912,11 +30986,19 @@
         const leagueLogo = imageMap.get(leagueLogoUrl);
         drawCircularCanvasImage(ctx, leagueLogo, outerPadding, outerPadding + 8, 56);
 
-        ctx.textBaseline = "top";
-        ctx.textAlign = "left";
-        ctx.fillStyle = "#2a5298";
-        ctx.font = '32px "Arcade Gamer", sans-serif';
-        ctx.fillText("Fantasy Baseball Civil War", outerPadding + 72, outerPadding + 18);
+        drawCanvasText(
+          ctx,
+          "Fantasy Baseball Civil War",
+          outerPadding + 72,
+          outerPadding + 18,
+          {
+            align: "left",
+            baseline: "top",
+            fillStyle: "#2a5298",
+            font: '32px "Arcade Gamer", sans-serif',
+            fauxBold: true,
+          },
+        );
 
         ctx.fillStyle = "rgba(42, 82, 152, 0.1)";
         drawRoundedRect(
@@ -30928,23 +31010,31 @@
           19,
         );
         ctx.fill();
-        ctx.fillStyle = "#607089";
-        ctx.font = '16px "Basis33", sans-serif';
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        ctx.fillText(
+        drawCanvasText(
+          ctx,
           seasonLabel,
           canvasWidth - outerPadding - 73,
           outerPadding + 2,
+          {
+            align: "center",
+            baseline: "top",
+            fillStyle: "#607089",
+            font: '17px "Basis33", sans-serif',
+            fauxBold: true,
+          },
         );
-        ctx.fillStyle = "#1d457f";
-        ctx.font = '15px "Basis33", sans-serif';
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(
+        drawCanvasText(
+          ctx,
           getTeamStatsScreenshotLabel(selectedWeek),
           canvasWidth - outerPadding - 73,
           outerPadding + 37,
+          {
+            align: "center",
+            baseline: "middle",
+            fillStyle: "#1d457f",
+            font: '16px "Basis33", sans-serif',
+            fauxBold: true,
+          },
         );
 
         let currentY = outerPadding + headerHeight;
