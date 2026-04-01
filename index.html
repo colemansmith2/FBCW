@@ -30589,6 +30589,7 @@
           document.fonts.load('15px "Basis33"'),
           document.fonts.load('14px "Basis33"'),
           document.fonts.load('13px "Basis33"'),
+          document.fonts.load('12px "Basis33"'),
           document.fonts.load('11px "Basis33"'),
           document.fonts.load('10px "Basis33"'),
         ]);
@@ -30663,6 +30664,13 @@
         return text;
       }
 
+      function formatScreenshotStatValue(column, value) {
+        if (column === "IP") {
+          return Number(value || 0).toFixed(1);
+        }
+        return formatStatValue(value);
+      }
+
       function resolveCanvasAssetUrl(url) {
         if (!url) return "";
         try {
@@ -30718,8 +30726,8 @@
         width,
       ) {
         const sectionHeaderHeight = 56;
-        const tableHeaderHeight = 38;
-        const rowHeight = 48;
+        const tableHeaderHeight = 44;
+        const rowHeight = 54;
         const rankWidth = 48;
         const teamWidth = 278;
         const statWidth = (width - rankWidth - teamWidth) / config.columns.length;
@@ -30768,7 +30776,7 @@
         let cursorX = x;
         headerCells.forEach((header, index) => {
           ctx.fillStyle = "#ffffff";
-          ctx.font = '11px "Basis33", sans-serif';
+          ctx.font = '13px "Basis33", sans-serif';
           ctx.textBaseline = "middle";
           if (index === 1) {
             ctx.textAlign = "left";
@@ -30795,7 +30803,7 @@
           ctx.stroke();
 
           ctx.fillStyle = "#1f4a87";
-          ctx.font = '14px "Basis33", sans-serif';
+          ctx.font = '16px "Basis33", sans-serif';
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(`${rowIndex + 1}`, x + rankWidth / 2, rowY + rowHeight / 2);
@@ -30804,21 +30812,21 @@
           const logoSize = 26;
           const logoUrl = resolveCanvasAssetUrl(teamLogos?.[team.team_key] || "");
           const teamLogo = imageMap.get(logoUrl);
-          drawCircularCanvasImage(ctx, teamLogo, teamX + 10, rowY + 11, logoSize);
+          drawCircularCanvasImage(ctx, teamLogo, teamX + 10, rowY + 14, logoSize);
           ctx.textAlign = "left";
           ctx.fillStyle = "#10233c";
-          ctx.font = '13px "Basis33", sans-serif';
+          ctx.font = '14px "Basis33", sans-serif';
           ctx.fillText(
             fitCanvasText(ctx, team.team_name || "Unknown", teamWidth - 54),
             teamX + 44,
             rowY + 18,
           );
           ctx.fillStyle = "#74819a";
-          ctx.font = '10px "Basis33", sans-serif';
+          ctx.font = '11px "Basis33", sans-serif';
           ctx.fillText(
             fitCanvasText(ctx, team.manager || "", teamWidth - 54),
             teamX + 44,
-            rowY + 33,
+            rowY + 35,
           );
 
           config.columns.forEach((col, columnIndex) => {
@@ -30835,9 +30843,9 @@
             ctx.fillStyle = style.color;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.font = '11px "Basis33", sans-serif';
+            ctx.font = '12px "Basis33", sans-serif';
             ctx.fillText(
-              `${formatStatValue(value)}`,
+              `${formatScreenshotStatValue(col, value)}`,
               cellX + statWidth / 2,
               rowY + rowHeight / 2,
             );
@@ -30873,10 +30881,10 @@
           sections.reduce((sum, section, index) => {
             const sectionHeight =
               56 +
-              38 +
+              44 +
               [...section.stats].sort((a, b) => (b.Points || 0) - (a.Points || 0))
                 .length *
-                48;
+                54;
             return sum + sectionHeight + (index === 0 ? 0 : sectionGap);
           }, 0) +
           outerPadding;
