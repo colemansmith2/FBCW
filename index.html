@@ -30592,8 +30592,10 @@
         }
 
         await Promise.allSettled([
+          document.fonts.load('36px "Arcade Gamer"'),
           document.fonts.load('32px "Arcade Gamer"'),
           document.fonts.load('24px "Arcade Gamer"'),
+          document.fonts.load('20px "Basis33"'),
           document.fonts.load('17px "Basis33"'),
           document.fonts.load('16px "Basis33"'),
           document.fonts.load('15px "Basis33"'),
@@ -30979,17 +30981,8 @@
         const ctx = canvas.getContext("2d");
         ctx.scale(scale, scale);
 
-        const backgroundGradient = ctx.createLinearGradient(0, 0, 0, totalHeight);
-        backgroundGradient.addColorStop(0, "#f4f7fb");
-        backgroundGradient.addColorStop(1, "#eef2f8");
-        ctx.fillStyle = backgroundGradient;
+        ctx.fillStyle = "#ffffff";
         ctx.fillRect(0, 0, canvasWidth, totalHeight);
-
-        const glowGradient = ctx.createRadialGradient(120, 70, 0, 120, 70, 260);
-        glowGradient.addColorStop(0, "rgba(62, 126, 190, 0.18)");
-        glowGradient.addColorStop(1, "rgba(62, 126, 190, 0)");
-        ctx.fillStyle = glowGradient;
-        ctx.fillRect(0, 0, 320, 260);
 
         const leagueLogo = imageMap.get(leagueLogoUrl);
         drawCircularCanvasImage(ctx, leagueLogo, outerPadding, outerPadding + 8, 56);
@@ -31003,7 +30996,7 @@
             align: "left",
             baseline: "top",
             fillStyle: "#2a5298",
-            font: '32px "Arcade Gamer", sans-serif',
+            font: '36px "Arcade Gamer", sans-serif',
             fauxBold: true,
           },
         );
@@ -31016,8 +31009,9 @@
             align: "left",
             baseline: "top",
             fillStyle: "#d4af37",
-            font: '16px "Basis33", sans-serif',
+            font: '20px "Basis33", sans-serif',
             fauxBold: true,
+            offset: 0.8,
           },
         );
 
