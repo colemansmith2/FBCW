@@ -2198,6 +2198,219 @@ def build_mlb_cache_player_lookup(cache: Dict[str, Any]) -> Dict[str, List[Dict[
     return lookup
 
 
+def build_current_season_roster_lookup(
+    rosters: Dict[str, List[Dict[str, Any]]],
+) -> Dict[str, Dict[str, Any]]:
+    """Index current Yahoo rosters by normalized player name."""
+    roster_lookup: Dict[str, Dict[str, Any]] = {}
+
+    for roster_players in rosters.values():
+        for player in roster_players:
+            normalized_name = normalize_player_name(player.get('name', ''))
+            if not normalized_name:
+                continue
+            roster_lookup[normalized_name] = dict(player)
+
+    return roster_lookup
+
+
+def normalize_current_player_primary_position(position: str) -> str:
+    """Normalize MLB/Yahoo positions into the UI's supported primary positions."""
+    pos = str(position or '').strip().upper()
+    if not pos:
+        return ''
+    if pos in {'LF', 'CF', 'RF'}:
+        return 'OF'
+    if pos == 'DH':
+        return 'Util'
+    return pos
+
+
+def infer_current_season_player_position_type(
+    cache_meta: Dict[str, Any],
+    stats_payload: Dict[str, Dict[str, Any]],
+    roster_player: Optional[Dict[str, Any]] = None,
+) -> str:
+    """Infer whether a player should be treated as a batter or pitcher."""
+    roster_type = str((roster_player or {}).get('position_type', '')).upper()
+    if roster_type in {'B', 'P'}:
+        return roster_type
+
+    if stats_payload.get('pitching') and not stats_payload.get('batting'):
+        return 'P'
+    if stats_payload.get('batting') and not stats_payload.get('pitching'):
+        return 'B'
+    if cache_meta.get('has_pitching_stats') and not cache_meta.get('has_batting_stats'):
+        return 'P'
+    if cache_meta.get('has_batting_stats') and not cache_meta.get('has_pitching_stats'):
+        return 'B'
+
+    raw_position = normalize_current_player_primary_position(
+        cache_meta.get('primary_position', ''),
+    )
+    if raw_position in {'SP', 'RP', 'P'}:
+        return 'P'
+
+    return 'B'
+
+
+def infer_current_season_primary_position(
+    cache_meta: Dict[str, Any],
+    stats_payload: Dict[str, Dict[str, Any]],
+    position_type: str,
+    roster_player: Optional[Dict[str, Any]] = None,
+) -> str:
+    """Infer a best-effort primary position for current-season player rows."""
+    if roster_player:
+        roster_primary = normalize_current_player_primary_position(
+            roster_player.get('primary_position', ''),
+        )
+        if roster_primary:
+            return roster_primary
+
+        eligible_positions = roster_player.get('eligible_positions', []) or []
+        normalized_eligible = [
+            normalize_current_player_primary_position(pos)
+            for pos in eligible_positions
+            if normalize_current_player_primary_position(pos)
+            and normalize_current_player_primary_position(pos) not in {'BN', 'IL', 'IL+', 'NA'}
+        ]
+        if normalized_eligible:
+            if position_type == 'P':
+                for pos in normalized_eligible:
+                    if pos in {'SP', 'RP'}:
+                        return pos
+                return normalized_eligible[0]
+            for pos in normalized_eligible:
+                if pos not in {'UTIL', 'DH'}:
+                    return pos
+            return normalized_eligible[0]
+
+    raw_primary = normalize_current_player_primary_position(
+        cache_meta.get('primary_position', ''),
+    )
+
+    if position_type == 'P':
+        pitching = stats_payload.get('pitching', {}) or {}
+        if pitching.get('GS', 0) > 0:
+            return 'SP'
+        if pitching.get('SV', 0) > 0 or pitching.get('HLD', 0) > 0:
+            return 'RP'
+        if raw_primary in {'SP', 'RP'}:
+            return raw_primary
+        return 'P'
+
+    if raw_primary in {'OF', 'C', '1B', '2B', '3B', 'SS', 'Util'}:
+        return raw_primary
+
+    return 'Util' if raw_primary == 'DH' else (raw_primary or 'Util')
+
+
+def infer_current_season_eligible_positions(
+    primary_position: str,
+    position_type: str,
+    roster_player: Optional[Dict[str, Any]] = None,
+) -> List[str]:
+    """Build eligible positions for current-season player rows."""
+    if roster_player:
+        eligible_positions = roster_player.get('eligible_positions', []) or []
+        normalized = []
+        for pos in eligible_positions:
+            normalized_pos = normalize_current_player_primary_position(pos)
+            if normalized_pos and normalized_pos not in {'BN', 'IL', 'IL+', 'NA'}:
+                normalized.append(normalized_pos)
+        if normalized:
+            deduped = list(dict.fromkeys(normalized))
+            if position_type == 'P' and 'P' not in deduped:
+                deduped.append('P')
+            if position_type == 'B' and 'Util' not in deduped:
+                deduped.append('Util')
+            return deduped
+
+    if position_type == 'P':
+        if primary_position in {'SP', 'RP'}:
+            return [primary_position, 'P']
+        return ['P']
+
+    if primary_position and primary_position != 'Util':
+        return [primary_position, 'Util']
+    return ['Util']
+
+
+def build_current_season_player_entry_from_mlb(
+    player_id: str,
+    cache_meta: Dict[str, Any],
+    stats_payload: Dict[str, Dict[str, Any]],
+    batting_scoring: Dict[str, Any],
+    pitching_scoring: Dict[str, Any],
+    roster_player: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Build one current-season player row from MLB cached stats plus Yahoo ownership."""
+    position_type = infer_current_season_player_position_type(
+        cache_meta,
+        stats_payload,
+        roster_player,
+    )
+    primary_position = infer_current_season_primary_position(
+        cache_meta,
+        stats_payload,
+        position_type,
+        roster_player,
+    )
+    eligible_positions = infer_current_season_eligible_positions(
+        primary_position,
+        position_type,
+        roster_player,
+    )
+
+    entry: Dict[str, Any] = {
+        'player_id': safe_int(player_id, 0),
+        'name': cache_meta.get('name', ''),
+        'position_type': position_type,
+        'eligible_positions': eligible_positions,
+        'primary_position': primary_position,
+        'selected_position': (
+            roster_player.get('selected_position')
+            if roster_player
+            else primary_position
+        ),
+        'status': (roster_player or {}).get('status', ''),
+        'team_key': (roster_player or {}).get('team_key', ''),
+        'team_name': (roster_player or {}).get('team_name', ''),
+        'team_logo': (roster_player or {}).get('team_logo', ''),
+        'manager': (roster_player or {}).get('manager', ''),
+        'stats': (
+            get_empty_pitcher_stats()
+            if position_type == 'P'
+            else get_empty_batter_stats()
+        ),
+        'fantasy_points': 0.0,
+        'headshot_url': (
+            cache_meta.get('headshot_url')
+            or (roster_player or {}).get('headshot_url', '')
+        ),
+        'mlb_team': (
+            cache_meta.get('mlb_team')
+            or (roster_player or {}).get('mlb_team', '')
+        ),
+    }
+
+    if position_type == 'P' and stats_payload.get('pitching'):
+        entry['stats'] = finalize_mlb_pitcher_stats(stats_payload['pitching'])
+        entry['fantasy_points'] = calculate_pitching_fantasy_points_from_outs(
+            entry['stats'],
+            pitching_scoring,
+        )
+    elif position_type == 'B' and stats_payload.get('batting'):
+        entry['stats'] = finalize_mlb_batter_stats(stats_payload['batting'])
+        entry['fantasy_points'] = calculate_batting_fantasy_points(
+            entry['stats'],
+            batting_scoring,
+        )
+
+    return entry
+
+
 def get_mlb_cache_candidates_for_name(
     normalized_name: str,
     player_lookup: Dict[str, List[Dict[str, Any]]],
@@ -2274,56 +2487,46 @@ def build_current_season_window_players_from_mlb(
     player_lookup = build_mlb_cache_player_lookup(cache)
     cache_players = cache.get('players', {}) or {}
 
+    roster_lookup = build_current_season_roster_lookup(rosters)
     all_players: List[Dict[str, Any]] = []
-    for roster_players in rosters.values():
-        for original_player in roster_players:
-            player = dict(original_player)
-            supplemental = supplemental_players.get(
-                normalize_player_name(player.get('name', '')),
-                {},
-            )
-            player['stats'] = (
-                get_empty_batter_stats()
-                if player.get('position_type') == 'B'
-                else get_empty_pitcher_stats()
-            )
-            player['fantasy_points'] = 0.0
-            player['headshot_url'] = supplemental.get('headshot_url', '') or player.get('headshot_url', '')
-            player['mlb_team'] = supplemental.get('mlb_team', '') or player.get('mlb_team', '')
+    included_names: set[str] = set()
 
-            matched_player_id = resolve_roster_player_mlb_id(
-                player,
-                supplemental,
-                aggregated_stats,
-                player_lookup,
-            )
+    for player_id, cache_meta in cache_players.items():
+        normalized_name = normalize_player_name(cache_meta.get('name', ''))
+        roster_player = roster_lookup.get(normalized_name)
+        stats_payload = aggregated_stats.get(player_id, {})
 
-            if matched_player_id:
-                cache_meta = cache_players.get(matched_player_id, {})
-                player['headshot_url'] = (
-                    cache_meta.get('headshot_url')
-                    or player.get('headshot_url', '')
-                )
-                player['mlb_team'] = (
-                    cache_meta.get('mlb_team')
-                    or player.get('mlb_team', '')
-                )
+        player_entry = build_current_season_player_entry_from_mlb(
+            player_id,
+            cache_meta,
+            stats_payload,
+            batting_scoring,
+            pitching_scoring,
+            roster_player,
+        )
+        all_players.append(player_entry)
+        if normalized_name:
+            included_names.add(normalized_name)
 
-                stats_payload = aggregated_stats.get(matched_player_id, {})
-                if player.get('position_type') == 'B' and stats_payload.get('batting'):
-                    player['stats'] = finalize_mlb_batter_stats(stats_payload['batting'])
-                    player['fantasy_points'] = calculate_batting_fantasy_points(
-                        player['stats'],
-                        batting_scoring,
-                    )
-                elif player.get('position_type') == 'P' and stats_payload.get('pitching'):
-                    player['stats'] = finalize_mlb_pitcher_stats(stats_payload['pitching'])
-                    player['fantasy_points'] = calculate_pitching_fantasy_points_from_outs(
-                        player['stats'],
-                        pitching_scoring,
-                    )
+    for normalized_name, roster_player in roster_lookup.items():
+        if normalized_name in included_names:
+            continue
 
-            all_players.append(player)
+        supplemental = supplemental_players.get(normalized_name, {})
+        player = dict(roster_player)
+        player['stats'] = (
+            get_empty_batter_stats()
+            if player.get('position_type') == 'B'
+            else get_empty_pitcher_stats()
+        )
+        player['fantasy_points'] = 0.0
+        player['headshot_url'] = (
+            supplemental.get('headshot_url', '') or player.get('headshot_url', '')
+        )
+        player['mlb_team'] = (
+            supplemental.get('mlb_team', '') or player.get('mlb_team', '')
+        )
+        all_players.append(player)
 
     all_players.sort(key=lambda x: x.get('fantasy_points', 0), reverse=True)
     return all_players
