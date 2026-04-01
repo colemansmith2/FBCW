@@ -30596,7 +30596,9 @@
           document.fonts.load('32px "Arcade Gamer"'),
           document.fonts.load('24px "Arcade Gamer"'),
           document.fonts.load('20px "Arcade Gamer"'),
+          document.fonts.load('18px "Arcade Gamer"'),
           document.fonts.load('20px "Basis33"'),
+          document.fonts.load('18px "Basis33"'),
           document.fonts.load('17px "Basis33"'),
           document.fonts.load('16px "Basis33"'),
           document.fonts.load('15px "Basis33"'),
@@ -30773,8 +30775,8 @@
         width,
       ) {
         const sectionHeaderHeight = 56;
-        const tableHeaderHeight = 48;
-        const rowHeight = 60;
+        const tableHeaderHeight = 50;
+        const rowHeight = 64;
         const rankWidth = 34;
         const teamWidth = 278;
         const statAreaWidth = width - rankWidth - teamWidth;
@@ -30854,7 +30856,7 @@
               align: "left",
               baseline: "middle",
               fillStyle: "#ffffff",
-              font: '16px "Basis33", sans-serif',
+              font: '17px "Basis33", sans-serif',
               fauxBold: true,
             });
           } else {
@@ -30867,7 +30869,7 @@
                 align: "center",
                 baseline: "middle",
                 fillStyle: "#ffffff",
-                font: '16px "Basis33", sans-serif',
+                font: '17px "Basis33", sans-serif',
                 fauxBold: true,
               },
             );
@@ -30894,31 +30896,31 @@
               align: "center",
               baseline: "middle",
               fillStyle: "#1f4a87",
-              font: '17px "Basis33", sans-serif',
+              font: '18px "Basis33", sans-serif',
               fauxBold: true,
             },
           );
 
           const teamX = x + rankWidth;
-          const logoSize = 26;
+          const logoSize = 32;
           const logoUrl = resolveCanvasAssetUrl(teamLogos?.[team.team_key] || "");
           const teamLogo = imageMap.get(logoUrl);
-          drawCircularCanvasImage(ctx, teamLogo, teamX + 10, rowY + 17, logoSize);
+          drawCircularCanvasImage(ctx, teamLogo, teamX + 10, rowY + 16, logoSize);
           drawCanvasText(
             ctx,
             fitCanvasTextWithFont(
               ctx,
-              '15px "Basis33", sans-serif',
+              '16px "Basis33", sans-serif',
               team.team_name || "Unknown",
-              teamWidth - 54,
+              teamWidth - 60,
             ),
-            teamX + 44,
-            rowY + 20,
+            teamX + 48,
+            rowY + 21,
             {
               align: "left",
               baseline: "alphabetic",
               fillStyle: "#10233c",
-              font: '15px "Basis33", sans-serif',
+              font: '16px "Basis33", sans-serif',
               fauxBold: true,
             },
           );
@@ -30926,17 +30928,17 @@
             ctx,
             fitCanvasTextWithFont(
               ctx,
-              '12px "Basis33", sans-serif',
+              '13px "Basis33", sans-serif',
               team.manager || "",
-              teamWidth - 54,
+              teamWidth - 60,
             ),
-            teamX + 44,
-            rowY + 38,
+            teamX + 48,
+            rowY + 42,
             {
               align: "left",
               baseline: "alphabetic",
               fillStyle: "#74819a",
-              font: '12px "Basis33", sans-serif',
+              font: '13px "Basis33", sans-serif',
               fauxBold: true,
               offset: 0.45,
             },
@@ -30963,7 +30965,7 @@
                 align: "center",
                 baseline: "middle",
                 fillStyle: style.color,
-                font: '17px "Basis33", sans-serif',
+                font: '18px "Basis33", sans-serif',
                 fauxBold: true,
               },
             );
@@ -30998,10 +31000,10 @@
           sections.reduce((sum, section, index) => {
             const sectionHeight =
               56 +
-              48 +
+              50 +
               [...section.stats].sort((a, b) => (b.Points || 0) - (a.Points || 0))
                 .length *
-                60;
+                64;
             return sum + sectionHeight + (index === 0 ? 0 : sectionGap);
           }, 0) +
           outerPadding;
@@ -31042,7 +31044,7 @@
             align: "left",
             baseline: "top",
             fillStyle: "#d4af37",
-            font: '20px "Arcade Gamer", sans-serif',
+            font: '18px "Arcade Gamer", sans-serif',
             fauxBold: true,
             offset: 0.9,
           },
