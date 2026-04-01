@@ -30577,6 +30577,23 @@
         ];
       }
 
+      async function ensureTeamStatsScreenshotFonts() {
+        if (!document.fonts || !document.fonts.load) {
+          return;
+        }
+
+        await Promise.allSettled([
+          document.fonts.load('32px "Arcade Gamer"'),
+          document.fonts.load('24px "Arcade Gamer"'),
+          document.fonts.load('16px "Basis33"'),
+          document.fonts.load('15px "Basis33"'),
+          document.fonts.load('14px "Basis33"'),
+          document.fonts.load('13px "Basis33"'),
+          document.fonts.load('11px "Basis33"'),
+          document.fonts.load('10px "Basis33"'),
+        ]);
+      }
+
       function getHeatCellStyle(rank, inverse = false) {
         const palette = inverse
           ? [
@@ -30646,20 +30663,65 @@
         return text;
       }
 
+      function resolveCanvasAssetUrl(url) {
+        if (!url) return "";
+        try {
+          return new URL(url, window.location.href).href;
+        } catch (e) {
+          return url;
+        }
+      }
+
+      function loadCanvasImage(url) {
+        return new Promise((resolve) => {
+          if (!url) {
+            resolve(null);
+            return;
+          }
+
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = url;
+        });
+      }
+
+      async function loadCanvasImages(urls) {
+        const uniqueUrls = [...new Set(urls.filter(Boolean))];
+        const entries = await Promise.all(
+          uniqueUrls.map(async (url) => [url, await loadCanvasImage(url)]),
+        );
+        return new Map(entries);
+      }
+
+      function drawCircularCanvasImage(ctx, image, x, y, size) {
+        if (!image) return;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(image, x, y, size, size);
+        ctx.restore();
+      }
+
       function drawTeamStatsScreenshotSection(
         ctx,
         config,
         stats,
         selectedWeek,
+        teamLogos,
+        imageMap,
         x,
         y,
         width,
       ) {
         const sectionHeaderHeight = 56;
         const tableHeaderHeight = 38;
-        const rowHeight = 44;
+        const rowHeight = 48;
         const rankWidth = 48;
-        const teamWidth = 250;
+        const teamWidth = 278;
         const statWidth = (width - rankWidth - teamWidth) / config.columns.length;
         const colRanks = getColumnRanks(stats, config.columns);
         const sortedStats = [...stats].sort(
@@ -30687,19 +30749,10 @@
         ctx.stroke();
 
         ctx.fillStyle = "#173867";
-        ctx.font = "800 24px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        ctx.font = '24px "Arcade Gamer", sans-serif';
         ctx.textBaseline = "middle";
         ctx.textAlign = "left";
         ctx.fillText(config.title, x + 24, y + sectionHeaderHeight / 2);
-
-        ctx.fillStyle = "#687891";
-        ctx.font = "700 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-        ctx.textAlign = "right";
-        ctx.fillText(
-          getTeamStatsScreenshotLabel(selectedWeek),
-          x + width - 24,
-          y + sectionHeaderHeight / 2,
-        );
 
         const tableY = y + sectionHeaderHeight;
         ctx.fillStyle = "#2a5298";
@@ -30715,7 +30768,7 @@
         let cursorX = x;
         headerCells.forEach((header, index) => {
           ctx.fillStyle = "#ffffff";
-          ctx.font = "800 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          ctx.font = '11px "Basis33", sans-serif';
           ctx.textBaseline = "middle";
           if (index === 1) {
             ctx.textAlign = "left";
@@ -30742,26 +30795,30 @@
           ctx.stroke();
 
           ctx.fillStyle = "#1f4a87";
-          ctx.font = "800 14px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          ctx.font = '14px "Basis33", sans-serif';
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(`${rowIndex + 1}`, x + rankWidth / 2, rowY + rowHeight / 2);
 
           const teamX = x + rankWidth;
+          const logoSize = 26;
+          const logoUrl = resolveCanvasAssetUrl(teamLogos?.[team.team_key] || "");
+          const teamLogo = imageMap.get(logoUrl);
+          drawCircularCanvasImage(ctx, teamLogo, teamX + 10, rowY + 11, logoSize);
           ctx.textAlign = "left";
           ctx.fillStyle = "#10233c";
-          ctx.font = "800 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          ctx.font = '13px "Basis33", sans-serif';
           ctx.fillText(
-            fitCanvasText(ctx, team.team_name || "Unknown", teamWidth - 18),
-            teamX + 10,
-            rowY + 16,
+            fitCanvasText(ctx, team.team_name || "Unknown", teamWidth - 54),
+            teamX + 44,
+            rowY + 18,
           );
           ctx.fillStyle = "#74819a";
-          ctx.font = "600 10px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          ctx.font = '10px "Basis33", sans-serif';
           ctx.fillText(
-            fitCanvasText(ctx, team.manager || "", teamWidth - 18),
-            teamX + 10,
-            rowY + 30,
+            fitCanvasText(ctx, team.manager || "", teamWidth - 54),
+            teamX + 44,
+            rowY + 33,
           );
 
           config.columns.forEach((col, columnIndex) => {
@@ -30778,7 +30835,7 @@
             ctx.fillStyle = style.color;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.font = "700 11px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+            ctx.font = '11px "Basis33", sans-serif';
             ctx.fillText(
               `${formatStatValue(value)}`,
               cellX + statWidth / 2,
@@ -30791,17 +30848,24 @@
         return sectionHeight;
       }
 
-      function renderTeamStatsScreenshotCanvas(weeklyStats, selectedWeek) {
+      async function renderTeamStatsScreenshotCanvas(weeklyStats, selectedWeek) {
+        await ensureTeamStatsScreenshotFonts();
+
         const sections = getTeamStatsScreenshotConfigs().map((config) => ({
           ...config,
           stats: getStatsForSelectedWeek(weeklyStats, config.type, selectedWeek),
         }));
+        const seasonLabel = `${weeklyStats?.season || new Date().getFullYear()} Season`;
         const canvasWidth = 1200;
         const outerPadding = 34;
-        const headerHeight = 104;
+        const headerHeight = 98;
         const sectionGap = 24;
-        const footerHeight = 38;
         const tableWidth = canvasWidth - outerPadding * 2;
+        const leagueLogoUrl = resolveCanvasAssetUrl("league_logo.png");
+        const teamLogoUrls = Object.values(cachedTeamLogos || {}).map((url) =>
+          resolveCanvasAssetUrl(url),
+        );
+        const imageMap = await loadCanvasImages([leagueLogoUrl, ...teamLogoUrls]);
 
         const totalHeight =
           outerPadding +
@@ -30812,10 +30876,9 @@
               38 +
               [...section.stats].sort((a, b) => (b.Points || 0) - (a.Points || 0))
                 .length *
-                44;
+                48;
             return sum + sectionHeight + (index === 0 ? 0 : sectionGap);
           }, 0) +
-          footerHeight +
           outerPadding;
 
         const scale = 2;
@@ -30838,23 +30901,14 @@
         ctx.fillStyle = glowGradient;
         ctx.fillRect(0, 0, 320, 260);
 
+        const leagueLogo = imageMap.get(leagueLogoUrl);
+        drawCircularCanvasImage(ctx, leagueLogo, outerPadding, outerPadding + 8, 56);
+
         ctx.textBaseline = "top";
         ctx.textAlign = "left";
         ctx.fillStyle = "#2a5298";
-        ctx.font = "800 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-        ctx.fillText("FANTASY BASEBALL CIVIL WAR", outerPadding, outerPadding);
-
-        ctx.fillStyle = "#10233c";
-        ctx.font = "900 38px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-        ctx.fillText("Team Stats Snapshot", outerPadding, outerPadding + 24);
-
-        ctx.fillStyle = "#607089";
-        ctx.font = "600 17px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-        ctx.fillText(
-          "Hitting on top, pitching on bottom, sized for easy mobile viewing.",
-          outerPadding,
-          outerPadding + 70,
-        );
+        ctx.font = '32px "Arcade Gamer", sans-serif';
+        ctx.fillText("Fantasy Baseball Civil War", outerPadding + 72, outerPadding + 18);
 
         ctx.fillStyle = "rgba(42, 82, 152, 0.1)";
         drawRoundedRect(
@@ -30866,8 +30920,17 @@
           19,
         );
         ctx.fill();
+        ctx.fillStyle = "#607089";
+        ctx.font = '16px "Basis33", sans-serif';
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.fillText(
+          seasonLabel,
+          canvasWidth - outerPadding - 73,
+          outerPadding + 2,
+        );
         ctx.fillStyle = "#1d457f";
-        ctx.font = "800 15px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        ctx.font = '15px "Basis33", sans-serif';
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(
@@ -30886,21 +30949,13 @@
             section,
             section.stats,
             selectedWeek,
+            cachedTeamLogos,
+            imageMap,
             outerPadding,
             currentY,
             tableWidth,
           );
         });
-
-        ctx.fillStyle = "#73829b";
-        ctx.font = "700 13px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        ctx.fillText(
-          "Generated from the Seasons page",
-          canvasWidth / 2,
-          totalHeight - outerPadding - 10,
-        );
         ctx.textAlign = "left";
 
         return canvas;
@@ -30956,7 +31011,7 @@
         }
 
         try {
-          const canvas = renderTeamStatsScreenshotCanvas(
+          const canvas = await renderTeamStatsScreenshotCanvas(
             cachedWeeklyStats,
             selectedWeek,
           );
