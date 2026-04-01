@@ -30726,8 +30726,8 @@
         width,
       ) {
         const sectionHeaderHeight = 56;
-        const tableHeaderHeight = 44;
-        const rowHeight = 54;
+        const tableHeaderHeight = 48;
+        const rowHeight = 60;
         const rankWidth = 48;
         const teamWidth = 278;
         const statWidth = (width - rankWidth - teamWidth) / config.columns.length;
@@ -30776,7 +30776,7 @@
         let cursorX = x;
         headerCells.forEach((header, index) => {
           ctx.fillStyle = "#ffffff";
-          ctx.font = '13px "Basis33", sans-serif';
+          ctx.font = '14px "Basis33", sans-serif';
           ctx.textBaseline = "middle";
           if (index === 1) {
             ctx.textAlign = "left";
@@ -30803,7 +30803,7 @@
           ctx.stroke();
 
           ctx.fillStyle = "#1f4a87";
-          ctx.font = '16px "Basis33", sans-serif';
+          ctx.font = '17px "Basis33", sans-serif';
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
           ctx.fillText(`${rowIndex + 1}`, x + rankWidth / 2, rowY + rowHeight / 2);
@@ -30812,21 +30812,21 @@
           const logoSize = 26;
           const logoUrl = resolveCanvasAssetUrl(teamLogos?.[team.team_key] || "");
           const teamLogo = imageMap.get(logoUrl);
-          drawCircularCanvasImage(ctx, teamLogo, teamX + 10, rowY + 14, logoSize);
+          drawCircularCanvasImage(ctx, teamLogo, teamX + 10, rowY + 17, logoSize);
           ctx.textAlign = "left";
           ctx.fillStyle = "#10233c";
-          ctx.font = '14px "Basis33", sans-serif';
+          ctx.font = '15px "Basis33", sans-serif';
           ctx.fillText(
             fitCanvasText(ctx, team.team_name || "Unknown", teamWidth - 54),
             teamX + 44,
-            rowY + 18,
+            rowY + 20,
           );
           ctx.fillStyle = "#74819a";
-          ctx.font = '11px "Basis33", sans-serif';
+          ctx.font = '12px "Basis33", sans-serif';
           ctx.fillText(
             fitCanvasText(ctx, team.manager || "", teamWidth - 54),
             teamX + 44,
-            rowY + 35,
+            rowY + 38,
           );
 
           config.columns.forEach((col, columnIndex) => {
@@ -30843,7 +30843,7 @@
             ctx.fillStyle = style.color;
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.font = '12px "Basis33", sans-serif';
+            ctx.font = '14px "Basis33", sans-serif';
             ctx.fillText(
               `${formatScreenshotStatValue(col, value)}`,
               cellX + statWidth / 2,
@@ -30881,10 +30881,10 @@
           sections.reduce((sum, section, index) => {
             const sectionHeight =
               56 +
-              44 +
+              48 +
               [...section.stats].sort((a, b) => (b.Points || 0) - (a.Points || 0))
                 .length *
-                54;
+                60;
             return sum + sectionHeight + (index === 0 ? 0 : sectionGap);
           }, 0) +
           outerPadding;
