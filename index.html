@@ -30527,6 +30527,15 @@
           : `Week ${selectedWeek}`;
       }
 
+      function getTeamStatsScreenshotSubtitle(weeklyStats, selectedWeek) {
+        const season = weeklyStats?.season || new Date().getFullYear();
+        const period =
+          selectedWeek === "cumulative"
+            ? "All Weeks"
+            : `Week ${selectedWeek}`;
+        return `${season} - ${period}`;
+      }
+
       function getTeamStatsScreenshotConfigs() {
         return [
           {
@@ -30937,10 +30946,9 @@
           ...config,
           stats: getStatsForSelectedWeek(weeklyStats, config.type, selectedWeek),
         }));
-        const seasonLabel = `${weeklyStats?.season || new Date().getFullYear()} Season`;
         const canvasWidth = 1200;
         const outerPadding = 34;
-        const headerHeight = 98;
+        const headerHeight = 92;
         const sectionGap = 24;
         const tableWidth = canvasWidth - outerPadding * 2;
         const leagueLogoUrl = resolveCanvasAssetUrl("league_logo.png");
@@ -30999,39 +31007,15 @@
             fauxBold: true,
           },
         );
-
-        ctx.fillStyle = "rgba(42, 82, 152, 0.1)";
-        drawRoundedRect(
-          ctx,
-          canvasWidth - outerPadding - 146,
-          outerPadding + 18,
-          146,
-          38,
-          19,
-        );
-        ctx.fill();
         drawCanvasText(
           ctx,
-          seasonLabel,
-          canvasWidth - outerPadding - 73,
-          outerPadding + 2,
+          getTeamStatsScreenshotSubtitle(weeklyStats, selectedWeek),
+          outerPadding + 74,
+          outerPadding + 56,
           {
-            align: "center",
+            align: "left",
             baseline: "top",
-            fillStyle: "#607089",
-            font: '17px "Basis33", sans-serif',
-            fauxBold: true,
-          },
-        );
-        drawCanvasText(
-          ctx,
-          getTeamStatsScreenshotLabel(selectedWeek),
-          canvasWidth - outerPadding - 73,
-          outerPadding + 37,
-          {
-            align: "center",
-            baseline: "middle",
-            fillStyle: "#1d457f",
+            fillStyle: "#d4af37",
             font: '16px "Basis33", sans-serif',
             fauxBold: true,
           },
