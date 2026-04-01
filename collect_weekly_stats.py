@@ -46,7 +46,7 @@ OUTPUT_FILE_ARCHIVE = f"{DATA_DIR}/{SEASON}/weekly_stats.json"
 BATTING_SCORING = {
     '1B': 1.1, '2B': 2.2, '3B': 3.3, 'HR': 4.4,
     'RBI': 1.0, 'SB': 2.0, 'CS': -1.0, 'BB': 1.0,
-    'IBB': 1.0, 'HBP': 1.0, 'SO': -0.5,
+    'IBB': 1.0, 'HBP': 1.0, 'K': -0.5,
     'CYC': 5.0, 'SLAM': 2.0
 }
 
@@ -61,7 +61,7 @@ PITCHING_SCORING = {
 BATTING_STAT_IDS = {
     9: '1B', 10: '2B', 11: '3B', 12: 'HR',
     13: 'RBI', 16: 'SB', 17: 'CS', 18: 'BB',
-    19: 'IBB', 20: 'HBP', 21: 'SO',
+    19: 'IBB', 20: 'HBP', 21: 'K',
     64: 'CYC', 66: 'SLAM'
 }
 
@@ -200,6 +200,93 @@ def safe_int(value, default=0):
     except (ValueError, TypeError):
         return default
 
+def parse_selected_position(player) -> str:
+    """Extract the selected roster position from a Yahoo player payload."""
+    try:
+        pos_data = player[1].get('selected_position', [])
+        if isinstance(pos_data, list) and len(pos_data) > 1:
+            return pos_data[1].get('position', '')
+        if isinstance(pos_data, dict):
+            return pos_data.get('position', '')
+    except (AttributeError, IndexError, KeyError, TypeError):
+        pass
+    return ''
+
+def extract_player_metadata(player) -> Dict[str, str]:
+    """Extract core player metadata from the Yahoo player payload."""
+    metadata = {
+        'player_id': '',
+        'player_key': '',
+        'name': '',
+        'position_type': '',
+        'headshot': ''
+    }
+
+    try:
+        for item in player[0]:
+            if not isinstance(item, dict):
+                continue
+            if 'player_id' in item:
+                metadata['player_id'] = str(item.get('player_id') or '')
+            elif 'player_key' in item:
+                metadata['player_key'] = item.get('player_key', '') or ''
+            elif 'name' in item:
+                metadata['name'] = item['name'].get('full', '')
+            elif 'position_type' in item:
+                metadata['position_type'] = item['position_type']
+            elif 'headshot' in item:
+                headshot = item['headshot']
+                if isinstance(headshot, dict):
+                    metadata['headshot'] = headshot.get('url', '') or ''
+                elif isinstance(headshot, str):
+                    metadata['headshot'] = headshot
+    except (IndexError, TypeError):
+        pass
+
+    return metadata
+
+def extract_player_points(player) -> float:
+    """Extract fantasy points from a Yahoo player payload."""
+    for item in player:
+        if isinstance(item, dict) and 'player_points' in item:
+            try:
+                return float(item['player_points'].get('total', 0))
+            except (ValueError, TypeError):
+                return 0.0
+    return 0.0
+
+def extract_player_stats(player) -> Dict[int, float]:
+    """Extract stat values from a Yahoo player payload keyed by stat_id."""
+    stats = {}
+    for item in player:
+        if not isinstance(item, dict) or 'player_stats' not in item:
+            continue
+        for stat_entry in item['player_stats'].get('stats', []):
+            if not isinstance(stat_entry, dict) or 'stat' not in stat_entry:
+                continue
+            stat = stat_entry['stat']
+            stat_id = safe_int(stat.get('stat_id'), 0)
+            if stat_id <= 0:
+                continue
+            stats[stat_id] = safe_float(stat.get('value', 0))
+        break
+    return stats
+
+def convert_ip_display_to_outs(ip_value) -> int:
+    """Convert baseball-style innings pitched notation to outs recorded."""
+    innings = safe_float(ip_value, 0.0)
+    whole_innings = int(innings)
+    remainder_outs = int(round((innings - whole_innings) * 10))
+    if remainder_outs not in (0, 1, 2):
+        remainder_outs = 0
+    return (whole_innings * 3) + remainder_outs
+
+def convert_outs_to_ip_display(outs: int) -> float:
+    """Convert outs recorded to baseball-style innings pitched notation."""
+    whole_innings = outs // 3
+    remainder_outs = outs % 3
+    return round(whole_innings + (remainder_outs / 10), 1)
+
 def setup_oauth():
     """
     Initialize OAuth for Yahoo Fantasy API.
@@ -298,14 +385,19 @@ def get_completed_week(lg) -> int:
 # =============================================================================
 
 def get_team_stats(lg, week: int) -> Dict:
-    """Get team-level aggregate stats for a specific week.
-
-    Uses the Yahoo team stats API endpoint which returns the same totals
-    shown on the Yahoo Head-to-Head Stats page — these are the official
-    team category totals, not a sum of individual roster players.
-    """
+    """Get team-level aggregate stats for the matchup date window."""
     hitting_stats = []
     pitching_stats = []
+
+    # Get the date range for this week
+    try:
+        week_start, week_end = lg.week_date_range(week)
+        start_str = week_start.strftime("%Y-%m-%d")
+        end_str = week_end.strftime("%Y-%m-%d")
+        print(f"  Week {week} date range: {start_str} to {end_str}")
+    except Exception as e:
+        print(f"  Warning: Could not get week date range: {e}")
+        return {'hitting': [], 'pitching': []}
 
     teams = lg.teams()
 
@@ -313,6 +405,7 @@ def get_team_stats(lg, week: int) -> Dict:
         try:
             manager_name = team_info['managers'][0]['manager']['nickname']
             team_name = team_info['name']
+            pitching_outs = 0
 
             hitting = {
                 'team_key': team_key,
@@ -327,43 +420,51 @@ def get_team_stats(lg, week: int) -> Dict:
                 'Points': 0
             }
 
-            # Fetch team-level stats for this week from Yahoo API
-            raw = lg.yhandler.get(
-                f"team/{team_key}/stats;type=week;week={week}"
-            )
+            current_day = week_start
+            while current_day <= week_end:
+                day_str = current_day.strftime("%Y-%m-%d")
+                raw = lg.yhandler.get(
+                    f"team/{team_key}/roster;date={day_str}/players/stats;type=date;date={day_str}"
+                )
 
-            # Parse team stats from the response
-            team_data = raw['fantasy_content']['team']
-            stats_container = None
-            for item in team_data:
-                if isinstance(item, dict) and 'team_stats' in item:
-                    stats_container = item['team_stats']
-                    break
+                players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
+                player_count = int(players_data.get('count', 0))
 
-            if stats_container:
-                stats_list = stats_container.get('stats', [])
-                for s in stats_list:
-                    if isinstance(s, dict) and 'stat' in s:
-                        stat = s['stat']
-                        stat_id = int(stat.get('stat_id', 0))
-                        val = safe_float(stat.get('value', 0))
+                for i in range(player_count):
+                    player_idx = str(i)
+                    if player_idx not in players_data:
+                        continue
 
-                        if stat_id in BATTING_STAT_IDS:
-                            stat_name = BATTING_STAT_IDS[stat_id]
-                            hitting[stat_name] = val
-                            if stat_name in BATTING_SCORING:
-                                hitting['Points'] += val * BATTING_SCORING[stat_name]
+                    player = players_data[player_idx]['player']
+                    selected_position = parse_selected_position(player)
+                    if selected_position in ('BN', 'IL', 'IL+', 'DL', 'NA'):
+                        continue
 
-                        if stat_id in PITCHING_STAT_IDS:
-                            stat_name = PITCHING_STAT_IDS[stat_id]
-                            pitching[stat_name] = val
-                            if stat_name in PITCHING_SCORING:
-                                pitching['Points'] += val * PITCHING_SCORING[stat_name]
+                    metadata = extract_player_metadata(player)
+                    stats = extract_player_stats(player)
+                    points = extract_player_points(player)
 
-            if 'IP' in pitching and pitching['IP'] > 0:
-                ip = pitching['IP']
-                pitching['ERA'] = round((pitching.get('ER', 0) * 9) / ip, 2)
-                pitching['K/9'] = round((pitching.get('K', 0) * 9) / ip, 2)
+                    if metadata['position_type'] == 'B':
+                        for stat_id, stat_name in BATTING_STAT_IDS.items():
+                            hitting[stat_name] = hitting.get(stat_name, 0) + stats.get(stat_id, 0)
+                    elif metadata['position_type'] == 'P':
+                        for stat_id, stat_name in PITCHING_STAT_IDS.items():
+                            stat_value = stats.get(stat_id, 0)
+                            if stat_name == 'IP':
+                                pitching_outs += convert_ip_display_to_outs(stat_value)
+                            else:
+                                pitching[stat_name] = pitching.get(stat_name, 0) + stat_value
+
+                    hitting['Points'] += points if metadata['position_type'] == 'B' else 0
+                    pitching['Points'] += points if metadata['position_type'] == 'P' else 0
+
+                current_day += timedelta(days=1)
+
+            pitching['IP'] = convert_outs_to_ip_display(pitching_outs)
+            decimal_ip = pitching_outs / 3.0
+            if decimal_ip > 0:
+                pitching['ERA'] = round((pitching.get('ER', 0) * 9) / decimal_ip, 2)
+                pitching['K/9'] = round((pitching.get('K', 0) * 9) / decimal_ip, 2)
             else:
                 pitching['ERA'] = 0
                 pitching['K/9'] = 0
@@ -419,73 +520,91 @@ def get_matchups(lg, week: int) -> List[Dict]:
     return matchups
 
 def get_top_performers(lg, week: int) -> Dict:
-    """Get top individual player performances for the week using raw API."""
+    """Get top individual player performances for the matchup date window."""
     all_hitters = []
     all_pitchers = []
+
+    try:
+        week_start, week_end = lg.week_date_range(week)
+    except Exception as e:
+        print(f"  Warning: Could not get week date range for performers: {e}")
+        return {'topHitters': [], 'topPitchers': []}
+
+    day_count = (week_end - week_start).days + 1
+    week_days = [
+        (week_start + timedelta(days=offset)).strftime("%Y-%m-%d")
+        for offset in range(day_count)
+    ]
 
     teams = lg.teams()
 
     for team_key, team_info in teams.items():
         try:
             team_name = team_info['name']
+            players_by_id = {}
 
-            raw = lg.yhandler.get(
-                f"team/{team_key}/roster/players/stats;type=week;week={week}"
-            )
+            for day_str in week_days:
+                raw = lg.yhandler.get(
+                    f"team/{team_key}/roster;date={day_str}/players/stats;type=date;date={day_str}"
+                )
 
-            players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
-            player_count = int(players_data.get('count', 0))
+                players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
+                player_count = int(players_data.get('count', 0))
 
-            for i in range(player_count):
-                player_key = str(i)
-                if player_key not in players_data:
-                    continue
+                for i in range(player_count):
+                    player_idx = str(i)
+                    if player_idx not in players_data:
+                        continue
 
-                player = players_data[player_key]['player']
+                    player = players_data[player_idx]['player']
+                    selected_position = parse_selected_position(player)
 
-                # Parse player info
-                name = ''
-                position_type = ''
-                headshot_url = ''
-                for item in player[0]:
-                    if isinstance(item, dict):
-                        if 'name' in item:
-                            name = item['name'].get('full', '')
-                        elif 'position_type' in item:
-                            position_type = item['position_type']
-                        elif 'headshot' in item:
-                            headshot_url = item['headshot'].get('url', '') if isinstance(item['headshot'], dict) else ''
+                    # Only count days where the player was active in the lineup.
+                    if selected_position in ('BN', 'IL', 'IL+', 'DL', 'NA'):
+                        continue
 
-                # Get fantasy points
-                points = 0.0
-                for item in player:
-                    if isinstance(item, dict) and 'player_points' in item:
-                        try:
-                            points = float(item['player_points'].get('total', 0))
-                        except (ValueError, TypeError):
-                            pass
-                        break
+                    metadata = extract_player_metadata(player)
+                    points = extract_player_points(player)
+                    if points <= 0:
+                        continue
 
-                if points <= 0:
-                    continue
+                    player_id = metadata['player_id'] or metadata['player_key'] or metadata['name']
+                    if not player_id:
+                        continue
 
+                    entry = players_by_id.setdefault(player_id, {
+                        'name': metadata['name'],
+                        'team_name': team_name,
+                        'headshot': metadata['headshot'],
+                        'position_type': metadata['position_type'],
+                        'points': 0.0
+                    })
+                    entry['points'] += points
+
+                    if not entry['headshot'] and metadata['headshot']:
+                        entry['headshot'] = metadata['headshot']
+                    if not entry['name'] and metadata['name']:
+                        entry['name'] = metadata['name']
+                    if not entry['position_type'] and metadata['position_type']:
+                        entry['position_type'] = metadata['position_type']
+
+            for entry in players_by_id.values():
                 player_entry = {
-                    'name': name,
-                    'team_name': team_name,
-                    'headshot': headshot_url,
-                    'points': points
+                    'name': entry['name'],
+                    'team_name': entry['team_name'],
+                    'headshot': entry['headshot'],
+                    'points': round(entry['points'], 2)
                 }
 
-                if position_type == 'B':
+                if entry['position_type'] == 'B':
                     all_hitters.append(player_entry)
-                elif position_type == 'P':
+                elif entry['position_type'] == 'P':
                     all_pitchers.append(player_entry)
 
         except Exception as e:
             print(f"  Warning: Could not get performers for {team_key}: {e}")
             continue
 
-    # Sort by points and take top 5
     all_hitters.sort(key=lambda x: x['points'], reverse=True)
     all_pitchers.sort(key=lambda x: x['points'], reverse=True)
 
@@ -536,6 +655,7 @@ def calculate_cumulative_stats(all_weeks: Dict) -> Dict:
     """Calculate cumulative stats across all weeks."""
     cumulative_hitting = {}
     cumulative_pitching = {}
+    cumulative_pitching_outs = {}
     
     for week_num, week_data in all_weeks.items():
         for hitting in week_data.get('hitting', []):
@@ -563,18 +683,24 @@ def calculate_cumulative_stats(all_weeks: Dict) -> Dict:
                     'manager': pitching['manager'],
                     'Points': 0
                 }
+                cumulative_pitching_outs[team_key] = 0
             
             for key, value in pitching.items():
                 if key in ['team_key', 'team_name', 'manager', 'ERA', 'K/9']:
                     continue
-                current = cumulative_pitching[team_key].get(key, 0)
-                cumulative_pitching[team_key][key] = current + value
+                if key == 'IP':
+                    cumulative_pitching_outs[team_key] += convert_ip_display_to_outs(value)
+                else:
+                    current = cumulative_pitching[team_key].get(key, 0)
+                    cumulative_pitching[team_key][key] = current + value
     
     for team_key, stats in cumulative_pitching.items():
-        ip = stats.get('IP', 0)
-        if ip > 0:
-            stats['ERA'] = round((stats.get('ER', 0) * 9) / ip, 2)
-            stats['K/9'] = round((stats.get('K', 0) * 9) / ip, 2)
+        outs = cumulative_pitching_outs.get(team_key, 0)
+        stats['IP'] = convert_outs_to_ip_display(outs)
+        decimal_ip = outs / 3.0
+        if decimal_ip > 0:
+            stats['ERA'] = round((stats.get('ER', 0) * 9) / decimal_ip, 2)
+            stats['K/9'] = round((stats.get('K', 0) * 9) / decimal_ip, 2)
         else:
             stats['ERA'] = 0
             stats['K/9'] = 0
@@ -659,7 +785,10 @@ def collect_weekly_stats(target_week=None, collect_all=False):
             'categoryLeaders': leaders
         }
 
-    existing_data['currentWeek'] = weeks_to_collect[-1]
+    existing_data['currentWeek'] = max(
+        safe_int(existing_data.get('currentWeek'), 0),
+        max(weeks_to_collect)
+    )
 
     print("Calculating cumulative stats...")
     existing_data['cumulative'] = calculate_cumulative_stats(existing_data['weeks'])
