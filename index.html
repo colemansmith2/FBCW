@@ -54762,15 +54762,37 @@
       }
 
       // Green Monster Top Scoring Day
+      function findTopScoringDayFromDailyScores(dailyData) {
+        const weeks = dailyData?.weeks || {};
+        let topDay = null;
+
+        Object.entries(weeks).forEach(([week, weekData]) => {
+          const teamScores = weekData?.team_scores || {};
+
+          Object.entries(teamScores).forEach(([teamKey, scoresByDate]) => {
+            Object.entries(scoresByDate || {}).forEach(([date, score]) => {
+              const numericScore = Number(score || 0);
+              if (!Number.isFinite(numericScore) || numericScore <= 0) return;
+
+              if (!topDay || numericScore > topDay.score) {
+                topDay = {
+                  team_key: teamKey,
+                  date,
+                  score: numericScore,
+                  week: Number(week) || null,
+                };
+              }
+            });
+          });
+        });
+
+        return topDay;
+      }
+
       async function loadTopScoringDay() {
         try {
-          // Load the top scoring day record (single record, not daily history)
-          const response = await fetch(
-            "data/current_season/top_scoring_day.json",
-          );
-          if (!response.ok) return;
-
-          const topDay = await response.json();
+          const dailyData = await loadDailyScores();
+          const topDay = findTopScoringDayFromDailyScores(dailyData);
           if (!topDay || !topDay.score || topDay.score === 0) return;
 
           // Find team logo
@@ -54784,9 +54806,9 @@
           let day = "00";
           if (topDay.date) {
             if (topDay.date.includes("-")) {
-              const date = new Date(topDay.date);
-              month = String(date.getMonth() + 1).padStart(2, "0");
-              day = String(date.getDate()).padStart(2, "0");
+              const parts = topDay.date.split("-");
+              month = String(parts[1] || "0").padStart(2, "0");
+              day = String(parts[2] || "0").padStart(2, "0");
             } else if (topDay.date.includes("/")) {
               const parts = topDay.date.split("/");
               month = parts[0].padStart(2, "0");
