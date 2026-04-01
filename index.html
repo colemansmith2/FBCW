@@ -54126,17 +54126,22 @@
 
         try {
           // Load roster data for the week
-          const rosterData = await loadWeekRosterData(matchup.week);
-          const transactionData = await loadWeekTransactionData(matchup.week);
+          const [rosterData, transactionData, scoringSettings, playerDailyData] =
+            await Promise.all([
+              loadWeekRosterData(matchup.week),
+              loadWeekTransactionData(matchup.week),
+              loadCurrentScoringSettings(),
+              loadPlayerDailyStats(),
+            ]);
 
           if (rosterData) {
             // Season is active - show actual stats
             body.innerHTML = `
                         <div class="matchup-popup-team-section">
-                            ${renderTeamPopupSection(matchup.team1, rosterData, transactionData)}
+                            ${renderTeamPopupSection(matchup.team1, rosterData, transactionData, matchup.week, playerDailyData, scoringSettings, dailyData)}
                         </div>
                         <div class="matchup-popup-team-section">
-                            ${renderTeamPopupSection(matchup.team2, rosterData, transactionData)}
+                            ${renderTeamPopupSection(matchup.team2, rosterData, transactionData, matchup.week, playerDailyData, scoringSettings, dailyData)}
                         </div>
                     `;
           } else {
@@ -54230,7 +54235,228 @@
         return [];
       }
 
-      function renderTeamPopupSection(team, rosterData, transactionData) {
+      let currentScoringSettingsData = null;
+      async function loadCurrentScoringSettings() {
+        if (currentScoringSettingsData) return currentScoringSettingsData;
+        try {
+          const response = await fetch("data/current_season/scoring_settings.json");
+          if (response.ok) {
+            currentScoringSettingsData = await response.json();
+            return currentScoringSettingsData;
+          }
+        } catch (e) {
+          console.log("Could not load scoring settings");
+        }
+        return null;
+      }
+
+      let playerDailyStatsData = null;
+      async function loadPlayerDailyStats() {
+        if (playerDailyStatsData) return playerDailyStatsData;
+        try {
+          const response = await fetch("data/current_season/player_daily_stats.json");
+          if (response.ok) {
+            playerDailyStatsData = await response.json();
+            return playerDailyStatsData;
+          }
+        } catch (e) {
+          console.log("Could not load player daily stats");
+        }
+        return null;
+      }
+
+      function normalizePlayerLookupName(name) {
+        return (name || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/\./g, "")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function getPrimaryPositionFromString(position) {
+        let positions = String(position || "")
+          .split(/[,\/]/)
+          .map((part) => part.trim().toUpperCase())
+          .filter(Boolean);
+
+        const hasSpecificPitcher = positions.some(
+          (part) => part === "SP" || part === "RP",
+        );
+        if (hasSpecificPitcher) {
+          positions = positions.filter((part) => part !== "P");
+        }
+
+        return (
+          positions.find(
+            (part) => !["UTIL", "DH", "BN", "IL", "IL+", "NA"].includes(part),
+          ) ||
+          positions[0] ||
+          "?"
+        );
+      }
+
+      function isStreamerPosition(position) {
+        return String(position || "")
+          .split(/[,\/]/)
+          .map((part) => part.trim().toUpperCase())
+          .includes("SP");
+      }
+
+      function calculateDailyPitchingFantasyPoints(stats, scoringSettings) {
+        if (!stats) return 0;
+
+        const scoring =
+          scoringSettings?.pitching || {
+            IP: 2.5,
+            W: 2.5,
+            L: -3.0,
+            CG: 5.0,
+            ShO: 5.0,
+            SV: 5.0,
+            HA: -0.75,
+            ER: -1.75,
+            BBA: -0.75,
+            K: 1.5,
+            HLD: 2.0,
+            PICK: 3.0,
+            NH: 10.0,
+            QS: 3.0,
+          };
+
+        const ip =
+          Number(stats.IP || 0) || (Number(stats.OUTS || 0) || 0) / 3;
+
+        return (
+          ip * Number(scoring.IP || 0) +
+          Number(stats.W || 0) * Number(scoring.W || 0) +
+          Number(stats.L || 0) * Number(scoring.L || 0) +
+          Number(stats.CG || 0) * Number(scoring.CG || 0) +
+          Number(stats.ShO || stats.SHO || 0) * Number(scoring.ShO || 0) +
+          Number(stats.SV || 0) * Number(scoring.SV || 0) +
+          Number(stats.H || 0) * Number(scoring.HA || 0) +
+          Number(stats.ER || 0) * Number(scoring.ER || 0) +
+          Number(stats.BB || 0) * Number(scoring.BBA || 0) +
+          Number(stats.SO || stats.K || 0) * Number(scoring.K || 0) +
+          Number(stats.HLD || 0) * Number(scoring.HLD || 0) +
+          Number(stats.PICK || 0) * Number(scoring.PICK || 0) +
+          Number(stats.NH || 0) * Number(scoring.NH || 0) +
+          Number(stats.QS || 0) * Number(scoring.QS || 0)
+        );
+      }
+
+      function calculateDailyBattingFantasyPoints(stats, scoringSettings) {
+        if (!stats) return 0;
+
+        const scoring =
+          scoringSettings?.batting || {
+            "1B": 1.1,
+            "2B": 2.2,
+            "3B": 3.3,
+            HR: 4.4,
+            RBI: 1.0,
+            SB: 2.0,
+            CS: -1.0,
+            BB: 1.0,
+            IBB: 1.0,
+            HBP: 1.0,
+            SO: -0.5,
+            CYC: 5.0,
+            SLAM: 2.0,
+          };
+
+        const singles = Math.max(
+          0,
+          Number(stats.H || 0) -
+            Number(stats["2B"] || 0) -
+            Number(stats["3B"] || 0) -
+            Number(stats.HR || 0),
+        );
+
+        return (
+          singles * Number(scoring["1B"] || 0) +
+          Number(stats["2B"] || 0) * Number(scoring["2B"] || 0) +
+          Number(stats["3B"] || 0) * Number(scoring["3B"] || 0) +
+          Number(stats.HR || 0) * Number(scoring.HR || 0) +
+          Number(stats.RBI || 0) * Number(scoring.RBI || 0) +
+          Number(stats.SB || 0) * Number(scoring.SB || 0) +
+          Number(stats.CS || 0) * Number(scoring.CS || 0) +
+          Number(stats.BB || 0) * Number(scoring.BB || 0) +
+          Number(stats.IBB || 0) * Number(scoring.IBB || 0) +
+          Number(stats.HBP || 0) * Number(scoring.HBP || 0) +
+          Number(stats.SO || 0) * Number(scoring.SO || 0) +
+          Number(stats.CYC || 0) * Number(scoring.CYC || 0) +
+          Number(stats.SLAM || 0) * Number(scoring.SLAM || 0)
+        );
+      }
+
+      function findPlayerDailyProfile(playerName, dailyStatsData) {
+        const target = normalizePlayerLookupName(playerName);
+        const players = dailyStatsData?.players || {};
+
+        for (const [playerId, info] of Object.entries(players)) {
+          if (normalizePlayerLookupName(info?.name) === target) {
+            return { playerId, ...info };
+          }
+        }
+
+        return null;
+      }
+
+      function getWeekDates(week, dailyData) {
+        const weekData = dailyData?.weeks?.[String(week)];
+        if (Array.isArray(weekData?.days) && weekData.days.length > 0) {
+          return weekData.days.map((day) => day.date).filter(Boolean);
+        }
+        return [];
+      }
+
+      function getFallbackAddPlayerInfo(
+        playerName,
+        week,
+        dailyStatsData,
+        scoringSettings,
+        dailyData,
+      ) {
+        const profile = findPlayerDailyProfile(playerName, dailyStatsData);
+        if (!profile?.playerId) return null;
+
+        const weekDates = getWeekDates(week, dailyData);
+        let points = 0;
+
+        weekDates.forEach((date) => {
+          const playerDay =
+            dailyStatsData?.dates?.[date]?.players?.[profile.playerId];
+          if (!playerDay) return;
+
+          points += calculateDailyBattingFantasyPoints(
+            playerDay.batting,
+            scoringSettings,
+          );
+          points += calculateDailyPitchingFantasyPoints(
+            playerDay.pitching,
+            scoringSettings,
+          );
+        });
+
+        return {
+          points,
+          headshot_url: profile.headshot_url || "",
+          mlb_team: profile.mlb_team || "",
+          position: getPrimaryPositionFromString(profile.primary_position),
+        };
+      }
+
+      function renderTeamPopupSection(
+        team,
+        rosterData,
+        transactionData,
+        week,
+        dailyStatsData,
+        scoringSettings,
+        dailyData,
+      ) {
         // Get roster for this team
         let teamRoster = [];
         if (rosterData) {
@@ -54269,7 +54495,8 @@
           players.forEach((p) => {
             if (p.destination_team_key === team.team_key && p.transaction_type === "add") {
               const pos = p.position || "";
-              const isStream = pos === "SP";
+              const displayPos = getPrimaryPositionFromString(pos);
+              const isStream = isStreamerPosition(pos);
               if (isStream) {
                 streamCount++;
               } else {
@@ -54282,7 +54509,7 @@
               const projMatch = averageProjectionsMap?.[addName] || averageProjectionsMap?.[addNameNorm] || {};
               addedPlayers.push({
                 name: p.player_name || p.name || "",
-                position: pos,
+                position: displayPos,
                 headshot_url: p.headshot_url || (rosterMatch && rosterMatch.headshot_url) || projMatch.headshot || "",
                 mlb_team: p.team_abbr || p.mlb_team || p.team || "",
                 points: 0,
@@ -54307,6 +54534,26 @@
             if (!ap.headshot_url)
               ap.headshot_url = rosterPlayer.headshot_url || "";
             if (!ap.mlb_team) ap.mlb_team = rosterPlayer.mlb_team || "";
+            if (ap.position === "?" || !ap.position) {
+              ap.position = getPrimaryPosition(rosterPlayer);
+            }
+          } else {
+            const fallbackInfo = getFallbackAddPlayerInfo(
+              ap.name,
+              week,
+              dailyStatsData,
+              scoringSettings,
+              dailyData,
+            );
+            if (fallbackInfo) {
+              ap.points = fallbackInfo.points || 0;
+              addedPoints += ap.points;
+              if (!ap.headshot_url) ap.headshot_url = fallbackInfo.headshot_url;
+              if (!ap.mlb_team) ap.mlb_team = fallbackInfo.mlb_team;
+              if (ap.position === "?" || !ap.position) {
+                ap.position = fallbackInfo.position || ap.position;
+              }
+            }
           }
         });
 
@@ -54655,7 +54902,8 @@
           txPlayers.forEach((p) => {
             if (p.destination_team_key === team.team_key && p.transaction_type === "add") {
               const pos = p.position || "";
-              const isStream = pos === "SP";
+              const displayPos = getPrimaryPositionFromString(pos);
+              const isStream = isStreamerPosition(pos);
               if (isStream) {
                 streamCount++;
               } else {
@@ -54668,7 +54916,7 @@
               const projMatch = averageProjectionsMap?.[addName] || averageProjectionsMap?.[addNameNorm] || {};
               addedPlayers.push({
                 name: p.player_name || p.name || "",
-                position: pos,
+                position: displayPos,
                 headshot_url: p.headshot_url || (rosterMatch && rosterMatch.headshot_url) || projMatch.headshot || "",
                 mlb_team: p.team_abbr || p.mlb_team || "",
                 points: 0,
