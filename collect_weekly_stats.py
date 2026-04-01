@@ -42,32 +42,34 @@ OUTPUT_FILE = f"{DATA_DIR}/current_season/weekly_stats.json"
 # Also write a copy to the year-specific directory for archival
 OUTPUT_FILE_ARCHIVE = f"{DATA_DIR}/{SEASON}/weekly_stats.json"
 
-# Scoring settings (adjust to match your league)
+# Scoring settings - matches FBCW IX league settings
 BATTING_SCORING = {
-    '1B': 2.6, '2B': 5.2, '3B': 7.8, 'HR': 10.4,
-    'RBI': 1.9, 'R': 1.9, 'BB': 2.6, 'HBP': 2.6,
-    'SB': 4.2, 'CS': -2.6, 'SO': -1, 'IBB': 0,
-    'CYC': 10, 'SLAM': 10
+    '1B': 1.1, '2B': 2.2, '3B': 3.3, 'HR': 4.4,
+    'RBI': 1.0, 'SB': 2.0, 'CS': -1.0, 'BB': 1.0,
+    'IBB': 1.0, 'HBP': 1.0, 'SO': -0.5,
+    'CYC': 5.0, 'SLAM': 2.0
 }
 
 PITCHING_SCORING = {
-    'IP': 5, 'W': 4, 'L': -4, 'SV': 8, 'HLD': 4,
-    'ER': -3, 'H': -1, 'BB': -1, 'K': 3,
-    'QS': 4, 'CG': 5, 'SHO': 5, 'NH': 10, 'PICK': 2
+    'IP': 2.5, 'W': 2.5, 'L': -3.0, 'CG': 5.0,
+    'SHO': 5.0, 'SV': 5.0, 'H': -0.75, 'ER': -1.75,
+    'BB': -0.75, 'K': 1.5, 'HLD': 2.0,
+    'PICK': 3.0, 'NH': 10.0, 'QS': 3.0
 }
 
-# Yahoo stat ID mappings
+# Yahoo stat ID mappings - from league stat_modifiers
 BATTING_STAT_IDS = {
-    60: '1B', 61: '2B', 62: '3B', 63: 'HR',
-    13: 'RBI', 12: 'R', 18: 'BB', 17: 'HBP',
-    15: 'SB', 16: 'CS', 14: 'K', 76: 'IBB',
-    93: 'CYC', 75: 'SLAM'
+    9: '1B', 10: '2B', 11: '3B', 12: 'HR',
+    13: 'RBI', 16: 'SB', 17: 'CS', 18: 'BB',
+    19: 'IBB', 20: 'HBP', 21: 'SO',
+    64: 'CYC', 66: 'SLAM'
 }
 
 PITCHING_STAT_IDS = {
-    50: 'IP', 28: 'W', 29: 'L', 32: 'SV', 48: 'HLD',
-    27: 'ER', 25: 'H', 39: 'BB', 42: 'K',
-    63: 'QS', 34: 'CG', 35: 'SHO', 54: 'NH', 77: 'PICK'
+    50: 'IP', 28: 'W', 29: 'L', 30: 'CG',
+    31: 'SHO', 32: 'SV', 34: 'H', 37: 'ER',
+    39: 'BB', 42: 'K', 48: 'HLD',
+    72: 'PICK', 79: 'NH', 83: 'QS'
 }
 
 # =============================================================================
@@ -296,45 +298,68 @@ def get_completed_week(lg) -> int:
 # =============================================================================
 
 def get_team_stats(lg, week: int) -> Dict:
-    """Get team stats for a specific week."""
+    """Get team-level aggregate stats for a specific week.
+
+    Uses the Yahoo team stats API endpoint which returns the same totals
+    shown on the Yahoo Head-to-Head Stats page — these are the official
+    team category totals, not a sum of individual roster players.
+    """
     hitting_stats = []
     pitching_stats = []
-    
+
     teams = lg.teams()
-    
+
     for team_key, team_info in teams.items():
         try:
-            team_stats = lg.team_stats(team_key, week=week)
-            
+            manager_name = team_info['managers'][0]['manager']['nickname']
+            team_name = team_info['name']
+
             hitting = {
                 'team_key': team_key,
-                'team_name': team_info['name'],
-                'manager': team_info['managers'][0]['manager']['nickname'],
+                'team_name': team_name,
+                'manager': manager_name,
                 'Points': 0
             }
             pitching = {
-                'team_key': team_key, 
-                'team_name': team_info['name'],
-                'manager': team_info['managers'][0]['manager']['nickname'],
+                'team_key': team_key,
+                'team_name': team_name,
+                'manager': manager_name,
                 'Points': 0
             }
-            
-            for stat in team_stats.get('stats', []):
-                stat_id = stat.get('stat_id')
-                value = safe_float(stat.get('value', 0))
-                
-                if stat_id in BATTING_STAT_IDS:
-                    stat_name = BATTING_STAT_IDS[stat_id]
-                    hitting[stat_name] = value
-                    if stat_name in BATTING_SCORING:
-                        hitting['Points'] += value * BATTING_SCORING[stat_name]
-                
-                if stat_id in PITCHING_STAT_IDS:
-                    stat_name = PITCHING_STAT_IDS[stat_id]
-                    pitching[stat_name] = value
-                    if stat_name in PITCHING_SCORING:
-                        pitching['Points'] += value * PITCHING_SCORING[stat_name]
-            
+
+            # Fetch team-level stats for this week from Yahoo API
+            raw = lg.yhandler.get(
+                f"team/{team_key}/stats;type=week;week={week}"
+            )
+
+            # Parse team stats from the response
+            team_data = raw['fantasy_content']['team']
+            stats_container = None
+            for item in team_data:
+                if isinstance(item, dict) and 'team_stats' in item:
+                    stats_container = item['team_stats']
+                    break
+
+            if stats_container:
+                stats_list = stats_container.get('stats', [])
+                for s in stats_list:
+                    if isinstance(s, dict) and 'stat' in s:
+                        stat = s['stat']
+                        stat_id = int(stat.get('stat_id', 0))
+                        val = safe_float(stat.get('value', 0))
+
+                        if stat_id in BATTING_STAT_IDS:
+                            stat_name = BATTING_STAT_IDS[stat_id]
+                            hitting[stat_name] = val
+                            if stat_name in BATTING_SCORING:
+                                hitting['Points'] += val * BATTING_SCORING[stat_name]
+
+                        if stat_id in PITCHING_STAT_IDS:
+                            stat_name = PITCHING_STAT_IDS[stat_id]
+                            pitching[stat_name] = val
+                            if stat_name in PITCHING_SCORING:
+                                pitching['Points'] += val * PITCHING_SCORING[stat_name]
+
             if 'IP' in pitching and pitching['IP'] > 0:
                 ip = pitching['IP']
                 pitching['ERA'] = round((pitching.get('ER', 0) * 9) / ip, 2)
@@ -342,17 +367,20 @@ def get_team_stats(lg, week: int) -> Dict:
             else:
                 pitching['ERA'] = 0
                 pitching['K/9'] = 0
-            
+
             hitting['Points'] = round(hitting['Points'], 1)
             pitching['Points'] = round(pitching['Points'], 1)
-            
+
             hitting_stats.append(hitting)
             pitching_stats.append(pitching)
-            
+            print(f"  ✓ {team_name}: Hitting {hitting['Points']}pts, Pitching {pitching['Points']}pts")
+
         except Exception as e:
             print(f"  Warning: Could not get stats for {team_key}: {e}")
+            import traceback
+            traceback.print_exc()
             continue
-    
+
     return {
         'hitting': hitting_stats,
         'pitching': pitching_stats
@@ -391,42 +419,117 @@ def get_matchups(lg, week: int) -> List[Dict]:
     return matchups
 
 def get_top_performers(lg, week: int) -> Dict:
-    """Get top individual player performances for the week."""
+    """Get top individual player performances for the week using raw API."""
+    all_hitters = []
+    all_pitchers = []
+
+    teams = lg.teams()
+
+    for team_key, team_info in teams.items():
+        try:
+            team_name = team_info['name']
+
+            raw = lg.yhandler.get(
+                f"team/{team_key}/roster/players/stats;type=week;week={week}"
+            )
+
+            players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
+            player_count = int(players_data.get('count', 0))
+
+            for i in range(player_count):
+                player_key = str(i)
+                if player_key not in players_data:
+                    continue
+
+                player = players_data[player_key]['player']
+
+                # Parse player info
+                name = ''
+                position_type = ''
+                headshot_url = ''
+                for item in player[0]:
+                    if isinstance(item, dict):
+                        if 'name' in item:
+                            name = item['name'].get('full', '')
+                        elif 'position_type' in item:
+                            position_type = item['position_type']
+                        elif 'headshot' in item:
+                            headshot_url = item['headshot'].get('url', '') if isinstance(item['headshot'], dict) else ''
+
+                # Get fantasy points
+                points = 0.0
+                for item in player:
+                    if isinstance(item, dict) and 'player_points' in item:
+                        try:
+                            points = float(item['player_points'].get('total', 0))
+                        except (ValueError, TypeError):
+                            pass
+                        break
+
+                if points <= 0:
+                    continue
+
+                player_entry = {
+                    'name': name,
+                    'team_name': team_name,
+                    'headshot': headshot_url,
+                    'points': points
+                }
+
+                if position_type == 'B':
+                    all_hitters.append(player_entry)
+                elif position_type == 'P':
+                    all_pitchers.append(player_entry)
+
+        except Exception as e:
+            print(f"  Warning: Could not get performers for {team_key}: {e}")
+            continue
+
+    # Sort by points and take top 5
+    all_hitters.sort(key=lambda x: x['points'], reverse=True)
+    all_pitchers.sort(key=lambda x: x['points'], reverse=True)
+
     return {
-        'topHitters': [],
-        'topPitchers': []
+        'topHitters': all_hitters[:10],
+        'topPitchers': all_pitchers[:10]
     }
 
 def get_category_leaders(hitting_stats: List, pitching_stats: List) -> Dict:
     """Calculate category leaders from team stats."""
     leaders = {}
-    
+
     hitting_cats = ['HR', 'RBI', 'SB', '1B', '2B', '3B']
     for cat in hitting_cats:
         sorted_teams = sorted(hitting_stats, key=lambda x: x.get(cat, 0), reverse=True)
         if sorted_teams and sorted_teams[0].get(cat, 0) > 0:
             leaders[cat] = {
                 'team_key': sorted_teams[0]['team_key'],
+                'team_name': sorted_teams[0].get('team_name', ''),
+                'player_name': sorted_teams[0].get('manager', ''),
                 'value': sorted_teams[0].get(cat, 0)
             }
-    
-    pitching_cats = ['K', 'W', 'SV', 'QS']
+
+    pitching_cats = ['K', 'W', 'SV', 'QS', 'IP']
     for cat in pitching_cats:
         sorted_teams = sorted(pitching_stats, key=lambda x: x.get(cat, 0), reverse=True)
         if sorted_teams and sorted_teams[0].get(cat, 0) > 0:
             leaders[cat] = {
                 'team_key': sorted_teams[0]['team_key'],
+                'team_name': sorted_teams[0].get('team_name', ''),
+                'player_name': sorted_teams[0].get('manager', ''),
                 'value': sorted_teams[0].get(cat, 0)
             }
-    
+
     pitching_with_ip = [p for p in pitching_stats if p.get('IP', 0) > 0]
     if pitching_with_ip:
         sorted_era = sorted(pitching_with_ip, key=lambda x: x.get('ERA', 999))
         leaders['ERA'] = {
             'team_key': sorted_era[0]['team_key'],
+            'team_name': sorted_era[0].get('team_name', ''),
+            'player_name': sorted_era[0].get('manager', ''),
             'value': sorted_era[0].get('ERA', 0)
         }
-    
+
     return leaders
 
 def calculate_cumulative_stats(all_weeks: Dict) -> Dict:
@@ -489,35 +592,49 @@ def calculate_cumulative_stats(all_weeks: Dict) -> Dict:
 # MAIN COLLECTION FUNCTION
 # =============================================================================
 
-def collect_weekly_stats():
-    """Main function to collect and save weekly stats."""
+def collect_weekly_stats(target_week=None, collect_all=False):
+    """Main function to collect and save weekly stats.
+
+    Args:
+        target_week: Specific week number to collect (None = auto-detect last completed week)
+        collect_all: If True, collect all weeks from 1 to current
+    """
     print("=" * 60)
     print(f"WEEKLY STATS COLLECTION - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("=" * 60)
-    
+
     # Setup
     oauth = setup_oauth()
     gm = Game(oauth, 'mlb')
     league_ids = gm.league_ids(year=SEASON)
-    
+
     if not league_ids:
         print(f"ERROR: No league found for {SEASON}")
         return False
-    
+
     lg = League(oauth, league_ids[0])
     print(f"League: {lg.settings().get('name', 'Unknown')}")
-    
-    completed_week = get_completed_week(lg)
-    print(f"Collecting data for Week {completed_week}")
+
+    if collect_all:
+        current_week = get_current_week(lg)
+        weeks_to_collect = list(range(1, current_week + 1))
+        print(f"Collecting ALL weeks: 1 through {current_week}")
+    elif target_week is not None:
+        weeks_to_collect = [target_week]
+        print(f"Collecting specific week: {target_week}")
+    else:
+        completed_week = get_completed_week(lg)
+        weeks_to_collect = [completed_week]
+        print(f"Collecting data for Week {completed_week}")
     
     os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
-    
+
     existing_data = {
-        'currentWeek': completed_week,
+        'currentWeek': weeks_to_collect[-1],
         'weeks': {},
         'cumulative': {}
     }
-    
+
     if os.path.exists(OUTPUT_FILE):
         try:
             with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
@@ -525,24 +642,25 @@ def collect_weekly_stats():
             print(f"Loaded existing data with {len(existing_data.get('weeks', {}))} weeks")
         except Exception as e:
             print(f"Could not load existing data: {e}")
-    
-    print(f"\nCollecting Week {completed_week} stats...")
-    week_stats = get_team_stats(lg, completed_week)
-    matchups = get_matchups(lg, completed_week)
-    performers = get_top_performers(lg, completed_week)
-    leaders = get_category_leaders(week_stats['hitting'], week_stats['pitching'])
-    
-    existing_data['weeks'][str(completed_week)] = {
-        'hitting': week_stats['hitting'],
-        'pitching': week_stats['pitching'],
-        'matchups': matchups,
-        'topHitters': performers['topHitters'],
-        'topPitchers': performers['topPitchers'],
-        'categoryLeaders': leaders
-    }
-    
-    existing_data['currentWeek'] = completed_week
-    
+
+    for week_num in weeks_to_collect:
+        print(f"\nCollecting Week {week_num} stats...")
+        week_stats = get_team_stats(lg, week_num)
+        matchups = get_matchups(lg, week_num)
+        performers = get_top_performers(lg, week_num)
+        leaders = get_category_leaders(week_stats['hitting'], week_stats['pitching'])
+
+        existing_data['weeks'][str(week_num)] = {
+            'hitting': week_stats['hitting'],
+            'pitching': week_stats['pitching'],
+            'matchups': matchups,
+            'topHitters': performers['topHitters'],
+            'topPitchers': performers['topPitchers'],
+            'categoryLeaders': leaders
+        }
+
+    existing_data['currentWeek'] = weeks_to_collect[-1]
+
     print("Calculating cumulative stats...")
     existing_data['cumulative'] = calculate_cumulative_stats(existing_data['weeks'])
     
@@ -560,8 +678,7 @@ def collect_weekly_stats():
     print(f"\n✓ Saved to {OUTPUT_FILE}")
     print(f"  ✓ Archive copy saved to {OUTPUT_FILE_ARCHIVE}")
     print(f"  - Weeks collected: {len(existing_data['weeks'])}")
-    print(f"  - Current week: {completed_week}")
-    print(f"  - Matchups this week: {len(matchups)}")
+    print(f"  - Weeks: {', '.join(sorted(existing_data['weeks'].keys(), key=int))}")
     
     return True
 
@@ -593,10 +710,8 @@ Environment Variables (for GitHub Actions):
         """)
     elif len(sys.argv) > 2 and sys.argv[1] == "--week":
         week = int(sys.argv[2])
-        print(f"Collecting specific week: {week}")
-        collect_weekly_stats()
+        collect_weekly_stats(target_week=week)
     elif len(sys.argv) > 1 and sys.argv[1] == "--all":
-        print("Collecting all weeks...")
-        collect_weekly_stats()
+        collect_weekly_stats(collect_all=True)
     else:
         collect_weekly_stats()
