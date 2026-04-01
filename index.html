@@ -29018,6 +29018,149 @@
         return Object.values(managerMap);
       }
 
+      function getSeasonPlacementCounts(season) {
+        const rank = Number(season?.rank) || 0;
+        return {
+          championships: rank === 1 ? 1 : 0,
+          runner_ups: rank === 2 ? 1 : 0,
+          playoff_appearances: rank > 0 && rank <= 6 ? 1 : 0,
+        };
+      }
+
+      function refreshManagerDerivedStats(manager) {
+        if (!Array.isArray(manager.season_history)) {
+          manager.season_history = [];
+        }
+
+        manager.season_history.sort((a, b) => a.year - b.year);
+        manager.seasons_played = manager.season_history.length;
+
+        if (manager.season_history.length > 0) {
+          manager.first_season = Math.min(
+            ...manager.season_history.map((season) => Number(season.year) || 0),
+          );
+          manager.avg_finish =
+            manager.season_history.reduce(
+              (sum, season) => sum + (Number(season.rank) || 0),
+              0,
+            ) / manager.season_history.length;
+        } else {
+          manager.avg_finish = 0;
+        }
+
+        const totalGames =
+          (Number(manager.total_wins) || 0) + (Number(manager.total_losses) || 0);
+        manager.win_pct = totalGames > 0 ? manager.total_wins / totalGames : 0;
+      }
+
+      function syncCurrentSeasonManagerData(
+        managersData,
+        currentStandings,
+        seasonYear = 2026,
+      ) {
+        if (!Array.isArray(currentStandings) || currentStandings.length === 0) {
+          return managersData;
+        }
+
+        const managerMap = new Map(
+          managersData.map((manager) => [manager.manager_name, manager]),
+        );
+        const normalizedStandings = normalizeStandingsData(
+          currentStandings,
+          seasonYear,
+        );
+
+        normalizedStandings.forEach((team) => {
+          const managerName = team.manager;
+          let manager = managerMap.get(managerName);
+
+          if (!manager) {
+            manager = {
+              manager_name: managerName,
+              first_season: seasonYear,
+              total_wins: 0,
+              total_losses: 0,
+              total_ties: 0,
+              championships: 0,
+              runner_ups: 0,
+              playoff_appearances: 0,
+              seasons_played: 0,
+              total_points_for: 0,
+              season_history: [],
+            };
+            managersData.push(manager);
+            managerMap.set(managerName, manager);
+          }
+
+          const currentSeason = {
+            year: seasonYear,
+            team_name: team.team_name,
+            wins: Number(team.wins) || 0,
+            losses: Number(team.losses) || 0,
+            ties: Number(team.ties) || 0,
+            points_for: Number(team.points_for) || 0,
+            points_against: Number(team.points_against) || 0,
+            rank: Number(team.rank) || 0,
+          };
+
+          const existingIndex = manager.season_history.findIndex(
+            (season) => Number(season.year) === seasonYear,
+          );
+          const existingSeason =
+            existingIndex >= 0 ? manager.season_history[existingIndex] : null;
+          const existingPlacement = getSeasonPlacementCounts(existingSeason);
+          const currentPlacement = getSeasonPlacementCounts(currentSeason);
+
+          manager.total_wins =
+            (Number(manager.total_wins) || 0) -
+            (Number(existingSeason?.wins) || 0) +
+            currentSeason.wins;
+          manager.total_losses =
+            (Number(manager.total_losses) || 0) -
+            (Number(existingSeason?.losses) || 0) +
+            currentSeason.losses;
+          manager.total_ties =
+            (Number(manager.total_ties) || 0) -
+            (Number(existingSeason?.ties) || 0) +
+            currentSeason.ties;
+          manager.total_points_for =
+            (Number(manager.total_points_for) || 0) -
+            (Number(existingSeason?.points_for) || 0) +
+            currentSeason.points_for;
+          manager.championships = Math.max(
+            0,
+            (Number(manager.championships) || 0) -
+              existingPlacement.championships +
+              currentPlacement.championships,
+          );
+          manager.runner_ups = Math.max(
+            0,
+            (Number(manager.runner_ups) || 0) -
+              existingPlacement.runner_ups +
+              currentPlacement.runner_ups,
+          );
+          manager.playoff_appearances = Math.max(
+            0,
+            (Number(manager.playoff_appearances) || 0) -
+              existingPlacement.playoff_appearances +
+              currentPlacement.playoff_appearances,
+          );
+
+          if (existingIndex >= 0) {
+            manager.season_history[existingIndex] = {
+              ...existingSeason,
+              ...currentSeason,
+            };
+          } else {
+            manager.season_history.push(currentSeason);
+          }
+
+          refreshManagerDerivedStats(manager);
+        });
+
+        return managersData;
+      }
+
       // Split Logan's stats for 2023 based on team_key
       async function splitLogan2023Stats() {
         try {
@@ -29941,19 +30084,24 @@
 
         try {
           // Load all historical seasons
-          const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
+          const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
 
           for (const season of seasons) {
             try {
-              const scoresResponse = await fetch(
-                `data/historical/${season}/all_scores.json`,
-              );
+              const scoresPath =
+                season === 2026
+                  ? "data/current_season/all_scores.json"
+                  : `data/historical/${season}/all_scores.json`;
+              const standingsPath =
+                season === 2026
+                  ? "data/current_season/standings.json"
+                  : `data/historical/${season}/final_standings.json`;
+
+              const scoresResponse = await fetch(scoresPath);
               if (!scoresResponse.ok) continue;
 
               const scores = await scoresResponse.json();
-              const standingsResponse = await fetch(
-                `data/historical/${season}/final_standings.json`,
-              );
+              const standingsResponse = await fetch(standingsPath);
               if (!standingsResponse.ok) continue;
 
               let standings = await standingsResponse.json();
@@ -29973,6 +30121,10 @@
 
               // Process matchups
               scores.forEach((matchup) => {
+                if (season === 2026 && !isCompletedCurrentSeasonMatchup(matchup)) {
+                  return;
+                }
+
                 if (matchup.team_key === managerTeam.team_key) {
                   const opponent = teamToManager[matchup.opponent_key];
                   if (!opponent) return;
@@ -30003,6 +30155,51 @@
         }
 
         return h2hMap;
+      }
+
+      function getCurrentSeasonReferenceWeek() {
+        const candidateWeeks = [
+          Number(cachedWeeklyStats?.currentWeek) || 0,
+          Number(maxAvailableWeek) || 0,
+        ];
+
+        const cachedScores = Array.isArray(window.cached2026Data?.allScores)
+          ? window.cached2026Data.allScores
+          : [];
+        cachedScores.forEach((score) => {
+          candidateWeeks.push(Number(score?.week) || 0);
+        });
+
+        return Math.max(...candidateWeeks, 0);
+      }
+
+      function matchupHasVisibleScores(matchup) {
+        return (
+          Number(matchup?.team_score || 0) !== 0 ||
+          Number(matchup?.opponent_score || 0) !== 0
+        );
+      }
+
+      function isCompletedCurrentSeasonMatchup(matchup) {
+        if (!matchupHasVisibleScores(matchup)) {
+          return false;
+        }
+
+        const referenceWeek = getCurrentSeasonReferenceWeek();
+        if (!referenceWeek) {
+          return true;
+        }
+
+        return Number(matchup.week) < referenceWeek;
+      }
+
+      function isLiveCurrentSeasonMatchup(matchup) {
+        if (!matchupHasVisibleScores(matchup)) {
+          return false;
+        }
+
+        const referenceWeek = getCurrentSeasonReferenceWeek();
+        return referenceWeek > 0 && Number(matchup.week) === referenceWeek;
       }
 
       function renderScheduleCards(
@@ -30083,12 +30280,14 @@
         const oppTeamName = oppTeam?.team_name || "Unknown Team";
         const oppLogo = teamLogos[game.opponent_key] || "";
 
-        const played = game.team_score > 0 || game.opponent_score > 0;
+        const completed = isCompletedCurrentSeasonMatchup(game);
+        const liveMatchup = isLiveCurrentSeasonMatchup(game);
+        const hasScores = matchupHasVisibleScores(game);
         let cardClass = "upcoming";
         let resultText = "";
         let scoreText = "0 | 0";
 
-        if (played) {
+        if (completed) {
           if (game.team_score > game.opponent_score) {
             cardClass = "win";
             resultText = "W";
@@ -30102,6 +30301,8 @@
             resultText = "T";
             scoreText = `${game.team_score.toFixed(1)} | ${game.opponent_score.toFixed(1)}`;
           }
+        } else if (liveMatchup || hasScores) {
+          scoreText = `${game.team_score.toFixed(1)} | ${game.opponent_score.toFixed(1)}`;
         }
 
         // Get historical H2H for this opponent
@@ -33939,56 +34140,11 @@
           if (currentStandingsForInjection.ok) {
             const currentStandings2026 =
               await currentStandingsForInjection.json();
-            const normalized2026 = normalizeStandingsData(
+            allManagersData = syncCurrentSeasonManagerData(
+              allManagersData,
               currentStandings2026,
               2026,
             );
-
-            // Get 2026 team data for logos
-            const teams2026 = await getTeamData(2026);
-
-            allManagersData.forEach((manager) => {
-              // Check if manager already has 2026 season
-              const has2026 = manager.season_history.some(
-                (s) => s.year === 2026,
-              );
-              if (!has2026) {
-                // Find this manager in current standings
-                const current2026 = normalized2026.find(
-                  (t) =>
-                    normalizeManagerName(t.manager, 2026, t.team_name) ===
-                    manager.manager_name,
-                );
-                if (current2026) {
-                  // Add 2026 season to history
-                  manager.season_history.push({
-                    year: 2026,
-                    team_name: current2026.team_name,
-                    wins: current2026.wins || 0,
-                    losses: current2026.losses || 0,
-                    ties: current2026.ties || 0,
-                    points_for: current2026.points_for || 0,
-                    points_against: current2026.points_against || 0,
-                    rank: current2026.rank || 0,
-                  });
-
-                  // Update totals
-                  manager.total_wins += current2026.wins || 0;
-                  manager.total_losses += current2026.losses || 0;
-                  manager.total_ties += current2026.ties || 0;
-                  manager.total_points_for += current2026.points_for || 0;
-                  manager.seasons_played += 1;
-
-                  // Recalculate win percentage
-                  const totalGames =
-                    manager.total_wins +
-                    manager.total_losses +
-                    manager.total_ties;
-                  manager.win_pct =
-                    totalGames > 0 ? manager.total_wins / totalGames : 0;
-                }
-              }
-            });
           }
 
           // Determine all unique seasons we need to load
@@ -35385,9 +35541,7 @@
             try {
               let scoresResponse;
               if (season === 2026) {
-                scoresResponse = await fetch(
-                  "data/historical/2025/all_scores.json",
-                );
+                scoresResponse = await fetch("data/current_season/all_scores.json");
               } else {
                 scoresResponse = await fetch(
                   `data/historical/${season}/all_scores.json`,
@@ -35400,7 +35554,7 @@
               let standings =
                 season === 2026
                   ? await (
-                      await fetch("data/historical/2025/standings.json")
+                      await fetch("data/current_season/standings.json")
                     ).json()
                   : await (
                       await fetch(
@@ -35425,6 +35579,10 @@
 
               // Process matchups
               scores.forEach((matchup) => {
+                if (season === 2026 && !isCompletedCurrentSeasonMatchup(matchup)) {
+                  return;
+                }
+
                 if (matchup.team_key === managerTeam.team_key) {
                   const opponent = teamToManager[matchup.opponent_key];
                   if (!opponent) return;

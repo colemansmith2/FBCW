@@ -4107,12 +4107,9 @@ def quick_update():
     except Exception as e:
         print(f"  ⚠ Could not run post-draft prep: {e}")
 
-    # 9. Update manager profiles if team info changed
-    if teams_changed:
-        print("Updating manager profiles (team info changed)...")
-        update_manager_stats(oauth)
-    else:
-        print("Manager profiles unchanged (no team info changes)")
+    # 9. Refresh manager profiles from the latest standings/scores
+    print("Updating manager profiles...")
+    update_manager_stats(oauth)
     return teams_changed
 
 def postdraft_update():
