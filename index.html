@@ -30710,6 +30710,10 @@
         if (column === "IP") {
           return Number(value || 0).toFixed(1);
         }
+        if (column === "Points") {
+          const num = Number(value || 0);
+          return Number.isInteger(num) ? `${num}` : num.toFixed(1);
+        }
         return formatStatValue(value);
       }
 
@@ -30770,9 +30774,15 @@
         const sectionHeaderHeight = 56;
         const tableHeaderHeight = 48;
         const rowHeight = 60;
-        const rankWidth = 48;
+        const rankWidth = 34;
         const teamWidth = 278;
-        const statWidth = (width - rankWidth - teamWidth) / config.columns.length;
+        const pointsWidth = 94;
+        const regularStatWidth =
+          (width - rankWidth - teamWidth - pointsWidth) /
+          (config.columns.length - 1);
+        const statColumnWidths = config.columns.map((col) =>
+          col === "Points" ? pointsWidth : regularStatWidth,
+        );
         const colRanks = getColumnRanks(stats, config.columns);
         const sortedStats = [...stats].sort(
           (a, b) => (b.Points || 0) - (a.Points || 0),
@@ -30812,8 +30822,14 @@
         const columnWidths = [
           rankWidth,
           teamWidth,
-          ...config.columns.map(() => statWidth),
+          ...statColumnWidths,
         ];
+        const statColumnOffsets = [];
+        let statCursorX = x + rankWidth + teamWidth;
+        statColumnWidths.forEach((colWidth, index) => {
+          statColumnOffsets[index] = statCursorX;
+          statCursorX += colWidth;
+        });
 
         let cursorX = x;
         headerCells.forEach((header, index) => {
@@ -30911,7 +30927,8 @@
           );
 
           config.columns.forEach((col, columnIndex) => {
-            const cellX = x + rankWidth + teamWidth + columnIndex * statWidth;
+            const cellX = statColumnOffsets[columnIndex];
+            const colWidth = statColumnWidths[columnIndex];
             const value = team[col] || 0;
             const rank = colRanks[col].indexOf(value) + 1;
             const style = getHeatCellStyle(
@@ -30920,11 +30937,11 @@
             );
 
             ctx.fillStyle = style.background;
-            ctx.fillRect(cellX, rowY, statWidth, rowHeight);
+            ctx.fillRect(cellX, rowY, colWidth, rowHeight);
             drawCanvasText(
               ctx,
               `${formatScreenshotStatValue(col, value)}`,
-              cellX + statWidth / 2,
+              cellX + colWidth / 2,
               rowY + rowHeight / 2,
               {
                 align: "center",
@@ -30950,7 +30967,7 @@
         }));
         const canvasWidth = 1200;
         const outerPadding = 34;
-        const headerHeight = 92;
+        const headerHeight = 104;
         const sectionGap = 24;
         const tableWidth = canvasWidth - outerPadding * 2;
         const leagueLogoUrl = resolveCanvasAssetUrl("league_logo.png");
@@ -31004,14 +31021,14 @@
           ctx,
           getTeamStatsScreenshotSubtitle(weeklyStats, selectedWeek),
           outerPadding + 74,
-          outerPadding + 56,
+          outerPadding + 58,
           {
             align: "left",
             baseline: "top",
             fillStyle: "#d4af37",
-            font: '20px "Basis33", sans-serif',
+            font: '24px "Arcade Gamer", sans-serif',
             fauxBold: true,
-            offset: 0.8,
+            offset: 0.9,
           },
         );
 
