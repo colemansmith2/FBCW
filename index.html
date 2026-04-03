@@ -28268,7 +28268,7 @@
 
           for (const fname of rosFiles) {
             try {
-              const resp = await fetch(`data/projections/ros/projections_${fname}.json`);
+              const resp = await fetch(`data/projections/ros/${fname}.json`);
               if (!resp.ok) continue;
               const data = await resp.json();
               const allPlayers = [...(data.batters || []), ...(data.pitchers || [])];
@@ -45864,9 +45864,28 @@
            averageProjectionsMap[baseName] || averageProjectionsMap[name] ||
            averageProjectionsMap[`${baseNameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || null) : null;
 
-        const proj2026 = data2026.points || (avgProj ? avgProj.avgPoints : 0) || 0;
-        const proj2027 = data2027.points || 0;
-        const proj2028 = data2028.points || 0;
+        let proj2026, proj2027, proj2028;
+
+        if (tradeAnalyzerData.isInSeason) {
+          // In-season mode: 2026 = actual YTD points + ROS projected points
+          const actual =
+            (tradeAnalyzerData.actualStats[name] || tradeAnalyzerData.actualStats[nameNorm] || {}).fantasyPoints || 0;
+          const ros =
+            (tradeAnalyzerData.rosProjections[name] || tradeAnalyzerData.rosProjections[nameNorm] || {}).rosPoints || 0;
+          proj2026 = actual + ros;
+
+          // If no ROS or actual data, fall back to preseason ZiPS, then avg projections
+          if (proj2026 === 0) {
+            proj2026 = data2026.points || (avgProj ? avgProj.avgPoints : 0) || 0;
+          }
+        } else {
+          // Preseason mode: use ZiPS DC projection, fall back to avg projections
+          proj2026 = data2026.points || (avgProj ? avgProj.avgPoints : 0) || 0;
+        }
+
+        // 2027 and 2028 always use ZiPS multi-year projections
+        proj2027 = data2027.points || 0;
+        proj2028 = data2028.points || 0;
 
         let round2026, round2027, round2028;
 
@@ -46253,8 +46272,21 @@
           const keeperDetails = [];
 
           for (const keeper of teamKeepers) {
-            // Use average projection across all systems
-            const projectedPts = getAverageProjection(keeper.player_name);
+            // Use in-season projection (actual YTD + ROS) when available, else preseason avg
+            let projectedPts;
+            if (tradeAnalyzerData.isInSeason) {
+              const kName = (keeper.player_name || "").toLowerCase().trim();
+              const kNameNorm = kName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+              const actual = (tradeAnalyzerData.actualStats[kName] || tradeAnalyzerData.actualStats[kNameNorm] || {}).fantasyPoints || 0;
+              const ros = (tradeAnalyzerData.rosProjections[kName] || tradeAnalyzerData.rosProjections[kNameNorm] || {}).rosPoints || 0;
+              projectedPts = actual + ros;
+              // Fall back to preseason if no in-season data
+              if (projectedPts === 0) {
+                projectedPts = getAverageProjection(keeper.player_name);
+              }
+            } else {
+              projectedPts = getAverageProjection(keeper.player_name);
+            }
 
             const isProspect = isProspectKeeperEntry(keeper);
             // Use actual round cost (after bumping) instead of base round cost
@@ -47375,11 +47407,16 @@
       }
 
       function getPlayerSeasonScore(playerName, positionType) {
-        // Get average projection (works pre-season or as fallback)
-        const avgProj = getAverageProjection(playerName, positionType);
-        // TODO: When season is in progress, blend actual stats + ROS projection
-        // For now, preseason: just use average projection
-        return avgProj;
+        if (tradeAnalyzerData.isInSeason) {
+          const name = (playerName || "").toLowerCase().trim();
+          const nameNorm = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          const actual = (tradeAnalyzerData.actualStats[name] || tradeAnalyzerData.actualStats[nameNorm] || {}).fantasyPoints || 0;
+          const ros = (tradeAnalyzerData.rosProjections[name] || tradeAnalyzerData.rosProjections[nameNorm] || {}).rosPoints || 0;
+          const inSeason = actual + ros;
+          if (inSeason > 0) return inSeason;
+        }
+        // Fallback to preseason average projection
+        return getAverageProjection(playerName, positionType);
       }
 
       function getPlayerHeadshot(playerName, positionType) {
