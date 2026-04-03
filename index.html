@@ -23146,7 +23146,7 @@
               class="trade-screenshot-btn"
               onclick="generateTradeScreenshot()"
             >
-              📸 Generate Screenshot
+              📸 Download Screenshot
             </button>
             <button class="trade-reset-btn" onclick="resetTradeAnalyzer()">
               Reset Trade
@@ -45365,7 +45365,7 @@
         }
       }
 
-      function generateTradeScreenshot() {
+      async function generateTradeScreenshot() {
         const team1Key = tradeAnalyzerData.team1;
         const team2Key = tradeAnalyzerData.team2;
         const offer1 = tradeAnalyzerData.team1Offer || [];
@@ -45382,182 +45382,484 @@
           return;
         }
 
-        const team1 = tradeAnalyzerData.teams[team1Key];
-        const team2 = tradeAnalyzerData.teams[team2Key];
-        const perspective1 = calculatePerspectiveValue(1);
-        const perspective2 = calculatePerspectiveValue(2);
+        const btn = document.querySelector(".trade-screenshot-btn");
+        const originalLabel = btn ? btn.textContent : "";
+        if (btn) { btn.disabled = true; btn.textContent = "Rendering..."; }
 
-        // Get current marker position and verdict from the actual UI
-        const markerEl = document.getElementById("trade-balance-marker");
-        const verdictEl = document.getElementById("trade-balance-verdict");
-        const labelEl = document.getElementById("trade-balance-label");
-        const markerLeft = markerEl ? markerEl.style.left : "50%";
-        const verdict = verdictEl ? verdictEl.textContent : "";
-        const label = labelEl ? labelEl.textContent : "";
+        try {
+          const team1 = tradeAnalyzerData.teams[team1Key];
+          const team2 = tradeAnalyzerData.teams[team2Key];
+          const perspective1 = calculatePerspectiveValue(1);
+          const perspective2 = calculatePerspectiveValue(2);
+          const goal1 = tradeAnalyzerData.team1Goal || "default";
+          const goal2 = tradeAnalyzerData.team2Goal || "default";
 
-        const placeholderImg =
-          "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
+          const markerEl = document.getElementById("trade-balance-marker");
+          const verdictEl = document.getElementById("trade-balance-verdict");
+          const labelEl = document.getElementById("trade-balance-label");
+          const markerPct = markerEl ? parseFloat(markerEl.style.left) || 50 : 50;
+          const verdict = verdictEl ? verdictEl.textContent : "";
+          const label = labelEl ? labelEl.textContent : "";
 
-        // Helper to render an offer item
-        const renderOfferItem = (item) => {
-          if (item.type === "player") {
-            const headshot = item.headshot || placeholderImg;
-            const pos = item.position || "UT";
-            const prospect = item.isProspect
-              ? ' <span style="font-size:0.55rem;">(P)</span>'
-              : "";
-            const mlbTeam = item.mlbTeam
-              ? formatMLBTeamDisplay(item.mlbTeam)
-              : "";
-            const mlbLogoUrl = item.mlbTeam ? getMLBTeamLogo(item.mlbTeam) : "";
-            const mlbLogoHtml = mlbLogoUrl
-              ? `<img src="${mlbLogoUrl}" style="width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:2px;" onerror="this.style.display='none'">`
-              : "";
-            return `
-                        <div class="screenshot-player">
-                            <img src="${headshot}" class="screenshot-player-headshot" onerror="this.src='${placeholderImg}'">
-                            <div class="screenshot-player-info">
-                                <div class="screenshot-player-name">${item.name}</div>
-                                <div class="screenshot-player-meta">${pos}${mlbTeam ? " • " + mlbLogoHtml + mlbTeam : ""}${prospect}</div>
-                            </div>
-                            <div class="screenshot-player-value">${item.baseValue || item.value || 0}</div>
-                        </div>
-                    `;
-          } else if (item.type === "pick") {
-            const pickColors =
-              item.year === 2027
-                ? { circleBg: "#ab47bc", text: "#fff" }
-                : { circleBg: "#ffa726", text: "#333" };
-            return `
-                        <div class="screenshot-player">
-                            <div class="screenshot-player-headshot" style="background: ${pickColors.circleBg}; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; font-weight: bold; color: ${pickColors.text};">R${item.round}</div>
-                            <div class="screenshot-player-info">
-                                <div class="screenshot-player-name">${item.year} Round ${item.round} Pick</div>
-                                <div class="screenshot-player-meta">Draft Pick</div>
-                            </div>
-                            <div class="screenshot-player-value">${item.baseValue || item.value || 0}</div>
-                        </div>
-                    `;
-          } else if (item.type === "budget") {
-            return `
-                        <div class="screenshot-player">
-                            <div class="screenshot-player-headshot" style="background: #28a745; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; color: white;">$</div>
-                            <div class="screenshot-player-info">
-                                <div class="screenshot-player-name">$${item.amount} Budget</div>
-                                <div class="screenshot-player-meta">Auction Budget</div>
-                            </div>
-                            <div class="screenshot-player-value">${item.value || 0}</div>
-                        </div>
-                    `;
+          // Position badge color map (matches site CSS)
+          const posBadgeColors = {
+            C:   { text: "#4a148c", bg: "rgba(74, 20, 140, 0.15)" },
+            "1B": { text: "#1565c0", bg: "rgba(21, 101, 192, 0.15)" },
+            "2B": { text: "#e65100", bg: "rgba(230, 81, 0, 0.15)" },
+            "3B": { text: "#b71c1c", bg: "rgba(183, 28, 28, 0.15)" },
+            SS:  { text: "#9c7c00", bg: "rgba(200, 160, 0, 0.18)" },
+            OF:  { text: "#2e7d32", bg: "rgba(46, 125, 50, 0.15)" },
+            LF:  { text: "#2e7d32", bg: "rgba(46, 125, 50, 0.15)" },
+            CF:  { text: "#2e7d32", bg: "rgba(46, 125, 50, 0.15)" },
+            RF:  { text: "#2e7d32", bg: "rgba(46, 125, 50, 0.15)" },
+            DH:  { text: "#546e7a", bg: "rgba(84, 110, 122, 0.15)" },
+            Util: { text: "#546e7a", bg: "rgba(84, 110, 122, 0.15)" },
+            SP:  { text: "#7e57c2", bg: "rgba(126, 87, 194, 0.15)" },
+            RP:  { text: "#00838f", bg: "rgba(0, 131, 143, 0.15)" },
+            P:   { text: "#7e57c2", bg: "rgba(126, 87, 194, 0.15)" },
+          };
+
+          // Pixelated bar color bands (matches .trade-balance-bar CSS)
+          const barBands = [
+            { pct: 0.10, color: "#dc3545" },
+            { pct: 0.20, color: "#e85d04" },
+            { pct: 0.30, color: "#f48c06" },
+            { pct: 0.40, color: "#ffc107" },
+            { pct: 0.45, color: "#90be6d" },
+            { pct: 0.55, color: "#28a745" },
+            { pct: 0.60, color: "#90be6d" },
+            { pct: 0.70, color: "#ffc107" },
+            { pct: 0.80, color: "#f48c06" },
+            { pct: 0.90, color: "#e85d04" },
+            { pct: 1.00, color: "#dc3545" },
+          ];
+
+          // Sort offers: players first, then picks, then budget
+          const sortItems = (items) => {
+            const players = items.filter((i) => i.type === "player");
+            const picks = items.filter((i) => i.type === "pick");
+            const rest = items.filter((i) => i.type !== "player" && i.type !== "pick");
+            return [...players, ...picks, ...rest];
+          };
+          const sorted1 = sortItems(offer1);
+          const sorted2 = sortItems(offer2);
+
+          // Pre-load all images (team logos, headshots, MLB logos)
+          const loadImg = (url) => new Promise((resolve) => {
+            if (!url) { resolve(null); return; }
+            const img = new Image();
+            // Only set crossOrigin for external URLs (not local files)
+            if (url.startsWith("http")) img.crossOrigin = "anonymous";
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
+            img.src = url;
+          });
+
+          // Collect all images to preload
+          const allItems = [...sorted1, ...sorted2];
+          const imagePromises = {};
+          imagePromises.logo1 = loadImg(fixTeamLogo(team1?.team_logo));
+          imagePromises.logo2 = loadImg(fixTeamLogo(team2?.team_logo));
+          allItems.forEach((item, i) => {
+            if (item.type === "player") {
+              imagePromises[`headshot_${i}`] = loadImg(item.headshot || "");
+              if (item.mlbTeam) {
+                imagePromises[`mlblogo_${i}`] = loadImg(getMLBTeamLogo(item.mlbTeam));
+              }
+            }
+          });
+          const imgKeys = Object.keys(imagePromises);
+          const imgResults = await Promise.all(Object.values(imagePromises));
+          const imgs = {};
+          imgKeys.forEach((k, i) => { imgs[k] = imgResults[i]; });
+
+          // Load Basis33 font for canvas
+          try {
+            const basis33 = new FontFace("Basis33", "url(data/fonts/basis33.ttf)");
+            await basis33.load();
+            document.fonts.add(basis33);
+          } catch(e) {}
+          try {
+            const arcade = new FontFace("Arcade Gamer", "url(data/fonts/PressStart2P.ttf)");
+            await arcade.load();
+            document.fonts.add(arcade);
+          } catch(e) {}
+
+          // Canvas setup
+          const scale = 2;
+          const W = 720;
+          const pad = 24;
+          const colW = (W - pad * 3) / 2;
+          const rowH = 44;
+          const headerH = 54;
+          const goalH = 24;
+          const sectionLabelH = 26;
+          const perspH = 96;
+          const barAreaH = 54;
+          const verdictH = 28;
+          const watermarkH = 70;
+          const maxRows = Math.max(sorted1.length, sorted2.length, 1);
+          const H = pad + barAreaH + verdictH + headerH + goalH + sectionLabelH + (maxRows * rowH) + 12 + perspH + watermarkH + pad + 10;
+
+          const canvas = document.createElement("canvas");
+          canvas.width = W * scale;
+          canvas.height = H * scale;
+          const ctx = canvas.getContext("2d");
+          ctx.scale(scale, scale);
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = "high";
+
+          // Colors
+          const bgColor = "#f5e6c8";
+          const cardBg = "#ffffff";
+          const headerBg = "#0048ba";
+          const textDark = "#2c3e50";
+          const textMuted = "#6c757d";
+          const goldAccent = "#d4a017";
+          const greenVal = "#28a745";
+          const redVal = "#dc3545";
+          const dividerColor = "#dee2e6";
+          const fontBody = "Basis33, sans-serif";
+          const fontHeading = "'Arcade Gamer', 'Press Start 2P', monospace";
+
+          // Fill background
+          ctx.fillStyle = bgColor;
+          ctx.fillRect(0, 0, W, H);
+
+          // --- Pixelated balance bar ---
+          let y = pad;
+          const barY = y + 16;
+          const barH = 22;
+          const logoR = 20;
+          const barX1 = pad + logoR * 2 + 12;
+          const barX2 = W - pad - logoR * 2 - 12;
+          const barW = barX2 - barX1;
+
+          // Draw image in circle with cover-crop (no stretching)
+          const drawCircleImg = (img, cx, cy, r, stroke = true) => {
+            if (!img) return;
+            ctx.save();
+            ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+            // Cover-crop: scale to fill circle, crop from center
+            const aspect = img.naturalWidth / img.naturalHeight;
+            let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+            if (aspect > 1) {
+              // Wider than tall — crop sides
+              sw = img.naturalHeight;
+              sx = (img.naturalWidth - sw) / 2;
+            } else {
+              // Taller than wide — crop top/bottom
+              sh = img.naturalWidth;
+              sy = (img.naturalHeight - sh) / 2;
+            }
+            ctx.drawImage(img, sx, sy, sw, sh, cx - r, cy - r, r * 2, r * 2);
+            ctx.restore();
+            if (stroke) {
+              ctx.strokeStyle = "#333"; ctx.lineWidth = 2;
+              ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+            }
+          };
+          drawCircleImg(imgs.logo1, pad + logoR, barY + barH / 2, logoR);
+          drawCircleImg(imgs.logo2, W - pad - logoR, barY + barH / 2, logoR);
+
+          // Draw pixelated bar with hard color stops
+          ctx.strokeStyle = "#333"; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.roundRect(barX1, barY, barW, barH, 4); ctx.stroke();
+          ctx.save();
+          ctx.beginPath(); ctx.roundRect(barX1, barY, barW, barH, 4); ctx.clip();
+          let prevPct = 0;
+          for (const band of barBands) {
+            ctx.fillStyle = band.color;
+            const x = barX1 + prevPct * barW;
+            const w = (band.pct - prevPct) * barW;
+            ctx.fillRect(x, barY, w, barH);
+            prevPct = band.pct;
           }
-          return "";
-        };
+          ctx.restore();
 
-        // Helper to get perspective value class
-        const getValueClass = (val) => {
-          if (val > 0) return "positive";
-          if (val < 0) return "negative";
-          return "neutral";
-        };
+          // Marker (dark with white border, matching site)
+          const markerX = barX1 + (markerPct / 100) * barW;
+          ctx.fillStyle = "#333";
+          ctx.fillRect(markerX - 3, barY - 4, 6, barH + 8);
+          ctx.strokeStyle = "#ffffff"; ctx.lineWidth = 2;
+          ctx.strokeRect(markerX - 3, barY - 4, 6, barH + 8);
 
-        // Sort offers: players first, then picks, then budget
-        const sortOfferItems = (items) => {
-          const players = items.filter((i) => i.type === "player");
-          const picks = items.filter((i) => i.type === "pick");
-          const rest = items.filter(
-            (i) => i.type !== "player" && i.type !== "pick",
-          );
-          return [...players, ...picks, ...rest];
-        };
-        const sortedOffer1 = sortOfferItems(offer1);
-        const sortedOffer2 = sortOfferItems(offer2);
+          y += barAreaH;
 
-        const contentEl = document.getElementById("trade-screenshot-content");
-        contentEl.innerHTML = `
-                <div class="screenshot-balance-bar">
-                    <img src="${team1?.team_logo || ""}" class="screenshot-team-logo" onerror="this.style.background='#ddd'">
-                    <div class="screenshot-bar">
-                        <div class="screenshot-marker" style="left: ${markerLeft}; transform: translateX(-50%);"></div>
-                    </div>
-                    <img src="${team2?.team_logo || ""}" class="screenshot-team-logo" onerror="this.style.background='#ddd'">
-                </div>
-                <div class="screenshot-verdict">${label}${verdict ? " • " + verdict : ""}</div>
+          // Verdict text
+          ctx.fillStyle = textDark;
+          ctx.font = `bold 15px ${fontBody}`;
+          ctx.textAlign = "center";
+          ctx.fillText(`${label}${verdict ? "  -  " + verdict : ""}`, W / 2, y + 6);
+          y += verdictH;
 
-                <div class="screenshot-teams">
-                    <div class="screenshot-team">
-                        <div class="screenshot-team-header">
-                            <img src="${team1?.team_logo || ""}" onerror="this.style.display='none'">
-                            <div>
-                                <div class="screenshot-team-name">${team1?.team_name || "Team 1"}</div>
-                                <div class="screenshot-team-manager">${team1?.manager || ""}</div>
-                            </div>
-                        </div>
-                        <div class="screenshot-section-label">Offering</div>
-                        <div class="screenshot-players">
-                            ${sortedOffer1.length > 0 ? sortedOffer1.map(renderOfferItem).join("") : '<div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; padding: 0.5rem 0;">No assets</div>'}
-                        </div>
-                        <div class="screenshot-perspective">
-                            <div class="screenshot-perspective-header">From ${team1?.manager?.split(" ")[0] || "Their"}'s View</div>
-                            <div class="screenshot-perspective-row">
-                                <span>Giving:</span>
-                                <span class="screenshot-perspective-value negative">${perspective1.giving}</span>
-                            </div>
-                            <div class="screenshot-perspective-row">
-                                <span>Getting:</span>
-                                <span class="screenshot-perspective-value positive">${perspective1.getting}</span>
-                            </div>
-                            <div class="screenshot-perspective-row net">
-                                <span>Net:</span>
-                                <span class="screenshot-perspective-value ${getValueClass(perspective1.net)}">${perspective1.net > 0 ? "+" : ""}${perspective1.net}</span>
-                            </div>
-                        </div>
-                    </div>
+          // --- Draw a team column ---
+          const drawTeamColumn = (colX, team, sortedOffer, perspective, goal, logoImg, sideIndex) => {
+            let cy = y;
+            const offerCount = Math.max(sortedOffer.length, 1);
+            const cardH = headerH + goalH + sectionLabelH + (offerCount * rowH) + 12 + perspH;
 
-                    <div class="screenshot-team">
-                        <div class="screenshot-team-header">
-                            <img src="${team2?.team_logo || ""}" onerror="this.style.display='none'">
-                            <div>
-                                <div class="screenshot-team-name">${team2?.team_name || "Team 2"}</div>
-                                <div class="screenshot-team-manager">${team2?.manager || ""}</div>
-                            </div>
-                        </div>
-                        <div class="screenshot-section-label">Offering</div>
-                        <div class="screenshot-players">
-                            ${sortedOffer2.length > 0 ? sortedOffer2.map(renderOfferItem).join("") : '<div style="color: rgba(255,255,255,0.4); font-size: 0.7rem; padding: 0.5rem 0;">No assets</div>'}
-                        </div>
-                        <div class="screenshot-perspective">
-                            <div class="screenshot-perspective-header">From ${team2?.manager?.split(" ")[0] || "Their"}'s View</div>
-                            <div class="screenshot-perspective-row">
-                                <span>Giving:</span>
-                                <span class="screenshot-perspective-value negative">${perspective2.giving}</span>
-                            </div>
-                            <div class="screenshot-perspective-row">
-                                <span>Getting:</span>
-                                <span class="screenshot-perspective-value positive">${perspective2.getting}</span>
-                            </div>
-                            <div class="screenshot-perspective-row net">
-                                <span>Net:</span>
-                                <span class="screenshot-perspective-value ${getValueClass(perspective2.net)}">${perspective2.net > 0 ? "+" : ""}${perspective2.net}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            // Card shadow + bg
+            ctx.fillStyle = "rgba(0,0,0,0.08)";
+            ctx.beginPath(); ctx.roundRect(colX + 2, cy + 2, colW, cardH, 8); ctx.fill();
+            ctx.fillStyle = cardBg;
+            ctx.beginPath(); ctx.roundRect(colX, cy, colW, cardH, 8); ctx.fill();
+            ctx.strokeStyle = dividerColor; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(colX, cy, colW, cardH, 8); ctx.stroke();
 
-                <div class="screenshot-watermark">Trade Analyzer • 12 Team Points League</div>
-            `;
+            // Header bg
+            ctx.fillStyle = headerBg;
+            ctx.beginPath(); ctx.roundRect(colX, cy, colW, headerH, [8, 8, 0, 0]); ctx.fill();
 
-        document
-          .getElementById("trade-screenshot-modal")
-          .classList.add("active");
-        document.body.style.overflow = "hidden";
-      }
+            // Team logo in header
+            const logoSize = 34;
+            drawCircleImg(logoImg, colX + 20 + logoSize / 2, cy + headerH / 2, logoSize / 2);
 
-      function closeTradeScreenshot(event) {
-        if (event && event.target !== event.currentTarget) return;
-        document
-          .getElementById("trade-screenshot-modal")
-          .classList.remove("active");
-        document.body.style.overflow = "";
+            // Team name (Arcade Gamer) & manager
+            ctx.fillStyle = "#ffffff";
+            ctx.font = `8px ${fontHeading}`;
+            ctx.textAlign = "left";
+            const nameX = colX + 20 + logoSize + 12;
+            ctx.fillText(team?.team_name || "Team", nameX, cy + 24, colW - logoSize - 56);
+            ctx.fillStyle = goldAccent;
+            ctx.font = `13px ${fontBody}`;
+            ctx.fillText(team?.manager || "", nameX, cy + 42);
+            cy += headerH;
+
+            // Goal badge row
+            const goalBg = goal === "buy" ? "rgba(40, 167, 69, 0.12)" : goal === "sell" ? "rgba(220, 53, 69, 0.12)" : "#f8f9fa";
+            const goalColor = goal === "buy" ? greenVal : goal === "sell" ? redVal : textMuted;
+            const goalText = goal === "buy" ? "BUYING" : goal === "sell" ? "SELLING" : "DEFAULT";
+            ctx.fillStyle = goalBg;
+            ctx.fillRect(colX + 1, cy, colW - 2, goalH);
+            ctx.fillStyle = goalColor;
+            ctx.font = `bold 12px ${fontBody}`;
+            ctx.textAlign = "center";
+            ctx.fillText(goalText, colX + colW / 2, cy + 17);
+            cy += goalH;
+
+            // Column headers
+            ctx.fillStyle = textMuted;
+            ctx.font = `bold 11px ${fontBody}`;
+            ctx.textAlign = "left";
+            ctx.fillText("OFFERING", colX + 12, cy + 17);
+            ctx.textAlign = "right";
+            ctx.font = `10px ${fontBody}`;
+            ctx.fillText("COST", colX + colW - 56, cy + 17);
+            ctx.fillText("VALUE", colX + colW - 10, cy + 17);
+            cy += sectionLabelH;
+
+            // Offer items
+            if (sortedOffer.length === 0) {
+              ctx.fillStyle = textMuted;
+              ctx.font = `13px ${fontBody}`;
+              ctx.textAlign = "left";
+              ctx.fillText("No assets", colX + 12, cy + 26);
+              cy += rowH;
+            } else {
+              // Find global index for image lookup
+              const globalOffset = sideIndex === 1 ? 0 : sorted1.length;
+              sortedOffer.forEach((item, idx) => {
+                const globalIdx = globalOffset + idx;
+                // Alternating row bg
+                ctx.fillStyle = idx % 2 === 0 ? "#f8f9fa" : cardBg;
+                ctx.fillRect(colX + 1, cy, colW - 2, rowH);
+
+                if (item.type === "player") {
+                  // Headshot
+                  const hsImg = imgs[`headshot_${globalIdx}`];
+                  const hsSize = 32;
+                  const hsX = colX + 10;
+                  const hsY = cy + (rowH - hsSize) / 2;
+                  if (hsImg) {
+                    drawCircleImg(hsImg, hsX + hsSize / 2, hsY + hsSize / 2, hsSize / 2, false);
+                  } else {
+                    ctx.fillStyle = "#e0e0e0";
+                    ctx.beginPath(); ctx.arc(hsX + hsSize / 2, hsY + hsSize / 2, hsSize / 2, 0, Math.PI * 2); ctx.fill();
+                  }
+
+                  const textX = hsX + hsSize + 8;
+
+                  // Player name
+                  ctx.fillStyle = textDark;
+                  ctx.font = `bold 13px ${fontBody}`;
+                  ctx.textAlign = "left";
+                  ctx.fillText(item.name, textX, cy + 16, colW - hsSize - 100);
+
+                  // Second line: MLB logo + abbreviation + position badge
+                  let metaX = textX;
+                  const mlbLogoImg = imgs[`mlblogo_${globalIdx}`];
+                  if (mlbLogoImg) {
+                    ctx.drawImage(mlbLogoImg, metaX, cy + 22, 14, 14);
+                    metaX += 17;
+                  }
+                  const mlbDisplay = item.mlbTeam ? formatMLBTeamDisplay(item.mlbTeam) : "";
+                  if (mlbDisplay) {
+                    ctx.fillStyle = textMuted;
+                    ctx.font = `11px ${fontBody}`;
+                    ctx.fillText(mlbDisplay, metaX, cy + 34);
+                    metaX += ctx.measureText(mlbDisplay).width + 6;
+                  }
+
+                  // Position badge
+                  const pos = item.position || "UT";
+                  const badge = posBadgeColors[pos] || posBadgeColors["DH"];
+                  const badgeText = pos.toUpperCase();
+                  ctx.font = `bold 9px ${fontBody}`;
+                  const badgeTW = ctx.measureText(badgeText).width;
+                  const badgePadX = 4;
+                  const badgeW = badgeTW + badgePadX * 2;
+                  const badgeH = 14;
+                  const badgeY = cy + 23;
+                  ctx.fillStyle = badge.bg;
+                  ctx.beginPath(); ctx.roundRect(metaX, badgeY, badgeW, badgeH, 3); ctx.fill();
+                  ctx.fillStyle = badge.text;
+                  ctx.textBaseline = "middle";
+                  ctx.fillText(badgeText, metaX + badgePadX, badgeY + badgeH / 2);
+                  ctx.textBaseline = "alphabetic";
+
+                  // Round cost
+                  ctx.textAlign = "right";
+                  ctx.fillStyle = textMuted;
+                  ctx.font = `11px ${fontBody}`;
+                  const costLabel = item.isProspect ? "NA" : item.isWaiverPickup ? "WW" : `Rd ${item.roundCost || "?"}`;
+                  ctx.fillText(costLabel, colX + colW - 50, cy + rowH / 2 + 4);
+
+                } else if (item.type === "pick") {
+                  // Pick circle
+                  const circleR = 14;
+                  const circleX = colX + 10 + circleR;
+                  const circleY = cy + rowH / 2;
+                  const pickColor = item.year === 2027 ? "#ab47bc" : "#ffa726";
+                  ctx.fillStyle = pickColor;
+                  ctx.beginPath(); ctx.arc(circleX, circleY, circleR, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = item.year === 2027 ? "#fff" : "#333";
+                  ctx.font = `bold 9px ${fontBody}`;
+                  ctx.textAlign = "center";
+                  ctx.fillText(`R${item.round}`, circleX, circleY + 3);
+
+                  ctx.textAlign = "left";
+                  ctx.fillStyle = textDark;
+                  ctx.font = `bold 13px ${fontBody}`;
+                  ctx.fillText(`${item.year} Round ${item.round} Pick`, colX + 10 + circleR * 2 + 8, cy + 16);
+                  ctx.fillStyle = textMuted;
+                  ctx.font = `11px ${fontBody}`;
+                  ctx.fillText("Draft Pick", colX + 10 + circleR * 2 + 8, cy + 34);
+
+                  ctx.textAlign = "right";
+                  ctx.fillStyle = textMuted;
+                  ctx.font = `11px ${fontBody}`;
+                  ctx.fillText("--", colX + colW - 50, cy + rowH / 2 + 4);
+
+                } else if (item.type === "budget") {
+                  const circleR = 14;
+                  const circleX = colX + 10 + circleR;
+                  const circleY = cy + rowH / 2;
+                  ctx.fillStyle = greenVal;
+                  ctx.beginPath(); ctx.arc(circleX, circleY, circleR, 0, Math.PI * 2); ctx.fill();
+                  ctx.fillStyle = "#fff";
+                  ctx.font = `bold 12px ${fontBody}`;
+                  ctx.textAlign = "center";
+                  ctx.fillText("$", circleX, circleY + 4);
+
+                  ctx.textAlign = "left";
+                  ctx.fillStyle = textDark;
+                  ctx.font = `bold 13px ${fontBody}`;
+                  ctx.fillText(`$${item.amount} Budget`, colX + 10 + circleR * 2 + 8, cy + 16);
+                  ctx.fillStyle = textMuted;
+                  ctx.font = `11px ${fontBody}`;
+                  ctx.fillText("Auction Budget", colX + 10 + circleR * 2 + 8, cy + 34);
+
+                  ctx.textAlign = "right";
+                  ctx.fillStyle = textMuted;
+                  ctx.font = `11px ${fontBody}`;
+                  ctx.fillText("--", colX + colW - 50, cy + rowH / 2 + 4);
+                }
+
+                // Value (right column)
+                ctx.textAlign = "right";
+                ctx.fillStyle = goldAccent;
+                ctx.font = `bold 14px ${fontBody}`;
+                ctx.fillText(String(item.baseValue || item.value || 0), colX + colW - 10, cy + rowH / 2 + 4);
+                cy += rowH;
+              });
+            }
+
+            cy += 12;
+
+            // Perspective section
+            const persY = cy;
+            ctx.fillStyle = "#f0f4ff";
+            ctx.beginPath(); ctx.roundRect(colX + 8, persY, colW - 16, perspH - 10, 6); ctx.fill();
+            ctx.strokeStyle = "rgba(0,72,186,0.15)"; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.roundRect(colX + 8, persY, colW - 16, perspH - 10, 6); ctx.stroke();
+
+            const managerFirst = team?.manager?.split(" ")[0] || "Their";
+            ctx.fillStyle = headerBg;
+            ctx.font = `bold 11px ${fontBody}`;
+            ctx.textAlign = "left";
+            ctx.fillText(`FROM ${managerFirst.toUpperCase()}'S VIEW`, colX + 18, persY + 18);
+
+            ctx.fillStyle = textDark; ctx.font = `13px ${fontBody}`;
+            ctx.fillText("Giving:", colX + 18, persY + 38);
+            ctx.textAlign = "right"; ctx.fillStyle = redVal; ctx.font = `bold 13px ${fontBody}`;
+            ctx.fillText(String(perspective.giving), colX + colW - 18, persY + 38);
+
+            ctx.textAlign = "left"; ctx.fillStyle = textDark; ctx.font = `13px ${fontBody}`;
+            ctx.fillText("Getting:", colX + 18, persY + 54);
+            ctx.textAlign = "right"; ctx.fillStyle = greenVal; ctx.font = `bold 13px ${fontBody}`;
+            ctx.fillText(String(perspective.getting), colX + colW - 18, persY + 54);
+
+            // Divider
+            ctx.strokeStyle = dividerColor; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(colX + 18, persY + 60); ctx.lineTo(colX + colW - 18, persY + 60); ctx.stroke();
+
+            // Net
+            ctx.textAlign = "left"; ctx.fillStyle = textDark; ctx.font = `bold 14px ${fontBody}`;
+            ctx.fillText("Net:", colX + 18, persY + 78);
+            ctx.textAlign = "right";
+            const netColor = perspective.net > 0 ? greenVal : perspective.net < 0 ? redVal : textMuted;
+            ctx.fillStyle = netColor; ctx.font = `bold 14px ${fontBody}`;
+            ctx.fillText(`${perspective.net > 0 ? "+" : ""}${perspective.net}`, colX + colW - 18, persY + 78);
+          };
+
+          drawTeamColumn(pad, team1, sorted1, perspective1, goal1, imgs.logo1, 1);
+          drawTeamColumn(pad * 2 + colW, team2, sorted2, perspective2, goal2, imgs.logo2, 2);
+
+          // Watermark with league logo
+          const leagueLogo = await loadImg("league_logo.png");
+          const wmText = "FBCW Trade Analyzer";
+          const wmLogoSize = 60;
+          ctx.font = `10px ${fontHeading}`;
+          const wmTextW = ctx.measureText(wmText).width;
+          const wmGap = 10;
+          const wmTotalW = wmLogoSize + wmGap + wmTextW;
+          const wmStartX = (W - wmTotalW) / 2;
+          const wmCenterY = H - watermarkH / 2 - pad / 4;
+          if (leagueLogo) {
+            ctx.drawImage(leagueLogo, wmStartX, wmCenterY - wmLogoSize / 2, wmLogoSize, wmLogoSize);
+          }
+          ctx.fillStyle = textMuted;
+          ctx.font = `10px ${fontHeading}`;
+          ctx.textAlign = "left";
+          ctx.fillText(wmText, wmStartX + wmLogoSize + wmGap, wmCenterY + 4);
+
+          // Download
+          const pngBlob = await new Promise((resolve, reject) => {
+            canvas.toBlob(
+              (blob) => { if (blob) resolve(blob); else reject(new Error("Could not generate PNG")); },
+              "image/png", 1
+            );
+          });
+          const mgr1 = (team1?.manager || "team1").replace(/\s+/g, "-").toLowerCase();
+          const mgr2 = (team2?.manager || "team2").replace(/\s+/g, "-").toLowerCase();
+          downloadBlob(pngBlob, `trade-${mgr1}-vs-${mgr2}.png`);
+        } catch (error) {
+          console.error("Could not generate trade screenshot:", error);
+          alert("Could not generate the trade screenshot.");
+        } finally {
+          if (btn) { btn.disabled = false; btn.textContent = originalLabel; }
+        }
       }
 
       function resetTradeAnalyzer() {
