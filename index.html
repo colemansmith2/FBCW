@@ -36116,30 +36116,18 @@
         }
 
         // Also update the corresponding nav buttons by section ID
-        const sectionToIndex = {
-          home: 0,
-          standings: 1,
-          scoring: 2,
-          mockdraft: 3,
-          valuesuite: 4,
-          sportsbook: 5,
-          prospects: 6,
-          preseason: 7,
-          managers: 8,
-          awards: 9,
-          champions: 10,
-          bylaws: 11,
-        };
-        const index = sectionToIndex[sectionId];
-        if (index !== undefined) {
-          document.querySelectorAll(".nav-btn")[index]?.classList.add("active");
-          document
-            .querySelectorAll(".mobile-nav-btn")
-            [index]?.classList.add("active");
-          document
-            .querySelectorAll(".side-nav-item")
-            [index]?.classList.add("active");
-        }
+        document.querySelectorAll(".nav-btn").forEach((btn) => {
+          if (btn.getAttribute("onclick")?.includes(`'${sectionId}'`))
+            btn.classList.add("active");
+        });
+        document.querySelectorAll(".mobile-nav-btn").forEach((btn) => {
+          if (btn.getAttribute("onclick")?.includes(`'${sectionId}'`))
+            btn.classList.add("active");
+        });
+        document.querySelectorAll(".side-nav-item").forEach((item) => {
+          if (item.getAttribute("onclick")?.includes(`'${sectionId}'`))
+            item.classList.add("active");
+        });
 
         // Update mobile menu active state
         updateMobileMenuActiveState();
