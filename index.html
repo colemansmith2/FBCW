@@ -55566,25 +55566,25 @@
 
         // Try to load daily scores for the most recent scoring day
         const dailyData = await loadDailyScores();
-        const currentWeek = dailyData?.current_week || 1;
-        const weekData = dailyData?.weeks?.[String(currentWeek)];
-        const teamScores = weekData?.team_scores || {};
+        const allWeeks = dailyData?.weeks || {};
 
         // Find the most recent day with scores
         const today = new Date();
         const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-        const yesterday = new Date(today);
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
 
         // Build team daily scores list - try yesterday first, then today, then weekly totals
         let scoringDate = null;
+        let scoringWeekScores = null;
         let teamDailyScores = [];
         let useWeeklyFallback = false;
 
-        // Check if we have daily scores for any recent day
-        if (Object.keys(teamScores).length > 0) {
-          // Find the most recent COMPLETED day with non-zero scores (prefer yesterday over today)
+        // Search all weeks in descending order to find the most recent day with scores.
+        // This prevents showing 0s when current_week advances but has no games yet.
+        const sortedWeekKeys = Object.keys(allWeeks).sort((a, b) => Number(b) - Number(a));
+        for (const weekKey of sortedWeekKeys) {
+          const teamScores = allWeeks[weekKey]?.team_scores || {};
+          if (Object.keys(teamScores).length === 0) continue;
+
           const allDates = new Set();
           Object.values(teamScores).forEach(ts => Object.keys(ts).forEach(d => allDates.add(d)));
           const sortedDates = [...allDates].sort().reverse();
@@ -55595,32 +55595,34 @@
             const hasNonZero = Object.values(teamScores).some(ts => (ts[dateKey] || 0) !== 0);
             if (hasNonZero) {
               scoringDate = dateKey;
+              scoringWeekScores = teamScores;
               break;
             }
           }
+          if (scoringDate) break;
+
           // If no completed day has scores, fall back to today
-          if (!scoringDate) {
-            for (const dateKey of sortedDates) {
-              const hasNonZero = Object.values(teamScores).some(ts => (ts[dateKey] || 0) !== 0);
-              if (hasNonZero) {
-                scoringDate = dateKey;
-                break;
-              }
+          for (const dateKey of sortedDates) {
+            const hasNonZero = Object.values(teamScores).some(ts => (ts[dateKey] || 0) !== 0);
+            if (hasNonZero) {
+              scoringDate = dateKey;
+              scoringWeekScores = teamScores;
+              break;
             }
           }
+          if (scoringDate) break;
+        }
 
-          if (scoringDate) {
-            // Use daily scores for the most recent scoring day
-            const parts = scoringDate.split('-');
-            const displayDate = `${parseInt(parts[1])}/${parseInt(parts[2])}`;
-            if (dateSpan) dateSpan.textContent = displayDate;
+        if (scoringDate && scoringWeekScores) {
+          const parts = scoringDate.split('-');
+          const displayDate = `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+          if (dateSpan) dateSpan.textContent = displayDate;
 
-            for (const teamKey of Object.keys(teamScores)) {
-              teamDailyScores.push({
-                team_key: teamKey,
-                score: teamScores[teamKey][scoringDate] || 0
-              });
-            }
+          for (const teamKey of Object.keys(scoringWeekScores)) {
+            teamDailyScores.push({
+              team_key: teamKey,
+              score: scoringWeekScores[teamKey][scoringDate] || 0
+            });
           }
         }
 
