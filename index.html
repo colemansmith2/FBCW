@@ -4294,6 +4294,17 @@
       .trade-card-name-bar.last-name {
         font-size: 1.15rem;
         letter-spacing: 1.5px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+      }
+
+      .trade-card-name-lastname-text {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
 
       .trade-card-name-age-inline {
@@ -4304,6 +4315,64 @@
         font-weight: 700;
         white-space: nowrap;
         opacity: 0.95;
+      }
+
+      .trade-card-prospect-rank-badge {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 70px;
+        padding: 0.22rem 0.55rem 0.18rem;
+        border: 2px solid #1a3c6e;
+        border-radius: 4px;
+        font-size: 0.78rem;
+        font-weight: 900;
+        letter-spacing: 0.3px;
+        line-height: 1;
+        box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18);
+        white-space: nowrap;
+        text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+      }
+
+      .trade-card-prospect-rank-badge.rank-1 {
+        background: #d4a017;
+        color: #1a3c6e;
+        border-color: #8d6b00;
+        font-style: italic;
+        font-weight: 900;
+        min-width: 102px;
+      }
+
+      .trade-card-prospect-rank-badge.rank-top5 {
+        background: #d1495b;
+        color: #fff6e8;
+        border-color: #8f2030;
+      }
+
+      .trade-card-prospect-rank-badge.rank-top10 {
+        background: #1f8a70;
+        color: #f3fff9;
+        border-color: #14584a;
+      }
+
+      .trade-card-prospect-rank-badge.rank-top25 {
+        background: #2f6db3;
+        color: #f5fbff;
+        border-color: #1a3c6e;
+      }
+
+      .trade-card-prospect-rank-badge.rank-top50 {
+        background: #6f42c1;
+        color: #fbf6ff;
+        border-color: #47207f;
+      }
+
+      .trade-card-prospect-rank-badge.rank-top100 {
+        background: #7b8794;
+        color: #132238;
+        border-color: #4d5a68;
+        text-shadow: none;
       }
 
       /* MLB logo in bottom right area of header */
@@ -40204,6 +40273,54 @@
         return Math.max(1, previousRound - 4);
       }
 
+      const PROSPECT_GRADUATION_PROJECTION_THRESHOLD = 100;
+      const PROSPECT_VALUE_BASELINE_ROUND = 22;
+
+      function losesProspectEligibility(projectedPts) {
+        return (
+          (Number(projectedPts) || 0) >
+          PROSPECT_GRADUATION_PROJECTION_THRESHOLD
+        );
+      }
+
+      function getProspectValueBaselineRound(projectedPts) {
+        return losesProspectEligibility(projectedPts)
+          ? PROSPECT_VALUE_BASELINE_ROUND
+          : 0;
+      }
+
+      function calculateProjectedKeeperValue(
+        projectedPts,
+        valueBaselineRound,
+        options = {},
+      ) {
+        const projected = Number(projectedPts) || 0;
+        const minimumValue = Number(options.minimumValue) || 0;
+        const flatBonus = Number(options.flatBonus) || 0;
+        if (projected <= 0) {
+          return { expectedPts: 0, surplusValue: 0, value: 0 };
+        }
+
+        if (valueBaselineRound > 0) {
+          const expectedPts = getExpectedPointsForRound(valueBaselineRound);
+          const rawSurplusValue = projected - expectedPts;
+          const rawValue = projected + rawSurplusValue;
+          const value = Math.max(rawValue, minimumValue) + flatBonus;
+          const surplusValue = value - projected;
+          return {
+            expectedPts,
+            surplusValue,
+            value,
+          };
+        }
+
+        return {
+          expectedPts: 0,
+          surplusValue: projected + flatBonus,
+          value: projected + flatBonus,
+        };
+      }
+
       // Get the total number of rounds in the draft
       function getTotalDraftRounds() {
         if (!keeperDraftData || !keeperDraftData.length) return 22; // Default
@@ -40940,15 +41057,18 @@
 
             // Calculate expected points for round and keeper value
             // Value formula matches Value Suite: value = projectedPts + (projectedPts - expectedPts)
-            const rdExpPts = isProspect
-              ? 0
-              : getExpectedPointsForRound(roundCost);
-            const surplusValue = isProspect
-              ? projPts || 0
-              : (projPts || 0) - rdExpPts;
-            const keeperValue = isProspect
-              ? projPts || 0
-              : (projPts || 0) + surplusValue;
+            const valueBaselineRound = isProspect
+              ? getProspectValueBaselineRound(projPts)
+              : roundCost;
+            const prospectRankData = getProspectRankData(player.name);
+            const {
+              expectedPts: rdExpPts,
+              surplusValue,
+              value: keeperValue,
+            } = calculateProjectedKeeperValue(projPts, valueBaselineRound, {
+              minimumValue: isProspect ? projPts : 0,
+              flatBonus: prospectRankData?.bonus || 0,
+            });
             row.dataset.rdexp = rdExpPts;
             row.dataset.value = keeperValue;
 
@@ -40966,7 +41086,7 @@
 
             // Display expected points and value
             // Color based on surplusValue (above/below expected), display keeperValue
-            const rdExpDisplay = isProspect ? "-" : rdExpPts.toFixed(0);
+            const rdExpDisplay = rdExpPts > 0 ? rdExpPts.toFixed(0) : "-";
             const valueDisplay = keeperValue.toFixed(0);
             const valueClass =
               surplusValue > 0
@@ -44322,14 +44442,17 @@
           return { value: 0, baseValue: 0 };
         }
 
+        const prospectRankData = getProspectRankData(keeper.player_name);
+        const prospectBonus = prospectRankData?.bonus || 0;
+
         // Calculate keeper round cost progression
         let round2026, round2027, round2028;
 
         if (keeper.isProspect) {
           // NA players (prospects) - check if they'll lose rookie eligibility
-          // If projected >80 pts, they become a normal keeper after that season
-          const losesEligibility2026 = proj2026 > 80;
-          const losesEligibility2027 = proj2027 > 80;
+          // If projected >100 pts, they become a normal keeper after that season
+          const losesEligibility2026 = losesProspectEligibility(proj2026);
+          const losesEligibility2027 = losesProspectEligibility(proj2027);
 
           // 2026: Still free as NA player
           round2026 = 0;
@@ -44360,35 +44483,42 @@
           round2028 = getKeeperRoundCost(round2027, 22);
         }
 
-        // Get expected points for each round
-        const expected2026 =
-          round2026 > 0 ? getExpectedPointsForRound(round2026) : 0;
-        const expected2027 =
-          round2027 > 0 ? getExpectedPointsForRound(round2027) : 0;
-        const expected2028 =
-          round2028 > 0 ? getExpectedPointsForRound(round2028) : 0;
-
-        // Calculate surplus value for each year
-        // For free NA players (round = 0), value = just projected points
-        // For keepers with a cost, value = Projected + (Projected - Expected)
-        const value2026 =
-          proj2026 > 0
-            ? round2026 === 0
-              ? proj2026
-              : proj2026 + (proj2026 - expected2026)
-            : 0;
-        const value2027 =
-          proj2027 > 0
-            ? round2027 === 0
-              ? proj2027
-              : proj2027 + (proj2027 - expected2027)
-            : 0;
-        const value2028 =
-          proj2028 > 0
-            ? round2028 === 0
-              ? proj2028
-              : proj2028 + (proj2028 - expected2028)
-            : 0;
+        const value2026 = calculateProjectedKeeperValue(
+          proj2026,
+          round2026 > 0
+            ? round2026
+            : keeper.isProspect
+              ? getProspectValueBaselineRound(proj2026)
+              : 0,
+          {
+            minimumValue: keeper.isProspect && round2026 === 0 ? proj2026 : 0,
+            flatBonus: prospectBonus,
+          },
+        ).value;
+        const value2027 = calculateProjectedKeeperValue(
+          proj2027,
+          round2027 > 0
+            ? round2027
+            : keeper.isProspect
+              ? getProspectValueBaselineRound(proj2027)
+              : 0,
+          {
+            minimumValue: keeper.isProspect && round2027 === 0 ? proj2027 : 0,
+            flatBonus: prospectBonus,
+          },
+        ).value;
+        const value2028 = calculateProjectedKeeperValue(
+          proj2028,
+          round2028 > 0
+            ? round2028
+            : keeper.isProspect
+              ? getProspectValueBaselineRound(proj2028)
+              : 0,
+          {
+            minimumValue: keeper.isProspect && round2028 === 0 ? proj2028 : 0,
+            flatBonus: prospectBonus,
+          },
+        ).value;
 
         // Get weights based on goal
         const weights = TRADE_GOAL_WEIGHTS[goal] || TRADE_GOAL_WEIGHTS.default;
@@ -46032,6 +46162,12 @@
         const displayAgeLabel = Number.isFinite(displayAge)
           ? formatProjectionAge(displayAge)
           : "";
+        const prospectRankData = getProspectRankData(
+          player.name || player.player_name || "",
+        );
+        const prospectRankBadgeHtml = renderTradeCardProspectRankBadge(
+          prospectRankData,
+        );
 
         // Calculate buyer and seller values
         const buyerResult = calculatePlayerTradeValue(
@@ -46107,7 +46243,10 @@
                                         <span>${firstName}</span>
                                         ${displayAgeLabel ? `<span class="trade-card-name-age-inline">AGE ${displayAgeLabel}</span>` : ""}
                                     </div>
-                                    <div class="trade-card-name-bar last-name">${lastName}</div>
+                                    <div class="trade-card-name-bar last-name">
+                                        <span class="trade-card-name-lastname-text">${lastName}</span>
+                                        ${prospectRankBadgeHtml}
+                                    </div>
                                 </div>
 
                                 <!-- MLB logo in bottom right area -->
@@ -46256,13 +46395,16 @@
         proj2027 = data2027.points || 0;
         proj2028 = data2028.points || 0;
 
+        const prospectRankData = getProspectRankData(player.name || "");
+        const prospectBonus = prospectRankData?.bonus || 0;
+
         let round2026, round2027, round2028;
 
         if (player.isProspect) {
           // NA players (prospects) - check if they'll lose rookie eligibility
-          // If projected >80 pts, they become a normal keeper after that season
-          const losesEligibility2026 = proj2026 > 80;
-          const losesEligibility2027 = proj2027 > 80;
+          // If projected >100 pts, they become a normal keeper after that season
+          const losesEligibility2026 = losesProspectEligibility(proj2026);
+          const losesEligibility2027 = losesProspectEligibility(proj2027);
 
           // 2026: Still free as NA player
           round2026 = 0;
@@ -46306,52 +46448,67 @@
         const expected2028 =
           round2028 > 0 ? getExpectedPointsForRound(round2028) : 0;
 
-        // Calculate value for each year
-        // For free NA players (round = 0), value = just projected points
-        // For keepers with a cost, value = Projected + (Projected - Expected)
-        const value2026 =
-          proj2026 > 0
-            ? round2026 === 0
-              ? proj2026
-              : proj2026 + (proj2026 - expected2026)
-            : 0;
-        const value2027 =
-          proj2027 > 0
-            ? round2027 === 0
-              ? proj2027
-              : proj2027 + (proj2027 - expected2027)
-            : 0;
-        const value2028 =
-          proj2028 > 0
-            ? round2028 === 0
-              ? proj2028
-              : proj2028 + (proj2028 - expected2028)
-            : 0;
+        const valueData2026 = calculateProjectedKeeperValue(
+          proj2026,
+          round2026 > 0
+            ? round2026
+            : player.isProspect
+              ? getProspectValueBaselineRound(proj2026)
+              : 0,
+          {
+            minimumValue: player.isProspect && round2026 === 0 ? proj2026 : 0,
+            flatBonus: prospectBonus,
+          },
+        );
+        const valueData2027 = calculateProjectedKeeperValue(
+          proj2027,
+          round2027 > 0
+            ? round2027
+            : player.isProspect
+              ? getProspectValueBaselineRound(proj2027)
+              : 0,
+          {
+            minimumValue: player.isProspect && round2027 === 0 ? proj2027 : 0,
+            flatBonus: prospectBonus,
+          },
+        );
+        const valueData2028 = calculateProjectedKeeperValue(
+          proj2028,
+          round2028 > 0
+            ? round2028
+            : player.isProspect
+              ? getProspectValueBaselineRound(proj2028)
+              : 0,
+          {
+            minimumValue: player.isProspect && round2028 === 0 ? proj2028 : 0,
+            flatBonus: prospectBonus,
+          },
+        );
 
         return [
           {
             year: 2026,
             round: round2026,
             cost: cost2026,
-            expectedPts: Math.round(expected2026),
+            expectedPts: Math.round(valueData2026.expectedPts || expected2026),
             projectedPts: Math.round(proj2026),
-            value: value2026,
+            value: valueData2026.value,
           },
           {
             year: 2027,
             round: round2027,
             cost: cost2027,
-            expectedPts: Math.round(expected2027),
+            expectedPts: Math.round(valueData2027.expectedPts || expected2027),
             projectedPts: Math.round(proj2027),
-            value: value2027,
+            value: valueData2027.value,
           },
           {
             year: 2028,
             round: round2028,
             cost: cost2028,
-            expectedPts: Math.round(expected2028),
+            expectedPts: Math.round(valueData2028.expectedPts || expected2028),
             projectedPts: Math.round(proj2028),
-            value: value2028,
+            value: valueData2028.value,
           },
         ];
       }
@@ -46663,15 +46820,15 @@
             const actualRoundCost =
               actualRoundMap[keeper.player_name.toLowerCase()] ?? baseRoundCost;
             const roundCost = isProspect ? 0 : actualRoundCost;
-            const expectedPts = isProspect
-              ? 0
-              : getExpectedPointsForRound(roundCost);
-
-            // Keeper value = Projected Points + Surplus Value
-            // This captures their full contribution: what they'll produce PLUS the bonus of getting them at a discount
-            // For example: 400pt player kept in round 5 (expected 350) = 400 + (400-350) = 450 value
-            const surplusValue = projectedPts - expectedPts;
-            const value = projectedPts + surplusValue; // = 2 * projectedPts - expectedPts
+            const valueBaselineRound = isProspect
+              ? getProspectValueBaselineRound(projectedPts)
+              : roundCost;
+            const prospectRankData = getProspectRankData(keeper.player_name);
+            const { expectedPts, surplusValue, value } =
+              calculateProjectedKeeperValue(projectedPts, valueBaselineRound, {
+                minimumValue: isProspect ? projectedPts : 0,
+                flatBonus: prospectRankData?.bonus || 0,
+              });
 
             const keeperData = {
               player_name: keeper.player_name,
@@ -48464,7 +48621,7 @@
                         ${p.team_logo ? `<img src="${p.team_logo}" class="prospect-team-logo" alt="">` : ""}
                         <span>${p.player_name}</span>
                     </div>
-                    <span class="prospect-pts">+${Math.round(p.projectedPts)}</span>
+                    <span class="prospect-pts">${(p.value || 0) > 0 ? "+" : ""}${Math.round(p.value || 0)}</span>
                 </div>
             `,
           )
@@ -48501,9 +48658,9 @@
             y: p.projectedPts,
             player: p.player_name,
             team: p.team_name,
-            value: p.projectedPts,
-            surplusValue: p.projectedPts,
-            expected: 0,
+            value: p.value,
+            surplusValue: p.surplusValue,
+            expected: p.expectedPts,
           }));
 
         // Expected value line data (using smoothed model for clean curve)
@@ -48635,18 +48792,17 @@
         }));
 
         // Prepare data points for prospects (x = 24 to put them after round 23)
-        // For prospects, value = projected points (since they're free)
         const prospectPoints = prospects
           .filter((p) => p.projectedPts > 0)
           .map((p) => ({
             x: 24,
-            y: p.projectedPts, // Value = projected points for prospects
+            y: p.value,
             player: p.player_name,
             team: p.team_name,
-            value: p.projectedPts,
-            surplusValue: p.projectedPts,
+            value: p.value,
+            surplusValue: p.surplusValue,
             projectedPts: p.projectedPts,
-            expected: 0,
+            expected: p.expectedPts,
           }));
 
         // Expected value line - represents break-even (when projected = expected, value = expected)
@@ -52491,16 +52647,28 @@
                   22;
                 const actualRoundCost =
                   actualRoundMap[playerName] ?? baseRoundCost;
-                const roundCost = actualRoundCost;
-
-                const expectedPts = getExpectedPointsForRound(roundCost);
+                const isProspect = isProspectKeeperEntry(keeper);
+                const roundCost = isProspect ? 0 : actualRoundCost;
+                const valueBaselineRound = isProspect
+                  ? getProspectValueBaselineRound(projectedPts)
+                  : roundCost;
+                const prospectRankData = getProspectRankData(
+                  keeper.player_name || keeper.name || keeper.Name || "",
+                );
+                const { value: playerValue } = calculateProjectedKeeperValue(
+                  projectedPts,
+                  valueBaselineRound,
+                  {
+                    minimumValue: isProspect ? projectedPts : 0,
+                    flatBonus: prospectRankData?.bonus || 0,
+                  },
+                );
 
                 // Track used rounds (using actual round cost)
-                usedRounds[roundCost] = (usedRounds[roundCost] || 0) + 1;
+                if (roundCost > 0) {
+                  usedRounds[roundCost] = (usedRounds[roundCost] || 0) + 1;
+                }
 
-                // Value = projected + surplus (same as Value Suite)
-                const surplusValue = projectedPts - expectedPts;
-                const playerValue = projectedPts + surplusValue;
                 keeperValue += playerValue;
               });
             }
@@ -56971,6 +57139,58 @@
       function normalizeProspectName(name) {
         const lower = stripAccents(name).toLowerCase().trim();
         return keeperToProspectName[lower] || lower;
+      }
+
+      const PROSPECT_RANK_BONUS_TIERS = [
+        { maxRank: 1, bonus: 50, className: "rank-1", label: "#1 Prospect" },
+        { maxRank: 5, bonus: 40, className: "rank-top5", label: "Top 5" },
+        { maxRank: 10, bonus: 30, className: "rank-top10", label: "Top 10" },
+        { maxRank: 25, bonus: 25, className: "rank-top25", label: "Top 25" },
+        { maxRank: 50, bonus: 20, className: "rank-top50", label: "Top 50" },
+        { maxRank: 100, bonus: 10, className: "rank-top100", label: "Top 100" },
+      ];
+
+      function getProspectRankTier(rank) {
+        const numericRank = Number(rank);
+        if (!Number.isFinite(numericRank) || numericRank < 1) return null;
+        return (
+          PROSPECT_RANK_BONUS_TIERS.find((tier) => numericRank <= tier.maxRank) ||
+          null
+        );
+      }
+
+      function getProspectRankData(playerName) {
+        const normalizedName = normalizeProspectName(
+          String(playerName || "")
+            .replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "")
+            .trim(),
+        );
+        if (!normalizedName || !Array.isArray(prospectsData) || prospectsData.length === 0) {
+          return null;
+        }
+
+        const prospect = prospectsData.find((p) => {
+          const prospectName = normalizeProspectName(p?.name || "");
+          return prospectName === normalizedName;
+        });
+        if (!prospect) return null;
+
+        const rank = Number(prospect.rank);
+        const tier = getProspectRankTier(rank);
+        if (!tier) return null;
+
+        return {
+          rank,
+          bonus: tier.bonus,
+          className: tier.className,
+          label: tier.label,
+          name: prospect.name || playerName,
+        };
+      }
+
+      function renderTradeCardProspectRankBadge(rankData) {
+        if (!rankData) return "";
+        return `<span class="trade-card-prospect-rank-badge ${rankData.className}" title="Prospect rank #${rankData.rank} (+${rankData.bonus} value each year)">${rankData.label}</span>`;
       }
 
       async function loadProspectOwnership() {
