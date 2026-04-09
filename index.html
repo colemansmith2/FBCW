@@ -1420,42 +1420,37 @@
         font-size: 0.75rem;
       }
 
-      /* Column widths for draft table */
+      /* Column widths for draft table (5 columns) */
       .draft-table th:nth-child(1),
       .draft-table td:nth-child(1) {
-        width: 30px;
+        width: 40px;
+        text-align: center;
       }
 
-      /* Rd */
+      /* Pick (e.g. 1.8) */
       .draft-table th:nth-child(2),
       .draft-table td:nth-child(2) {
-        width: 35px;
-      }
-
-      /* Pick */
-      .draft-table th:nth-child(3),
-      .draft-table td:nth-child(3) {
         width: auto;
       }
 
       /* Player - takes remaining space */
-      .draft-table th:nth-child(4),
-      .draft-table td:nth-child(4) {
+      .draft-table th:nth-child(3),
+      .draft-table td:nth-child(3) {
         width: 40px;
         text-align: center;
       }
 
       /* Team */
-      .draft-table th:nth-child(5),
-      .draft-table td:nth-child(5) {
+      .draft-table th:nth-child(4),
+      .draft-table td:nth-child(4) {
         width: 50px;
         text-align: right;
       }
 
       /* Pts */
-      .draft-table th:nth-child(6),
-      .draft-table td:nth-child(6) {
-        width: 55px;
+      .draft-table th:nth-child(5),
+      .draft-table td:nth-child(5) {
+        width: 60px;
         text-align: center;
       }
 
@@ -1469,6 +1464,10 @@
 
       .draft-table tr:hover {
         background: #f5f5f5;
+      }
+
+      .draft-table tr.draft-round-separator:hover {
+        background: var(--retro-blue);
       }
 
       .draft-player-cell {
@@ -1497,6 +1496,25 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+
+      .draft-player-mlb-team {
+        font-size: 0.7rem;
+        color: #888;
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+      }
+
+      .draft-player-mlb-team .player-mlb-logo {
+        width: 14px;
+        height: 14px;
+      }
+
+      .draft-pick-num {
+        font-size: 0.8rem;
+        font-weight: 500;
+        color: #555;
       }
 
       .keeper-badge {
@@ -6059,6 +6077,20 @@
         position: relative;
       }
 
+      .draft-team-badges {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 2px;
+      }
+
+      .draft-team-badges .position-badge {
+        font-size: 0.6rem;
+        padding: 0.1rem 0.3rem;
+        min-width: 20px;
+        margin-right: 0;
+      }
+
       .draft-team-logo {
         width: 24px;
         height: 24px;
@@ -6192,8 +6224,19 @@
           font-size: 0.7rem;
         }
 
-        .draft-player-pos {
+        .draft-player-mlb-team {
           font-size: 0.6rem;
+        }
+
+        .draft-player-mlb-team .player-mlb-logo {
+          width: 12px;
+          height: 12px;
+        }
+
+        .draft-team-badges .position-badge {
+          font-size: 0.5rem;
+          padding: 0.05rem 0.2rem;
+          min-width: 16px;
         }
 
         .draft-team-logo {
@@ -21768,7 +21811,6 @@
               <table class="draft-table" id="draft-table" style="display: none">
                 <thead>
                   <tr>
-                    <th>Rd</th>
                     <th>Pick</th>
                     <th>Player</th>
                     <th>Team</th>
@@ -26918,24 +26960,26 @@
 
         // Standard abbreviation mapping for display normalization
         const displayMap = {
-          // Teams with alternate abbreviations that should be normalized
-          TBR: "TB",
-          TAM: "TB",
-          CHW: "CWS",
-          KCR: "KC",
-          ANA: "LAA",
-          FLA: "MIA",
-          WAS: "WSH",
-          WSN: "WSH",
-          AZ: "ARI",
-          SDP: "SD",
-          SFG: "SF",
+          TBR: "TB", TAM: "TB", CHW: "CWS", KCR: "KC", ANA: "LAA",
+          FLA: "MIA", WAS: "WSH", WSN: "WSH", AZ: "ARI", SDP: "SD", SFG: "SF",
+          ATH: "OAK",
+        };
+
+        // City/full-name to abbreviation (for historical data that uses full names)
+        const cityMap = {
+          BALTIMORE: "BAL", BOSTON: "BOS", "NEW YORK": "NYY", "TAMPA BAY": "TB",
+          TORONTO: "TOR", CHICAGO: "CHC", CLEVELAND: "CLE", DETROIT: "DET",
+          "KANSAS CITY": "KC", MINNESOTA: "MIN", HOUSTON: "HOU", "LOS ANGELES": "LAD",
+          OAKLAND: "OAK", SEATTLE: "SEA", TEXAS: "TEX", ATLANTA: "ATL",
+          MIAMI: "MIA", PHILADELPHIA: "PHI", WASHINGTON: "WSH", CINCINNATI: "CIN",
+          MILWAUKEE: "MIL", PITTSBURGH: "PIT", "ST. LOUIS": "STL", "ST LOUIS": "STL",
+          ARIZONA: "ARI", COLORADO: "COL", "SAN DIEGO": "SD", "SAN FRANCISCO": "SF",
         };
 
         // Split by comma for multi-team players
         const teams = mlbTeam.split(",").map((t) => {
           const trimmed = t.trim().toUpperCase();
-          return displayMap[trimmed] || trimmed;
+          return displayMap[trimmed] || cityMap[trimmed] || trimmed;
         });
 
         return teams.join(", ");
@@ -32444,14 +32488,53 @@
             if (keepersResponse.ok) {
               const allKeepers = await keepersResponse.json();
               keepersForYear = allKeepers[seasonNum.toString()] || {};
-              console.log(
-                `Loaded ${Object.keys(keepersForYear).length} keepers for ${seasonNum}`,
-              );
-            } else {
-              console.log("Keepers response not ok:", keepersResponse.status);
             }
           } catch (e) {
             console.log("No keepers data available:", e);
+          }
+
+          // For 2026, also check Firebase / local keepers_2026.json
+          if (seasonNum === 2026 && Object.keys(keepersForYear).length === 0) {
+            try {
+              // Try Firebase first
+              if (typeof firebaseDb !== 'undefined' && firebaseDb) {
+                const snapshot = await firebaseDb.ref("keepers_2026").once("value");
+                const fbData = snapshot.val();
+                if (fbData) {
+                  Object.entries(fbData).forEach(([sanitizedKey, keepers]) => {
+                    const keeperArr = Array.isArray(keepers) ? keepers : Object.values(keepers || {});
+                    keeperArr.forEach(k => {
+                      if (k && k.player_name) {
+                        keepersForYear[k.player_name] = { manager: sanitizedKey, roundCost: k.roundCost };
+                      }
+                    });
+                  });
+                }
+              }
+            } catch (e) {
+              console.log("Could not fetch keepers from Firebase:", e);
+            }
+
+            // Fallback: try local keepers_2026.json
+            if (Object.keys(keepersForYear).length === 0) {
+              try {
+                const resp = await fetch("data/keepers/keepers_2026.json");
+                if (resp.ok) {
+                  const localData = await resp.json();
+                  if (localData?.keepers) {
+                    Object.entries(localData.keepers).forEach(([key, keepers]) => {
+                      if (Array.isArray(keepers)) {
+                        keepers.forEach(k => {
+                          if (k && k.player_name) {
+                            keepersForYear[k.player_name] = { manager: key, roundCost: k.roundCost };
+                          }
+                        });
+                      }
+                    });
+                  }
+                }
+              } catch (e) { /* ignore */ }
+            }
           }
 
           // Create lowercase keeper lookup for flexible matching
@@ -32500,7 +32583,7 @@
               currentRound = pickRound;
               const separatorRow = document.createElement("tr");
               separatorRow.className = "draft-round-separator";
-              separatorRow.innerHTML = `<td colspan="6">Round ${currentRound}</td>`;
+              separatorRow.innerHTML = `<td colspan="5">Round ${currentRound}</td>`;
               draftBody.appendChild(separatorRow);
             }
 
@@ -32510,21 +32593,47 @@
             const playerKey = pick.player_key;
             let playerData = playerStatsByKey[playerKey];
 
-            // If not found by key, try matching by name
+            // If not found by key, try matching by name (strip suffixes like "(Batter)" / "(Pitcher)")
             if (!playerData && pick.player_name) {
-              playerData = playerStatsByName[pick.player_name.toLowerCase()];
+              const cleanName = pick.player_name.replace(/\s*\(.*?\)\s*/g, "").trim();
+              playerData = playerStatsByName[pick.player_name.toLowerCase()] ||
+                playerStatsByName[cleanName.toLowerCase()];
             }
 
             playerData = playerData || {};
 
             const fantasyPoints = playerData.fantasy_points || 0;
-            const position = pick.position || playerData.position || "";
-            const primaryPos = position.split(",")[0].trim();
+            // Get all eligible positions from player stats, fall back to draft position
+            const eligiblePositions = playerData.eligible_positions ||
+              (pick.position ? pick.position.split(",").map(p => p.trim()) : []);
+            // Filter out generic "P" if SP or RP is present, and BN/IL/NA/Util (unless Util is the only real position)
+            const hasSpecificPitcher = eligiblePositions.some(p => p === "SP" || p === "RP");
+            const nonSlotPositions = eligiblePositions.filter(p => !["BN", "IL", "NA", "IL+", "DL"].includes(p.toUpperCase()));
+            const hasRealPosition = nonSlotPositions.some(p => p.toUpperCase() !== "UTIL");
+            const filterOut = ["BN", "IL", "NA", "IL+", "DL"];
+            if (hasRealPosition) filterOut.push("UTIL");
+            const seenPos = new Set();
+            const displayPositions = eligiblePositions
+              .filter(p => !filterOut.includes(p.toUpperCase()) && !(hasSpecificPitcher && p === "P"))
+              .map(p => p.trim())
+              .filter(p => {
+                if (!p) return false;
+                const key = p.toUpperCase();
+                if (seenPos.has(key)) return false;
+                seenPos.add(key);
+                return true;
+              });
+            const primaryPos = playerData.primary_position ||
+              displayPositions[0] || pick.position?.split(",")[0]?.trim() || "";
 
-            // Get position rank - try by player_key first, then by matched player's key
+            // Get position rank - try by player_key, then matched player's key, then name
             let posRank = positionRanks[playerKey];
             if (!posRank && playerData.player_key) {
               posRank = positionRanks[playerData.player_key];
+            }
+            if (!posRank) {
+              const cleanName = (pick.player_name || "").replace(/\s*\(.*?\)\s*/g, "").trim().toLowerCase();
+              posRank = positionRanks["name:" + cleanName];
             }
             posRank = posRank || "-";
             const posRankClass = getRankClass(posRank, primaryPos);
@@ -32553,14 +32662,25 @@
             const playerName = pick.player_name || "";
             let isKeeper = false;
             if (playerName) {
-              // Try exact match first
+              const lowerName = playerName.toLowerCase().trim();
+              const cleanLower = lowerName.replace(/\s*\(.*?\)\s*/g, "").trim();
+              const hasSuffix = lowerName !== cleanLower;
               if (keepersForYear[playerName]) {
                 isKeeper = true;
               } else {
-                // Try case-insensitive match
-                const lowerName = playerName.toLowerCase();
                 for (const keeperName of Object.keys(keepersForYear)) {
-                  if (keeperName.toLowerCase() === lowerName) {
+                  const kLower = keeperName.toLowerCase().trim();
+                  // Exact case-insensitive match (including suffix)
+                  if (kLower === lowerName) {
+                    isKeeper = true;
+                    break;
+                  }
+                  // Only fall back to clean name match if NEITHER side has a
+                  // (Batter)/(Pitcher) suffix — avoids matching Ohtani (Batter)
+                  // to the kept Ohtani (Pitcher)
+                  const kClean = kLower.replace(/\s*\(.*?\)\s*/g, "").trim();
+                  const keeperHasSuffix = kLower !== kClean;
+                  if (!hasSuffix && !keeperHasSuffix && kClean === cleanLower) {
                     isKeeper = true;
                     break;
                   }
@@ -32570,17 +32690,39 @@
             const keeperBadge = isKeeper
               ? '<span class="keeper-badge">K</span>'
               : "";
-            const posClass = getDraftPosClass(primaryPos);
+
+            // MLB team info under player name
+            const mlbTeam = playerData.mlb_team || projMatch.mlb_team || "";
+            const mlbTeamDisplay = formatMLBTeamDisplay(mlbTeam);
+            const mlbLogoUrl = getMLBTeamLogo(mlbTeam);
+            const hasMlbLogo = mlbTeamDisplay !== "FA" && mlbLogoUrl;
+            const mlbLogoHtml = hasMlbLogo
+              ? `<img src="${mlbLogoUrl}" alt="" class="player-mlb-logo" onerror="this.style.display='none'">`
+              : "";
+
+            // Display name — strip (Batter)/(Pitcher) suffix for display
+            const displayName = (pick.player_name || "Unknown").replace(/\s*\((?:Batter|Pitcher)\)\s*/g, "");
+
+            // Position badges — normalize casing to match CSS classes (pos-Util, pos-DH, etc.)
+            const posBadgesHtml = displayPositions
+              .map(p => {
+                const up = p.toUpperCase();
+                const cls = up === "UTIL" ? "Util" : up === "DH" ? "DH" : up;
+                return `<span class="position-badge pos-${cls}">${up}</span>`;
+              })
+              .join("");
+
+            // Combined round.pick
+            const pickNum = `${pick.round || "-"}.${pick.pick || "-"}`;
 
             row.innerHTML = `
-                        <td>${pick.round || "-"}</td>
-                        <td>${pick.pick || "-"}</td>
+                        <td><span class="draft-pick-num">${pickNum}</span></td>
                         <td>
                             <div class="draft-player-cell">
                                 ${headshotImg}
                                 <div class="draft-player-info">
-                                    <span class="draft-player-name">${pick.player_name || "Unknown"}${keeperBadge}</span>
-                                    <span class="draft-player-pos ${posClass}">${primaryPos}</span>
+                                    <span class="draft-player-name">${displayName}${keeperBadge}</span>
+                                    <div class="draft-player-mlb-team">${mlbLogoHtml}${mlbTeamDisplay !== "FA" ? mlbTeamDisplay : ""} ${posBadgesHtml}</div>
                                 </div>
                             </div>
                         </td>
@@ -32610,7 +32752,10 @@
         const positionGroups = {};
 
         players.forEach((player) => {
-          const pos = (player.position || "").split(",")[0].trim();
+          // Use primary_position first, then eligible_positions[0], then fall back to position
+          const pos = player.primary_position ||
+            (player.eligible_positions && player.eligible_positions[0]) ||
+            (player.position || "").split(",")[0].trim();
           if (!pos) return;
 
           if (!positionGroups[pos]) {
@@ -32618,18 +32763,25 @@
           }
           positionGroups[pos].push({
             player_key: player.player_key,
+            name: (player.name || "").toLowerCase(),
             fantasy_points: player.fantasy_points || 0,
           });
         });
 
         // Sort each position group by fantasy points and assign ranks
+        // Return both by player_key and by name for flexible lookup
         const ranks = {};
         Object.keys(positionGroups).forEach((pos) => {
           positionGroups[pos].sort(
             (a, b) => b.fantasy_points - a.fantasy_points,
           );
           positionGroups[pos].forEach((player, index) => {
-            ranks[player.player_key] = index + 1;
+            if (player.player_key) {
+              ranks[player.player_key] = index + 1;
+            }
+            if (player.name) {
+              ranks["name:" + player.name] = index + 1;
+            }
           });
         });
 
@@ -44588,7 +44740,7 @@
         let gettingValue = gettingAssets.reduce((sum, a) => sum + a.value, 0);
 
         // Apply imbalance penalty if receiving more non-pick assets than giving
-        // (same logic as updateTradeBalance - compounding 50% reduction)
+        // (same logic as updateTradeBalance - softer compounding reduction)
         const myNonPickCount = myOffer.filter((o) => o.type !== "pick").length;
         const theirNonPickCount = theirOffer.filter(
           (o) => o.type !== "pick",
@@ -44602,8 +44754,10 @@
             .sort((a, b) => a.value - b.value);
 
           // Apply compounding penalty to the extra assets
-          const getCompoundedRemainingRate = (index) =>
-            Math.pow(0.5, index + 1);
+          const getCompoundedRemainingRate = (index) => {
+            const remainingRates = [0.75, 0.55, 0.4];
+            return remainingRates[index] ?? 0.4;
+          };
           let penaltyAmount = 0;
 
           for (let i = 0; i < extraCount && i < nonPickAssets.length; i++) {
@@ -44635,12 +44789,12 @@
           const myTopValue = myPremiumAssets[0].value;
           const theirTopValue = theirPremiumAssets[0].value;
 
-          // If my top asset is more valuable and their top is less than 85% of mine
+          // If my top asset is more valuable and their top is less than 75% of mine
           if (myTopValue > theirTopValue) {
             const ratio = theirTopValue / myTopValue;
-            if (ratio < 0.85) {
-              // Penalize what I'm getting by half the difference
-              const premiumPenalty = (myTopValue - theirTopValue) * 0.5;
+            if (ratio < 0.75) {
+              // Penalize what I'm getting by a quarter of the difference
+              const premiumPenalty = (myTopValue - theirTopValue) * 0.25;
               gettingValue -= premiumPenalty;
             }
           }
@@ -45220,9 +45374,12 @@
         let penaltyAmount2 = 0;
 
         // Hybrid imbalance penalty: penalize the side with more assets
-        // Compounding 50% reduction: 1st extra keeps 50%, 2nd keeps 25%, 3rd keeps 12.5%...
+        // Softer compounding reduction: 1st extra keeps 75%, 2nd keeps 55%, 3rd+ keeps 40%
         // Penalty = value lost = originalValue - remainingValue
-        const getCompoundedRemainingRate = (index) => Math.pow(0.5, index + 1);
+        const getCompoundedRemainingRate = (index) => {
+          const remainingRates = [0.75, 0.55, 0.4];
+          return remainingRates[index] ?? 0.4;
+        };
 
         if (count1 > count2 && count2 > 0) {
           const extraCount = count1 - count2;
@@ -45294,10 +45451,10 @@
             ...theirAssets.map((p) => getVal(p, goal)),
           );
 
-          // Premium penalty applies if I'm giving away the premium and their top < 85% of mine
+          // Premium penalty applies if I'm giving away the premium and their top < 75% of mine
           if (myTopValue > theirTopValue) {
             const ratio = theirTopValue / myTopValue;
-            return ratio < 0.85;
+            return ratio < 0.75;
           }
           return false;
         };
@@ -45335,15 +45492,15 @@
             if (top1Value > top2Value) {
               // Team 1 has the premium asset, team 1 receives penalty on what they're getting
               const ratio = top2Value / top1Value;
-              if (ratio < 0.85) {
-                premiumPenalty2 = (top1Value - top2Value) * 0.5;
+              if (ratio < 0.75) {
+                premiumPenalty2 = (top1Value - top2Value) * 0.25;
                 adjusted2 -= premiumPenalty2;
               }
             } else if (top2Value > top1Value) {
               // Team 2 has the premium asset, team 2 receives penalty on what they're getting
               const ratio = top1Value / top2Value;
-              if (ratio < 0.85) {
-                premiumPenalty1 = (top2Value - top1Value) * 0.5;
+              if (ratio < 0.75) {
+                premiumPenalty1 = (top2Value - top1Value) * 0.25;
                 adjusted1 -= premiumPenalty1;
               }
             }
@@ -45407,7 +45564,7 @@
 
         // Position marker based on ratio, mapped to bar zones
         // Bar zones: green 45-55%, yellow 30-45%/55-70%, orange 20-30%/70-80%, red 0-20%/80-100%
-        // Ratio thresholds: fair >=0.95, slight 0.80-0.95, unfair 0.60-0.80, strongly <0.60
+        // Ratio thresholds: fair >=0.92, slight 0.78-0.92, unfair 0.58-0.78, strongly <0.58
         // When adjusted1 > adjusted2, team1 is GIVING more, so team2 is FAVORED (marker toward team2/right)
         let markerPosition = 50;
         if (total > 0) {
@@ -45416,27 +45573,27 @@
 
           // Map ratio to position within the appropriate zone
           // Marker moves toward the favored team: left (0%) = team1 favored, right (100%) = team2 favored
-          if (ratio >= 0.95) {
-            // Green zone: 45-55% - map ratio 0.95-1.0 to position 45-50 or 50-55
-            const zoneProgress = (ratio - 0.95) / 0.05; // 0 to 1 within zone
+          if (ratio >= 0.92) {
+            // Green zone: 45-55% - map ratio 0.92-1.0 to position 45-50 or 50-55
+            const zoneProgress = (ratio - 0.92) / 0.08; // 0 to 1 within zone
             markerPosition = team2Favored
               ? 50 + (1 - zoneProgress) * 5
               : 50 - (1 - zoneProgress) * 5;
-          } else if (ratio >= 0.8) {
-            // Yellow zone: 30-45% or 55-70% - map ratio 0.80-0.95 to position
-            const zoneProgress = (ratio - 0.8) / 0.15; // 0 to 1 within zone
+          } else if (ratio >= 0.78) {
+            // Yellow zone: 30-45% or 55-70% - map ratio 0.78-0.92 to position
+            const zoneProgress = (ratio - 0.78) / 0.14; // 0 to 1 within zone
             markerPosition = team2Favored
               ? 70 - zoneProgress * 15
               : 30 + zoneProgress * 15;
-          } else if (ratio >= 0.6) {
-            // Orange zone: 20-30% or 70-80% - map ratio 0.60-0.80 to position
-            const zoneProgress = (ratio - 0.6) / 0.2; // 0 to 1 within zone
+          } else if (ratio >= 0.58) {
+            // Orange zone: 20-30% or 70-80% - map ratio 0.58-0.78 to position
+            const zoneProgress = (ratio - 0.58) / 0.2; // 0 to 1 within zone
             markerPosition = team2Favored
               ? 80 - zoneProgress * 10
               : 20 + zoneProgress * 10;
           } else {
-            // Red zone: 0-20% or 80-100% - map ratio 0-0.60 to position
-            const zoneProgress = ratio / 0.6; // 0 to 1 within zone
+            // Red zone: 0-20% or 80-100% - map ratio 0-0.58 to position
+            const zoneProgress = ratio / 0.58; // 0 to 1 within zone
             markerPosition = team2Favored
               ? 100 - zoneProgress * 20
               : zoneProgress * 20;
@@ -45453,22 +45610,22 @@
         let verdict = "";
         let verdictClass = "";
 
-        if (ratio >= 0.95) {
-          // Green zone - center of bar (within 5%)
+        if (ratio >= 0.92) {
+          // Green zone - center of bar (within 8%)
           verdict = "✓ Fair Trade";
           verdictClass = "fair";
-        } else if (ratio >= 0.8) {
-          // Yellow/orange zone (5-20% difference)
+        } else if (ratio >= 0.78) {
+          // Yellow/orange zone (8-22% difference)
           const favored = diff > 0 ? team2Name : team1Name;
           verdict = `Slightly favors ${favored}`;
           verdictClass = "slight";
-        } else if (ratio >= 0.6) {
-          // Orange/red zone (20-40% difference)
+        } else if (ratio >= 0.58) {
+          // Orange/red zone (22-42% difference)
           const favored = diff > 0 ? team2Name : team1Name;
           verdict = `Favors ${favored}`;
           verdictClass = "unfair";
         } else {
-          // Deep red zone - lopsided deal (>40% difference)
+          // Deep red zone - lopsided deal (>42% difference)
           const favored = diff > 0 ? team2Name : team1Name;
           verdict = `Strongly favors ${favored}`;
           verdictClass = "very-unfair";
@@ -45535,7 +45692,7 @@
             .appendChild(verdictEl);
         }
 
-        // Hide verdict when no assets in trade, otherwise show based on ratio threshold (92.5%)
+        // Hide verdict when no assets in trade, otherwise show based on ratio threshold (90%)
         if (isEmpty) {
           verdictEl.textContent = "";
           verdictEl.className = "perspective-verdict";
@@ -45546,9 +45703,9 @@
               ? perspective.getting / perspective.giving
               : 1;
 
-          if (ratio >= 0.925) {
-            // Getting at least 92.5% of what you're giving - Good or Even
-            if (ratio > 1.075) {
+          if (ratio >= 0.9) {
+            // Getting at least 90% of what you're giving - Good or Even
+            if (ratio > 1.1) {
               verdictEl.textContent = "✓ Good";
               verdictEl.className = "perspective-verdict good";
             } else {
@@ -55117,6 +55274,24 @@
         );
       }
 
+      // Check if a pitcher actually has MLB pitching activity during the week.
+      // Returns false if the player isn't in the daily stats at all (e.g. minor leaguer)
+      // or has no pitching stats for any date in the week.
+      function didPitcherPlayInWeek(playerName, week, dailyStatsData, dailyData) {
+        if (!dailyStatsData) return true; // no data to check, assume yes
+        const profile = findPlayerDailyProfile(playerName, dailyStatsData);
+        if (!profile?.playerId) return false; // not in MLB daily stats at all
+        if (!profile.has_pitching_stats) return false; // never pitched this season
+
+        const weekDates = getWeekDates(week, dailyData);
+        if (weekDates.length === 0) return true; // can't determine dates, assume yes
+
+        return weekDates.some((date) => {
+          const playerDay = dailyStatsData?.dates?.[date]?.players?.[profile.playerId];
+          return playerDay?.pitching && Number(playerDay.pitching.G || 0) > 0;
+        });
+      }
+
       function findPlayerDailyProfile(playerName, dailyStatsData) {
         const target = normalizePlayerLookupName(playerName);
         const players = dailyStatsData?.players || {};
@@ -55222,19 +55397,21 @@
             if (p.destination_team_key === team.team_key && p.transaction_type === "add") {
               const pos = p.position || "";
               const displayPos = getPrimaryPositionFromString(pos);
-              const isStream = isStreamerPosition(pos);
+              const playerName = p.player_name || p.name || "";
+              // Only count as stream if SP-eligible AND actually pitched in MLB this week
+              const isStream = isStreamerPosition(pos) && didPitcherPlayInWeek(playerName, week, dailyStatsData, dailyData);
               if (isStream) {
                 streamCount++;
               } else {
                 regularAddCount++;
               }
               // Look up headshot from roster or projections
-              const addName = (p.player_name || p.name || "").toLowerCase().trim();
+              const addName = playerName.toLowerCase().trim();
               const addNameNorm = addName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
               const rosterMatch = teamRoster.find(r => (r.name || '').toLowerCase().trim() === addName);
               const projMatch = averageProjectionsMap?.[addName] || averageProjectionsMap?.[addNameNorm] || {};
               addedPlayers.push({
-                name: p.player_name || p.name || "",
+                name: playerName,
                 position: displayPos,
                 headshot_url: p.headshot_url || (rosterMatch && rosterMatch.headshot_url) || projMatch.headshot || "",
                 mlb_team: p.team_abbr || p.mlb_team || p.team || "",
@@ -55470,10 +55647,16 @@
           : player.fantasy_points || 0;
         const mlbTeam = player.mlb_team || "";
         const mlbLogoUrl = getMLBTeamLogo(mlbTeam);
-        // Get last name only for compact display
+        // Get last name only for compact display (handle Jr., Sr., II, III, etc.)
         const nameParts = (player.name || "").split(" ");
-        const displayName =
-          nameParts.length > 1 ? nameParts[nameParts.length - 1] : player.name;
+        const suffixes = ["Jr.", "Jr", "Sr.", "Sr", "II", "III", "IV", "V"];
+        const lastPart = nameParts[nameParts.length - 1] || "";
+        let displayName;
+        if (nameParts.length > 2 && suffixes.includes(lastPart)) {
+          displayName = nameParts[nameParts.length - 2] + " " + lastPart;
+        } else {
+          displayName = nameParts.length > 1 ? lastPart : player.name;
+        }
 
         return `
                 <div class="matchup-popup-player-card">
@@ -55498,10 +55681,16 @@
         const points = player.points || 0;
         const mlbTeam = player.mlb_team || "";
         const mlbLogoUrl = getMLBTeamLogo(mlbTeam);
-        // Get last name only for compact display
+        // Get last name only for compact display (handle Jr., Sr., II, III, etc.)
         const nameParts = (player.name || "").split(" ");
-        const displayName =
-          nameParts.length > 1 ? nameParts[nameParts.length - 1] : player.name;
+        const suffixes = ["Jr.", "Jr", "Sr.", "Sr", "II", "III", "IV", "V"];
+        const lastPart = nameParts[nameParts.length - 1] || "";
+        let displayName;
+        if (nameParts.length > 2 && suffixes.includes(lastPart)) {
+          displayName = nameParts[nameParts.length - 2] + " " + lastPart;
+        } else {
+          displayName = nameParts.length > 1 ? lastPart : player.name;
+        }
 
         return `
                 <div class="matchup-popup-player-card">
