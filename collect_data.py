@@ -3798,9 +3798,12 @@ def weekly_update():
     print("✓ Weekly update complete!")
     print("=" * 60)
 
-def collect_daily_scores(oauth, year: int, lg):
+def collect_daily_scores(oauth, year: int, lg, weeks_to_fetch: Optional[List[int]] = None):
     """
-    Collect daily team fantasy point totals for the current week.
+    Collect daily team fantasy point totals.
+
+    By default fetches the current week only.  Pass ``weeks_to_fetch`` as a
+    list of week numbers to backfill past weeks (e.g. ``[1, 2]``).
 
     Uses the Yahoo API to fetch each team's roster with player stats for each
     day, reading player_points.total directly from the response. The stats
@@ -3847,141 +3850,301 @@ def collect_daily_scores(oauth, year: int, lg):
         current_week = lg.current_week()
         existing["current_week"] = current_week
 
-        # Get week date range
-        try:
-            week_start, week_end = lg.week_date_range(current_week)
-        except Exception as e:
-            print(f"  ⚠ Could not get week date range: {e}")
-            return
+        # Determine which weeks to process
+        if weeks_to_fetch is None:
+            weeks_to_fetch = [current_week]
 
-        week_key = str(current_week)
-
-        # Build day list for this week
-        days = []
-        day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-        current_day = week_start
-        while current_day <= week_end:
-            days.append({
-                "date": current_day.strftime("%Y-%m-%d"),
-                "day_of_week": day_names[current_day.weekday()],
-                "display_date": f"{current_day.month}/{current_day.day}"
-            })
-            current_day += timedelta(days=1)
-
-        # Initialize or update week entry
-        if week_key not in existing["weeks"]:
-            existing["weeks"][week_key] = {
-                "start_date": week_start.strftime("%Y-%m-%d"),
-                "end_date": week_end.strftime("%Y-%m-%d"),
-                "days": days,
-                "team_scores": {}
-            }
-        else:
-            # Update days in case they changed
-            existing["weeks"][week_key]["days"] = days
-
-        week_data = existing["weeks"][week_key]
-        teams = lg.teams()
-        today = date.today()
-        yesterday = today - timedelta(days=1)
-        today_str = today.strftime("%Y-%m-%d")
-        yesterday_str = yesterday.strftime("%Y-%m-%d")
-
-        # Only fetch days that have already passed (or are today)
-        days_to_fetch = [d for d in days if d["date"] <= today_str]
-
-        if not days_to_fetch:
-            print("  No days to fetch yet (week hasn't started)")
-            with open(daily_scores_file, 'w', encoding='utf-8') as f:
-                json.dump(existing, f, indent=2, ensure_ascii=False)
-            return
-
-        # For each team, fetch daily roster stats
-        for team_key in teams:
-            team_name = teams[team_key].get('name', team_key)
-
-            if team_key not in week_data["team_scores"]:
-                week_data["team_scores"][team_key] = {}
-
-            for day_info in days_to_fetch:
-                day_str = day_info["date"]
-
-                # Always re-fetch all days in the current week to ensure accuracy.
-                # The roster endpoint includes ;date= to get the lineup AS IT WAS
-                # on that day, so we need fresh data for every day.
-                # Only skip if it's a past week's finalized data (not the current week).
-                # For the current week, we re-fetch everything every run since
-                # lineups change daily and late games may not have been finalized.
-
-                try:
-                    # Use raw API with date on BOTH roster and stats so Yahoo returns
-                    # the roster as it was configured on that day (not current lineup)
-                    raw = lg.yhandler.get(
-                        f"team/{team_key}/roster;date={day_str}/players/stats;type=date;date={day_str}"
-                    )
-
-                    # Parse the response to sum up fantasy points
-                    day_total = 0.0
-                    try:
-                        players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
-                        player_count = int(players_data.get('count', 0))
-
-                        for i in range(player_count):
-                            player_key = str(i)
-                            if player_key not in players_data:
-                                continue
-
-                            player = players_data[player_key]['player']
-
-                            # Get selected position from player[1]
-                            selected_pos = ''
-                            try:
-                                pos_data = player[1].get('selected_position', [])
-                                if isinstance(pos_data, list) and len(pos_data) > 1:
-                                    selected_pos = pos_data[1].get('position', '')
-                                elif isinstance(pos_data, dict):
-                                    selected_pos = pos_data.get('position', '')
-                            except (KeyError, IndexError):
-                                pass
-
-                            if selected_pos in ('BN', 'IL', 'IL+', 'DL', 'NA'):
-                                continue
-
-                            # Find player_points at dynamic index
-                            # Yahoo response structure varies: player_points can be at
-                            # player[2] or player[3] depending on whether starting_status
-                            # is present. Search for it dynamically.
-                            points = 0.0
-                            for item in player:
-                                if isinstance(item, dict) and 'player_points' in item:
-                                    try:
-                                        points = float(item['player_points'].get('total', 0))
-                                    except (ValueError, TypeError):
-                                        points = 0.0
-                                    break
-
-                            day_total += points
-                    except (KeyError, IndexError, TypeError):
-                        pass
-
-                    week_data["team_scores"][team_key][day_str] = round(day_total, 2)
-
-                except Exception as e:
-                    print(f"    ⚠ Could not fetch {team_name} for {day_str}: {e}")
-                    # Don't record 0 on failure — leave the day missing so it gets retried
-
-            # Count days fetched for this team
-            fetched = len(week_data["team_scores"].get(team_key, {}))
-            print(f"  ✓ {team_name}: {fetched} days")
+        for target_week in weeks_to_fetch:
+            print(f"\n  Processing week {target_week}...")
+            _collect_daily_scores_for_week(lg, existing, target_week)
 
         # Save
         with open(daily_scores_file, 'w', encoding='utf-8') as f:
             json.dump(existing, f, indent=2, ensure_ascii=False)
 
-        print(f"  ✓ Daily scores saved ({len(days_to_fetch)} days, {len(teams)} teams)")
+        print(f"\n  ✓ Daily scores saved ({len(weeks_to_fetch)} week(s))")
 
     except Exception as e:
         print(f"  ⚠ Could not collect daily scores: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def _collect_daily_scores_for_week(lg, existing: Dict, target_week: int):
+    """Fetch and store daily scores for a single week."""
+    try:
+        week_start, week_end = lg.week_date_range(target_week)
+    except Exception as e:
+        print(f"  ⚠ Could not get week date range for week {target_week}: {e}")
+        return
+
+    week_key = str(target_week)
+
+    # Build day list for this week
+    days = []
+    day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    current_day = week_start
+    while current_day <= week_end:
+        days.append({
+            "date": current_day.strftime("%Y-%m-%d"),
+            "day_of_week": day_names[current_day.weekday()],
+            "display_date": f"{current_day.month}/{current_day.day}"
+        })
+        current_day += timedelta(days=1)
+
+    # Initialize or update week entry
+    if week_key not in existing["weeks"]:
+        existing["weeks"][week_key] = {
+            "start_date": week_start.strftime("%Y-%m-%d"),
+            "end_date": week_end.strftime("%Y-%m-%d"),
+            "days": days,
+            "team_scores": {}
+        }
+    else:
+        # Update days in case they changed
+        existing["weeks"][week_key]["days"] = days
+
+    week_data = existing["weeks"][week_key]
+    teams = lg.teams()
+    today = date.today()
+    today_str = today.strftime("%Y-%m-%d")
+
+    # Only fetch days that have already passed (or are today)
+    days_to_fetch = [d for d in days if d["date"] <= today_str]
+
+    if not days_to_fetch:
+        print("    No days to fetch yet (week hasn't started)")
+        return
+
+    # For each team, fetch daily roster stats
+    for team_key in teams:
+        team_name = teams[team_key].get('name', team_key)
+
+        if team_key not in week_data["team_scores"]:
+            week_data["team_scores"][team_key] = {}
+
+        for day_info in days_to_fetch:
+            day_str = day_info["date"]
+
+            try:
+                # Use raw API with date on BOTH roster and stats so Yahoo returns
+                # the roster as it was configured on that day (not current lineup)
+                raw = lg.yhandler.get(
+                    f"team/{team_key}/roster;date={day_str}/players/stats;type=date;date={day_str}"
+                )
+
+                # Parse the response to sum up fantasy points
+                day_total = 0.0
+                try:
+                    players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
+                    player_count = int(players_data.get('count', 0))
+
+                    for i in range(player_count):
+                        player_key = str(i)
+                        if player_key not in players_data:
+                            continue
+
+                        player = players_data[player_key]['player']
+
+                        # Get selected position from player[1]
+                        selected_pos = ''
+                        try:
+                            pos_data = player[1].get('selected_position', [])
+                            if isinstance(pos_data, list) and len(pos_data) > 1:
+                                selected_pos = pos_data[1].get('position', '')
+                            elif isinstance(pos_data, dict):
+                                selected_pos = pos_data.get('position', '')
+                        except (KeyError, IndexError):
+                            pass
+
+                        if selected_pos in ('BN', 'IL', 'IL+', 'DL', 'NA'):
+                            continue
+
+                        # Find player_points at dynamic index
+                        # Yahoo response structure varies: player_points can be at
+                        # player[2] or player[3] depending on whether starting_status
+                        # is present. Search for it dynamically.
+                        points = 0.0
+                        for item in player:
+                            if isinstance(item, dict) and 'player_points' in item:
+                                try:
+                                    points = float(item['player_points'].get('total', 0))
+                                except (ValueError, TypeError):
+                                    points = 0.0
+                                break
+
+                        day_total += points
+                except (KeyError, IndexError, TypeError):
+                    pass
+
+                week_data["team_scores"][team_key][day_str] = round(day_total, 2)
+
+            except Exception as e:
+                print(f"    ⚠ Could not fetch {team_name} for {day_str}: {e}")
+                # Don't record 0 on failure — leave the day missing so it gets retried
+
+        # Count days fetched for this team
+        fetched = len(week_data["team_scores"].get(team_key, {}))
+        print(f"    ✓ {team_name}: {fetched} days")
+
+    print(f"    ✓ Week {target_week}: {len(days_to_fetch)} days, {len(teams)} teams")
+
+
+def collect_bench_pitcher_projections(oauth, year: int, lg):
+    """
+    Collect projected points for bench pitchers who are likely to start.
+
+    Yahoo's team_projected_points only counts active lineup players.  Managers
+    often "hide" starting pitchers on the bench until game day, so the official
+    projection under-counts.  This function checks each team's bench pitchers
+    for each remaining day in the current week and sums up their daily projected
+    points.  A bench pitcher with projected points > 0 on a given day is almost
+    certainly a projected starter that the manager hasn't slotted in yet.
+
+    Saves to data/current_season/bench_pitcher_projections.json:
+    {
+        "current_week": 3,
+        "generated_at": "...",
+        "week_start": "2026-04-06",
+        "week_end": "2026-04-12",
+        "total_days": 7,
+        "days_completed": 3,
+        "bench_boost": { "469.l.4114.t.1": 15.5, ... },
+        "bench_details": {
+            "469.l.4114.t.1": [
+                {"name": "...", "date": "2026-04-09", "projected_points": 12.3}
+            ]
+        }
+    }
+    """
+    print("\nCollecting bench pitcher projections...")
+
+    current_season_dir = f"{DATA_DIR}/current_season"
+    output_file = f"{current_season_dir}/bench_pitcher_projections.json"
+
+    try:
+        current_week = lg.current_week()
+        week_start, week_end = lg.week_date_range(current_week)
+        today = date.today()
+
+        # Build list of remaining days (today + future) where bench pitchers
+        # might have projections.  Also include today since a manager may not
+        # have set their lineup yet.
+        remaining_days = []
+        current_day = max(week_start, today)  # start from today at earliest
+        while current_day <= week_end:
+            remaining_days.append(current_day.strftime("%Y-%m-%d"))
+            current_day += timedelta(days=1)
+
+        if not remaining_days:
+            print("  Week is over — no remaining days to check")
+            return
+
+        total_days = (week_end - week_start).days + 1
+        days_completed = max(0, (today - week_start).days)
+
+        teams = lg.teams()
+        bench_boost = {}
+        bench_details = {}
+
+        for team_key in teams:
+            team_name = teams[team_key].get('name', team_key)
+            team_boost = 0.0
+            team_details = []
+
+            for day_str in remaining_days:
+                try:
+                    raw = lg.yhandler.get(
+                        f"team/{team_key}/roster;date={day_str}/players/stats;type=date;date={day_str}"
+                    )
+
+                    players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
+                    player_count = int(players_data.get('count', 0))
+
+                    for i in range(player_count):
+                        player_idx = str(i)
+                        if player_idx not in players_data:
+                            continue
+
+                        player = players_data[player_idx]['player']
+
+                        # Check selected position
+                        selected_pos = ''
+                        try:
+                            pos_data = player[1].get('selected_position', [])
+                            if isinstance(pos_data, list) and len(pos_data) > 1:
+                                selected_pos = pos_data[1].get('position', '')
+                            elif isinstance(pos_data, dict):
+                                selected_pos = pos_data.get('position', '')
+                        except (KeyError, IndexError):
+                            pass
+
+                        # Only interested in bench players
+                        if selected_pos != 'BN':
+                            continue
+
+                        # Check if this is a pitcher
+                        position_type = ''
+                        player_name = ''
+                        for item in player[0]:
+                            if isinstance(item, dict):
+                                if 'position_type' in item:
+                                    position_type = item['position_type']
+                                elif 'name' in item:
+                                    player_name = item['name'].get('full', '')
+
+                        if position_type != 'P':
+                            continue
+
+                        # Get projected points for this day
+                        points = 0.0
+                        for item in player:
+                            if isinstance(item, dict) and 'player_points' in item:
+                                try:
+                                    points = float(item['player_points'].get('total', 0))
+                                except (ValueError, TypeError):
+                                    points = 0.0
+                                break
+
+                        if points > 0:
+                            team_boost += points
+                            team_details.append({
+                                "name": player_name,
+                                "date": day_str,
+                                "projected_points": round(points, 2)
+                            })
+
+                except Exception as e:
+                    print(f"    ⚠ Could not fetch {team_name} bench for {day_str}: {e}")
+                    continue
+
+            bench_boost[team_key] = round(team_boost, 2)
+            if team_details:
+                bench_details[team_key] = team_details
+                print(f"    ✓ {team_name}: +{team_boost:.1f} bench pitcher pts ({len(team_details)} pitcher-days)")
+            else:
+                print(f"    ✓ {team_name}: no bench pitcher projections")
+
+        output = {
+            "current_week": current_week,
+            "generated_at": datetime.now().isoformat(),
+            "week_start": week_start.strftime("%Y-%m-%d"),
+            "week_end": week_end.strftime("%Y-%m-%d"),
+            "total_days": total_days,
+            "days_completed": days_completed,
+            "bench_boost": bench_boost,
+            "bench_details": bench_details
+        }
+
+        with open(output_file, 'w', encoding='utf-8') as f:
+            json.dump(output, f, indent=2, ensure_ascii=False)
+
+        total_boost = sum(bench_boost.values())
+        teams_with_boost = sum(1 for v in bench_boost.values() if v > 0)
+        print(f"  ✓ Bench pitcher projections saved ({teams_with_boost} teams with hidden starters, +{total_boost:.1f} total pts)")
+
+    except Exception as e:
+        print(f"  ⚠ Could not collect bench pitcher projections: {e}")
         import traceback
         traceback.print_exc()
 
@@ -4290,6 +4453,12 @@ def quick_update():
         collect_week_rosters(oauth, CURRENT_SEASON, lg)
     except Exception as e:
         print(f"  ⚠ Could not update week rosters: {e}")
+
+    # 5c. Collect bench pitcher projections for sportsbook odds
+    try:
+        collect_bench_pitcher_projections(oauth, CURRENT_SEASON, lg)
+    except Exception as e:
+        print(f"  ⚠ Could not update bench pitcher projections: {e}")
 
     # 6. Update player stats (for trade analyzer actual points)
     print("Updating player stats...")
@@ -5550,6 +5719,23 @@ if __name__ == "__main__":
                 player_id = sys.argv[2]
                 year = int(sys.argv[3]) if len(sys.argv) > 3 else CURRENT_SEASON
                 test_headshot(player_id, year)
+        elif command in ("backfill-daily", "backfill_daily"):
+            # Backfill daily scores for specific weeks
+            # Examples:
+            #   python collect_data.py backfill-daily 1 2
+            #   python collect_data.py backfill-daily 1
+            if len(sys.argv) < 3:
+                print("Usage: python collect_data.py backfill-daily <week ...>")
+                print("Examples:")
+                print("  python collect_data.py backfill-daily 1 2")
+                print("  python collect_data.py backfill-daily 1")
+            else:
+                weeks = [int(w) for w in sys.argv[2:]]
+                print(f"Backfilling daily scores for weeks: {weeks}")
+                oauth = setup_oauth()
+                league_id = get_league_id_by_name(oauth, CURRENT_SEASON)
+                lg = League(oauth, league_id)
+                collect_daily_scores(oauth, CURRENT_SEASON, lg, weeks_to_fetch=weeks)
         elif command == "debug-names":
             # Debug player name matching between Yahoo and Fangraphs
             year = int(sys.argv[2]) if len(sys.argv) > 2 else 2024
@@ -5576,6 +5762,7 @@ if __name__ == "__main__":
             print("  players            - Collect player stats (Fangraphs + Yahoo)")
             print("  headshots          - Update existing player data with headshots only")
             print("  full               - Weekly update with player data")
+            print("  backfill-daily <weeks> - Backfill daily scores for past weeks (e.g., 1 2)")
             print("  projections [sys]  - Collect projections (all or specific system)")
             print("                       Systems: steamer, zips, depthcharts, thebat, thebatx")
             print("  test-fangraphs     - Test Fangraphs connection")

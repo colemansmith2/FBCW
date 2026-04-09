@@ -52620,7 +52620,7 @@
       }
 
       async function loadSportsbookWeeklySources() {
-        const [projData, weeklyStats, dailyScores, baseScores] =
+        const [projData, weeklyStats, dailyScores, baseScores, benchPitcherData] =
           await Promise.all([
             (async () => {
               try {
@@ -52662,6 +52662,15 @@
                 /* ignore */
               }
               return [];
+            })(),
+            (async () => {
+              try {
+                const response = await fetch("data/current_season/bench_pitcher_projections.json");
+                if (response.ok) return await response.json();
+              } catch (e) {
+                /* ignore */
+              }
+              return null;
             })(),
           ]);
 
@@ -52750,6 +52759,8 @@
           projGeneratedAt: projData?.generated_at || null,
           weeklyProjections: projData?.weekly || null,
           weeklyStats,
+          benchPitcherData,
+          dailyScoresData: dailyScores,
         };
       }
 
@@ -52779,6 +52790,8 @@
             projGeneratedAt,
             weeklyProjections,
             weeklyStats,
+            benchPitcherData,
+            dailyScoresData,
           } = await loadSportsbookWeeklySources();
 
           // Update the "Updated at" timestamp - use most recent from weekly stats or projections
@@ -52851,6 +52864,34 @@
             };
           });
 
+          // Compute week progress for live odds adjustment
+          let weekProgress = 0;
+          const weekKeyForProgress = String(selectedWeek);
+          const weekInfo = dailyScoresData?.weeks?.[weekKeyForProgress];
+          if (weekInfo?.start_date && weekInfo?.end_date) {
+            const wStart = new Date(weekInfo.start_date + 'T00:00:00');
+            const wEnd = new Date(weekInfo.end_date + 'T23:59:59');
+            const totalDays = Math.round((wEnd - wStart) / 86400000) + 1;
+            const now = new Date();
+            if (now >= wStart) {
+              const daysPassed = Math.min(
+                Math.floor((now - wStart) / 86400000),
+                totalDays
+              );
+              weekProgress = daysPassed / totalDays;
+            }
+          } else if (benchPitcherData && Number(benchPitcherData.current_week) === selectedWeek) {
+            // Fallback: use bench pitcher data's day counts
+            const total = benchPitcherData.total_days || 7;
+            const completed = benchPitcherData.days_completed || 0;
+            weekProgress = completed / total;
+          }
+
+          // Get bench boost lookup for the selected week
+          const benchBoost = (benchPitcherData && Number(benchPitcherData.current_week) === selectedWeek)
+            ? (benchPitcherData.bench_boost || {})
+            : {};
+
           // Render matchups
           container.innerHTML = `<div class="weekly-matchups-grid">${weekMatchups
             .map((matchup) => {
@@ -52878,9 +52919,22 @@
               const score1 = Number(matchup.team1_score ?? 0) || 0;
               const score2 = Number(matchup.team2_score ?? 0) || 0;
 
-              // Calculate H2H odds with vig
-              const odds1 = calculateMatchupOdds(proj1, proj2, matchup.team1_key, matchup.team2_key, weekKey);
-              const odds2 = calculateMatchupOdds(proj2, proj1, matchup.team2_key, matchup.team1_key, weekKey);
+              // Build live context for odds calculation
+              const liveCtx = {
+                teamScore: score1,
+                oppScore: score2,
+                weekProgress,
+                teamBenchBoost: benchBoost[matchup.team1_key] || 0,
+                oppBenchBoost: benchBoost[matchup.team2_key] || 0,
+              };
+
+              // Calculate H2H odds with vig + live context
+              const odds1 = calculateMatchupOdds(proj1, proj2, matchup.team1_key, matchup.team2_key, weekKey, liveCtx);
+              const odds2 = calculateMatchupOdds(proj2, proj1, matchup.team2_key, matchup.team1_key, weekKey, {
+                teamScore: score2, oppScore: score1, weekProgress,
+                teamBenchBoost: benchBoost[matchup.team2_key] || 0,
+                oppBenchBoost: benchBoost[matchup.team1_key] || 0,
+              });
 
               // Calculate individual O/U odds (slight juice both ways)
               const proj1Line = Math.round(proj1 * 2) / 2; // round to nearest 0.5
@@ -53420,7 +53474,20 @@
         return normalizeManagerName(team.manager || '', 2026, team.team_name || '', teamKey);
       }
 
-      function calculateMatchupOdds(teamProj, oppProj, teamKey, oppTeamKey, weekKey) {
+      /**
+       * Calculate matchup win probability odds.
+       *
+       * @param {number} teamProj  - Full-week projected points for team
+       * @param {number} oppProj   - Full-week projected points for opponent
+       * @param {string} teamKey   - Team key
+       * @param {string} oppTeamKey - Opponent team key
+       * @param {string} weekKey   - Week number string
+       * @param {object} [liveCtx] - Optional live-week context:
+       *   { teamScore, oppScore, weekProgress, teamBenchBoost, oppBenchBoost }
+       *   weekProgress = fraction of week completed (0–1), e.g. 5 of 7 days = 0.714
+       *   benchBoost = projected points from bench pitchers with starts remaining
+       */
+      function calculateMatchupOdds(teamProj, oppProj, teamKey, oppTeamKey, weekKey, liveCtx) {
         if (teamProj === 0 && oppProj === 0) return "-110";
 
         // Get manager variance data for both teams
@@ -53430,24 +53497,57 @@
         const teamStats = (teamManager && managerWeeklyStats?.[teamManager]) || league;
         const oppStats = (oppManager && managerWeeklyStats?.[oppManager]) || league;
 
-        // Use raw historical stdDev (NOT scaled to projection level)
-        // Fantasy score variance is inherent to the format — a team projected 136
-        // can still explode for 250+ or collapse to 80. The raw stdDev captures
-        // the true week-to-week volatility of each manager's scoring.
-        const teamStdDev = teamStats.stdDev;
-        const oppStdDev = oppStats.stdDev;
+        const fullTeamStdDev = teamStats.stdDev;
+        const fullOppStdDev = oppStats.stdDev;
 
-        // Score difference distribution: X = teamScore - oppScore
-        // E[X] = teamProj - oppProj
-        // Var[X] = teamVar + oppVar (independent)
-        // StdDev[X] = sqrt(teamStdDev^2 + oppStdDev^2)
-        const diffMean = teamProj - oppProj;
-        const diffStdDev = Math.sqrt(teamStdDev * teamStdDev + oppStdDev * oppStdDev);
+        let diffMean, diffStdDev;
+
+        const hasLive = liveCtx && liveCtx.weekProgress > 0 &&
+          (liveCtx.teamScore > 0 || liveCtx.oppScore > 0);
+
+        if (hasLive) {
+          // --- Live in-week odds ---
+          // Actual points already scored are locked (zero variance).
+          // Only the remaining portion of the week carries uncertainty.
+          const progress = Math.min(liveCtx.weekProgress, 0.95); // cap so we never hit zero variance
+          const remaining = 1 - progress;
+
+          // Add bench pitcher boost to projections (hidden starters)
+          const adjTeamProj = teamProj + (liveCtx.teamBenchBoost || 0);
+          const adjOppProj = oppProj + (liveCtx.oppBenchBoost || 0);
+
+          // Estimate remaining projected points:
+          // remainingProj = fullProj - pointsScoredSoFar
+          // But if team is outperforming, don't go negative — use at least
+          // remaining fraction × full projection as a floor.
+          const teamRemaining = Math.max(adjTeamProj - liveCtx.teamScore, adjTeamProj * remaining * 0.5);
+          const oppRemaining = Math.max(adjOppProj - liveCtx.oppScore, adjOppProj * remaining * 0.5);
+
+          // Expected final = locked actual + remaining projected
+          const teamExpected = liveCtx.teamScore + teamRemaining;
+          const oppExpected = liveCtx.oppScore + oppRemaining;
+
+          diffMean = teamExpected - oppExpected;
+
+          // Variance scales linearly with remaining fraction of week
+          // StdDev scales with sqrt(remaining)
+          const teamStdDev = fullTeamStdDev * Math.sqrt(remaining);
+          const oppStdDev = fullOppStdDev * Math.sqrt(remaining);
+          diffStdDev = Math.sqrt(teamStdDev * teamStdDev + oppStdDev * oppStdDev);
+        } else {
+          // --- Pre-week or no live data: use pure projections ---
+          // Still add bench boost if available
+          const adjTeamProj = teamProj + (liveCtx?.teamBenchBoost || 0);
+          const adjOppProj = oppProj + (liveCtx?.oppBenchBoost || 0);
+
+          diffMean = adjTeamProj - adjOppProj;
+          diffStdDev = Math.sqrt(fullTeamStdDev * fullTeamStdDev + fullOppStdDev * fullOppStdDev);
+        }
 
         // P(team wins) = P(X > 0) = normalCDF(diffMean / diffStdDev)
         let probability;
         if (diffStdDev === 0) {
-          probability = teamProj > oppProj ? 0.95 : teamProj < oppProj ? 0.05 : 0.5;
+          probability = diffMean > 0 ? 0.95 : diffMean < 0 ? 0.05 : 0.5;
         } else {
           const zScore = diffMean / diffStdDev;
           probability = normalCDF(zScore);
