@@ -20219,7 +20219,7 @@
       }
 
       .roster-position-group {
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.15rem;
       }
 
       .roster-position-label {
@@ -20230,6 +20230,43 @@
         letter-spacing: 0.5px;
         margin-bottom: 0.25rem;
         padding-left: 2px;
+      }
+
+      .roster-column-headers {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.35rem;
+        padding: 0 0.5rem 0.3rem;
+        margin-bottom: 0.15rem;
+      }
+
+      .roster-col-label {
+        font-size: 0.6rem;
+        font-weight: 700;
+        color: #999;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: center;
+        min-width: 62px;
+      }
+
+      .roster-na-separator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 0.5rem 0 0.25rem;
+        color: #888;
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .roster-na-separator::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: #ccc;
       }
 
       .roster-player-row {
@@ -20311,25 +20348,55 @@
       }
 
       .roster-player-stats {
-        text-align: right;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
         flex-shrink: 0;
       }
 
+      .roster-stat-col {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        min-width: 0;
+      }
+
       .roster-player-points {
-        font-size: 0.8rem;
+        font-size: 0.75rem;
         font-weight: 700;
         color: var(--retro-blue);
+        min-width: 32px;
+        text-align: right;
+      }
+
+      .roster-player-points.projected {
+        color: #666;
+        font-style: italic;
+      }
+
+      .roster-rank-badge {
+        display: inline-block;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: #fff;
+        padding: 2px 5px;
+        border-radius: 3px;
+        min-width: 28px;
+        text-align: center;
+        line-height: 1.3;
+        white-space: nowrap;
+      }
+
+      .roster-stat-divider {
+        width: 1px;
+        height: 18px;
+        background: #ddd;
+        flex-shrink: 0;
       }
 
       .roster-player-rank {
         font-size: 0.6rem;
         color: #888;
-      }
-
-      /* Projected points indicator */
-      .roster-player-points.projected {
-        color: #666;
-        font-style: italic;
       }
 
       /* Prospects section */
@@ -56313,6 +56380,12 @@
       }
 
       async function openRosterModal(teamKey) {
+        // Ensure actual stats + ROS projections are loaded for rank badges
+        await Promise.all([
+          loadPlayerActualStats(),
+          loadROSProjections(),
+        ]);
+
         // Load merged rosters (Yahoo + NA keepers)
         const mergedRosters = await loadMergedRosters();
 
@@ -56555,6 +56628,74 @@
         // Clear _used flags from any previous render
         players.forEach(p => { delete p._used; });
 
+        // Enrich players with actual YTD points + ROS projections
+        players.forEach(p => {
+          const nameRaw = (p.name || '').toLowerCase().trim();
+          const nameNorm = nameRaw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          const actual = (tradeAnalyzerData.actualStats[nameRaw] || tradeAnalyzerData.actualStats[nameNorm] || {}).fantasyPoints || 0;
+          const ros = (tradeAnalyzerData.rosProjections[nameRaw] || tradeAnalyzerData.rosProjections[nameNorm] || {}).rosPoints || 0;
+          p._actualPoints = actual;
+          p._projectedTotal = actual + ros; // current + ROS
+        });
+
+        // Compute position ranks across ALL league players (not just this team)
+        // Use tradeAnalyzerData to rank by position
+        const positionActualRanks = {};   // "C" -> [{name, points}, ...]
+        const positionProjRanks = {};
+        const allStats = tradeAnalyzerData.actualStats || {};
+        const allRos = tradeAnalyzerData.rosProjections || {};
+
+        // Build league-wide position rankings from player_stats (all rostered players)
+        // We'll compute ranks for each player on this team against all league players
+        // by looking up their primary position
+        const allLeaguePlayers = [];
+        Object.values(homeRostersData || {}).forEach(teamPlayers => {
+          if (!Array.isArray(teamPlayers)) return;
+          teamPlayers.forEach(tp => {
+            const nm = (tp.name || '').toLowerCase().trim();
+            const nmNorm = nm.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const actual = (allStats[nm] || allStats[nmNorm] || {}).fantasyPoints || 0;
+            const ros = (allRos[nm] || allRos[nmNorm] || {}).rosPoints || 0;
+            allLeaguePlayers.push({
+              name: nm,
+              position: tp.primary_position || '',
+              actualPoints: actual,
+              projTotal: actual + ros,
+            });
+          });
+        });
+
+        // Group by position and sort descending
+        const byPosActual = {};
+        const byPosProj = {};
+        allLeaguePlayers.forEach(lp => {
+          const pos = lp.position;
+          if (!pos) return;
+          if (!byPosActual[pos]) { byPosActual[pos] = []; byPosProj[pos] = []; }
+          byPosActual[pos].push({ name: lp.name, pts: lp.actualPoints });
+          byPosProj[pos].push({ name: lp.name, pts: lp.projTotal });
+        });
+        Object.keys(byPosActual).forEach(pos => {
+          byPosActual[pos].sort((a, b) => b.pts - a.pts);
+          byPosProj[pos].sort((a, b) => b.pts - a.pts);
+        });
+
+        // Assign ranks to each player on this team
+        players.forEach(p => {
+          const nm = (p.name || '').toLowerCase().trim();
+          const nmNorm = nm.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          const pos = p.primary_position || '';
+
+          const actualList = byPosActual[pos] || [];
+          const projList = byPosProj[pos] || [];
+          const actualIdx = actualList.findIndex(x => x.name === nm || x.name === nmNorm);
+          const projIdx = projList.findIndex(x => x.name === nm || x.name === nmNorm);
+
+          p._actualRank = actualIdx >= 0 ? actualIdx + 1 : null;
+          p._projRank = projIdx >= 0 ? projIdx + 1 : null;
+          p._posTotal = actualList.length || projList.length || 12;
+        });
+
         // Separate batters and pitchers (prospects included in normal slots)
         const batters = players.filter(
           (p) =>
@@ -56568,16 +56709,10 @@
               ["SP", "RP", "P"].includes(p.primary_position),
         );
 
-        // Sort all groups by projected points (or actual points if available) descending
+        // Sort all groups by projected total descending
         const sortByPoints = (a, b) => {
-          const aPoints =
-            (a.fantasy_points || 0) > 0
-              ? a.fantasy_points
-              : a.projected_points || 0;
-          const bPoints =
-            (b.fantasy_points || 0) > 0
-              ? b.fantasy_points
-              : b.projected_points || 0;
+          const aPoints = a._projectedTotal > 0 ? a._projectedTotal : (a.projected_points || 0);
+          const bPoints = b._projectedTotal > 0 ? b._projectedTotal : (b.projected_points || 0);
           return bPoints - aPoints;
         };
         batters.sort(sortByPoints);
@@ -56587,19 +56722,21 @@
         const placeholderImg =
           "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
 
-        // Build batters section
+        // Column headers row template
+        const columnHeaders = `<div class="roster-column-headers">
+          <span class="roster-col-label">Current</span>
+          <span class="roster-col-label">Season</span>
+        </div>`;
+
+        // Build batters section (no position labels, just rows)
         let battersHtml =
-          '<div class="roster-section"><div class="roster-section-header"><h4>Batters</h4></div>';
+          '<div class="roster-section"><div class="roster-section-header"><h4>Batters</h4></div>' + columnHeaders;
 
         for (const slot of ROSTER_BATTER_SLOTS) {
-          battersHtml += `<div class="roster-position-group"><div class="roster-position-label">${slot.label}</div>`;
-
+          battersHtml += '<div class="roster-position-group">';
           for (let i = 0; i < slot.count; i++) {
-            // Find a player for this slot (already sorted by points, so will pick best available)
             const player = findPlayerForSlot(batters, slot.pos, i);
-
             if (player) {
-              // Mark player as used
               player._used = true;
               battersHtml += buildPlayerRow(player, placeholderImg);
             } else {
@@ -56609,11 +56746,10 @@
           battersHtml += "</div>";
         }
 
-        // Add any remaining batters (including prospects) that didn't fit in slots
+        // Add any remaining batters (NA) with separator
         const unusedBatters = batters.filter(p => !p._used);
         if (unusedBatters.length > 0) {
-          battersHtml +=
-            '<div class="roster-position-group"><div class="roster-position-label">NA</div>';
+          battersHtml += '<div class="roster-position-group"><div class="roster-na-separator">NA</div>';
           for (const player of unusedBatters) {
             player._used = true;
             battersHtml += buildPlayerRow(player, placeholderImg);
@@ -56623,22 +56759,19 @@
 
         battersHtml += "</div>";
 
-        // Build pitchers section (including bench)
+        // Build pitchers section (no position labels, no "& Bench")
         let pitchersHtml =
-          '<div class="roster-section"><div class="roster-section-header"><h4>Pitchers & Bench</h4></div>';
+          '<div class="roster-section"><div class="roster-section-header"><h4>Pitchers</h4></div>' + columnHeaders;
 
         for (const slot of ROSTER_PITCHER_SLOTS) {
-          pitchersHtml += `<div class="roster-position-group"><div class="roster-position-label">${slot.label}</div>`;
-
+          pitchersHtml += '<div class="roster-position-group">';
           for (let i = 0; i < slot.count; i++) {
             let player;
             if (slot.pos === "BN") {
-              // Bench slots - use remaining pitchers (already sorted)
               player = pitchers.find((p) => !p._used);
             } else {
               player = findPlayerForSlot(pitchers, slot.pos, i);
             }
-
             if (player) {
               player._used = true;
               pitchersHtml += buildPlayerRow(player, placeholderImg);
@@ -56649,11 +56782,10 @@
           pitchersHtml += "</div>";
         }
 
-        // Add any remaining pitchers (including prospects) that didn't fit in slots
+        // Add any remaining pitchers (NA) with separator
         const unusedPitchers = pitchers.filter(p => !p._used);
         if (unusedPitchers.length > 0) {
-          pitchersHtml +=
-            '<div class="roster-position-group"><div class="roster-position-label">NA</div>';
+          pitchersHtml += '<div class="roster-position-group"><div class="roster-na-separator">NA</div>';
           for (const player of unusedPitchers) {
             player._used = true;
             pitchersHtml += buildPlayerRow(player, placeholderImg);
@@ -56697,18 +56829,25 @@
       function buildPlayerRow(player, placeholderImg) {
         const headshot = player.headshot_url || placeholderImg;
         const position = player.primary_position || "";
-        const actualPoints = player.fantasy_points || 0;
-        const projectedPoints = player.projected_points || 0;
-        const rank = player.position_rank;
         const isKeeper =
           player.isKeeper || player.acquisition_type === "Keeper";
         const mlbTeam = player.mlb_team || "";
 
-        // Use actual points if available, otherwise projected points
-        const displayPoints = actualPoints > 0 ? actualPoints : projectedPoints;
-        const isProjected = actualPoints === 0 && projectedPoints > 0;
+        // Actual YTD points and projected total (actual + ROS)
+        const actualPts = player._actualPoints || 0;
+        const projTotal = player._projectedTotal || 0;
+        const actualRank = player._actualRank;
+        const projRank = player._projRank;
+        const posTotal = player._posTotal || 12;
 
-        // MLB team logo - use helper function for proper abbreviation handling
+        // Build rank badge HTML
+        const buildRankBadge = (rank, pos, total) => {
+          if (!rank) return '';
+          const color = getRankColor(rank, total);
+          return `<span class="roster-rank-badge" style="background:${color};">${pos}${rank}</span>`;
+        };
+
+        // MLB team logo
         const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : "";
         const mlbTeamDisplay = mlbTeam ? formatMLBTeamDisplay(mlbTeam) : "";
 
@@ -56732,8 +56871,15 @@
                         }
                     </div>
                     <div class="roster-player-stats">
-                        <div class="roster-player-points${isProjected ? " projected" : ""}">${displayPoints > 0 ? displayPoints.toFixed(1) : "-"}${isProjected ? "*" : ""}</div>
-                        ${rank ? `<div class="roster-player-rank">#${rank}</div>` : ""}
+                        <div class="roster-stat-col">
+                            <span class="roster-player-points">${actualPts > 0 ? actualPts.toFixed(1) : "-"}</span>
+                            ${buildRankBadge(actualRank, position, posTotal)}
+                        </div>
+                        <div class="roster-stat-divider"></div>
+                        <div class="roster-stat-col">
+                            <span class="roster-player-points${projTotal > 0 && actualPts === 0 ? ' projected' : ''}">${projTotal > 0 ? projTotal.toFixed(0) : "-"}</span>
+                            ${buildRankBadge(projRank, position, posTotal)}
+                        </div>
                     </div>
                 </div>
             `;
