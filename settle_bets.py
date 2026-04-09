@@ -270,8 +270,11 @@ def main():
     else:
         current_week = 1
 
-    settle_week = args.week if args.week else max(1, current_week - 1)
-    print(f"Settling bets for Week {settle_week} (current week: {current_week})")
+    # current_week from weekly_stats.json is the latest week that was collected
+    # (i.e., the most recently completed week), NOT Yahoo's live current week.
+    # So we settle that week directly, not current_week - 1.
+    settle_week = args.week if args.week else current_week
+    print(f"Settling bets for Week {settle_week} (latest collected week: {current_week})")
 
     # Load matchup results
     matchups = load_matchup_results(settle_week)
