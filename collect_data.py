@@ -934,7 +934,7 @@ def get_rosters_with_stats(oauth, year: int) -> List[Dict]:
                         stat_id = str(stat.get('stat_id', ''))
                         stat_value = stat.get('value', 0)
                         # Map stat IDs to names
-                        stat_name = YAHOO_STATS_ID_MAP.get(stat_id)
+                        stat_name = YAHOO_STAT_ID_MAP.get(stat_id)
                         if stat_name:
                             try:
                                 stats[stat_name] = float(stat_value) if '.' in str(stat_value) else int(stat_value)
@@ -1512,7 +1512,7 @@ def calculate_batting_fantasy_points(stats: Dict, scoring: Dict) -> float:
     # Fangraphs column name -> Yahoo scoring abbreviation
     FANGRAPHS_TO_YAHOO_BATTING = {
         '1B': '1B',
-        '2B': '2B', 
+        '2B': '2B',
         '3B': '3B',
         'HR': 'HR',
         'R': 'R',
@@ -1523,6 +1523,8 @@ def calculate_batting_fantasy_points(stats: Dict, scoring: Dict) -> float:
         'SO': 'SO',
         'HBP': 'HBP',
         'IBB': 'IBB',
+        'CYC': 'CYC',
+        'SLAM': 'SLAM',
     }
     
     # Calculate singles if not present
@@ -1670,6 +1672,8 @@ def get_empty_batter_stats() -> Dict[str, Any]:
         'SB': 0,
         'CS': 0,
         'HBP': 0,
+        'CYC': 0,
+        'SLAM': 0,
         'AVG': 0.0,
         'OBP': 0.0,
         'SLG': 0.0,
@@ -1766,6 +1770,8 @@ def get_empty_mlb_daily_batter_stats() -> Dict[str, int]:
         'HBP': 0,
         'SF': 0,
         'TB': 0,
+        'CYC': 0,
+        'SLAM': 0,
     }
 
 
@@ -2085,7 +2091,7 @@ def aggregate_mlb_cache_window_stats(
 def finalize_mlb_batter_stats(stats: Dict[str, Any]) -> Dict[str, Any]:
     """Convert aggregated MLB batting counts into the public UI schema."""
     finalized = get_empty_batter_stats()
-    for key in ('G', 'AB', 'PA', 'H', '2B', '3B', 'HR', 'R', 'RBI', 'BB', 'IBB', 'SO', 'SB', 'CS', 'HBP'):
+    for key in ('G', 'AB', 'PA', 'H', '2B', '3B', 'HR', 'R', 'RBI', 'BB', 'IBB', 'SO', 'SB', 'CS', 'HBP', 'CYC', 'SLAM'):
         finalized[key] = safe_int(stats.get(key, 0))
 
     if finalized['PA'] == 0:
@@ -2532,6 +2538,82 @@ def build_current_season_window_players_from_mlb(
     return all_players
 
 
+def fetch_yahoo_bonus_stats(oauth, year: int) -> Dict[str, Dict[str, int]]:
+    """Fetch per-player season bonus stats (SLAM, CYC) from Yahoo Fantasy API.
+
+    The MLB Stats API boxscores do not include grand slam or cycle data —
+    these are bonus events only available through Yahoo.  This function
+    queries each team's roster with season stats and extracts stat_id 66
+    (SLAM) and 64 (CYC) for every batter.
+
+    Returns a dict keyed by normalized player name:
+        { "shea langeliers": {"SLAM": 1, "CYC": 0}, ... }
+    """
+    BONUS_STAT_IDS = {64: 'CYC', 66: 'SLAM'}
+
+    league_id = get_league_id_by_name(oauth, year)
+    if not league_id:
+        print("    ⚠ Could not resolve league ID for Yahoo bonus stats")
+        return {}
+
+    lg = League(oauth, league_id)
+    teams = lg.teams()
+    bonus_stats: Dict[str, Dict[str, int]] = {}
+
+    print(f"  Fetching Yahoo bonus stats (SLAM/CYC) for {year}...")
+    for team_key in teams:
+        team_name = teams[team_key].get('name', team_key)
+        try:
+            raw = lg.yhandler.get(
+                f"team/{team_key}/roster/players/stats;type=season;season={year}"
+            )
+            players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
+            player_count = int(players_data.get('count', 0))
+
+            for i in range(player_count):
+                player_key = str(i)
+                if player_key not in players_data:
+                    continue
+                player = players_data[player_key]['player']
+
+                # Extract player name
+                name = ''
+                position_type = ''
+                for item in player[0]:
+                    if isinstance(item, dict):
+                        if 'name' in item:
+                            name = item['name'].get('full', '')
+                        elif 'position_type' in item:
+                            position_type = item['position_type']
+                if not name or position_type != 'B':
+                    continue
+
+                # Extract bonus stat values from player_stats
+                player_bonus: Dict[str, int] = {'CYC': 0, 'SLAM': 0}
+                for item in player:
+                    if not isinstance(item, dict) or 'player_stats' not in item:
+                        continue
+                    for stat_entry in item['player_stats'].get('stats', []):
+                        if not isinstance(stat_entry, dict) or 'stat' not in stat_entry:
+                            continue
+                        stat = stat_entry['stat']
+                        stat_id = safe_int(stat.get('stat_id'), 0)
+                        if stat_id in BONUS_STAT_IDS:
+                            player_bonus[BONUS_STAT_IDS[stat_id]] = safe_int(stat.get('value'), 0)
+                    break
+
+                if player_bonus['CYC'] > 0 or player_bonus['SLAM'] > 0:
+                    normalized = normalize_player_name(name)
+                    bonus_stats[normalized] = player_bonus
+
+        except Exception as e:
+            print(f"    ⚠ Could not fetch bonus stats for {team_name}: {e}")
+
+    total = sum(v.get('SLAM', 0) + v.get('CYC', 0) for v in bonus_stats.values())
+    print(f"    ✓ Found {len(bonus_stats)} players with bonus stats ({total} total bonus events)")
+    return bonus_stats
+
+
 def build_current_season_player_stats_windows_from_mlb(oauth, year: int) -> Dict[str, Any]:
     """Build current-season player stat windows from the MLB daily cache."""
     print(f"\n  Building player stat windows for {year} from MLB API...")
@@ -2558,6 +2640,9 @@ def build_current_season_player_stats_windows_from_mlb(oauth, year: int) -> Dict
         season_start_dt,
         effective_end_dt,
     )
+
+    # Fetch bonus stats (SLAM/CYC) from Yahoo — not available in MLB boxscores
+    yahoo_bonus_stats = fetch_yahoo_bonus_stats(oauth, year)
 
     current_week_start = None
     current_week_end = None
@@ -2648,6 +2733,29 @@ def build_current_season_player_stats_windows_from_mlb(oauth, year: int) -> Dict
             daily_cache,
             supplemental_players,
         )
+
+        # Merge Yahoo bonus stats (SLAM/CYC) into the YTD window.
+        # These stats are unavailable from MLB boxscores and only Yahoo
+        # tracks them.  For sub-windows (last7, last14, etc.) we cannot
+        # attribute bonus events to specific dates without per-day Yahoo
+        # calls, so they remain at 0 — acceptable since these events are
+        # rare in short windows.
+        if window['key'] == 'ytd' and yahoo_bonus_stats:
+            for player in players:
+                if player.get('position_type') != 'B':
+                    continue
+                normalized = normalize_player_name(player.get('name', ''))
+                bonus = yahoo_bonus_stats.get(normalized)
+                if not bonus:
+                    continue
+                stats = player.get('stats', {})
+                stats['SLAM'] = bonus.get('SLAM', 0)
+                stats['CYC'] = bonus.get('CYC', 0)
+                player['fantasy_points'] = calculate_batting_fantasy_points(
+                    stats, batting_scoring,
+                )
+            # Re-sort after recalculating points
+            players.sort(key=lambda x: x.get('fantasy_points', 0), reverse=True)
 
         payload['windows'][window['key']] = {
             'label': window['label'],
