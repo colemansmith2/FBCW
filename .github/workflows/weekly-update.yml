@@ -25,7 +25,7 @@ on:
   # Scheduled run: Every Monday at 6:00 AM Eastern (10:00 UTC)
   # Adjust the cron schedule as needed for your timezone
   schedule:
-    - cron: '0 10 * * 1'  # 10:00 UTC = 6:00 AM ET / 5:00 AM CT
+    - cron: '0 9 * * 1'   # 9:00 UTC = 5:00 AM EDT
   
   # Allow manual triggering from the Actions tab
   workflow_dispatch:

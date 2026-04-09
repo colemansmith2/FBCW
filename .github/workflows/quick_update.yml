@@ -1,25 +1,28 @@
 # .github/workflows/quick_update.yml
 # 
-# Quick updates every 6 hours for teams, standings, and rosters
-# Runs at 5 AM, 11 AM, 5 PM, and 11 PM EST
-# 
+# Quick updates for teams, standings, and rosters
+# Runs 6 times daily (times in EDT = UTC-4)
+#
 # This is a lightweight update that doesn't collect weekly scores or player stats.
 # Use this for frequent roster tracking during the season.
 
-name: Quick Update (6hr)
+name: Quick Update
 
 on:
   schedule:
-    # Times are in UTC, converting from EST:
-    # 5 AM EST  = 10:00 UTC (9:00 during DST)
-    # 11 AM EST = 16:00 UTC (15:00 during DST)
-    # 5 PM EST  = 22:00 UTC (21:00 during DST)
-    # 11 PM EST = 04:00 UTC (03:00 during DST)
-    # Using non-DST times (EST = UTC-5)
-    - cron: '0 10 * * *'   # 5 AM EST
-    - cron: '0 16 * * *'   # 11 AM EST
-    - cron: '0 22 * * *'   # 5 PM EST
-    - cron: '0 4 * * *'    # 11 PM EST
+    # Times are in UTC, converting from EDT (UTC-4):
+    # 2:00 AM EDT  =  6:00 UTC
+    # 10:00 AM EDT = 14:00 UTC
+    # 1:00 PM EDT  = 17:00 UTC
+    # 4:00 PM EDT  = 20:00 UTC
+    # 7:00 PM EDT  = 23:00 UTC
+    # 10:00 PM EDT =  2:00 UTC
+    - cron: '0 6 * * *'    # 2:00 AM EDT
+    - cron: '0 14 * * *'   # 10:00 AM EDT
+    - cron: '0 17 * * *'   # 1:00 PM EDT
+    - cron: '0 20 * * *'   # 4:00 PM EDT
+    - cron: '0 23 * * *'   # 7:00 PM EDT
+    - cron: '0 2 * * *'    # 10:00 PM EDT
   
   # Allow manual trigger for testing
   workflow_dispatch:
