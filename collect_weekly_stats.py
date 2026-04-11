@@ -577,9 +577,21 @@ def get_top_performers(lg, week: int) -> Dict:
                         'team_name': team_name,
                         'headshot': metadata['headshot'],
                         'position_type': metadata['position_type'],
-                        'points': 0.0
+                        'points': 0.0,
+                        'stats': {}
                     })
                     entry['points'] += points
+
+                    # Accumulate per-stat values across days
+                    raw_stats = extract_player_stats(player)
+                    if metadata['position_type'] == 'B':
+                        for sid, sname in BATTING_STAT_IDS.items():
+                            if sid in raw_stats:
+                                entry['stats'][sname] = entry['stats'].get(sname, 0) + raw_stats[sid]
+                    elif metadata['position_type'] == 'P':
+                        for sid, sname in PITCHING_STAT_IDS.items():
+                            if sid in raw_stats:
+                                entry['stats'][sname] = entry['stats'].get(sname, 0) + raw_stats[sid]
 
                     if not entry['headshot'] and metadata['headshot']:
                         entry['headshot'] = metadata['headshot']
@@ -589,11 +601,20 @@ def get_top_performers(lg, week: int) -> Dict:
                         entry['position_type'] = metadata['position_type']
 
             for entry in players_by_id.values():
+                # Round stat values for clean output
+                clean_stats = {}
+                for k, v in entry.get('stats', {}).items():
+                    if k == 'IP':
+                        clean_stats[k] = round(v, 1)
+                    else:
+                        clean_stats[k] = int(v) if v == int(v) else round(v, 1)
+
                 player_entry = {
                     'name': entry['name'],
                     'team_name': entry['team_name'],
                     'headshot': entry['headshot'],
-                    'points': round(entry['points'], 2)
+                    'points': round(entry['points'], 2),
+                    'stats': clean_stats
                 }
 
                 if entry['position_type'] == 'B':

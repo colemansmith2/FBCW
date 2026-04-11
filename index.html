@@ -7357,54 +7357,105 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
 
+      /* ===== TOP PERFORMERS - LINEUP CARD STYLE ===== */
       .top-performers-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1.5rem;
       }
 
-      @media (max-width: 768px) {
-        .top-performers-grid {
-          grid-template-columns: 1fr;
-        }
+      .performers-column {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        border: 2px solid var(--retro-blue);
+        box-shadow: 0 2px 10px rgba(0, 72, 186, 0.12);
       }
 
-      .performers-column h4 {
-        color: var(--retro-blue);
-        margin: 0 0 0.75rem 0;
-        font-size: 1rem;
-        padding-bottom: 0.5rem;
-        border-bottom: 2px solid #e0e0e0;
+      .performers-column-header {
+        background: var(--retro-blue);
+        padding: 0.6rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: 3px solid var(--retro-gold);
+      }
+
+      .performers-column-header h4 {
+        color: #fff;
+        margin: 0;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .performers-column-header .header-icon {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+        flex-shrink: 0;
       }
 
       .performers-list {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0;
       }
 
       .performer-item {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 0.5rem;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border-left: 3px solid var(--retro-blue);
+        gap: 0.6rem;
+        padding: 0.55rem 0.75rem;
+        border-bottom: 1px solid #e8e8e8;
+        transition: filter 0.15s ease;
+        position: relative;
+      }
+
+      .performer-item:last-child {
+        border-bottom: none;
+      }
+
+      .performer-item:hover {
+        filter: brightness(0.96);
+      }
+
+      .performer-item.gold-rank {
+        border-left: 3px solid var(--retro-gold);
       }
 
       .performer-rank {
+        font-family: 'Arcade Gamer', monospace;
         font-weight: 700;
-        font-size: 1rem;
+        font-size: 0.7rem;
         color: var(--retro-blue);
-        min-width: 24px;
+        min-width: 20px;
+        text-align: center;
+      }
+
+      .performer-item.gold-rank .performer-rank {
+        color: var(--retro-gold-dark);
+      }
+
+      .performer-headshot-wrapper {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
       }
 
       .performer-headshot {
-        width: 36px;
-        height: 36px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         object-fit: cover;
+        border: 2px solid #ddd;
+        background: #f0f0f0;
+      }
+
+      .performer-item.gold-rank .performer-headshot {
+        border-color: var(--retro-gold);
       }
 
       .performer-info {
@@ -7414,62 +7465,279 @@
 
       .performer-name {
         font-weight: 600;
-        font-size: 0.85rem;
+        font-size: 0.9rem;
+        color: var(--retro-dark);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
 
-      .performer-team {
-        font-size: 0.7rem;
+      .performer-team-row {
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        margin-top: 2px;
+        flex-wrap: nowrap;
+        overflow: hidden;
+      }
+
+      .performer-mlb-logo {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+
+      .performer-mlb-abbr {
+        font-size: 0.65rem;
         color: #666;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+
+      .performer-team-sep {
+        font-size: 0.6rem;
+        color: #ccc;
+        flex-shrink: 0;
+        margin: 0 1px;
+      }
+
+      .performer-team-logo {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+
+      .performer-team {
+        font-size: 0.65rem;
+        color: #888;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
 
       .performer-points {
+        font-family: 'Arcade Gamer', monospace;
         font-weight: 700;
-        font-size: 1rem;
-        color: #28a745;
+        font-size: 0.65rem;
+        color: var(--retro-blue);
+        text-align: right;
+        white-space: nowrap;
       }
 
+      .performer-pts-label {
+        font-size: 0.5rem;
+        color: #aaa;
+        font-family: 'Basis33', monospace;
+        display: block;
+        text-align: right;
+      }
+
+      .performer-stats-line {
+        font-size: 0.7rem;
+        color: #666;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* ===== CATEGORY LEADERS ===== */
       .category-leaders-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 1rem;
       }
 
       .category-leader-card {
-        background: #f8f9fa;
-        border-radius: 8px;
-        padding: 0.75rem;
+        background: #fff;
+        border-radius: 10px;
+        padding: 0.85rem 0.75rem;
         text-align: center;
-        border: 1px solid #dee2e6;
+        border: 2px solid #e0e0e0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .category-leader-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(0, 72, 186, 0.15);
+        border-color: var(--retro-blue);
       }
 
       .category-name {
-        font-size: 0.75rem;
-        color: #666;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 0.55rem;
+        color: var(--retro-blue);
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-bottom: 0.25rem;
+        letter-spacing: 2px;
+        margin-bottom: 0.35rem;
       }
 
       .category-value {
-        font-size: 1.5rem;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 1.4rem;
         font-weight: 700;
-        color: var(--retro-blue);
+        color: var(--retro-dark);
+        line-height: 1.2;
+      }
+
+      .category-leader-divider {
+        width: 30px;
+        height: 2px;
+        background: var(--retro-blue);
+        margin: 0.4rem auto;
+        border-radius: 1px;
+        opacity: 0.4;
+      }
+
+      .category-leader-team-logo {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0.25rem auto 0.15rem;
+        display: block;
+        border: 1px solid #e0e0e0;
       }
 
       .category-leader-name {
         font-size: 0.8rem;
-        color: #333;
+        color: var(--retro-dark);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        font-weight: 600;
       }
 
       .category-leader-team {
         font-size: 0.65rem;
         color: #888;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.3rem;
+      }
+
+      /* ===== TOP PERFORMERS & CATEGORY LEADERS MOBILE ===== */
+      @media (max-width: 768px) {
+        .top-performers-grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+
+        .performers-column {
+          border-radius: 10px;
+        }
+
+        .performers-column-header {
+          padding: 0.5rem 0.75rem;
+        }
+
+        .performers-column-header h4 {
+          font-size: 0.55rem;
+        }
+
+        .performer-item {
+          padding: 0.45rem 0.6rem;
+          gap: 0.5rem;
+        }
+
+        .performer-headshot-wrapper {
+          width: 34px;
+          height: 34px;
+        }
+
+        .performer-headshot {
+          width: 34px;
+          height: 34px;
+        }
+
+        .performer-name {
+          font-size: 0.8rem;
+        }
+
+        .performer-points {
+          font-size: 0.6rem;
+        }
+
+        .performer-rank {
+          font-size: 0.6rem;
+          min-width: 16px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .performers-column-header h4 {
+          font-size: 0.5rem;
+        }
+
+        .performer-headshot-wrapper,
+        .performer-headshot {
+          width: 30px;
+          height: 30px;
+        }
+
+        .performer-name {
+          font-size: 0.75rem;
+        }
+
+        .performer-team {
+          font-size: 0.6rem;
+        }
+
+        .performer-team-logo {
+          width: 12px;
+          height: 12px;
+        }
+
+        .performer-mlb-logo {
+          width: 12px;
+          height: 12px;
+        }
+
+        .performer-mlb-abbr {
+          display: none;
+        }
+
+        .performer-team-sep {
+          display: none;
+        }
+
+        .performer-stats-line {
+          font-size: 0.6rem;
+        }
+
+        .category-leaders-grid {
+          grid-template-columns: repeat(3, 1fr);
+          gap: 0.4rem;
+        }
+
+        .category-leader-card {
+          padding: 0.4rem 0.3rem;
+          border-radius: 8px;
+        }
+
+        .category-value {
+          font-size: 1rem;
+        }
+
+        .category-name {
+          font-size: 0.45rem;
+        }
+
+        .category-leader-team-logo {
+          width: 16px;
+          height: 16px;
+        }
+
+        .category-leader-name {
+          font-size: 0.65rem;
+        }
       }
 
       /* Stats Heatmap Table */
@@ -7801,16 +8069,42 @@
         }
 
         .category-leaders-grid {
-          grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+          grid-template-columns: repeat(3, 1fr);
           gap: 0.5rem;
         }
 
         .category-leader-card {
-          padding: 0.5rem;
+          padding: 0.5rem 0.4rem;
         }
 
         .category-value {
-          font-size: 1.2rem;
+          font-size: 1.1rem;
+        }
+
+        .category-name {
+          font-size: 0.5rem;
+          letter-spacing: 1px;
+        }
+
+        .category-leader-team-logo {
+          width: 18px;
+          height: 18px;
+        }
+
+        .category-leader-name {
+          font-size: 0.7rem;
+        }
+
+        .category-leader-team {
+          font-size: 0.6rem;
+        }
+
+        .performer-mlb-abbr {
+          display: none;
+        }
+
+        .performer-team-sep {
+          display: none;
         }
       }
 
@@ -22103,7 +22397,7 @@
           <!-- Top Performers Section -->
           <div class="inseason-section">
             <h3 class="panel-title">
-              🔥 Top Performers
+              Top Performers
               <span
                 id="top-performers-week-label"
                 style="font-size: 0.85em; font-weight: normal"
@@ -22112,15 +22406,21 @@
             </h3>
             <div class="top-performers-grid">
               <div class="performers-column">
-                <h4>Top Hitters</h4>
+                <div class="performers-column-header">
+                  <img src="data/awards/hitter.png" alt="Trout Award" class="header-icon">
+                  <h4>Top Hitters</h4>
+                </div>
                 <div id="top-hitters-list" class="performers-list">
-                  <div class="no-data">Season has not started</div>
+                  <div class="no-data" style="padding: 1rem; text-align: center;">Season has not started</div>
                 </div>
               </div>
               <div class="performers-column">
-                <h4>Top Pitchers</h4>
+                <div class="performers-column-header">
+                  <img src="data/awards/pitcher.png" alt="deGrom Award" class="header-icon">
+                  <h4>Top Pitchers</h4>
+                </div>
                 <div id="top-pitchers-list" class="performers-list">
-                  <div class="no-data">Season has not started</div>
+                  <div class="no-data" style="padding: 1rem; text-align: center;">Season has not started</div>
                 </div>
               </div>
             </div>
@@ -22129,7 +22429,7 @@
           <!-- Weekly Category Leaders -->
           <div class="inseason-section" style="margin-top: 1.5rem">
             <h3 class="panel-title">
-              👑 Category Leaders
+              Category Leaders
               <span
                 id="category-leaders-week-label"
                 style="font-size: 0.85em; font-weight: normal"
@@ -31782,11 +32082,11 @@
 
         const targetWeek = week || weeklyStats.currentWeek;
 
+        const noDataHtml = '<div class="no-data" style="padding: 1rem; text-align: center;">Season has not started</div>';
+
         if (!targetWeek) {
-          hittersList.innerHTML =
-            '<div class="no-data">Season has not started</div>';
-          pitchersList.innerHTML =
-            '<div class="no-data">Season has not started</div>';
+          hittersList.innerHTML = noDataHtml;
+          pitchersList.innerHTML = noDataHtml;
           return;
         }
 
@@ -31797,12 +32097,26 @@
         let topHitters = weeklyStats.weeks?.[targetWeek]?.topHitters || [];
         let topPitchers = weeklyStats.weeks?.[targetWeek]?.topPitchers || [];
 
-        // Fallback: if weekly stats are empty, build from player_stats.json
-        if (topHitters.length === 0 && topPitchers.length === 0) {
-          try {
-            const resp = await fetch("data/current_season/player_stats.json");
-            if (resp.ok) {
-              const allPlayers = await resp.json();
+        // Load player_stats.json for enrichment (position, mlb_team, team_logo)
+        let playerStatsMap = {};
+        try {
+          const psResp = await fetch("data/current_season/player_stats.json");
+          if (psResp.ok) {
+            const allPlayers = await psResp.json();
+            allPlayers.forEach(p => {
+              const key = stripAccents(p.name || '').toLowerCase();
+              playerStatsMap[key] = {
+                primary_position: p.primary_position || '',
+                mlb_team: p.mlb_team || '',
+                team_logo: p.team_logo || '',
+                team_key: p.team_key || '',
+                position_type: p.position_type || '',
+                stats: p.stats || {}
+              };
+            });
+
+            // Fallback: if weekly stats are empty, build from player_stats
+            if (topHitters.length === 0 && topPitchers.length === 0) {
               const withPts = allPlayers.filter(p => (p.fantasy_points || 0) > 0);
               topHitters = withPts
                 .filter(p => p.position_type === "B")
@@ -31825,46 +32139,123 @@
                   points: p.fantasy_points || 0
                 }));
             }
-          } catch (e) {
-            console.log("Could not load player stats fallback for top performers:", e);
           }
+        } catch (e) {
+          console.log("Could not load player stats for top performers:", e);
+        }
+
+        // Build fantasy team logo lookup from current season teams
+        const teamLogoLookup = {};
+        try {
+          const teams = await getTeamData(2026);
+          if (teams) {
+            teams.forEach(t => {
+              const name = normalizeManagerName(t.manager, 2026, t.team_name, t.team_key);
+              teamLogoLookup[t.team_name] = fixTeamLogo(t.team_logo);
+              teamLogoLookup[name] = fixTeamLogo(t.team_logo);
+            });
+          }
+        } catch (e) { /* ignore */ }
+
+        // Position color map using CSS variable values
+        const posColorMap = {
+          'C': 'rgba(74, 20, 140, 0.12)',
+          '1B': 'rgba(21, 101, 192, 0.12)',
+          '2B': 'rgba(230, 81, 0, 0.12)',
+          '3B': 'rgba(183, 28, 28, 0.12)',
+          'SS': 'rgba(200, 160, 0, 0.14)',
+          'OF': 'rgba(46, 125, 50, 0.12)',
+          'LF': 'rgba(46, 125, 50, 0.12)',
+          'CF': 'rgba(46, 125, 50, 0.12)',
+          'RF': 'rgba(46, 125, 50, 0.12)',
+          'DH': 'rgba(84, 110, 122, 0.12)',
+          'Util': 'rgba(84, 110, 122, 0.12)',
+          'SP': 'rgba(126, 87, 194, 0.12)',
+          'RP': 'rgba(0, 131, 143, 0.12)',
+          'P': 'rgba(126, 87, 194, 0.12)'
+        };
+
+        function buildHitterStatsLine(stats) {
+          if (!stats) return '';
+          const parts = [];
+          if (stats['2B']) parts.push(`${stats['2B']} 2B`);
+          if (stats['3B']) parts.push(`${stats['3B']} 3B`);
+          if (stats.HR) parts.push(`${stats.HR} HR`);
+          if (stats.RBI) parts.push(`${stats.RBI} RBI`);
+          if (stats.SB) parts.push(`${stats.SB} SB`);
+          return parts.join(', ');
+        }
+
+        function buildPitcherStatsLine(stats) {
+          if (!stats) return '';
+          const parts = [];
+          // Use weekly stat key names (IP, ER, BB/BBA, K, etc.)
+          const ip = stats.IP ?? stats.ip;
+          if (ip != null) parts.push(`${ip} IP`);
+          parts.push(`${stats.ER ?? stats.er ?? 0} ER`);
+          parts.push(`${stats.BB ?? stats.BBA ?? stats.bb ?? 0} BB`);
+          const k = stats.K ?? stats.SO ?? stats.k;
+          if (k) parts.push(`${k} K`);
+          if (stats.W ?? stats.w) parts.push(`${stats.W ?? stats.w} W`);
+          if (stats.SV ?? stats.sv) parts.push(`${stats.SV ?? stats.sv} SV`);
+          if (stats.HLD ?? stats.hld) parts.push(`${stats.HLD ?? stats.hld} HLD`);
+          return parts.join(', ');
+        }
+
+        function renderPerformerItem(player, idx) {
+          const key = stripAccents(player.name || '').toLowerCase();
+          const pInfo = playerStatsMap[key] || {};
+          const fantasyLogo = teamLogoLookup[player.team_name] || pInfo.team_logo || '';
+          const mlbTeam = pInfo.mlb_team || '';
+          const mlbLogo = mlbTeam ? getMLBTeamLogo(mlbTeam) : null;
+          const mlbAbbr = mlbTeam ? formatMLBTeamDisplay(mlbTeam) : '';
+          const pos = pInfo.primary_position || '';
+          const posType = pInfo.position_type || '';
+          const bgColor = posColorMap[pos] || 'transparent';
+          const isGold = idx === 0;
+
+          // Prefer weekly stats from performer data, fall back to season stats
+          const weeklyStats = player.stats || {};
+          const hasWeeklyStats = Object.keys(weeklyStats).length > 0;
+          const statsSource = hasWeeklyStats ? weeklyStats : (pInfo.stats || {});
+          const statsLine = posType === 'B'
+            ? buildHitterStatsLine(statsSource)
+            : buildPitcherStatsLine(statsSource);
+          const statsHtml = statsLine ? `<div class="performer-stats-line">${statsLine}</div>` : '';
+
+          const fantasyLogoImg = fantasyLogo ? `<img src="${fixTeamLogo(fantasyLogo)}" class="performer-team-logo" alt="" onerror="this.style.display='none'">` : '';
+          const mlbLogoImg = mlbLogo ? `<img src="${mlbLogo}" class="performer-mlb-logo" alt="" onerror="this.style.display='none'">` : '';
+          const mlbAbbrHtml = mlbAbbr && mlbAbbr !== 'FA' ? `<span class="performer-mlb-abbr">${mlbAbbr}</span>` : '';
+          const sepHtml = (mlbAbbr && mlbAbbr !== 'FA' && fantasyLogo) ? '<span class="performer-team-sep">/</span>' : '';
+
+          return `
+            <div class="performer-item${isGold ? ' gold-rank' : ''}" style="background: ${bgColor};">
+              <span class="performer-rank">${idx + 1}</span>
+              <div class="performer-headshot-wrapper">
+                <img src="${player.headshot || ''}" class="performer-headshot" alt="" onerror="this.style.visibility='hidden'">
+              </div>
+              <div class="performer-info">
+                <div class="performer-name">${player.name}</div>
+                <div class="performer-team-row">
+                  ${mlbLogoImg}${mlbAbbrHtml}${sepHtml}${fantasyLogoImg}
+                  <span class="performer-team">${player.team_name}</span>
+                </div>
+                ${statsHtml}
+              </div>
+              <div class="performer-points-wrapper">
+                <span class="performer-points">${player.points.toFixed(1)}</span>
+                <span class="performer-pts-label">PTS</span>
+              </div>
+            </div>`;
         }
 
         hittersList.innerHTML =
-          topHitters
-            .slice(0, 5)
-            .map(
-              (player, idx) => `
-                <div class="performer-item">
-                    <span class="performer-rank">${idx + 1}</span>
-                    <img src="${player.headshot || ""}" class="performer-headshot" alt="" onerror="this.style.display='none'">
-                    <div class="performer-info">
-                        <div class="performer-name">${player.name}</div>
-                        <div class="performer-team">${player.team_name}</div>
-                    </div>
-                    <span class="performer-points">${player.points.toFixed(1)}</span>
-                </div>
-            `,
-            )
-            .join("") || '<div class="no-data">No data available</div>';
+          topHitters.slice(0, 5).map((p, i) => renderPerformerItem(p, i)).join("")
+          || '<div class="no-data" style="padding: 1rem; text-align: center;">No data available</div>';
 
         pitchersList.innerHTML =
-          topPitchers
-            .slice(0, 5)
-            .map(
-              (player, idx) => `
-                <div class="performer-item">
-                    <span class="performer-rank">${idx + 1}</span>
-                    <img src="${player.headshot || ""}" class="performer-headshot" alt="" onerror="this.style.display='none'">
-                    <div class="performer-info">
-                        <div class="performer-name">${player.name}</div>
-                        <div class="performer-team">${player.team_name}</div>
-                    </div>
-                    <span class="performer-points">${player.points.toFixed(1)}</span>
-                </div>
-            `,
-            )
-            .join("") || '<div class="no-data">No data available</div>';
+          topPitchers.slice(0, 5).map((p, i) => renderPerformerItem(p, i)).join("")
+          || '<div class="no-data" style="padding: 1rem; text-align: center;">No data available</div>';
       }
 
       async function loadCategoryLeaders(weeklyStats, week = null) {
@@ -31887,6 +32278,20 @@
 
         const leaders = weeklyStats.weeks?.[targetWeek]?.categoryLeaders || {};
 
+        // Build team logo lookup
+        const teamLogoLookup = {};
+        try {
+          const teams = await getTeamData(2026);
+          if (teams) {
+            teams.forEach(t => {
+              teamLogoLookup[t.team_key] = fixTeamLogo(t.team_logo);
+              teamLogoLookup[t.team_name] = fixTeamLogo(t.team_logo);
+              const mgrName = normalizeManagerName(t.manager, 2026, t.team_name, t.team_key);
+              teamLogoLookup[mgrName] = fixTeamLogo(t.team_logo);
+            });
+          }
+        } catch (e) { /* ignore */ }
+
         const categories = [
           { key: "HR", label: "HR" },
           { key: "RBI", label: "RBI" },
@@ -31902,11 +32307,17 @@
               const leader = leaders[cat.key];
               if (!leader) return "";
 
+              const logo = teamLogoLookup[leader.team_key] || teamLogoLookup[leader.team_name] || teamLogoLookup[leader.player_name] || '';
+              const logoImg = logo ? `<img src="${logo}" class="category-leader-team-logo" alt="" onerror="this.style.display='none'">` : '';
+              const displayName = normalizeManagerName(leader.player_name, 2026, leader.team_name, leader.team_key);
+
               return `
                     <div class="category-leader-card">
                         <div class="category-name">${cat.label}</div>
                         <div class="category-value">${leader.value}</div>
-                        <div class="category-leader-name">${leader.player_name}</div>
+                        <div class="category-leader-divider"></div>
+                        ${logoImg}
+                        <div class="category-leader-name">${displayName}</div>
                         <div class="category-leader-team">${leader.team_name}</div>
                     </div>
                 `;
