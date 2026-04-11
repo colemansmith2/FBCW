@@ -6152,6 +6152,14 @@
         text-align: center;
       }
 
+      .draft-rank.s-tier {
+        background: #7b2ff7;
+        color: #f0e6ff;
+        font-weight: 900;
+        font-style: italic;
+        border: 1.5px solid var(--retro-gold);
+      }
+
       .draft-rank.top-10 {
         background: #c6efce;
         color: #006400;
@@ -10497,7 +10505,16 @@
           order: 0;
         }
         .player-charts-container {
-          display: none;
+          flex: none;
+          width: 100%;
+          max-width: 480px;
+          order: 2;
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+        .player-chart-canvas-wrap {
+          height: 200px;
         }
         #projection-trans-panel {
           order: 99;
@@ -10506,6 +10523,19 @@
 
       /* Mobile styles for baseball card */
       @media (max-width: 480px) {
+        .player-charts-container {
+          max-width: 100%;
+        }
+        .player-chart-canvas-wrap {
+          height: 180px;
+        }
+        .player-chart-title {
+          font-size: 0.5rem;
+        }
+        .player-chart-box {
+          padding: 0.35rem;
+          border-width: 2px;
+        }
         .player-modal-content {
           max-width: 95vw;
           margin: 0.5rem;
@@ -20794,6 +20824,14 @@
         white-space: nowrap;
       }
 
+      .roster-rank-badge.s-tier {
+        background: #7b2ff7;
+        color: #f0e6ff;
+        font-weight: 900;
+        font-style: italic;
+        border: 1.5px solid var(--retro-gold);
+      }
+
       .roster-rank-badge.top-10 {
         background: #c6efce;
         color: #006400;
@@ -26809,38 +26847,40 @@
       }
 
       function getPositionWithRank(player) {
-        const positionFilter = document.getElementById("position-filter").value;
+        const info = getPositionWithRankInfo(player);
+        if (info.rank !== '-') return `${info.position}${info.rank}`;
+        return info.position;
+      }
+
+      function getPositionWithRankInfo(player) {
+        const positionFilter = document.getElementById("position-filter")?.value || "all";
         const pos = player.primary_position || "-";
 
-        if (!player.position_ranks) return pos;
+        if (!player.position_ranks) return { position: pos, rank: '-' };
 
         // Determine which position rank to show based on filter
         let rankPos;
         let displayPos;
 
         if (positionFilter === "all") {
-          // Show primary position rank
           rankPos = pos;
           displayPos = pos;
         } else if (positionFilter === "B") {
-          // Show overall batter rank with primary position
           rankPos = "B";
           displayPos = pos;
         } else if (positionFilter === "P") {
-          // Show overall pitcher rank with primary position
           rankPos = "P";
           displayPos = pos;
         } else {
-          // Specific position filter - show that position's rank
           rankPos = positionFilter;
           displayPos = positionFilter;
         }
 
         const rank = player.position_ranks[rankPos];
         if (rank) {
-          return `${displayPos}${rank}`;
+          return { position: displayPos, rank: rank };
         }
-        return pos;
+        return { position: pos, rank: '-' };
       }
 
       function populateManagerFilter() {
@@ -27138,7 +27178,7 @@
                     <th class="sortable" onclick="sortPlayerTable('rank')">#</th>
                     <th class="sortable" onclick="sortPlayerTable('name')">Player</th>
                     <th>Team</th>
-                    <th class="sortable" onclick="sortPlayerTable('position')">Pos</th>
+                    <th class="sortable" onclick="sortPlayerTable('position')">Rank</th>
             `;
 
         if (currentTableMode === "batters") {
@@ -27350,7 +27390,30 @@
                        <span class="player-fantasy-team" title="${player.team_name}">${player.manager}</span>`
               : '<span class="player-fantasy-team">FA</span>';
 
-            // Common cells (Rank, Name, Team, Pos)
+            // Build position badges from eligible positions
+            const eligiblePositions = player.eligible_positions || [player.primary_position || ''];
+            const filteredPositions = eligiblePositions.filter(p => {
+              const up = (p || '').toUpperCase();
+              // Filter out generic/bench positions
+              if (['UTIL', 'BN', 'IL', 'IL+', 'DL', 'NA'].includes(up)) return false;
+              // Filter out generic 'P' if SP or RP is present
+              if (up === 'P' && eligiblePositions.some(ep => ['SP', 'RP'].includes((ep || '').toUpperCase()))) return false;
+              return up.length > 0;
+            });
+            const posBadgesHtml = filteredPositions.map(p => {
+              const up = (p || '').toUpperCase();
+              const cls = up === 'UTIL' ? 'Util' : up === 'DH' ? 'DH' : up;
+              return `<span class="position-badge pos-${cls}" style="font-size:0.55rem;padding:1px 3px;margin-right:1px;">${up}</span>`;
+            }).join('');
+
+            // Build position rank badge (same style as Draft Results)
+            const posRankInfo = getPositionWithRankInfo(player);
+            const posRankClass = posRankInfo.rank !== '-' ? getRankClass(posRankInfo.rank, posRankInfo.position) : '';
+            const posRankHtml = posRankInfo.rank !== '-'
+              ? `<span class="draft-rank ${posRankClass}">${posRankInfo.position}${posRankInfo.rank}</span>`
+              : `<span class="draft-rank">${posRankInfo.position}</span>`;
+
+            // Common cells (Rank, Name, Team, Rank badge)
             let rowHTML = `
                     <tr>
                         <td>${index + 1}</td>
@@ -27359,7 +27422,7 @@
                                 <img src="${headshot}" alt="" class="player-headshot" onerror="this.src='${placeholderImg}'">
                                 <div>
                                     <div class="player-name">${player.name}</div>
-                                    <div class="player-mlb-team">${mlbLogoHtml}${mlbTeamText}</div>
+                                    <div class="player-mlb-team">${mlbLogoHtml}${mlbTeamText} ${posBadgesHtml}</div>
                                 </div>
                             </div>
                         </td>
@@ -27368,7 +27431,7 @@
                                 ${fantasyTeamHtml}
                             </div>
                         </td>
-                        <td class="player-position">${getPositionWithRank(player)}</td>
+                        <td class="player-position">${posRankHtml}</td>
                 `;
 
             // STAT CELLS BASED ON MODE
@@ -33410,28 +33473,37 @@
         const numRank = parseInt(rank);
         const pos = (position || "").toUpperCase();
 
-        // Outfield positions
         const isOutfield = ["OF", "LF", "CF", "RF"].includes(pos);
 
         if (pos === "SP") {
-          // Starting Pitchers: Green = top 12, Yellow = top 60, Red = below
-          if (numRank <= 12) return "top-10";
+          // SP: S <= 6, Green 7-36, Yellow 37-60, Red > 60
+          if (numRank <= 6) return "s-tier";
+          if (numRank <= 36) return "top-10";
           if (numRank <= 60) return "top-25";
           return "top-50";
         } else if (pos === "RP" || pos === "P") {
-          // Relief Pitchers: Green = top 3, Yellow = top 10, Red = below
-          if (numRank <= 3) return "top-10";
+          // RP: S = 1, Green 2-4, Yellow 5-10, Red > 10
+          if (numRank <= 1) return "s-tier";
+          if (numRank <= 4) return "top-10";
           if (numRank <= 10) return "top-25";
           return "top-50";
         } else if (isOutfield) {
-          // Outfielders: Green = top 9, Yellow = top 25, Red = below
-          if (numRank <= 9) return "top-10";
-          if (numRank <= 25) return "top-25";
+          // OF: S <= 3, Green 4-20, Yellow 21-40, Red > 40
+          if (numRank <= 3) return "s-tier";
+          if (numRank <= 20) return "top-10";
+          if (numRank <= 40) return "top-25";
+          return "top-50";
+        } else if (pos === "C") {
+          // C: S = 1, Green 2-4, Yellow 5-10, Red > 10
+          if (numRank <= 1) return "s-tier";
+          if (numRank <= 4) return "top-10";
+          if (numRank <= 10) return "top-25";
           return "top-50";
         } else {
-          // All other hitters: Green = top 3, Yellow = top 10, Red = below
-          if (numRank <= 3) return "top-10";
-          if (numRank <= 10) return "top-25";
+          // All other hitters (1B, 2B, 3B, SS, DH): S <= 3, Green 4-8, Yellow 9-15, Red > 15
+          if (numRank <= 3) return "s-tier";
+          if (numRank <= 8) return "top-10";
+          if (numRank <= 15) return "top-25";
           return "top-50";
         }
       }
@@ -57375,12 +57447,15 @@
           if (!Array.isArray(yahooPlayers)) return;
           enrichedRosters[key] = yahooPlayers.map(p => {
             const nameRaw = (p.name || '').toLowerCase().trim();
-            const nameNorm = nameRaw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            // Strip "(batter)"/"(pitcher)" suffix for projection/stats lookups (Ohtani)
+            const baseName = nameRaw.replace(/\s*\((batter|pitcher)\)\s*$/i, '');
+            const baseNameNorm = baseName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             const posType = p.position_type === 'P' ? 'pitcher' : 'batter';
-            const projMatch = averageProjectionsMap[`${nameRaw}|${posType}`] || averageProjectionsMap[nameRaw] ||
-              averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || {};
+            const projMatch = averageProjectionsMap[`${baseName}|${posType}`] || averageProjectionsMap[baseName] ||
+              averageProjectionsMap[`${baseNameNorm}|${posType}`] || averageProjectionsMap[baseNameNorm] || {};
             return {
               ...p,
+              _baseName: baseName,
               headshot_url: p.headshot_url || projMatch.headshot || '',
               mlb_team: p.mlb_team || projMatch.mlb_team || '',
               projected_points: projMatch.avgPoints || p.projected_points || 0,
@@ -57629,7 +57704,8 @@
 
         // Enrich players with actual YTD points + ROS projections
         players.forEach(p => {
-          const nameRaw = (p.name || '').toLowerCase().trim();
+          // Use base name (strips "(Batter)"/"(Pitcher)" suffix for Ohtani)
+          const nameRaw = (p._baseName || p.name || '').toLowerCase().trim();
           const nameNorm = nameRaw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
           const actual = (tradeAnalyzerData.actualStats[nameRaw] || tradeAnalyzerData.actualStats[nameNorm] || {}).fantasyPoints || 0;
           const ros = (tradeAnalyzerData.rosProjections[nameRaw] || tradeAnalyzerData.rosProjections[nameNorm] || {}).rosPoints || 0;
@@ -57651,7 +57727,8 @@
         Object.values(homeRostersData || {}).forEach(teamPlayers => {
           if (!Array.isArray(teamPlayers)) return;
           teamPlayers.forEach(tp => {
-            const nm = (tp.name || '').toLowerCase().trim();
+            // Use base name (strips "(Batter)"/"(Pitcher)" suffix for Ohtani)
+            const nm = (tp._baseName || tp.name || '').toLowerCase().trim().replace(/\s*\((batter|pitcher)\)\s*$/i, '');
             const nmNorm = nm.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             const actual = (allStats[nm] || allStats[nmNorm] || {}).fantasyPoints || 0;
             const ros = (allRos[nm] || allRos[nmNorm] || {}).rosPoints || 0;
@@ -57681,7 +57758,7 @@
 
         // Assign ranks to each player on this team
         players.forEach(p => {
-          const nm = (p.name || '').toLowerCase().trim();
+          const nm = (p._baseName || p.name || '').toLowerCase().trim().replace(/\s*\((batter|pitcher)\)\s*$/i, '');
           const nmNorm = nm.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
           const pos = p.primary_position || '';
 
@@ -57856,6 +57933,8 @@
         const isKeeper =
           player.isKeeper || player.acquisition_type === "Keeper";
         const mlbTeam = player.mlb_team || "";
+        // Strip "(Batter)"/"(Pitcher)" suffix for display (Ohtani)
+        const displayName = (player.name || "Unknown").replace(/\s*\((Batter|Pitcher)\)\s*$/i, '');
 
         // Actual YTD points and projected total (actual + ROS)
         const actualPts = player._actualPoints || 0;
@@ -57864,12 +57943,10 @@
         const projRank = player._projRank;
         const posTotal = player._posTotal || 12;
 
-        // Build rank badge HTML — same color tiers as draft results badges
+        // Build rank badge HTML — uses same getRankClass thresholds as draft results
         const buildRankBadge = (rank, pos, total) => {
           if (!rank) return '';
-          let tierClass = 'top-50';
-          if (rank <= Math.round(total * 0.25)) tierClass = 'top-10';
-          else if (rank <= Math.round(total * 0.5)) tierClass = 'top-25';
+          const tierClass = getRankClass(rank, pos);
           return `<span class="roster-rank-badge ${tierClass}">${pos}${rank}</span>`;
         };
 
@@ -57883,7 +57960,7 @@
                     <img src="${headshot}" class="roster-player-headshot" alt="" onerror="this.src='${placeholderImg}'">
                     <div class="roster-player-info">
                         <div class="roster-player-name-row">
-                            <span class="roster-player-name">${player.name || "Unknown"}</span>
+                            <span class="roster-player-name">${displayName}</span>
                             ${isKeeper ? '<span class="keeper-badge">K</span>' : ""}
                         </div>
                         ${
