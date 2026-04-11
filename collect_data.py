@@ -1949,13 +1949,26 @@ def fetch_mlb_boxscore(game_pk: int) -> Dict[str, Any]:
     return fetch_mlb_stats_api_json(f"/game/{game_pk}/boxscore")
 
 
-def fetch_mlb_player_day_stats(game_date: date, cache_players: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
-    """Fetch all MLB player stat lines for one date from boxscores."""
+def fetch_mlb_player_day_stats(game_date: date, cache_players: Dict[str, Dict[str, Any]], seen_game_pks: Optional[set] = None) -> Dict[str, Any]:
+    """Fetch all MLB player stat lines for one date from boxscores.
+
+    Args:
+        seen_game_pks: If provided, skip game_pks already in this set (avoids
+            double-counting late-night games that the MLB schedule API returns
+            on both the original date and the following date).  New game_pks
+            are added to this set in-place.
+    """
     date_key = format_iso_date(game_date)
     game_pks = fetch_mlb_game_pks_for_date(game_date)
+    processed_game_pks = []
     day_players: Dict[str, Dict[str, Dict[str, Any]]] = {}
 
     for game_pk in game_pks:
+        if seen_game_pks is not None:
+            if game_pk in seen_game_pks:
+                continue
+            seen_game_pks.add(game_pk)
+        processed_game_pks.append(game_pk)
         boxscore = fetch_mlb_boxscore(game_pk)
         teams = boxscore.get('teams', {}) or {}
 
@@ -2011,7 +2024,7 @@ def fetch_mlb_player_day_stats(game_date: date, cache_players: Dict[str, Dict[st
 
     return {
         'date': date_key,
-        'game_pks': game_pks,
+        'game_pks': processed_game_pks,
         'player_count': len(day_players),
         'players': day_players,
     }
@@ -2046,10 +2059,20 @@ def refresh_current_season_player_daily_cache(
     if refresh_start > end_dt:
         refresh_start = end_dt
 
+    # Track seen game_pks across dates to avoid double-counting late-night
+    # games that the MLB schedule API returns on both the original and next date.
+    # Pre-populate with game_pks from cached dates we are NOT refreshing.
+    seen_game_pks = set()
+    for cached_date_key, cached_day in cache_dates.items():
+        cached_dt = parse_iso_date(cached_date_key)
+        if cached_dt and cached_dt < refresh_start:
+            for pk in (cached_day.get('game_pks') or []):
+                seen_game_pks.add(pk)
+
     for game_date in iter_dates_inclusive(refresh_start, end_dt):
         date_key = format_iso_date(game_date)
         print(f"    Refreshing MLB daily stats for {date_key}...")
-        cache_dates[date_key] = fetch_mlb_player_day_stats(game_date, cache_players)
+        cache_dates[date_key] = fetch_mlb_player_day_stats(game_date, cache_players, seen_game_pks)
 
     save_current_season_player_daily_cache(cache)
     return cache
