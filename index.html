@@ -30722,6 +30722,22 @@
             cachedStandings,
           );
         }
+
+        // Also update top performers and category leaders
+        if (cachedWeeklyStats) {
+          updateTopPerformersForWeek(cachedWeeklyStats, newWeek);
+          updateCategoryLeadersForWeek(cachedWeeklyStats, newWeek);
+        }
+
+        // Sync the week-circle selector if it exists
+        const circles = document.querySelectorAll(".week-circle");
+        circles.forEach((circle) => {
+          const circleWeek = circle.classList.contains("cumulative")
+            ? "cumulative"
+            : parseInt(circle.textContent);
+          circle.classList.toggle("active", circleWeek === newWeek);
+        });
+        currentSelectedWeek = newWeek;
       }
 
       // Header week selector functions
@@ -31131,6 +31147,22 @@
             cachedStandings,
           );
         }
+
+        // Also update top performers and category leaders
+        if (cachedWeeklyStats) {
+          updateTopPerformersForWeek(cachedWeeklyStats, week);
+          updateCategoryLeadersForWeek(cachedWeeklyStats, week);
+        }
+
+        // Sync the week-circle selector if it exists
+        const circles = document.querySelectorAll(".week-circle");
+        circles.forEach((circle) => {
+          const circleWeek = circle.classList.contains("cumulative")
+            ? "cumulative"
+            : parseInt(circle.textContent);
+          circle.classList.toggle("active", circleWeek === week);
+        });
+        currentSelectedWeek = week;
       }
 
       // Close modal on escape key
@@ -32298,7 +32330,7 @@
           { key: "SB", label: "SB" },
           { key: "IP", label: "IP" },
           { key: "K", label: "K" },
-          { key: "SV", label: "SV" },
+          { key: "QS", label: "QS" },
         ];
 
         leadersGrid.innerHTML =
