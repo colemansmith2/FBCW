@@ -28208,6 +28208,18 @@
         return `https://img.mlbstatic.com/mlb-photos/image/upload/w_80,q_auto:best/v1/people/${playerId}/headshot/silo/current`;
       }
 
+      function getProspectInfo(playerName) {
+        if (!Array.isArray(prospectsData) || prospectsData.length === 0) return null;
+        const normalizeName = (name) =>
+          (name || "")
+            .toLowerCase()
+            .trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "");
+        const normalized = normalizeName(playerName);
+        return prospectsData.find(p => normalizeName(p.name) === normalized) || null;
+      }
+
       function getAnyAvailablePlayerHeadshot(playerData) {
         if (!playerData) return "";
         if (playerData.headshot && String(playerData.headshot).trim()) {
@@ -28246,6 +28258,10 @@
           const projMatch = averageProjectionsMap[normalized];
           if (projMatch?.headshot) return projMatch.headshot;
         }
+
+        // Check prospects data
+        const prospectMatch = getProspectInfo(playerData.player_name);
+        if (prospectMatch?.headshot_url) return prospectMatch.headshot_url;
 
         if (playerData.player_id)
           return getMLBPlayerHeadshot(playerData.player_id);
@@ -45115,6 +45131,9 @@
 
             const mlbTeam = rp.editorial_team_abbr || zips2026.mlb_team || zips2027.mlb_team || zips2028.mlb_team || avgProjData?.mlb_team || "";
             const headshot = rp.headshot_url || zips2026.headshot_url || zips2027.headshot_url || zips2028.headshot_url || avgProjData?.headshot || "";
+            const prospectMatch = getProspectInfo(playerName);
+            const finalMlbTeam = mlbTeam || prospectMatch?.mlb_team || "";
+            const finalHeadshot = headshot || prospectMatch?.headshot_url || "";
 
             players.push({
               type: "player",
@@ -45124,8 +45143,8 @@
               isWaiverPickup: isWaiverPickup,
               roundCost: roundCost,
               dollarCost: roundCost,
-              headshot: headshot,
-              mlbTeam: mlbTeam,
+              headshot: finalHeadshot,
+              mlbTeam: finalMlbTeam,
               value: valueResult.value,
               baseValue: valueResult.baseValue,
               rawData: keeperLike,
@@ -45151,6 +45170,9 @@
 
               const mlbTeam = zips2026.mlb_team || zips2027.mlb_team || zips2028.mlb_team || avgProjData?.mlb_team || "";
               const headshot = keeper.headshot_url || zips2026.headshot_url || zips2027.headshot_url || zips2028.headshot_url || avgProjData?.headshot || "";
+              const prospectMatch = getProspectInfo(keeper.player_name);
+              const finalMlbTeam = mlbTeam || prospectMatch?.mlb_team || "";
+              const finalHeadshot = headshot || prospectMatch?.headshot_url || "";
 
               players.push({
                 type: "player",
@@ -45159,8 +45181,8 @@
                 isProspect: isProspectKeeperEntry(keeper),
                 roundCost: keeper.roundCost || 22,
                 dollarCost: keeper.dollarCost || 1,
-                headshot: headshot,
-                mlbTeam: mlbTeam,
+                headshot: finalHeadshot,
+                mlbTeam: finalMlbTeam,
                 value: valueResult.value,
                 baseValue: valueResult.baseValue,
                 rawData: keeper,
@@ -57277,6 +57299,17 @@
         // Load projections for headshot matching
         await loadAverageProjections();
 
+        // Load prospects for additional headshot/mlb_team fallback
+        if (!prospectsData || prospectsData.length === 0) {
+          try {
+            const resp = await fetch("data/prospects/prospects.json");
+            if (resp.ok) {
+              const data = await resp.json();
+              prospectsData = data.prospects || [];
+            }
+          } catch (e) { /* ignore */ }
+        }
+
         // Load keeper config for manager-based team key mapping
         let kConfig = keeperConfig;
         if (!kConfig) {
@@ -57366,10 +57399,11 @@
             const posType = p.position_type === "P" ? "pitcher" : "batter";
             const projMatch = averageProjectionsMap[`${nameRaw}|${posType}`] || averageProjectionsMap[nameRaw] ||
               averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || {};
+            const prospectMatch = getProspectInfo(p.name);
             return {
               ...p,
-              headshot_url: p.headshot_url || projMatch.headshot || "",
-              mlb_team: p.mlb_team || projMatch.mlb_team || "",
+              headshot_url: p.headshot_url || projMatch.headshot || prospectMatch?.headshot_url || "",
+              mlb_team: p.mlb_team || projMatch.mlb_team || prospectMatch?.mlb_team || "",
               projected_points: projMatch.avgPoints || p.projected_points || 0,
             };
           });
@@ -57399,6 +57433,7 @@
               const posType = ["SP", "RP", "P"].includes(pos) ? "pitcher" : "batter";
               const projMatch = averageProjectionsMap[`${keeperName}|${posType}`] || averageProjectionsMap[keeperName] ||
                 averageProjectionsMap[`${nameLower}|${posType}`] || averageProjectionsMap[nameLower] || {};
+              const prospectMatch = getProspectInfo(displayName);
               naPlayers.push({
                 player_id: keeper.player_id || null,
                 name: displayName,
@@ -57411,8 +57446,8 @@
                 team_name: enrichedPlayers[0]?.team_name || "",
                 team_logo: enrichedPlayers[0]?.team_logo || "",
                 manager: enrichedPlayers[0]?.manager || "",
-                headshot_url: projMatch.headshot || "",
-                mlb_team: projMatch.mlb_team || "",
+                headshot_url: projMatch.headshot || prospectMatch?.headshot_url || "",
+                mlb_team: projMatch.mlb_team || prospectMatch?.mlb_team || "",
                 projected_points: projMatch.avgPoints || 0,
                 is_na_player: true,
                 keeper_cost: keeper.dollarCost || keeper.roundCost || null,
@@ -57437,6 +57472,17 @@
           loadAverageProjections(),
         ]);
 
+        // Load prospects for additional headshot/mlb_team fallback
+        if (!prospectsData || prospectsData.length === 0) {
+          try {
+            const resp = await fetch("data/prospects/prospects.json");
+            if (resp.ok) {
+              const data = await resp.json();
+              prospectsData = data.prospects || [];
+            }
+          } catch (e) { /* ignore */ }
+        }
+
         // Load live Yahoo rosters (already includes NA players)
         const rostersData = await loadRostersData();
         if (!rostersData) return;
@@ -57453,11 +57499,12 @@
             const posType = p.position_type === 'P' ? 'pitcher' : 'batter';
             const projMatch = averageProjectionsMap[`${baseName}|${posType}`] || averageProjectionsMap[baseName] ||
               averageProjectionsMap[`${baseNameNorm}|${posType}`] || averageProjectionsMap[baseNameNorm] || {};
+            const prospectMatch = getProspectInfo(p.name);
             return {
               ...p,
               _baseName: baseName,
-              headshot_url: p.headshot_url || projMatch.headshot || '',
-              mlb_team: p.mlb_team || projMatch.mlb_team || '',
+              headshot_url: p.headshot_url || projMatch.headshot || prospectMatch?.headshot_url || '',
+              mlb_team: p.mlb_team || projMatch.mlb_team || prospectMatch?.mlb_team || '',
               projected_points: projMatch.avgPoints || p.projected_points || 0,
             };
           });
@@ -57624,19 +57671,20 @@
                     keeper.player_name,
                     keeper.position,
                   );
+                  const prospectMatch = getProspectInfo(keeper.player_name);
                   const position = keeper.position || avgProj?.position || "";
                   const isPitcher = getCleanDisplayPositions(position).some(
                     (p) => ["SP", "RP", "P"].includes(p.toUpperCase()),
                   );
                   const projectedPoints = avgProj?.avgPoints || 0;
-                  const mlbTeam = avgProj?.mlb_team || "";
+                  const mlbTeam = avgProj?.mlb_team || prospectMatch?.mlb_team || "";
 
                   keeperPlayers.push({
                     name: keeper.player_name,
                     primary_position: position,
                     position_type: isPitcher ? "P" : "B",
                     eligible_positions: [position],
-                    headshot_url: avgProj?.headshot || "",
+                    headshot_url: avgProj?.headshot || prospectMatch?.headshot_url || "",
                     mlb_team: mlbTeam,
                     acquisition_type: "Keeper",
                     fantasy_points: 0, // Actual points (0 until season starts)
@@ -58129,178 +58177,75 @@
       }
 
       async function loadProspectOwnership() {
-        // Rebuild ownership from source-of-truth each time to avoid stale entries
+        // Rebuild ownership from live roster data instead of offseason keepers
         prospectOwnershipData = {};
-        ensureFirebaseReady();
 
-        // Load current season team data for logos (same source as home page)
-        let currentTeamLogos = {};
         try {
-          const teamResponse = await fetch("data/current_season/teams.json");
-          if (teamResponse.ok) {
-            const teamData = await teamResponse.json();
-            teamData.forEach((team) => {
-              const managerLower = (team.manager || "").toLowerCase().trim();
-              currentTeamLogos[managerLower] = fixTeamLogo(team.team_logo);
+          // Load current season rosters
+          const rostersResponse = await fetch("data/current_season/rosters.json");
+          if (!rostersResponse.ok) throw new Error("Could not load rosters");
+
+          const rostersData = await rostersResponse.json();
+
+          // Load current season teams for manager/team info
+          const teamsResponse = await fetch("data/current_season/teams.json");
+          if (!teamsResponse.ok) throw new Error("Could not load teams");
+
+          const teamsData = await teamsResponse.json();
+
+          // Build team key -> team info map
+          const teamInfoMap = {};
+          teamsData.forEach(team => {
+            teamInfoMap[team.team_key] = {
+              manager: team.manager,
+              team_name: team.team_name,
+              team_logo: fixTeamLogo(team.team_logo)
+            };
+          });
+
+          // For each roster, find prospects owned by that team
+          Object.entries(rostersData).forEach(([teamKey, players]) => {
+            if (!Array.isArray(players)) return;
+
+            const teamInfo = teamInfoMap[teamKey];
+            if (!teamInfo) return;
+
+            // Check each player to see if they're a prospect
+            players.forEach(player => {
+              const playerName = (player.name || "").toLowerCase().trim();
+              const playerNameNorm = stripAccents(playerName);
+
+              // Check if this player matches any prospect in our database
+              const matchingProspect = prospectsData.find(prospect => {
+                const prospectName = (prospect.name || "").toLowerCase().trim();
+                const prospectNameNorm = stripAccents(prospectName);
+                return prospectNameNorm === playerNameNorm;
+              });
+
+              if (matchingProspect) {
+                // This player is a prospect on this team's roster
+                const normalizedName = normalizeProspectName(matchingProspect.name);
+                prospectOwnershipData[normalizedName] = {
+                  manager: teamInfo.manager,
+                  team_name: teamInfo.team_name,
+                  team_logo: teamInfo.team_logo,
+                };
+                // Also store under the roster player name for matching
+                prospectOwnershipData[playerNameNorm] = {
+                  manager: teamInfo.manager,
+                  team_name: teamInfo.team_name,
+                  team_logo: teamInfo.team_logo,
+                };
+              }
             });
-            console.log(
-              "Loaded current season team logos for",
-              Object.keys(currentTeamLogos).length,
-              "teams",
-            );
-          }
+          });
+
+          console.log(`Loaded prospect ownership from live rosters: ${Object.keys(prospectOwnershipData).length} prospects owned`);
+
         } catch (e) {
-          console.log("Could not load current season team data:", e);
-        }
-
-        try {
-          // Load from keeper selections in Firebase or local data
-          // First try to get 2026 rosters/keepers
-          if (typeof firebaseDb !== "undefined" && firebaseDb) {
-            const snapshot = await firebaseDb.ref("keepers_2026").once("value");
-            const keepersData = snapshot.val();
-
-            if (keepersData) {
-              // Load keeper config for team info
-              const configResponse = await fetch(
-                "data/keepers/keeper_config.json",
-              );
-              const keeperConfig = configResponse.ok
-                ? await configResponse.json()
-                : null;
-
-              // Build ownership map: player name -> owner info
-              for (const [teamKey, keepers] of Object.entries(keepersData)) {
-                const originalKey = unsanitizeFirebaseKey(teamKey);
-                const teamInfo = keeperConfig?.teams?.[originalKey];
-
-                if (teamInfo && keepers) {
-                  const keepersArray = Array.isArray(keepers)
-                    ? keepers
-                    : Object.values(keepers);
-                  const managerLower = (teamInfo.manager || "")
-                    .toLowerCase()
-                    .trim();
-                  // Use current season logo if available, otherwise fall back to keeper config logo
-                  const teamLogo =
-                    currentTeamLogos[managerLower] ||
-                    fixTeamLogo(teamInfo.team_logo);
-
-                  for (const keeper of keepersArray) {
-                    if (keeper && keeper.player_name) {
-                      // Store under normalized name for matching
-                      const normalizedName = normalizeProspectName(
-                        keeper.player_name,
-                      );
-                      prospectOwnershipData[normalizedName] = {
-                        manager: teamInfo.manager,
-                        team_name: teamInfo.team_name,
-                        team_logo: teamLogo,
-                      };
-                      // Also store under original name in case of exact match
-                      const originalName = keeper.player_name
-                        .toLowerCase()
-                        .trim();
-                      if (originalName !== normalizedName) {
-                        prospectOwnershipData[originalName] =
-                          prospectOwnershipData[normalizedName];
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          // Also check in-memory keeper selections as fallback
-          if (typeof keeperSelections !== "undefined" && keeperSelections) {
-            const configResponse = await fetch(
-              "data/keepers/keeper_config.json",
-            );
-            const keeperConfig = configResponse.ok
-              ? await configResponse.json()
-              : null;
-
-            for (const [teamKey, keepers] of Object.entries(keeperSelections)) {
-              const teamInfo = keeperConfig?.teams?.[teamKey];
-              if (teamInfo && keepers) {
-                const managerLower = (teamInfo.manager || "")
-                  .toLowerCase()
-                  .trim();
-                const teamLogo =
-                  currentTeamLogos[managerLower] ||
-                  fixTeamLogo(teamInfo.team_logo);
-
-                for (const keeper of keepers) {
-                  if (keeper && keeper.player_name) {
-                    const normalizedName = normalizeProspectName(
-                      keeper.player_name,
-                    );
-                    if (!prospectOwnershipData[normalizedName]) {
-                      prospectOwnershipData[normalizedName] = {
-                        manager: teamInfo.manager,
-                        team_name: teamInfo.team_name,
-                        team_logo: teamLogo,
-                      };
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          // Also load NA draft data for prospect ownership
-          try {
-            const naResponse = await fetch(
-              "data/historical/2025/na_draft.json",
-            );
-            if (naResponse.ok) {
-              const naData = await naResponse.json();
-              const configResponse = await fetch(
-                "data/keepers/keeper_config.json",
-              );
-              const keeperConfig = configResponse.ok
-                ? await configResponse.json()
-                : null;
-
-              for (const pick of naData.picks) {
-                const normalizedName = normalizeProspectName(pick.player_name);
-                // Only add if not already owned (Firebase/keeper data takes precedence)
-                if (!prospectOwnershipData[normalizedName]) {
-                  const teamInfo = keeperConfig?.teams?.[pick.team_key];
-                  const managerLower = (pick.manager || "")
-                    .toLowerCase()
-                    .trim();
-                  const teamLogo =
-                    currentTeamLogos[managerLower] ||
-                    (teamInfo ? fixTeamLogo(teamInfo.team_logo) : "");
-
-                  prospectOwnershipData[normalizedName] = {
-                    manager: pick.manager,
-                    team_name: teamInfo?.team_name || pick.manager + "'s Team",
-                    team_logo: teamLogo,
-                  };
-                  // Also store under original name
-                  const originalName = pick.player_name.toLowerCase().trim();
-                  if (originalName !== normalizedName) {
-                    prospectOwnershipData[originalName] =
-                      prospectOwnershipData[normalizedName];
-                  }
-                }
-              }
-              console.log("Loaded NA draft ownership data");
-            }
-          } catch (e) {
-            console.log("Could not load NA draft data:", e);
-          }
-
-          console.log(
-            "Loaded ownership for",
-            Object.keys(prospectOwnershipData).length,
-            "players",
-          );
-        } catch (e) {
-          console.log("Error loading prospect ownership:", e);
+          console.log("Error loading prospect ownership from rosters:", e);
+          // Fallback to empty ownership data
+          prospectOwnershipData = {};
         }
       }
 
@@ -58716,9 +58661,13 @@
       }
 
       // Load prospects when section becomes visible
-      function initProspectsOnVisible() {
+      async function initProspectsOnVisible() {
         if (prospectsData.length === 0) {
           loadProspects();
+        } else {
+          // Data already loaded, reload ownership data and render the table
+          await loadProspectOwnership();
+          renderProspectTable();
         }
       }
 
