@@ -8476,7 +8476,7 @@
       }
 
       .position-pill {
-        padding: 0;
+        padding: 0.15rem 0.5rem;
         border: 2px solid #ddd;
         background: white;
         color: white;
@@ -8489,11 +8489,14 @@
         text-transform: uppercase;
         letter-spacing: 0.5px;
         box-sizing: border-box;
-        height: 2.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
         min-width: 45px;
+      }
+
+      .pill-label-short {
+        display: none;
       }
 
       .position-pill:hover {
@@ -12089,6 +12092,14 @@
           min-width: 0;
           font-size: 0.7rem;
           padding: 0.3rem;
+        }
+
+        .pill-label-full {
+          display: none;
+        }
+
+        .pill-label-short {
+          display: inline;
         }
 
         .stat-type-toggle .toggle-buttons {
@@ -23430,8 +23441,8 @@
               <label>Position:</label>
               <div class="position-pills" id="position-pills">
                 <button class="position-pill active" data-value="all" onclick="filterPlayers()">All</button>
-                <button class="position-pill" data-value="B" onclick="filterPlayers()">Batters</button>
-                <button class="position-pill" data-value="P" onclick="filterPlayers()">Pitchers</button>
+                <button class="position-pill" data-value="B" onclick="filterPlayers()"><span class="pill-label-full">Batters</span><span class="pill-label-short">Bat</span></button>
+                <button class="position-pill" data-value="P" onclick="filterPlayers()"><span class="pill-label-full">Pitchers</span><span class="pill-label-short">Pit</span></button>
                 <button class="position-pill" data-value="C" onclick="filterPlayers()">C</button>
                 <button class="position-pill" data-value="1B" onclick="filterPlayers()">1B</button>
                 <button class="position-pill" data-value="2B" onclick="filterPlayers()">2B</button>
@@ -27529,14 +27540,8 @@
         let rankPos;
         let displayPos;
 
-        if (positionFilter === "all") {
+        if (positionFilter === "all" || positionFilter === "B" || positionFilter === "P") {
           rankPos = pos;
-          displayPos = pos;
-        } else if (positionFilter === "B") {
-          rankPos = "B";
-          displayPos = pos;
-        } else if (positionFilter === "P") {
-          rankPos = "P";
           displayPos = pos;
         } else {
           rankPos = positionFilter;
