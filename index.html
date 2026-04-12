@@ -8270,31 +8270,70 @@
       }
 
       /* ===== PLAYER SCORING STYLES ===== */
+      .player-scoring-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 3px solid var(--retro-blue);
+      }
+
+      .player-scoring-header h2 {
+        margin: 0;
+        flex: 1;
+      }
+
+      .player-scoring-logo {
+        width: 60px;
+        height: 60px;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+
       .player-controls {
         margin-bottom: 1.5rem;
       }
 
-      .player-control-row {
+      .player-control-row-1 {
         display: flex;
         flex-wrap: wrap;
         gap: 1rem;
         margin-bottom: 1rem;
-        align-items: flex-end;
+        align-items: center;
       }
 
-      .player-control-row .season-selector,
-      .player-control-row .window-filter,
-      .player-control-row .position-filter,
-      .player-control-row .manager-filter,
-      .player-control-row .stat-type-toggle {
+      .player-control-row-1 .season-selector,
+      .player-control-row-1 .window-filter,
+      .player-control-row-1 .position-filter,
+      .player-control-row-1 .manager-filter,
+      .player-control-row-1 .stat-type-toggle {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
       }
 
-      .player-control-row .season-selector select {
-        min-width: auto;
-        width: auto;
+      .player-control-row-1 .season-selector select,
+      .player-control-row-1 .position-filter select,
+      .player-control-row-1 .manager-filter select {
+        min-width: 150px;
+        height: 2.5rem;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        box-sizing: border-box;
+      }
+
+      .player-control-row-1 select {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        min-width: 150px;
+        height: 2.5rem;
+        box-sizing: border-box;
+        display: block;
       }
 
       .stat-type-toggle .toggle-buttons {
@@ -8310,6 +8349,12 @@
         font-size: 0.85rem;
         cursor: pointer;
         transition: all 0.2s ease;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        line-height: 1;
       }
 
       .toggle-btn:first-child {
@@ -8336,35 +8381,398 @@
         cursor: not-allowed;
       }
 
-      .player-control-row label {
+      /* ===== SEASON DROPDOWN ===== */
+      .season-selector {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .season-dropdown {
+        position: relative;
+      }
+
+      .season-btn {
+        height: 2.5rem;
+        padding: 0.5rem 1rem;
+        border: 2px solid var(--retro-blue);
+        background: white;
+        color: var(--retro-blue);
+        font-family: 'Basis33', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0.75rem;
+      }
+
+      .season-btn:hover {
+        background: var(--retro-blue);
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 72, 186, 0.2);
+      }
+
+      .season-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 2px solid var(--retro-blue);
+        border-radius: 6px;
+        margin-top: 0.5rem;
+        min-width: 120px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 100;
+        display: none;
+      }
+
+      .season-dropdown-menu.active {
+        display: block;
+      }
+
+      .season-menu-item {
+        padding: 0.6rem 1rem;
+        color: var(--retro-blue);
+        font-family: 'Basis33', sans-serif;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.15s ease;
+      }
+
+      .season-menu-item:last-child {
+        border-bottom: none;
+      }
+
+      .season-menu-item:hover {
+        background: rgba(0, 72, 186, 0.08);
+        font-weight: 600;
+      }
+
+      .season-menu-item.active {
+        background: var(--retro-blue);
+        color: white;
+        font-weight: 600;
+      }
+
+      /* ===== POSITION PILLS ===== */
+      .position-filter {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .position-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+      }
+
+      .position-pill {
+        padding: 0;
+        border: 2px solid #ddd;
+        background: white;
+        color: white;
+        font-family: 'Basis33', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-sizing: border-box;
+        height: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 45px;
+      }
+
+      .position-pill:hover {
+        border-color: var(--retro-blue);
+        background: rgba(0, 72, 186, 0.05);
+      }
+
+      .position-pill.active {
+        border-color: var(--retro-blue);
+        box-shadow: 0 2px 8px rgba(0, 72, 186, 0.2);
+      }
+
+      /* All position styling */
+      .position-pill[data-value="all"] {
+        background: var(--retro-blue);
+        color: white;
+        border-color: var(--retro-blue);
+      }
+
+      .position-pill[data-value="all"]:hover {
+        background: var(--retro-blue-light);
+        border-color: var(--retro-blue-light);
+      }
+
+      /* Batters styling */
+      .position-pill[data-value="B"] {
+        background: rgba(21, 101, 192, 0.15);
+        color: var(--pos-1b-dark);
+        border-color: var(--pos-1b-dark);
+      }
+
+      .position-pill[data-value="B"]:hover {
+        background: rgba(21, 101, 192, 0.25);
+      }
+
+      .position-pill[data-value="B"].active {
+        background: var(--pos-1b-dark);
+        color: white;
+        border-color: var(--pos-1b-dark);
+      }
+
+      /* Pitchers styling */
+      .position-pill[data-value="P"] {
+        background: rgba(126, 87, 194, 0.15);
+        color: var(--pos-sp-dark);
+        border-color: var(--pos-sp-dark);
+      }
+
+      .position-pill[data-value="P"]:hover {
+        background: rgba(126, 87, 194, 0.25);
+      }
+
+      .position-pill[data-value="P"].active {
+        background: var(--pos-sp-dark);
+        color: white;
+        border-color: var(--pos-sp-dark);
+      }
+
+      /* Individual position colors */
+      .position-pill[data-value="C"] {
+        background: var(--pos-c-light);
+        color: var(--pos-c-dark);
+        border-color: var(--pos-c-dark);
+      }
+
+      .position-pill[data-value="C"].active {
+        background: var(--pos-c-dark);
+        color: white;
+        border-color: var(--pos-c-dark);
+      }
+
+      .position-pill[data-value="1B"] {
+        background: var(--pos-1b-light);
+        color: var(--pos-1b-dark);
+        border-color: var(--pos-1b-dark);
+      }
+
+      .position-pill[data-value="1B"].active {
+        background: var(--pos-1b-dark);
+        color: white;
+        border-color: var(--pos-1b-dark);
+      }
+
+      .position-pill[data-value="2B"] {
+        background: var(--pos-2b-light);
+        color: var(--pos-2b-dark);
+        border-color: var(--pos-2b-dark);
+      }
+
+      .position-pill[data-value="2B"].active {
+        background: var(--pos-2b-dark);
+        color: white;
+        border-color: var(--pos-2b-dark);
+      }
+
+      .position-pill[data-value="3B"] {
+        background: var(--pos-3b-light);
+        color: var(--pos-3b-dark);
+        border-color: var(--pos-3b-dark);
+      }
+
+      .position-pill[data-value="3B"].active {
+        background: var(--pos-3b-dark);
+        color: white;
+        border-color: var(--pos-3b-dark);
+      }
+
+      .position-pill[data-value="SS"] {
+        background: var(--pos-ss-light);
+        color: var(--pos-ss-dark);
+        border-color: var(--pos-ss-dark);
+      }
+
+      .position-pill[data-value="SS"].active {
+        background: var(--pos-ss-dark);
+        color: white;
+        border-color: var(--pos-ss-dark);
+      }
+
+      .position-pill[data-value="OF"] {
+        background: var(--pos-of-light);
+        color: var(--pos-of-dark);
+        border-color: var(--pos-of-dark);
+      }
+
+      .position-pill[data-value="OF"].active {
+        background: var(--pos-of-dark);
+        color: white;
+        border-color: var(--pos-of-dark);
+      }
+
+      .position-pill[data-value="Util"] {
+        background: var(--pos-dh-light);
+        color: var(--pos-dh-dark);
+        border-color: var(--pos-dh-dark);
+      }
+
+      .position-pill[data-value="Util"].active {
+        background: var(--pos-dh-dark);
+        color: white;
+        border-color: var(--pos-dh-dark);
+      }
+
+      .position-pill[data-value="SP"] {
+        background: var(--pos-sp-light);
+        color: var(--pos-sp-dark);
+        border-color: var(--pos-sp-dark);
+      }
+
+      .position-pill[data-value="SP"].active {
+        background: var(--pos-sp-dark);
+        color: white;
+        border-color: var(--pos-sp-dark);
+      }
+
+      .position-pill[data-value="RP"] {
+        background: var(--pos-rp-light);
+        color: var(--pos-rp-dark);
+        border-color: var(--pos-rp-dark);
+      }
+
+      .position-pill[data-value="RP"].active {
+        background: var(--pos-rp-dark);
+        color: white;
+        border-color: var(--pos-rp-dark);
+      }
+
+      .position-pill .position-badge {
+        display: none;
+      }
+
+      /* ===== MANAGER DROPDOWN ===== */
+      .manager-filter {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .manager-dropdown {
+        position: relative;
+      }
+
+      .manager-btn {
+        height: 2.5rem;
+        padding: 0.5rem 1rem;
+        border: 2px solid var(--retro-blue);
+        background: white;
+        color: var(--retro-blue);
+        font-family: 'Basis33', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 180px;
+      }
+
+      .manager-btn:hover {
+        background: var(--retro-blue);
+        color: white;
+        box-shadow: 0 4px 12px rgba(0, 72, 186, 0.2);
+      }
+
+      .manager-dropdown-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: white;
+        border: 2px solid var(--retro-blue);
+        border-radius: 6px;
+        margin-top: 0.5rem;
+        min-width: 300px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        z-index: 100;
+        display: none;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .manager-dropdown-menu.active {
+        display: block;
+      }
+
+      .manager-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        color: var(--retro-blue);
+        font-family: 'Basis33', sans-serif;
+        font-size: 0.85rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: background 0.15s ease;
+      }
+
+      .manager-menu-item:last-child {
+        border-bottom: none;
+      }
+
+      .manager-menu-item:hover {
+        background: rgba(0, 72, 186, 0.08);
+      }
+
+      .manager-menu-item.active {
+        background: var(--retro-blue);
+        color: white;
+        font-weight: 600;
+      }
+
+      .manager-menu-item .manager-logo {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        border: 2px solid rgba(0, 72, 186, 0.2);
+      }
+
+      .manager-menu-item.active .manager-logo {
+        border-color: white;
+      }
+
+      .manager-menu-item-name {
+        font-weight: 600;
+      }
+
+      .player-control-row-1 label {
         font-weight: bold;
         color: var(--retro-blue);
         font-size: 0.85rem;
       }
 
-      .player-control-row select {
-        padding: 0.5rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 0.9rem;
-        min-width: 150px;
-      }
-
-      .player-controls-logo {
-        margin-left: auto;
-        display: flex;
-        align-items: center;
-      }
-
-      .player-controls-league-logo {
-        width: 60px;
-        height: 60px;
-        object-fit: contain;
-      }
-
       .player-search {
         width: 100%;
-        max-width: 400px;
+        max-width: 100%;
       }
 
       .player-search input {
@@ -11596,16 +12004,59 @@
 
       /* Mobile styles for Player Scoring */
       @media (max-width: 768px) {
-        .player-control-row {
+        .player-scoring-header {
+          flex-wrap: wrap;
+          gap: 1rem;
+          margin-bottom: 1.25rem;
+          padding-bottom: 0.75rem;
+        }
+
+        .player-scoring-header h2 {
+          width: 100%;
+          flex: none;
+          margin-bottom: 0;
+        }
+
+        .player-scoring-logo {
+          width: 50px;
+          height: 50px;
+        }
+
+        .player-control-row-1 {
           flex-direction: column;
           gap: 0.75rem;
         }
 
-        .player-control-row .season-selector,
-        .player-control-row .position-filter,
-        .player-control-row .manager-filter,
-        .player-control-row .stat-type-toggle {
+        .player-control-row-1 .season-selector,
+        .player-control-row-1 .position-filter,
+        .player-control-row-1 .manager-filter,
+        .player-control-row-1 .stat-type-toggle {
           width: 100%;
+        }
+
+        .season-btn,
+        .manager-btn {
+          width: 100%;
+          min-width: unset;
+        }
+
+        .season-dropdown-menu,
+        .manager-dropdown-menu {
+          min-width: 100%;
+          left: -1px;
+          right: -1px;
+        }
+
+        .position-pills {
+          width: 100%;
+          gap: 0.35rem;
+        }
+
+        .position-pill {
+          flex: 1;
+          min-width: 0;
+          font-size: 0.7rem;
+          padding: 0.3rem;
         }
 
         .stat-type-toggle .toggle-buttons {
@@ -11617,7 +12068,7 @@
           text-align: center;
         }
 
-        .player-control-row select {
+        .player-control-row-1 select {
           width: 100%;
           min-width: unset;
         }
@@ -22878,13 +23329,26 @@
 
       <!-- Player Scoring Section -->
       <div id="scoring" class="section">
-        <h2>Player Scoring</h2>
+        <div class="player-scoring-header">
+          <h2>Player Scoring</h2>
+          <img
+            src="league_logo.png"
+            alt="FBCW"
+            class="player-scoring-logo"
+          />
+        </div>
 
         <div class="player-controls">
-          <div class="player-control-row">
+          <div class="player-control-row player-control-row-1">
             <div class="season-selector">
-              <label for="scoring-season">Season:</label>
-              <select id="scoring-season" onchange="loadPlayerScoring()">
+              <label>Season:</label>
+              <div class="season-dropdown">
+                <button class="season-btn" id="season-btn-display">2026</button>
+                <div class="season-dropdown-menu" id="season-dropdown-menu">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+              <select id="scoring-season" onchange="loadPlayerScoring()" style="display: none;">
                 <!-- Will be populated dynamically -->
               </select>
             </div>
@@ -22931,8 +23395,22 @@
             </div>
 
             <div class="position-filter">
-              <label for="position-filter">Position:</label>
-              <select id="position-filter" onchange="filterPlayers()">
+              <label>Position:</label>
+              <div class="position-pills" id="position-pills">
+                <button class="position-pill active" data-value="all" onclick="filterPlayers()">All</button>
+                <button class="position-pill" data-value="B" onclick="filterPlayers()">Batters</button>
+                <button class="position-pill" data-value="P" onclick="filterPlayers()">Pitchers</button>
+                <button class="position-pill" data-value="C" onclick="filterPlayers()">C</button>
+                <button class="position-pill" data-value="1B" onclick="filterPlayers()">1B</button>
+                <button class="position-pill" data-value="2B" onclick="filterPlayers()">2B</button>
+                <button class="position-pill" data-value="3B" onclick="filterPlayers()">3B</button>
+                <button class="position-pill" data-value="SS" onclick="filterPlayers()">SS</button>
+                <button class="position-pill" data-value="OF" onclick="filterPlayers()">OF</button>
+                <button class="position-pill" data-value="Util" onclick="filterPlayers()">Util</button>
+                <button class="position-pill" data-value="SP" onclick="filterPlayers()">SP</button>
+                <button class="position-pill" data-value="RP" onclick="filterPlayers()">RP</button>
+              </div>
+              <select id="position-filter" style="display: none;" onchange="filterPlayers()">
                 <option value="all">All Players</option>
                 <option value="B">All Batters</option>
                 <option value="P">All Pitchers</option>
@@ -22953,19 +23431,17 @@
             </div>
 
             <div class="manager-filter">
-              <label for="manager-filter">Manager:</label>
-              <select id="manager-filter" onchange="filterPlayers()">
+              <label>Manager:</label>
+              <div class="manager-dropdown">
+                <button class="manager-btn" id="manager-btn-display">All Managers</button>
+                <div class="manager-dropdown-menu" id="manager-dropdown-menu">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+              <select id="manager-filter" style="display: none;" onchange="filterPlayers()">
                 <option value="all">All Managers</option>
                 <!-- Will be populated dynamically -->
               </select>
-            </div>
-
-            <div class="player-controls-logo">
-              <img
-                src="league_logo.png"
-                alt="FBCW"
-                class="player-controls-league-logo"
-              />
             </div>
           </div>
 
@@ -26705,13 +27181,144 @@
         updatePlayerWindowControls(selectedYear);
 
         allPlayersData = windows[windowKey].players || [];
+        closePlayerModal();
         refreshPlayerScoringView();
+      }
+
+      // ===== CUSTOM DROPDOWN INITIALIZATION & HANDLERS =====
+      let customDropdownsInitialized = false;
+      
+      function initCustomDropdowns() {
+        if (customDropdownsInitialized) return;
+        customDropdownsInitialized = true;
+
+        // Season dropdown
+        const seasonBtn = document.getElementById('season-btn-display');
+        const seasonMenu = document.getElementById('season-dropdown-menu');
+        const seasonSelect = document.getElementById('scoring-season');
+
+        if (seasonBtn && seasonMenu && seasonSelect) {
+          seasonBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            seasonMenu.classList.toggle('active');
+          });
+
+          // Populate season menu from select options
+          Array.from(seasonSelect.options).forEach(opt => {
+            if (opt.value) {
+              const item = document.createElement('div');
+              item.className = 'season-menu-item' + (opt.selected ? ' active' : '');
+              item.textContent = opt.textContent;
+              item.onclick = () => {
+                seasonSelect.value = opt.value;
+                seasonBtn.textContent = opt.textContent;
+                document.querySelectorAll('.season-menu-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                seasonMenu.classList.remove('active');
+                loadPlayerScoring();
+              };
+              seasonMenu.appendChild(item);
+            }
+          });
+        }
+
+        // Manager dropdown
+        const managerBtn = document.getElementById('manager-btn-display');
+        const managerMenu = document.getElementById('manager-dropdown-menu');
+        const managerSelect = document.getElementById('manager-filter');
+
+        if (managerBtn && managerMenu && managerSelect) {
+          managerBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Repopulate menu on each click to ensure it's current
+            if (managerMenu.children.length === 0) {
+              populateManagerMenu(managerMenu, managerSelect, managerBtn);
+            }
+            managerMenu.classList.toggle('active');
+          });
+
+          // Initial population
+          populateManagerMenu(managerMenu, managerSelect, managerBtn);
+        }
+
+        // Position pills
+        const positionPills = document.querySelectorAll('.position-pill');
+        const positionSelect = document.getElementById('position-filter');
+
+        positionPills.forEach(pill => {
+          pill.addEventListener('click', () => {
+            positionPills.forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            positionSelect.value = pill.dataset.value;
+            filterPlayers();
+          });
+        });
+
+        // Close dropdowns on outside click
+        document.addEventListener('click', () => {
+          if (seasonMenu) seasonMenu.classList.remove('active');
+          if (managerMenu) managerMenu.classList.remove('active');
+        });
+      }
+
+      function populateManagerMenu(managerMenu, managerSelect, managerBtn) {
+        // Clear existing items
+        managerMenu.innerHTML = '';
+
+        // Wait a moment to ensure select is populated
+        if (managerSelect.options.length <= 1) {
+          // If select isn't populated yet, wait and retry
+          setTimeout(() => populateManagerMenu(managerMenu, managerSelect, managerBtn), 100);
+          return;
+        }
+
+        // Populate from select options
+        Array.from(managerSelect.options).forEach(opt => {
+          const item = document.createElement('div');
+          item.className = 'manager-menu-item' + (opt.selected ? ' active' : '');
+          item.onclick = () => {
+            managerSelect.value = opt.value;
+            managerBtn.textContent = opt.textContent;
+            document.querySelectorAll('.manager-menu-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+            managerMenu.classList.remove('active');
+            filterPlayers();
+          };
+          
+          // Add logo if available (for non-"all" options)
+          if (opt.value !== 'all') {
+            const teamDataArray = window.playerTeamsData || window.allTeamsData || [];
+            const normalizedName = normalizeManagerName(opt.textContent, 2026, '', '');
+            const team = teamDataArray.find(t => {
+              const teamManager = normalizeManagerName(t.manager || '', 2026, t.team_name || '', t.team_key || '');
+              return teamManager === normalizedName || t.manager === opt.textContent;
+            });
+            
+            if (team && team.team_logo) {
+              const logoImg = document.createElement('img');
+              logoImg.src = fixTeamLogo(team.team_logo);
+              logoImg.className = 'manager-logo';
+              logoImg.onerror = () => { logoImg.style.display = 'none'; };
+              item.appendChild(logoImg);
+            }
+          }
+          
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'manager-menu-item-name';
+          nameSpan.textContent = opt.textContent;
+          item.appendChild(nameSpan);
+          
+          managerMenu.appendChild(item);
+        });
       }
 
       async function loadPlayerScoring() {
         const seasonSelect = document.getElementById("scoring-season");
         const selectedYear = parseInt(seasonSelect.value);
         window.selectedYear = selectedYear;
+
+        // Initialize custom dropdowns on first load
+        initCustomDropdowns();
 
         const loadingEl = document.getElementById("player-loading");
         const errorEl = document.getElementById("player-error");
@@ -26911,14 +27518,9 @@
         populateManagerFilter();
         filterPlayers();
 
-        const modal = document.getElementById("player-modal");
-        if (
-          modal &&
-          modal.style.display !== "none" &&
-          window.currentModalPlayer?.name
-        ) {
-          showPlayerDetail(window.currentModalPlayer.name);
-        }
+        // Close the modal when stat window changes (don't reopen it)
+        // This prevents the modal from reappearing when switching windows/seasons
+        closePlayerModal();
       }
 
       function setStatType(type) {
@@ -26931,20 +27533,134 @@
         if (!["fantasy", "full"].includes(type)) return;
         currentStatType = type;
         updatePlayerWindowControls(selectedYear);
+        closePlayerModal();
         refreshPlayerScoringView();
       }
 
       function setModalStatType(type) {
-        setStatType(type);
+        // Modal-only stat type change (doesn't affect table)
+        if (!["fantasy", "full"].includes(type)) return;
+        window.currentModalStatType = type;
+        // Update modal buttons and content, keep modal open
+        updateModalToggleButtons();
+        if (window.currentModalPlayer) {
+          updateModalStats(window.currentModalPlayer);
+        }
+      }
+
+      function setModalPlayerWindow(windowKey) {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (selectedYear !== 2026) {
+          window.currentModalPlayerWindow = 'ytd';
+          updateModalToggleButtons();
+          if (window.currentModalPlayer) {
+            updateModalStats(window.currentModalPlayer);
+          }
+          return;
+        }
+
+        const windows = currentSeasonPlayerWindows?.windows || {};
+        if (!windows[windowKey]) return;
+
+        window.currentModalPlayerWindow = windowKey;
+        // Update only modal (do not change table/global window), keep modal open
+        updateModalToggleButtons();
+        if (window.currentModalPlayer) {
+          updateModalStats(window.currentModalPlayer);
+        }
+      }
+
+      // Modal-specific getters mirroring the global player window helpers
+      function getModalPlayerWindowData() {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (selectedYear !== 2026) return null;
+        const windows = currentSeasonPlayerWindows?.windows || {};
+        const key = window.currentModalPlayerWindow || currentSeasonPlayerWindows?.default_window || 'ytd';
+        return windows[key] || null;
+      }
+
+      function getModalPlayerStats(player) {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (selectedYear !== 2026) {
+          if (window.currentModalStatType === 'full') return player.full_season_stats || player.stats || {};
+          return player.stats || {};
+        }
+
+        const windowData = getModalPlayerWindowData();
+        if (!windowData) return player.stats || {};
+
+        const match = (windowData.players || []).find((p) => p.name === player.name);
+        return (match && match.stats) || player.stats || {};
+      }
+
+      function getModalPlayerFantasyPoints(player) {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (selectedYear !== 2026) {
+          if (window.currentModalStatType === 'full') return player.full_season_fantasy_points || player.fantasy_points || 0;
+          return player.fantasy_points || 0;
+        }
+
+        const windowData = getModalPlayerWindowData();
+        if (!windowData) return player.fantasy_points || 0;
+        const match = (windowData.players || []).find((p) => p.name === player.name);
+        return (match && (match.fantasy_points || 0)) || player.fantasy_points || 0;
+      }
+
+      function getModalPlayerWindowShortLabel() {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (selectedYear !== 2026) {
+          return window.currentModalStatType === 'full' ? 'Full MLB' : 'Fantasy';
+        }
+
+        const windowData = getModalPlayerWindowData();
+        if (!windowData) return `${window.selectedYear || '2025'}`;
+        return getPlayerWindowButtonLabel(window.currentModalPlayerWindow || currentSeasonPlayerWindows?.default_window || 'ytd');
+      }
+
+      function getModalPlayerStatsTitle() {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (selectedYear !== 2026) {
+          return `${selectedYear} Statistics • ${getHistoricalPlayerStatLabel(window.currentModalStatType)}`;
+        }
+
+        const windowData = getModalPlayerWindowData();
+        if (!windowData) return `${selectedYear} Statistics`;
+        const label = getPlayerWindowButtonLabel(window.currentModalPlayerWindow || currentSeasonPlayerWindows?.default_window || 'ytd');
+        return `${selectedYear} Statistics • ${label}`;
+      }
+
+      function getModalPlayerStatsHeaderLabel() {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (selectedYear !== 2026) {
+          return window.currentModalStatType === 'full' ? 'FULL' : 'SEASON';
+        }
+
+        const windowData = getModalPlayerWindowData();
+        if (!windowData) return 'SEASON';
+        return window.currentModalPlayerWindow === 'ytd' ? 'SEASON' : 'RANGE';
+      }
+
+      function updateModalToggleButtons() {
+        const modal = document.getElementById('player-modal');
+        if (!modal) return;
+        const buttons = modal.querySelectorAll('.card-toggle-btn[data-modal-key]');
+        buttons.forEach((btn) => {
+          const key = btn.getAttribute('data-modal-key');
+          if (!key) return;
+          // Active if key matches modal window or modal stat type
+          const isActive =
+            key === window.currentModalPlayerWindow || key === window.currentModalStatType;
+          btn.classList.toggle('active', isActive);
+        });
       }
 
       function updateModalStats(player) {
-        const stats = getPlayerStats(player);
-        const fantasyPts = getPlayerFantasyPoints(player);
+        const stats = getModalPlayerStats(player);
+        const fantasyPts = getModalPlayerFantasyPoints(player);
         const isBatter = player.position_type === "B";
-        const statsLabel = getCurrentPlayerWindowShortLabel();
-        const statsHeaderLabel = getCurrentPlayerStatsHeaderLabel();
-        const statsTitle = getCurrentPlayerStatsTitle();
+        const statsLabel = getModalPlayerWindowShortLabel();
+        const statsHeaderLabel = getModalPlayerStatsHeaderLabel();
+        const statsTitle = getModalPlayerStatsTitle();
 
         // Update points display in the card
         const ptsValueEl = document.querySelector(".card-points-value");
@@ -28279,6 +28995,9 @@
 
         // Store current player for modal stat toggle
         window.currentModalPlayer = player;
+        // Modal-specific window/stat state (start synced to table state)
+        window.currentModalPlayerWindow = typeof currentPlayerWindow !== 'undefined' ? currentPlayerWindow : 'ytd';
+        window.currentModalStatType = typeof currentStatType !== 'undefined' ? currentStatType : 'fantasy';
 
         const seasonSelect = document.getElementById("scoring-season");
         const selectedYear = parseInt(seasonSelect.value);
@@ -28346,12 +29065,12 @@
           player.team_name !== "Drafted (Dropped)" &&
           player.team_name !== "Previously Rostered";
 
-        const stats = getPlayerStats(player);
+        const stats = getModalPlayerStats(player);
         const isBatter = player.position_type === "B";
-        const fantasyPts = getPlayerFantasyPoints(player).toFixed(1);
-        const statsLabel = getCurrentPlayerWindowShortLabel();
-        const statsHeaderLabel = getCurrentPlayerStatsHeaderLabel();
-        const statsTitle = getCurrentPlayerStatsTitle();
+        const fantasyPts = getModalPlayerFantasyPoints(player).toFixed(1);
+        const statsLabel = getModalPlayerWindowShortLabel();
+        const statsHeaderLabel = getModalPlayerStatsHeaderLabel();
+        const statsTitle = getModalPlayerStatsTitle();
         const availableWindowButtons = getAvailablePlayerWindowButtons(
           selectedYear,
         );
@@ -28574,14 +29293,14 @@
                                 ${availableWindowButtons
                                   .map(
                                     (button) =>
-                                      `<button class="card-toggle-btn ${currentPlayerWindow === button.key ? "active" : ""}" onclick="setPlayerWindow('${button.key}')">${button.label}</button>`,
+                                      `<button data-modal-key="${button.key}" class="card-toggle-btn ${window.currentModalPlayerWindow === button.key ? "active" : ""}" onclick="setModalPlayerWindow('${button.key}')">${button.label}</button>`,
                                   )
                                   .join("")}
                             </div>`
                               : `<div class="card-toggle-btns">
                                 ${HISTORICAL_PLAYER_STAT_BUTTONS.map(
                                   (button) =>
-                                    `<button class="card-toggle-btn ${currentStatType === button.key ? "active" : ""}" onclick="setModalStatType('${button.key}')">${button.label}</button>`,
+                                    `<button data-modal-key="${button.key}" class="card-toggle-btn ${window.currentModalStatType === button.key ? "active" : ""}" onclick="setModalStatType('${button.key}')">${button.label}</button>`,
                                 ).join("")}
                             </div>`}
                         </div>
@@ -28893,6 +29612,8 @@
             </div>`;
 
         bodyEl.innerHTML = cardHTML;
+        // Ensure modal toggle buttons reflect modal-local state
+        updateModalToggleButtons();
         modal.classList.add("active");
         document.body.classList.add("modal-open");
         requestAnimationFrame(syncPlayerTransactionPanelHeight);
