@@ -8381,11 +8381,12 @@
         cursor: not-allowed;
       }
 
-      /* ===== SEASON DROPDOWN ===== */
-      .season-selector {
+      /* ===== SEASON DROPDOWN (Player Scoring only) ===== */
+      #scoring .season-selector {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
+        margin-bottom: 0;
       }
 
       .season-dropdown {
@@ -8708,12 +8709,19 @@
         border: 2px solid var(--retro-blue);
         border-radius: 6px;
         margin-top: 0.5rem;
-        min-width: 300px;
+        min-width: 480px;
         box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         z-index: 100;
         display: none;
-        max-height: 400px;
-        overflow-y: auto;
+        max-height: none;
+        overflow-y: visible;
+        padding: 0.5rem;
+      }
+
+      .manager-dropdown-menu-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.25rem;
       }
 
       .manager-dropdown-menu.active {
@@ -8723,18 +8731,23 @@
       .manager-menu-item {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
+        gap: 0.5rem;
+        padding: 0.5rem 0.6rem;
         color: var(--retro-blue);
         font-family: 'Basis33', sans-serif;
         font-size: 0.85rem;
         cursor: pointer;
-        border-bottom: 1px solid #f0f0f0;
+        border-radius: 4px;
         transition: background 0.15s ease;
       }
 
-      .manager-menu-item:last-child {
-        border-bottom: none;
+      .manager-menu-item.all-managers-item {
+        grid-column: 1 / -1;
+        justify-content: center;
+        border-bottom: 1px solid #e0e0e0;
+        border-radius: 4px 4px 0 0;
+        margin-bottom: 0.25rem;
+        padding-bottom: 0.6rem;
       }
 
       .manager-menu-item:hover {
@@ -8748,8 +8761,8 @@
       }
 
       .manager-menu-item .manager-logo {
-        width: 32px;
-        height: 32px;
+        width: 26px;
+        height: 26px;
         border-radius: 50%;
         object-fit: cover;
         flex-shrink: 0;
@@ -8762,6 +8775,21 @@
 
       .manager-menu-item-name {
         font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .manager-btn {
+        gap: 0.5rem;
+      }
+
+      .manager-btn-logo {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
       }
 
       .player-control-row-1 label {
@@ -12045,6 +12073,10 @@
           min-width: 100%;
           left: -1px;
           right: -1px;
+        }
+
+        .manager-dropdown-menu-grid {
+          grid-template-columns: repeat(2, 1fr);
         }
 
         .position-pills {
@@ -27267,25 +27299,51 @@
 
         // Wait a moment to ensure select is populated
         if (managerSelect.options.length <= 1) {
-          // If select isn't populated yet, wait and retry
           setTimeout(() => populateManagerMenu(managerMenu, managerSelect, managerBtn), 100);
           return;
         }
+
+        // Create grid wrapper
+        const grid = document.createElement('div');
+        grid.className = 'manager-dropdown-menu-grid';
 
         // Populate from select options
         Array.from(managerSelect.options).forEach(opt => {
           const item = document.createElement('div');
           item.className = 'manager-menu-item' + (opt.selected ? ' active' : '');
+          if (opt.value === 'all') item.classList.add('all-managers-item');
           item.onclick = () => {
             managerSelect.value = opt.value;
-            managerBtn.textContent = opt.textContent;
             document.querySelectorAll('.manager-menu-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
             managerMenu.classList.remove('active');
+            // Update button with logo + name or just name
+            if (opt.value === 'all') {
+              managerBtn.innerHTML = '';
+              managerBtn.textContent = 'All Managers';
+            } else {
+              const teamDataArray = window.playerTeamsData || window.allTeamsData || [];
+              const normalizedName = normalizeManagerName(opt.textContent, 2026, '', '');
+              const team = teamDataArray.find(t => {
+                const teamManager = normalizeManagerName(t.manager || '', 2026, t.team_name || '', t.team_key || '');
+                return teamManager === normalizedName || t.manager === opt.textContent;
+              });
+              managerBtn.innerHTML = '';
+              if (team && team.team_logo) {
+                const btnLogo = document.createElement('img');
+                btnLogo.src = fixTeamLogo(team.team_logo);
+                btnLogo.className = 'manager-btn-logo';
+                btnLogo.onerror = () => { btnLogo.style.display = 'none'; };
+                managerBtn.appendChild(btnLogo);
+              }
+              const btnText = document.createElement('span');
+              btnText.textContent = opt.textContent;
+              managerBtn.appendChild(btnText);
+            }
             filterPlayers();
           };
-          
-          // Add logo if available (for non-"all" options)
+
+          // Add logo for manager items
           if (opt.value !== 'all') {
             const teamDataArray = window.playerTeamsData || window.allTeamsData || [];
             const normalizedName = normalizeManagerName(opt.textContent, 2026, '', '');
@@ -27293,7 +27351,7 @@
               const teamManager = normalizeManagerName(t.manager || '', 2026, t.team_name || '', t.team_key || '');
               return teamManager === normalizedName || t.manager === opt.textContent;
             });
-            
+
             if (team && team.team_logo) {
               const logoImg = document.createElement('img');
               logoImg.src = fixTeamLogo(team.team_logo);
@@ -27302,14 +27360,16 @@
               item.appendChild(logoImg);
             }
           }
-          
+
           const nameSpan = document.createElement('span');
           nameSpan.className = 'manager-menu-item-name';
           nameSpan.textContent = opt.textContent;
           item.appendChild(nameSpan);
-          
-          managerMenu.appendChild(item);
+
+          grid.appendChild(item);
         });
+
+        managerMenu.appendChild(grid);
       }
 
       async function loadPlayerScoring() {
@@ -27490,7 +27550,7 @@
         return { position: pos, rank: '-' };
       }
 
-      function populateManagerFilter() {
+      async function populateManagerFilter() {
         const managerFilter = document.getElementById("manager-filter");
         const previousValue = managerFilter.value || "all";
         const managers = [
@@ -27510,6 +27570,20 @@
           managerFilter.value = previousValue;
         } else {
           managerFilter.value = "all";
+        }
+
+        // Load team data for manager logos in dropdown
+        const selectedYear = parseInt(document.getElementById("scoring-season").value) || 2026;
+        const teamsData = await getTeamData(selectedYear);
+        if (teamsData) {
+          window.playerTeamsData = teamsData;
+        }
+
+        // Re-populate the custom manager dropdown with logos
+        const managerBtn = document.getElementById('manager-btn-display');
+        const managerMenu = document.getElementById('manager-dropdown-menu');
+        if (managerBtn && managerMenu) {
+          populateManagerMenu(managerMenu, managerFilter, managerBtn);
         }
       }
 
