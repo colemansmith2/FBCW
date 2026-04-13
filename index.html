@@ -57616,6 +57616,10 @@
         // Search all weeks in descending order to find the most recent day with scores.
         // This prevents showing 0s when current_week advances but has no games yet.
         const sortedWeekKeys = Object.keys(allWeeks).sort((a, b) => Number(b) - Number(a));
+
+        // First pass across ALL weeks: find the most recent completed day (before today).
+        // Must scan all weeks before falling back to today, so that e.g. on Monday we
+        // correctly show Sunday's scores from the previous week rather than today's.
         for (const weekKey of sortedWeekKeys) {
           const teamScores = allWeeks[weekKey]?.team_scores || {};
           if (Object.keys(teamScores).length === 0) continue;
@@ -57624,7 +57628,6 @@
           Object.values(teamScores).forEach(ts => Object.keys(ts).forEach(d => allDates.add(d)));
           const sortedDates = [...allDates].sort().reverse();
 
-          // First pass: look for most recent completed day (before today) with scores
           for (const dateKey of sortedDates) {
             if (dateKey >= todayStr) continue; // skip today
             const hasNonZero = Object.values(teamScores).some(ts => (ts[dateKey] || 0) !== 0);
@@ -57635,17 +57638,28 @@
             }
           }
           if (scoringDate) break;
+        }
 
-          // If no completed day has scores, fall back to today
-          for (const dateKey of sortedDates) {
-            const hasNonZero = Object.values(teamScores).some(ts => (ts[dateKey] || 0) !== 0);
-            if (hasNonZero) {
-              scoringDate = dateKey;
-              scoringWeekScores = teamScores;
-              break;
+        // Second pass: only if no pre-today scores were found anywhere, fall back to today
+        if (!scoringDate) {
+          for (const weekKey of sortedWeekKeys) {
+            const teamScores = allWeeks[weekKey]?.team_scores || {};
+            if (Object.keys(teamScores).length === 0) continue;
+
+            const allDates = new Set();
+            Object.values(teamScores).forEach(ts => Object.keys(ts).forEach(d => allDates.add(d)));
+            const sortedDates = [...allDates].sort().reverse();
+
+            for (const dateKey of sortedDates) {
+              const hasNonZero = Object.values(teamScores).some(ts => (ts[dateKey] || 0) !== 0);
+              if (hasNonZero) {
+                scoringDate = dateKey;
+                scoringWeekScores = teamScores;
+                break;
+              }
             }
+            if (scoringDate) break;
           }
-          if (scoringDate) break;
         }
 
         if (scoringDate && scoringWeekScores) {
