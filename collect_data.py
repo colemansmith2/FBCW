@@ -2048,7 +2048,24 @@ def refresh_current_season_player_daily_cache(
         for date_key in cache_dates.keys()
         if parse_iso_date(date_key)
     ]
-    if cached_dates:
+
+    # Detect duplicate game_pks in existing cache — if found, force a full
+    # rebuild from season start so the dedup logic can fix them.
+    has_duplicates = False
+    all_cached_pks = set()
+    for cached_day in cache_dates.values():
+        for pk in (cached_day.get('game_pks') or []):
+            if pk in all_cached_pks:
+                has_duplicates = True
+                break
+            all_cached_pks.add(pk)
+        if has_duplicates:
+            break
+
+    if has_duplicates:
+        print("    ⚠ Duplicate game_pks detected in cache — rebuilding from season start")
+        refresh_start = season_start_dt
+    elif cached_dates:
         refresh_start = max(
             season_start_dt,
             max(cached_dates) - timedelta(days=MLB_DAILY_CACHE_BACKFILL_DAYS - 1),
@@ -4119,15 +4136,54 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
                         if position_type != 'P':
                             continue
 
-                        # Get projected points for this day
+                        # Get projected points for this day.
+                        # Yahoo only populates player_points.total for active lineup
+                        # players — bench players always get 0 even if they have a
+                        # projected start.  So we also read the raw player_stats block
+                        # and apply the league scoring formula ourselves.
                         points = 0.0
+                        raw_stats = {}
+
                         for item in player:
-                            if isinstance(item, dict) and 'player_points' in item:
+                            if not isinstance(item, dict):
+                                continue
+                            if 'player_points' in item:
                                 try:
                                     points = float(item['player_points'].get('total', 0))
                                 except (ValueError, TypeError):
                                     points = 0.0
-                                break
+                            if 'player_stats' in item:
+                                # Raw yhandler responses use nested format:
+                                # {'stat': {'stat_id': X, 'value': Y}}
+                                for stat_entry in item['player_stats'].get('stats', []):
+                                    if not isinstance(stat_entry, dict):
+                                        continue
+                                    if 'stat' in stat_entry:
+                                        stat = stat_entry['stat']
+                                        sid = str(stat.get('stat_id', ''))
+                                        val = stat.get('value', '0')
+                                    else:
+                                        # Flat format fallback
+                                        sid = str(stat_entry.get('stat_id', ''))
+                                        val = stat_entry.get('value', '0')
+                                    if sid:
+                                        raw_stats[sid] = safe_float(val)
+
+                        # If Yahoo didn't calculate points (bench player), derive them
+                        # from raw projected stats using the league scoring formula.
+                        if points == 0.0 and raw_stats:
+                            calc_pts = 0.0
+                            for stat_id, stat_name in YAHOO_STAT_ID_MAP.items():
+                                if stat_name in PROJECTION_PITCHING_SCORING:
+                                    val = raw_stats.get(stat_id, 0.0)
+                                    if val:
+                                        calc_pts += val * PROJECTION_PITCHING_SCORING[stat_name]
+                            points = round(calc_pts, 2)
+                            if points != 0:
+                                print(f"      → {player_name}: {points:.1f} pts from raw stats ({day_str})")
+                            elif any(v != 0 for v in raw_stats.values()):
+                                # Has raw stats but all pitching values were 0 — batter on bench, or reliever with no projection
+                                print(f"      ℹ {player_name}: non-zero raw stats but 0 pitching pts ({day_str}), raw={dict(list(raw_stats.items())[:6])}")
 
                         if points > 0:
                             team_boost += points
