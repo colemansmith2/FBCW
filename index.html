@@ -3092,6 +3092,293 @@
         position: relative;
       }
 
+      /* Future Outlook Styles */
+      .future-outlook-section {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5rem;
+      }
+      .future-outlook-section h3 {
+        margin: 0 0 0.25rem 0;
+        color: var(--retro-blue);
+        font-size: 1.25rem;
+      }
+      .future-outlook-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+      }
+      .future-outlook-controls select {
+        padding: 0.5rem 0.75rem;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        background: white;
+        cursor: pointer;
+        min-width: 200px;
+      }
+      .future-outlook-controls select:focus {
+        border-color: var(--retro-blue);
+        outline: none;
+      }
+      .future-outlook-table-wrap {
+        overflow-x: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      .future-outlook-table-wrap.fo-league-view {
+        max-height: 720px; /* ~24 rows */
+        overflow-y: auto;
+      }
+      .future-outlook-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.8rem;
+      }
+      .future-outlook-table thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+      }
+      .future-outlook-table th {
+        background: var(--retro-blue);
+        color: white;
+        padding: 0.5rem 0.6rem;
+        text-align: center;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        border-right: 1px solid rgba(255,255,255,0.15);
+      }
+      .future-outlook-table th:hover {
+        background: var(--retro-blue-light);
+      }
+      .future-outlook-table th.fo-sort-active {
+        background: var(--retro-blue-dark);
+      }
+      .future-outlook-table th .fo-sort-arrow {
+        margin-left: 3px;
+        font-size: 0.55rem;
+        opacity: 0.6;
+      }
+      .future-outlook-table th.fo-sort-active .fo-sort-arrow {
+        opacity: 1;
+      }
+      .future-outlook-table td {
+        padding: 0.4rem 0.6rem;
+        text-align: center;
+        border-bottom: 1px solid #eee;
+        vertical-align: middle;
+      }
+      .future-outlook-table tbody tr:hover {
+        background: #f0f4ff;
+      }
+      .future-outlook-table .fo-player-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-align: left;
+        min-width: 180px;
+      }
+      .future-outlook-table .fo-headshot {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: #eee;
+      }
+      .future-outlook-table .fo-player-info {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+        min-width: 0;
+      }
+      .future-outlook-table .fo-player-name {
+        font-weight: 600;
+        font-size: 0.8rem;
+        color: #333;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .future-outlook-table .fo-player-meta {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 3px;
+        font-size: 0.65rem;
+        color: #777;
+      }
+      .future-outlook-table .fo-position-badge {
+        font-size: 0.5rem;
+        padding: 1px 3px;
+        line-height: 1.2;
+      }
+      .future-outlook-table .fo-mlb-logo {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+      /* Cost badge pair: round badge (purple) + dollar badge (green) */
+      .fo-cost-pair {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+      }
+      .fo-round-badge {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        color: white;
+        min-width: 28px;
+        text-align: center;
+      }
+      .fo-dollar-badge {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: #27ae60;
+        color: white;
+        min-width: 24px;
+        text-align: center;
+      }
+      .fo-cost-na {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+      .fo-cost-fa {
+        display: inline-block;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+        background: #fff3cd;
+        color: #8a6d1d;
+      }
+      .fo-cost-none {
+        color: var(--retro-gray);
+        font-size: 0.85rem;
+      }
+      .future-outlook-table .fo-pts {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .future-outlook-table .fo-pts-good { color: var(--retro-green); }
+      .future-outlook-table .fo-pts-ok { color: #555; }
+      .future-outlook-table .fo-pts-low { color: var(--retro-gray); }
+      .future-outlook-table .fo-year-group {
+        border-left: 2px solid var(--retro-blue);
+      }
+      /* Owner cell */
+      .fo-owner-cell {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+      }
+      .fo-owner-logo {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+      .fo-owner-name {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #555;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .fo-section-label {
+        padding: 0.4rem 0.6rem;
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--retro-blue);
+        background: #f0f4ff;
+        text-align: left;
+        border-bottom: 2px solid var(--retro-blue);
+        letter-spacing: 0.5px;
+      }
+      .fo-section-label td {
+        text-align: left !important;
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--retro-blue);
+        background: #f0f4ff;
+        border-bottom: 2px solid var(--retro-blue);
+        padding: 0.4rem 0.6rem;
+      }
+      .fo-prospect-tag {
+        display: inline-block;
+        font-size: 0.5rem;
+        padding: 1px 3px;
+        border-radius: 3px;
+        background: #e8f5e9;
+        color: #2e7d32;
+        font-weight: 600;
+      }
+      @media (max-width: 768px) {
+        .future-outlook-controls {
+          flex-direction: column;
+          align-items: stretch;
+        }
+        .future-outlook-controls select {
+          min-width: 100%;
+        }
+        .future-outlook-table {
+          min-width: 860px;
+        }
+        .future-outlook-table .fo-player-cell {
+          min-width: 180px;
+        }
+        .future-outlook-table .fo-sticky-player,
+        .future-outlook-table .fo-sticky-owner {
+          position: sticky;
+        }
+        .future-outlook-table thead .fo-sticky-player,
+        .future-outlook-table thead .fo-sticky-owner {
+          z-index: 4;
+          background: var(--retro-blue);
+        }
+        .future-outlook-table tbody .fo-sticky-player,
+        .future-outlook-table tbody .fo-sticky-owner {
+          z-index: 2;
+          background: white;
+        }
+        .future-outlook-table tbody tr:hover .fo-sticky-player,
+        .future-outlook-table tbody tr:hover .fo-sticky-owner {
+          background: #f0f4ff;
+        }
+        .future-outlook-table .fo-sticky-player {
+          left: 0;
+          box-shadow: 2px 0 0 rgba(0, 0, 0, 0.06);
+        }
+        .future-outlook-table .fo-sticky-owner {
+          left: var(--fo-player-sticky-width, 220px);
+          box-shadow: 2px 0 0 rgba(0, 0, 0, 0.06);
+        }
+      }
+
       /* Trade Analyzer Styles */
       .trade-analyzer-section {
         background: white;
@@ -24403,6 +24690,41 @@
           </div>
         </div>
 
+        <!-- Future Outlook Section -->
+        <div class="future-outlook-section" id="future-outlook-section">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+            <div>
+              <h3 style="margin: 0;">Future Outlook</h3>
+              <div style="font-size: 0.85rem; color: #666">Multi-year keeper costs &amp; projected value (2026 &ndash; 2028)</div>
+            </div>
+          </div>
+          <div class="future-outlook-controls">
+            <select id="fo-team-select" onchange="renderFutureOutlook()">
+              <option value="all">All Teams</option>
+            </select>
+            <select id="fo-pos-filter" onchange="renderFutureOutlook()">
+              <option value="all">All Positions</option>
+              <option value="batters">All Batters</option>
+              <option value="pitchers">All Pitchers</option>
+              <option value="C">C</option>
+              <option value="1B">1B</option>
+              <option value="2B">2B</option>
+              <option value="3B">3B</option>
+              <option value="SS">SS</option>
+              <option value="OF">OF</option>
+              <option value="Util">Util</option>
+              <option value="SP">SP</option>
+              <option value="RP">RP</option>
+            </select>
+          </div>
+          <div id="fo-table-wrap" class="future-outlook-table-wrap fo-league-view">
+            <table class="future-outlook-table" id="fo-table">
+              <thead id="fo-thead"></thead>
+              <tbody id="fo-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+
         <div class="keeper-value-section" id="keeper-value-section">
           <div class="keeper-value-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
             <div>
@@ -37993,6 +38315,9 @@
           // Initialize Trade Analyzer
           await initTradeAnalyzer();
 
+          // Initialize Future Outlook
+          await initFutureOutlook();
+
           // Trigger the keeper value analysis
           if (keeperConfig) {
             displayLeagueKeepers(); // This triggers the value analysis rendering
@@ -46081,10 +46406,13 @@
 
         if (tradeAnalyzerData.isInSeason) {
           // In-season mode: 2026 = actual YTD points + ROS projected points
+          // Try full name first, then base name without suffix (player_stats.json omits Ohtani suffix)
           const actual =
-            (tradeAnalyzerData.actualStats[name] || tradeAnalyzerData.actualStats[nameNorm] || {}).fantasyPoints || 0;
+            (tradeAnalyzerData.actualStats[name] || tradeAnalyzerData.actualStats[nameNorm] ||
+             tradeAnalyzerData.actualStats[baseName] || tradeAnalyzerData.actualStats[baseNameNorm] || {}).fantasyPoints || 0;
           const ros =
-            (tradeAnalyzerData.rosProjections[name] || tradeAnalyzerData.rosProjections[nameNorm] || {}).rosPoints || 0;
+            (tradeAnalyzerData.rosProjections[name] || tradeAnalyzerData.rosProjections[nameNorm] ||
+             tradeAnalyzerData.rosProjections[baseName] || tradeAnalyzerData.rosProjections[baseNameNorm] || {}).rosPoints || 0;
           proj2026 = actual + ros; // Full season outlook
 
           // If no ROS or actual data, fall back to preseason ZiPS, then avg projections
@@ -48005,6 +48333,538 @@
         document.body.style.overflow = "hidden";
       }
 
+      // ===== FUTURE OUTLOOK =====
+      let futureOutlookData = null; // { teamKey: [ playerObj, ... ] }
+      let foSortCol = 'proj2026';
+      let foSortAsc = false;
+
+      async function initFutureOutlook() {
+        console.log('Initializing Future Outlook...');
+
+        // Ensure trade analyzer data is available (teams, zips, ros, actual stats)
+        if (!tradeAnalyzerData || Object.keys(tradeAnalyzerData.teams).length === 0) {
+          console.log('Future Outlook: trade analyzer data not ready, skipping');
+          return;
+        }
+
+        // Load Yahoo roster
+        let allRosters = {};
+        try {
+          const resp = await fetch('data/current_season/rosters.json');
+          if (resp.ok) allRosters = await resp.json();
+        } catch (e) { console.log('FO: Could not load rosters:', e); }
+
+        // Load draft data for round costs
+        let draftPicks = [];
+        try {
+          const resp = await fetch('data/current_season/draft.json');
+          if (resp.ok) draftPicks = await resp.json();
+        } catch (e) { /* ignore */ }
+        const draftRoundMap = {};
+        draftPicks.forEach(pick => {
+          draftRoundMap[(pick.player_name || '').toLowerCase().trim()] = pick.round;
+        });
+
+        // Build keeper config key mapping (manager -> configKey)
+        let kConfig = keeperConfig;
+        if (!kConfig) {
+          try {
+            const resp = await fetch('data/keepers/keeper_config.json');
+            if (resp.ok) kConfig = await resp.json();
+          } catch (e) { /* ignore */ }
+        }
+        const managerToConfigKey = {};
+        if (kConfig?.teams) {
+          Object.entries(kConfig.teams).forEach(([key, team]) => {
+            managerToConfigKey[(team.manager || '').toLowerCase().trim()] = key;
+          });
+        }
+
+        // Build keeper selections lookup
+        let kSelections = keeperSelections || {};
+        if (Object.keys(kSelections).length === 0) {
+          try {
+            const resp = await fetch('data/keepers/keepers_2026.json');
+            if (resp.ok) {
+              const data = await resp.json();
+              if (data?.keepers) {
+                Object.entries(data.keepers).forEach(([key, keepers]) => {
+                  if (Array.isArray(keepers) && keepers.length > 0) kSelections[key] = keepers;
+                });
+              }
+            }
+          } catch (e) { /* ignore */ }
+        }
+
+        // Load teams data for mapping
+        let teamsArr = homeTeamsData;
+        if (!teamsArr || teamsArr.length === 0) {
+          try {
+            const resp = await fetch('data/current_season/teams.json');
+            if (resp.ok) teamsArr = await resp.json();
+          } catch (e) { teamsArr = []; }
+        }
+        const yahooKeyToManager = {};
+        (teamsArr || []).forEach(t => {
+          yahooKeyToManager[t.team_key] = (t.manager || '').toLowerCase().trim();
+        });
+
+        await loadAverageProjections();
+
+        futureOutlookData = {};
+
+        for (const [yahooKey, rosterPlayers] of Object.entries(allRosters)) {
+          if (!Array.isArray(rosterPlayers) || rosterPlayers.length === 0) continue;
+
+          const manager = yahooKeyToManager[yahooKey];
+          const configKey = manager ? managerToConfigKey[manager] : null;
+          const teamKeepers = configKey ? (kSelections[configKey] || []) : [];
+          const keeperMap = {};
+          teamKeepers.forEach(k => {
+            const kName = (k.player_name || k.name || '').toLowerCase().trim();
+            const kNameNorm = kName.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const entry = { roundCost: k.roundCost || k.round || null, isProspect: k.isProspect || k.is_prospect || false };
+            if (kName) keeperMap[kName] = entry;
+            if (kNameNorm && kNameNorm !== kName) keeperMap[kNameNorm] = entry;
+          });
+
+          const players = [];
+          for (const rp of rosterPlayers) {
+            const playerName = rp.name || 'Unknown';
+            const playerNameLc = playerName.toLowerCase().trim();
+            const playerNameNorm = playerNameLc.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const keeperEntry = keeperMap[playerNameLc] || keeperMap[playerNameNorm] || null;
+            const isProspect = rp.selected_position === 'NA' || (keeperEntry && keeperEntry.isProspect);
+            const roundCost = isProspect ? 0 : (draftRoundMap[playerNameLc] || draftRoundMap[playerNameNorm] || (keeperEntry && keeperEntry.roundCost) || 22);
+            const isWaiverPickup = !isProspect && !draftRoundMap[playerNameLc] && !draftRoundMap[playerNameNorm] && !(keeperEntry && keeperEntry.roundCost);
+            const eligiblePositions = cleanYahooPositions(rp.eligible_positions, rp.position_type === 'P' ? 'pitcher' : 'batter');
+            const displayPosition = eligiblePositions.join(',') || rp.primary_position || rp.eligible_positions?.[0] || 'Util';
+
+            const keeperLike = {
+              name: playerName,
+              player_name: playerName,
+              position: displayPosition,
+              positionType: rp.position_type === 'P' ? 'pitcher' : 'batter',
+              roundCost: roundCost,
+              dollarCost: roundCost,
+              isProspect: isProspect,
+              isWaiverPickup: isWaiverPickup,
+            };
+
+            // Use calculatePlayerForecast to get 3-year cost + projection data
+            const forecast = calculatePlayerForecast(keeperLike);
+
+            // Headshot + MLB team lookup
+            const baseNameLower = playerNameLc.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+            const baseNameNorm = playerNameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+            const posType = rp.position_type === 'P' ? 'pitcher' : 'batter';
+            const zips2026 = tradeAnalyzerData.zips2026[`${baseNameLower}|${posType}`] || tradeAnalyzerData.zips2026[baseNameLower] || {};
+            const avgProjData = averageProjectionsMap[`${baseNameLower}|${posType}`] || averageProjectionsMap[baseNameLower] ||
+              averageProjectionsMap[`${baseNameNorm}|${posType}`] || averageProjectionsMap[baseNameNorm] || {};
+            const prospectMatch = typeof getProspectInfo === 'function' ? getProspectInfo(playerName) : null;
+
+            const mlbTeam = rp.editorial_team_abbr || zips2026.mlb_team || avgProjData?.mlb_team || prospectMatch?.mlb_team || '';
+            const headshot = rp.headshot_url || zips2026.headshot_url || avgProjData?.headshot || prospectMatch?.headshot_url || '';
+
+            // Get actual YTD points — try full name first, then base name (Ohtani entries in player_stats.json have no suffix)
+            const actualStats = tradeAnalyzerData.actualStats[playerNameLc] || tradeAnalyzerData.actualStats[playerNameNorm] ||
+              tradeAnalyzerData.actualStats[baseNameLower] || tradeAnalyzerData.actualStats[baseNameNorm] || {};
+
+            // Owner info
+            const teamInfo = tradeAnalyzerData.teams[yahooKey] || {};
+            const ownerManager = normalizeManagerName(teamInfo.manager || '', 2026, teamInfo.team_name, yahooKey);
+            const ownerLogo = fixTeamLogo(teamInfo.team_logo || '');
+
+            players.push({
+              name: playerName,
+              position: displayPosition,
+              positionType: posType,
+              mlbTeam: mlbTeam,
+              headshot: headshot,
+              isProspect: isProspect,
+              isWaiverPickup: isWaiverPickup,
+              round2026: forecast[0].round,
+              cost2026: forecast[0].cost,
+              proj2026: forecast[0].projectedPts,
+              actual2026: Math.round(actualStats.fantasyPoints || 0),
+              round2027: forecast[1].round,
+              cost2027: forecast[1].cost,
+              proj2027: forecast[1].projectedPts,
+              round2028: forecast[2].round,
+              cost2028: forecast[2].cost,
+              proj2028: forecast[2].projectedPts,
+              teamKey: yahooKey,
+              ownerManager: ownerManager,
+              ownerLogo: ownerLogo,
+            });
+          }
+          futureOutlookData[yahooKey] = players;
+        }
+
+        // Build free agents list: players with projections who aren't on any roster
+        const rosteredNames = new Set();
+        Object.values(allRosters).forEach(teamPlayers => {
+          (teamPlayers || []).forEach(rp => {
+            const raw = (rp.name || '').toLowerCase().trim();
+            const norm = raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const base = raw.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+            rosteredNames.add(raw);
+            rosteredNames.add(norm);
+            rosteredNames.add(base);
+          });
+        });
+
+        const faPlayers = [];
+        const seenFA = new Set();
+        // Iterate typed keys from averageProjectionsMap (e.g. "juan soto|batter")
+        Object.entries(averageProjectionsMap).forEach(([key, data]) => {
+          if (!key.includes('|')) return; // skip plain-name duplicates
+          const [namePart, typePart] = key.split('|');
+          const nameNorm = namePart.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+          if (rosteredNames.has(namePart) || rosteredNames.has(nameNorm)) return;
+          if (seenFA.has(key)) return;
+          seenFA.add(key);
+
+          const posType = typePart || 'batter';
+          const position = data.position || (posType === 'pitcher' ? 'SP' : 'Util');
+          const displayName = namePart.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          const forecast = calculatePlayerForecast({
+            name: displayName,
+            position: position,
+            positionType: posType,
+            isProspect: false,
+            isWaiverPickup: false,
+            isFreeAgent: true,
+          });
+
+          const z26 = tradeAnalyzerData.zips2026[key] || tradeAnalyzerData.zips2026[namePart] || {};
+          const actualPts = (tradeAnalyzerData.actualStats[namePart] || tradeAnalyzerData.actualStats[nameNorm] || {}).fantasyPoints || 0;
+
+          const headshot = data.headshot || z26.headshot_url || '';
+          const mlbTeam = data.mlb_team || z26.mlb_team || '';
+
+          faPlayers.push({
+            name: displayName,
+            position: position,
+            positionType: posType,
+            mlbTeam: mlbTeam,
+            headshot: headshot,
+            isProspect: false,
+            isWaiverPickup: false,
+            isFreeAgent: true,
+            round2026: forecast[0].round,
+            cost2026: forecast[0].cost,
+            proj2026: forecast[0].projectedPts,
+            actual2026: Math.round(actualPts),
+            round2027: forecast[1].round,
+            cost2027: forecast[1].cost,
+            proj2027: forecast[1].projectedPts,
+            round2028: forecast[2].round,
+            cost2028: forecast[2].cost,
+            proj2028: forecast[2].projectedPts,
+            teamKey: '__fa__',
+            ownerManager: 'Free Agent',
+            ownerLogo: '',
+          });
+        });
+
+        futureOutlookData['__fa__'] = faPlayers;
+        console.log(`Future Outlook: ${faPlayers.length} free agents found`);
+
+        // Populate dropdown
+        populateFODropdown();
+        // Default render
+        renderFutureOutlook();
+        console.log(`Future Outlook loaded: ${Object.keys(futureOutlookData).length - 1} teams + free agents`);
+      }
+
+      function populateFODropdown() {
+        const select = document.getElementById('fo-team-select');
+        if (!select) return;
+
+        const sortedTeams = Object.entries(tradeAnalyzerData.teams || {}).sort(
+          (a, b) => (a[1].manager || '').localeCompare(b[1].manager || '')
+        );
+
+        let html = '<option value="all">All Teams</option>';
+        sortedTeams.forEach(([key, team]) => {
+          html += `<option value="${key}">${normalizeManagerName(team.manager || '', 2026, team.team_name, key)} - ${team.team_name || 'Unknown'}</option>`;
+        });
+        html += '<option value="__fa__">Free Agents</option>';
+        select.innerHTML = html;
+
+        // Default to logged-in user's team
+        if (currentSession?.teamKey && futureOutlookData?.[currentSession.teamKey]) {
+          select.value = currentSession.teamKey;
+        } else if (currentSession?.adminActingAs?.teamKey && futureOutlookData?.[currentSession.adminActingAs.teamKey]) {
+          select.value = currentSession.adminActingAs.teamKey;
+        }
+      }
+
+      function foFormatPts(pts) {
+        if (!pts || pts === 0) return { text: '-', cls: 'fo-pts-low' };
+        const cls = pts >= 300 ? 'fo-pts-good' : pts >= 150 ? 'fo-pts-ok' : 'fo-pts-low';
+        return { text: Math.round(pts).toLocaleString(), cls: cls };
+      }
+
+      // For cost sorting: round 0 (NA/free) always sinks to the bottom
+      function foCostSortVal(round, asc) {
+        if (round <= 0) return asc ? Infinity : -Infinity;
+        return round;
+      }
+
+      function foSortPlayers(players, col, asc) {
+        const mult = asc ? 1 : -1;
+        return [...players].sort((a, b) => {
+          let va, vb;
+          switch (col) {
+            case 'name': va = a.name.toLowerCase(); vb = b.name.toLowerCase(); return mult * va.localeCompare(vb);
+            case 'owner': va = (a.ownerManager || '').toLowerCase(); vb = (b.ownerManager || '').toLowerCase(); return mult * va.localeCompare(vb);
+            case 'cost2026': va = foCostSortVal(a.round2026, asc); vb = foCostSortVal(b.round2026, asc); return mult * (va - vb);
+            case 'proj2026': va = a.proj2026 || 0; vb = b.proj2026 || 0; return mult * (va - vb);
+            case 'actual2026': va = a.actual2026 || 0; vb = b.actual2026 || 0; return mult * (va - vb);
+            case 'cost2027': va = foCostSortVal(a.round2027, asc); vb = foCostSortVal(b.round2027, asc); return mult * (va - vb);
+            case 'proj2027': va = a.proj2027 || 0; vb = b.proj2027 || 0; return mult * (va - vb);
+            case 'cost2028': va = foCostSortVal(a.round2028, asc); vb = foCostSortVal(b.round2028, asc); return mult * (va - vb);
+            case 'proj2028': va = a.proj2028 || 0; vb = b.proj2028 || 0; return mult * (va - vb);
+            default: return mult * ((b.proj2026 || 0) - (a.proj2026 || 0));
+          }
+        });
+      }
+
+      function foHandleSort(col) {
+        if (foSortCol === col) {
+          foSortAsc = !foSortAsc;
+        } else {
+          foSortCol = col;
+          foSortAsc = col === 'name' || col === 'owner'; // default asc for text, desc for numbers
+        }
+        renderFutureOutlook();
+      }
+
+      function foRenderHeaderRow(showOwner) {
+        const cols = [
+          { key: 'name', label: 'Player' },
+        ];
+        if (showOwner) cols.push({ key: 'owner', label: 'Owner' });
+        cols.push(
+          { key: 'cost2026', label: 'Keeper Cost' },
+          { key: 'actual2026', label: 'Actual' },
+          { key: 'proj2026', label: 'Proj' },
+          { key: 'cost2027', label: 'Keeper Cost' },
+          { key: 'proj2027', label: 'Proj' },
+          { key: 'cost2028', label: 'Keeper Cost' },
+          { key: 'proj2028', label: 'Proj' },
+        );
+        const baseCols = showOwner ? 2 : 1;
+        let html = '<tr>';
+        html += `<th colspan="${baseCols}" style="border-bottom: 2px solid var(--retro-gold);"></th>`;
+        html += '<th colspan="3" style="border-bottom: 2px solid var(--retro-gold); background: #003a99;">2026</th>';
+        html += '<th colspan="2" style="border-bottom: 2px solid var(--retro-gold); background: #003a99;">2027</th>';
+        html += '<th colspan="2" style="border-bottom: 2px solid var(--retro-gold); background: #003a99;">2028</th>';
+        html += '</tr><tr>';
+        cols.forEach(c => {
+          const isActive = foSortCol === c.key;
+          const arrow = isActive ? (foSortAsc ? '\u25B2' : '\u25BC') : '\u25BC';
+          const yearGroupCls = ['cost2026','cost2027','cost2028'].includes(c.key) ? 'fo-year-group' : '';
+          const stickyCls = c.key === 'name' ? 'fo-sticky-player' : c.key === 'owner' ? 'fo-sticky-owner' : '';
+          html += `<th class="${isActive ? 'fo-sort-active' : ''} ${yearGroupCls} ${stickyCls}" onclick="foHandleSort('${c.key}')" style="${c.key === 'name' || c.key === 'owner' ? 'text-align:left;' : ''}">${c.label}<span class="fo-sort-arrow">${arrow}</span></th>`;
+        });
+        html += '</tr>';
+        return html;
+      }
+
+      // Purple gradient for round badges: R1 = darkest, R22 = lightest
+      function foRoundBadgeBg(round) {
+        if (round <= 0) return '#9b59b6';
+        // Map R1..R22 to a purple darkness range
+        // R1 = darkest (#4a148c), R22 = lightest (#ce93d8)
+        const t = Math.min((round - 1) / 21, 1); // 0 = R1, 1 = R22
+        const r = Math.round(74 + t * (206 - 74));
+        const g = Math.round(20 + t * (147 - 20));
+        const b = Math.round(140 + t * (216 - 140));
+        return `rgb(${r},${g},${b})`;
+      }
+
+      function foRenderCostBadges(round, cost, isProspect, isFreeAgentYear = false) {
+        if (isFreeAgentYear) return '<span class="fo-cost-fa">FA</span>';
+        if (isProspect && round === 0) return '<span class="fo-cost-na">NA</span>';
+        if (round <= 0) return '<span class="fo-cost-none">-</span>';
+        const bg = foRoundBadgeBg(round);
+        return `<span class="fo-cost-pair"><span class="fo-round-badge" style="background:${bg}">R${round}</span><span class="fo-dollar-badge">$${cost}</span></span>`;
+      }
+
+      function foGetDisplayPositions(position) {
+        const positions = getCleanDisplayPositions(position);
+        if (positions.length > 0) {
+          return positions.map((pos) => pos.toUpperCase());
+        }
+
+        const rawPositions = (position || "")
+          .split(/[,\/]/)
+          .map((p) => p.trim().toUpperCase())
+          .filter((p) => p);
+
+        if (rawPositions.some((p) => p === 'DH' || p === 'UTIL')) {
+          return ['UTIL'];
+        }
+
+        return [];
+      }
+
+      function foMatchesPosition(player, selectedPos) {
+        const targetPos = (selectedPos || '').toUpperCase();
+        if (!targetPos || targetPos === 'ALL') return true;
+        return foGetDisplayPositions(player.position).includes(targetPos);
+      }
+
+      function foRenderPositionBadges(position, playerName) {
+        return getPositionBadge(position, playerName).replace(/position-badge/g, 'position-badge fo-position-badge');
+      }
+
+      function foSyncStickyColumns() {
+        const wrap = document.getElementById('fo-table-wrap');
+        const table = document.getElementById('fo-table');
+        if (!wrap || !table) return;
+
+        const playerCell = table.querySelector('.fo-sticky-player');
+        if (!playerCell) return;
+
+        wrap.style.setProperty('--fo-player-sticky-width', `${Math.ceil(playerCell.getBoundingClientRect().width)}px`);
+      }
+
+      function foRenderPlayerRow(p, showOwner) {
+        const mlbLogoUrl = typeof getMLBTeamLogo === 'function' ? getMLBTeamLogo(p.mlbTeam) : '';
+        const mlbDisplay = (p.mlbTeam && p.mlbTeam !== 'FA') ? p.mlbTeam : '';
+        const headshotSrc = p.headshot || "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjEyIiByPSI2IiBmaWxsPSIjY2NjIi8+PHBhdGggZD0iTTQgMjhjMC02LjYzIDUuMzctMTIgMTItMTJzMTIgNS4zNyAxMiAxMiIgZmlsbD0iI2NjYyIvPjwvc3ZnPg==";
+
+        const actual = foFormatPts(p.actual2026);
+        const p2026 = foFormatPts(p.proj2026);
+        const p2027 = foFormatPts(p.proj2027);
+        const p2028 = foFormatPts(p.proj2028);
+
+        let ownerTd = '';
+        if (showOwner) {
+          ownerTd = `<td class="fo-sticky-owner"><div class="fo-owner-cell">${p.ownerLogo ? `<img src="${p.ownerLogo}" class="fo-owner-logo" alt="" onerror="this.style.display='none'">` : ''}<span class="fo-owner-name">${p.ownerManager || ''}</span></div></td>`;
+        }
+
+        return `<tr>
+          <td class="fo-sticky-player">
+            <div class="fo-player-cell">
+              <img src="${headshotSrc}" class="fo-headshot" alt="" onerror="this.style.display='none'">
+              <div class="fo-player-info">
+                <span class="fo-player-name">${p.name}</span>
+                <div class="fo-player-meta">
+                  ${mlbLogoUrl && mlbDisplay ? `<img src="${mlbLogoUrl}" class="fo-mlb-logo" alt="" onerror="this.style.display='none'">` : ''}
+                  ${mlbDisplay ? `<span>${mlbDisplay}</span>` : ''}
+                  ${foRenderPositionBadges(p.position || 'Util', p.name)}
+                  ${p.isProspect ? '<span class="fo-prospect-tag">NA</span>' : ''}
+                </div>
+              </div>
+            </div>
+          </td>
+          ${ownerTd}
+          <td class="fo-year-group">${foRenderCostBadges(p.round2026, p.cost2026, p.isProspect, p.isFreeAgent)}</td>
+          <td><span class="fo-pts ${actual.cls}">${actual.text}</span></td>
+          <td><span class="fo-pts ${p2026.cls}">${p2026.text}</span></td>
+          <td class="fo-year-group">${foRenderCostBadges(p.round2027, p.cost2027, p.isProspect && p.round2027 === 0)}</td>
+          <td><span class="fo-pts ${p2027.cls}">${p2027.text}</span></td>
+          <td class="fo-year-group">${foRenderCostBadges(p.round2028, p.cost2028, p.isProspect && p.round2028 === 0)}</td>
+          <td><span class="fo-pts ${p2028.cls}">${p2028.text}</span></td>
+        </tr>`;
+      }
+
+      function renderFutureOutlook() {
+        const thead = document.getElementById('fo-thead');
+        const tbody = document.getElementById('fo-tbody');
+        const wrap = document.getElementById('fo-table-wrap');
+        const teamSelect = document.getElementById('fo-team-select');
+        const posFilter = document.getElementById('fo-pos-filter');
+        if (!thead || !tbody || !futureOutlookData) return;
+
+        const selectedTeam = teamSelect?.value || 'all';
+        const selectedPos = posFilter?.value || 'all';
+        const isFAView = selectedTeam === '__fa__';
+        const isTeamView = selectedTeam !== 'all' && !isFAView;
+        const showOwner = !isTeamView; // show Owner column in league-wide and FA views
+        const colSpan = showOwner ? 9 : 8;
+
+        thead.innerHTML = foRenderHeaderRow(showOwner);
+
+        // Toggle scroll class — FA view and All Teams get scrollable height
+        wrap.classList.toggle('fo-league-view', !isTeamView);
+
+        // Gather players
+        let pool = [];
+        if (isFAView) {
+          pool = futureOutlookData['__fa__'] || [];
+        } else if (isTeamView) {
+          pool = futureOutlookData[selectedTeam] || [];
+        } else {
+          // All Teams — exclude free agents
+          Object.entries(futureOutlookData).forEach(([key, players]) => {
+            if (key !== '__fa__') pool = pool.concat(players);
+          });
+        }
+
+        // Apply position filter
+        if (selectedPos === 'batters') {
+          pool = pool.filter(p => p.positionType === 'batter');
+        } else if (selectedPos === 'pitchers') {
+          pool = pool.filter(p => p.positionType === 'pitcher');
+        } else if (selectedPos !== 'all') {
+          // Specific position like C, 1B, SS, SP, RP, etc.
+          pool = pool.filter(p => foMatchesPosition(p, selectedPos));
+        }
+
+        const showBatterPitcherSplit = selectedPos === 'all' || selectedPos === 'batters' || selectedPos === 'pitchers';
+        const rowRenderer = (p) => foRenderPlayerRow(p, showOwner);
+
+        if (isTeamView) {
+          // Single team view: split by Batters / Pitchers
+          const batters = foSortPlayers(pool.filter(p => p.positionType === 'batter'), foSortCol, foSortAsc);
+          const pitchers = foSortPlayers(pool.filter(p => p.positionType === 'pitcher'), foSortCol, foSortAsc);
+
+          let html = '';
+          if (showBatterPitcherSplit) {
+            if (batters.length > 0) {
+              html += `<tr class="fo-section-label"><td colspan="${colSpan}">Batters (${batters.length})</td></tr>`;
+              html += batters.map(rowRenderer).join('');
+            }
+            if (pitchers.length > 0) {
+              html += `<tr class="fo-section-label"><td colspan="${colSpan}">Pitchers (${pitchers.length})</td></tr>`;
+              html += pitchers.map(rowRenderer).join('');
+            }
+          } else {
+            // Specific position — no split needed, just sort the whole pool
+            const sorted = foSortPlayers(pool, foSortCol, foSortAsc);
+            html = sorted.map(rowRenderer).join('');
+          }
+          if (!html) {
+            html = `<tr><td colspan="${colSpan}" style="padding:2rem;color:#999;text-align:center;">No roster data available for this team.</td></tr>`;
+          }
+          tbody.innerHTML = html;
+        } else {
+          // All teams view: flat list sorted together
+          pool = foSortPlayers(pool, foSortCol, foSortAsc);
+
+          if (pool.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="${colSpan}" style="padding:2rem;color:#999;text-align:center;">No roster data available.</td></tr>`;
+          } else {
+            tbody.innerHTML = pool.map(rowRenderer).join('');
+          }
+        }
+
+        foSyncStickyColumns();
+      }
+
+      window.addEventListener('resize', () => {
+        if (futureOutlookData) {
+          foSyncStickyColumns();
+        }
+      });
+      // ===== END FUTURE OUTLOOK =====
+
       function calculatePlayerForecast(player) {
         const name = (player.name || "").toLowerCase().trim();
         const nameNorm = name.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -48014,7 +48874,13 @@
 
         // Fall back to average projections for 2026 if ZiPS DC is missing this player
         const baseNameNorm = nameNorm.replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
-        const posType = player.position && ['SP','RP','P'].includes(player.position) ? 'pitcher' : 'batter';
+        const cleanedPositions = getCleanDisplayPositions(player.position || '');
+        const posType =
+          player.positionType === 'pitcher' ||
+          player.positionType === 'P' ||
+          cleanedPositions.some((pos) => ['SP', 'RP', 'P'].includes(pos.toUpperCase()))
+            ? 'pitcher'
+            : 'batter';
 
         // Get projections for each year — try typed key first for Ohtani disambiguation
         const data2026 =
@@ -48044,10 +48910,13 @@
 
         if (tradeAnalyzerData.isInSeason) {
           // In-season mode: 2026 = actual YTD points + ROS projected points
+          // Try full name first, then base name without suffix (player_stats.json omits Ohtani suffix)
           const actual =
-            (tradeAnalyzerData.actualStats[name] || tradeAnalyzerData.actualStats[nameNorm] || {}).fantasyPoints || 0;
+            (tradeAnalyzerData.actualStats[name] || tradeAnalyzerData.actualStats[nameNorm] ||
+             tradeAnalyzerData.actualStats[baseName] || tradeAnalyzerData.actualStats[baseNameNorm] || {}).fantasyPoints || 0;
           const ros =
-            (tradeAnalyzerData.rosProjections[name] || tradeAnalyzerData.rosProjections[nameNorm] || {}).rosPoints || 0;
+            (tradeAnalyzerData.rosProjections[name] || tradeAnalyzerData.rosProjections[nameNorm] ||
+             tradeAnalyzerData.rosProjections[baseName] || tradeAnalyzerData.rosProjections[baseNameNorm] || {}).rosPoints || 0;
           proj2026 = actual + ros;
 
           // If no ROS or actual data, fall back to preseason ZiPS, then avg projections
@@ -48091,6 +48960,11 @@
             round2027 = 0;
             round2028 = 0;
           }
+        } else if (player.isFreeAgent) {
+          // Current-season free agents are free in 2026, then follow undrafted keeper rules
+          round2026 = 0;
+          round2027 = 22;
+          round2028 = getKeeperRoundCost(round2027, 22);
         } else if (player.isWaiverPickup) {
           // Waiver pickups: free in 2026, R22 in 2027, R18 in 2028
           round2026 = 22; // Display as "Waiver" in template
