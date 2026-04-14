@@ -790,16 +790,33 @@ def get_week_scores(oauth, year: int, week: int) -> List[Dict]:
                 
                 team1_key = team1[0][0]['team_key']
                 team1_score = team1[1].get('team_points', {}).get('total', 0)
-                team1_projected = team1[1].get('team_projected_points', {}).get('total', 0)
                 team2_key = team2[0][0]['team_key']
                 team2_score = team2[1].get('team_points', {}).get('total', 0)
-                team2_projected = team2[1].get('team_projected_points', {}).get('total', 0)
                 week_num = team1[1].get('team_stats', {}).get('week', week)
+
+                # Debug: log all keys in team score dict so we can confirm field names
+                # (safe to remove once team_live_projected_points is confirmed working)
+                if i == 0 and week == getattr(get_week_scores, '_debug_week', None):
+                    print(f"  [debug] team score keys: {list(team1[1].keys())}")
+                get_week_scores._debug_week = week
+
+                # Prefer the Live projection (actual + projected remaining, updates
+                # throughout the week) over the Orig projection (pre-week snapshot).
+                # Fall back to team_projected_points if the live field isn't present.
+                team1_projected = (
+                    team1[1].get('team_live_projected_points', {}).get('total') or
+                    team1[1].get('team_projected_points', {}).get('total', 0)
+                )
+                team2_projected = (
+                    team2[1].get('team_live_projected_points', {}).get('total') or
+                    team2[1].get('team_projected_points', {}).get('total', 0)
+                )
 
                 data.append({
                     'team_key': team1_key,
                     'team_score': float(team1_score),
                     'team_projected': float(team1_projected),
+                    'team_orig_projected': float(team1[1].get('team_projected_points', {}).get('total', 0)),
                     'week': int(week_num),
                     'opponent_key': team2_key,
                     'opponent_score': float(team2_score),
@@ -809,6 +826,7 @@ def get_week_scores(oauth, year: int, week: int) -> List[Dict]:
                     'team_key': team2_key,
                     'team_score': float(team2_score),
                     'team_projected': float(team2_projected),
+                    'team_orig_projected': float(team2[1].get('team_projected_points', {}).get('total', 0)),
                     'week': int(week_num),
                     'opponent_key': team1_key,
                     'opponent_score': float(team1_score),
