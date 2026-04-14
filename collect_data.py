@@ -4085,6 +4085,14 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
         week_start, week_end = lg.week_date_range(current_week)
         today = date.today()
 
+        # Derive league key from team keys so we can query the league/players
+        # endpoint (which returns player_points calculated against our league's
+        # specific scoring settings, unlike the bare player/ endpoint).
+        teams_tmp = lg.teams()
+        first_team_key = next(iter(teams_tmp))
+        league_key = '.'.join(first_team_key.split('.')[:3])  # e.g. "469.l.4114"
+        print(f"  League key: {league_key}")
+
         # Build list of remaining days (today + future) where bench pitchers
         # might have projections.  Also include today since a manager may not
         # have set their lineup yet.
@@ -4101,7 +4109,62 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
         total_days = (week_end - week_start).days + 1
         days_completed = max(0, (today - week_start).days)
 
-        teams = lg.teams()
+        teams = teams_tmp  # already fetched above for league_key extraction
+
+        # Build per-start projection lookup from ROS files.
+        # average projected_points / GS across all available projection systems.
+        ros_per_start: Dict[str, float] = {}
+        ros_dir = os.path.join(DATA_DIR, "projections", "ros")
+        ros_systems = [
+            "ros_steamer", "ros_zipsdc", "ros_oopsydc",
+            "ros_fangraphsdc", "ros_atcdc", "ros_thebat", "ros_thebatx",
+        ]
+        ros_pts_map: Dict[str, List[float]] = {}
+        for sys_name in ros_systems:
+            path = os.path.join(ros_dir, f"{sys_name}.json")
+            if not os.path.exists(path):
+                continue
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+            except Exception:
+                continue
+            for p in data.get('pitchers', []):
+                gs = safe_float(p.get('stats', {}).get('GS', 0))
+                pts = safe_float(p.get('projected_points', 0))
+                if gs >= 1 and pts > 0:
+                    norm = normalize_player_name(p.get('name', ''))
+                    if norm:
+                        ros_pts_map.setdefault(norm, []).append(pts / gs)
+        for name, vals in ros_pts_map.items():
+            ros_per_start[name] = sum(vals) / len(vals)
+        print(f"  ROS per-start projections loaded for {len(ros_per_start)} SP/RP")
+
+        # Pre-fetch MLB probable starters for each remaining day (one API call per day).
+        # Using MLB Stats API so we're independent of Yahoo's lineup-position restrictions.
+        probable_by_day: Dict[str, set] = {}
+        for day_str in remaining_days:
+            try:
+                url = (f"{MLB_STATS_API_BASE_URL}/schedule"
+                       f"?sportId=1&date={day_str}&hydrate=probablePitcher")
+                resp = requests.get(url, timeout=10)
+                names: set = set()
+                if resp.ok:
+                    for date_entry in resp.json().get('dates', []):
+                        for game in date_entry.get('games', []):
+                            for side in ('home', 'away'):
+                                pp = (game.get('teams', {})
+                                          .get(side, {})
+                                          .get('probablePitcher', {}))
+                                pname = pp.get('fullName', '')
+                                if pname:
+                                    names.add(normalize_player_name(pname))
+                probable_by_day[day_str] = names
+                print(f"  Probable starters {day_str}: {len(names)} pitchers confirmed")
+            except Exception as e:
+                print(f"  ⚠ Could not fetch probable pitchers for {day_str}: {e}")
+                probable_by_day[day_str] = set()
+
         bench_boost = {}
         bench_details = {}
 
@@ -4167,71 +4230,33 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
                     print(f"    ⚠ Could not fetch {team_name} roster for {day_str}: {e}")
                     continue
 
-                # Step 2: For each bench pitcher, query projected stats directly via
-                # the per-player endpoint.  This is independent of lineup position so
-                # Yahoo returns projected stats (and player_points) based purely on
-                # whether the pitcher has a scheduled start on that date.
+                # Step 2: Check whether each bench pitcher is a confirmed probable
+                # starter on this day (via MLB Stats API) and look up their
+                # per-start projected points from ROS projections.
+                # This is entirely independent of Yahoo's lineup-slot restrictions —
+                # Yahoo's stats endpoint never returns projected stats for bench
+                # players regardless of how it's queried.
+                probable_today = probable_by_day.get(day_str, set())
                 for player_key_val, player_name in bench_pitchers:
-                    try:
-                        raw_player = lg.yhandler.get(
-                            f"player/{player_key_val}/stats;type=date;date={day_str}"
-                        )
+                    normalized = normalize_player_name(player_name)
+                    if normalized not in probable_today:
+                        continue  # not a confirmed starter today
 
-                        player_data = raw_player['fantasy_content']['player']
+                    per_start_pts = ros_per_start.get(normalized, 0.0)
+                    if per_start_pts <= 0:
+                        print(f"      ℹ {player_name}: probable on {day_str} "
+                              f"but no ROS projection found")
+                        continue
 
-                        points = 0.0
-                        raw_stats = {}
-
-                        for item in player_data:
-                            if not isinstance(item, dict):
-                                continue
-                            if 'player_points' in item:
-                                try:
-                                    points = float(item['player_points'].get('total', 0))
-                                except (ValueError, TypeError):
-                                    points = 0.0
-                            if 'player_stats' in item:
-                                # Handle both nested {'stat': {stat_id, value}}
-                                # and flat {stat_id, value} formats
-                                for stat_entry in item['player_stats'].get('stats', []):
-                                    if not isinstance(stat_entry, dict):
-                                        continue
-                                    if 'stat' in stat_entry:
-                                        stat = stat_entry['stat']
-                                        sid = str(stat.get('stat_id', ''))
-                                        val = stat.get('value', '0')
-                                    else:
-                                        sid = str(stat_entry.get('stat_id', ''))
-                                        val = stat_entry.get('value', '0')
-                                    if sid:
-                                        raw_stats[sid] = safe_float(val)
-
-                        # If player_points still 0, derive from raw stats
-                        if points == 0.0 and raw_stats:
-                            calc_pts = 0.0
-                            for stat_id, stat_name_key in YAHOO_STAT_ID_MAP.items():
-                                if stat_name_key in PROJECTION_PITCHING_SCORING:
-                                    val = raw_stats.get(stat_id, 0.0)
-                                    if val:
-                                        calc_pts += val * PROJECTION_PITCHING_SCORING[stat_name_key]
-                            points = round(calc_pts, 2)
-                            if points > 0:
-                                print(f"      → {player_name}: {points:.1f} pts from raw stats ({day_str})")
-
-                        if points == 0.0:
-                            # Log zero so we can distinguish "no start" from API errors
-                            print(f"      ℹ {player_name}: 0 pts on {day_str} (no projected start or not an SP)")
-
-                        if points > 0:
-                            team_boost += points
-                            team_details.append({
-                                "name": player_name,
-                                "date": day_str,
-                                "projected_points": round(points, 2)
-                            })
-
-                    except Exception as e:
-                        print(f"    ⚠ Could not fetch stats for {player_name} on {day_str}: {e}")
+                    pts = round(per_start_pts, 2)
+                    print(f"      ✓ {player_name}: {pts:.1f} pts/start "
+                          f"(ROS avg) on {day_str}")
+                    team_boost += pts
+                    team_details.append({
+                        "name": player_name,
+                        "date": day_str,
+                        "projected_points": pts,
+                    })
 
             bench_boost[team_key] = round(team_boost, 2)
             if team_details:
