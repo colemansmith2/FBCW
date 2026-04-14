@@ -4094,12 +4094,19 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
 
             for day_str in remaining_days:
                 try:
+                    # Step 1: Get roster for this date (no stats) to identify bench
+                    # pitchers and extract their player_keys.  The team roster endpoint
+                    # with stats does NOT return any stats block for bench players at
+                    # all — not player_points, not player_stats — so we can't use it
+                    # to get bench projections.
                     raw = lg.yhandler.get(
-                        f"team/{team_key}/roster;date={day_str}/players/stats;type=date;date={day_str}"
+                        f"team/{team_key}/roster;date={day_str}/players"
                     )
 
                     players_data = raw['fantasy_content']['team'][1]['roster']['0']['players']
                     player_count = int(players_data.get('count', 0))
+
+                    bench_pitchers = []  # list of (player_key, player_name)
 
                     for i in range(player_count):
                         player_idx = str(i)
@@ -4119,32 +4126,45 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
                         except (KeyError, IndexError):
                             pass
 
-                        # Only interested in bench players
                         if selected_pos != 'BN':
                             continue
 
-                        # Check if this is a pitcher
+                        # Extract player info from player[0]
                         position_type = ''
                         player_name = ''
+                        player_key_val = ''
                         for item in player[0]:
                             if isinstance(item, dict):
                                 if 'position_type' in item:
                                     position_type = item['position_type']
                                 elif 'name' in item:
                                     player_name = item['name'].get('full', '')
+                                elif 'player_key' in item:
+                                    player_key_val = str(item['player_key'])
 
-                        if position_type != 'P':
-                            continue
+                        if position_type == 'P' and player_key_val:
+                            bench_pitchers.append((player_key_val, player_name))
 
-                        # Get projected points for this day.
-                        # Yahoo only populates player_points.total for active lineup
-                        # players — bench players always get 0 even if they have a
-                        # projected start.  So we also read the raw player_stats block
-                        # and apply the league scoring formula ourselves.
+                except Exception as e:
+                    print(f"    ⚠ Could not fetch {team_name} roster for {day_str}: {e}")
+                    continue
+
+                # Step 2: For each bench pitcher, query projected stats directly via
+                # the per-player endpoint.  This is independent of lineup position so
+                # Yahoo returns projected stats (and player_points) based purely on
+                # whether the pitcher has a scheduled start on that date.
+                for player_key_val, player_name in bench_pitchers:
+                    try:
+                        raw_player = lg.yhandler.get(
+                            f"player/{player_key_val}/stats;type=date;date={day_str}"
+                        )
+
+                        player_data = raw_player['fantasy_content']['player']
+
                         points = 0.0
                         raw_stats = {}
 
-                        for item in player:
+                        for item in player_data:
                             if not isinstance(item, dict):
                                 continue
                             if 'player_points' in item:
@@ -4153,8 +4173,8 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
                                 except (ValueError, TypeError):
                                     points = 0.0
                             if 'player_stats' in item:
-                                # Raw yhandler responses use nested format:
-                                # {'stat': {'stat_id': X, 'value': Y}}
+                                # Handle both nested {'stat': {stat_id, value}}
+                                # and flat {stat_id, value} formats
                                 for stat_entry in item['player_stats'].get('stats', []):
                                     if not isinstance(stat_entry, dict):
                                         continue
@@ -4163,27 +4183,26 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
                                         sid = str(stat.get('stat_id', ''))
                                         val = stat.get('value', '0')
                                     else:
-                                        # Flat format fallback
                                         sid = str(stat_entry.get('stat_id', ''))
                                         val = stat_entry.get('value', '0')
                                     if sid:
                                         raw_stats[sid] = safe_float(val)
 
-                        # If Yahoo didn't calculate points (bench player), derive them
-                        # from raw projected stats using the league scoring formula.
+                        # If player_points still 0, derive from raw stats
                         if points == 0.0 and raw_stats:
                             calc_pts = 0.0
-                            for stat_id, stat_name in YAHOO_STAT_ID_MAP.items():
-                                if stat_name in PROJECTION_PITCHING_SCORING:
+                            for stat_id, stat_name_key in YAHOO_STAT_ID_MAP.items():
+                                if stat_name_key in PROJECTION_PITCHING_SCORING:
                                     val = raw_stats.get(stat_id, 0.0)
                                     if val:
-                                        calc_pts += val * PROJECTION_PITCHING_SCORING[stat_name]
+                                        calc_pts += val * PROJECTION_PITCHING_SCORING[stat_name_key]
                             points = round(calc_pts, 2)
-                            if points != 0:
+                            if points > 0:
                                 print(f"      → {player_name}: {points:.1f} pts from raw stats ({day_str})")
-                            elif any(v != 0 for v in raw_stats.values()):
-                                # Has raw stats but all pitching values were 0 — batter on bench, or reliever with no projection
-                                print(f"      ℹ {player_name}: non-zero raw stats but 0 pitching pts ({day_str}), raw={dict(list(raw_stats.items())[:6])}")
+
+                        if points == 0.0:
+                            # Log zero so we can distinguish "no start" from API errors
+                            print(f"      ℹ {player_name}: 0 pts on {day_str} (no projected start or not an SP)")
 
                         if points > 0:
                             team_boost += points
@@ -4193,9 +4212,8 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
                                 "projected_points": round(points, 2)
                             })
 
-                except Exception as e:
-                    print(f"    ⚠ Could not fetch {team_name} bench for {day_str}: {e}")
-                    continue
+                    except Exception as e:
+                        print(f"    ⚠ Could not fetch stats for {player_name} on {day_str}: {e}")
 
             bench_boost[team_key] = round(team_boost, 2)
             if team_details:
