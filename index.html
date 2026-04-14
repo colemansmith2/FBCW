@@ -55828,10 +55828,14 @@
                 oppBenchBoost: benchBoost[matchup.team1_key] || 0,
               });
 
+              // Add bench pitcher boost to O/U projections (bench SPs who will start during the week)
+              const adjProj1 = proj1 + (benchBoost[matchup.team1_key] || 0);
+              const adjProj2 = proj2 + (benchBoost[matchup.team2_key] || 0);
+
               // Calculate individual O/U odds (slight juice both ways)
-              const proj1Line = Math.round(proj1 * 2) / 2; // round to nearest 0.5
-              const proj2Line = Math.round(proj2 * 2) / 2;
-              const matchupTotal = Math.round((proj1 + proj2) * 2) / 2;
+              const proj1Line = Math.round(adjProj1 * 2) / 2; // round to nearest 0.5
+              const proj2Line = Math.round(adjProj2 * 2) / 2;
+              const matchupTotal = Math.round((adjProj1 + adjProj2) * 2) / 2;
 
               // Escape names for data attributes
               const t1Name = team1.name.replace(/"/g, '&quot;');
@@ -55878,7 +55882,7 @@
                                          data-odds="-110"
                                          data-opponent-key="${matchup.team2_key}"
                                          onclick="event.stopPropagation(); handleMatchupBetClick(this)">▲</div>
-                                    <div class="matchup-ou-proj">${proj1.toFixed(1)}</div>
+                                    <div class="matchup-ou-proj">${adjProj1.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
                                          data-bet-type="ou_under_${matchup.team1_key}_w${selectedWeek}"
                                          data-team-key="${matchup.team1_key}"
@@ -55916,7 +55920,7 @@
                                          data-odds="-110"
                                          data-opponent-key="${matchup.team1_key}"
                                          onclick="event.stopPropagation(); handleMatchupBetClick(this)">▲</div>
-                                    <div class="matchup-ou-proj">${proj2.toFixed(1)}</div>
+                                    <div class="matchup-ou-proj">${adjProj2.toFixed(1)}</div>
                                     <div class="matchup-ou-btn under"
                                          data-bet-type="ou_under_${matchup.team2_key}_w${selectedWeek}"
                                          data-team-key="${matchup.team2_key}"
