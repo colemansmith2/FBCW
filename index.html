@@ -26,6 +26,17 @@
         /* Ensure this path matches your file */
       }
 
+      @font-face {
+        font-family: "Clarendon LT Pro";
+        src: url("data/fonts/ClarendonLTProBold.otf") format("opentype");
+        font-weight: bold;
+      }
+
+      @font-face {
+        font-family: "Synchro";
+        src: url("data/fonts/synchroplain.ttf") format("truetype");
+      }
+
       /* 2. Apply Basis33 to everything by default */
       body {
         font-family: "Basis33", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -20410,13 +20421,143 @@
       /* Home Header with Green Monster */
       .home-header {
         display: flex;
-        align-items: center;
+        align-items: flex-end;
         justify-content: space-between;
         margin-bottom: 1rem;
+        gap: 0.5rem;
       }
 
       .home-header h2 {
         margin: 0;
+      }
+
+      /* ===== WRIGLEY FIELD SIGN ===== */
+      .wrigley-sign {
+        flex-shrink: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        user-select: none;
+        margin-left: -22px;
+      }
+
+      .wrigley-board {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: fit-content;
+        position: relative;
+        padding: 0;
+        box-sizing: border-box;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.34));
+      }
+
+      .wrigley-board::before {
+        content: none;
+      }
+
+      .wrigley-top-svg {
+        display: block;
+        width: 236px;
+        height: 78px;
+        margin: 0;
+      }
+
+      .wrigley-marquee {
+        background: #0c0c0c;
+        width: 188px;
+        margin-top: -8px;
+        border: 3px solid #f0e8d0;
+        border-top: 2px solid #4a0e16;
+        border-radius: 0 0 8px 8px;
+        padding: 5px 8px 4px;
+        text-align: center;
+        font-family: 'Synchro', 'Courier New', monospace;
+        font-size: 0.88rem;
+        font-weight: normal;
+        color: #ffcc44;
+        letter-spacing: 4px;
+        text-shadow: 0 0 8px #ffaa00, 0 0 20px #ff8800, 0 0 4px #fff8e0;
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,0.08),
+          inset 0 8px 18px rgba(255, 204, 68, 0.06),
+          0 2px 6px rgba(0,0,0,0.3);
+        box-sizing: border-box;
+        line-height: 1;
+      }
+
+      /* ===== COMISKEY PINWHEELS ===== */
+      .pinwheels-area {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        padding-top: 8px;       /* breathing room so heads aren't clipped */
+      }
+
+      .pinwheel-unit {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-shrink: 0;
+        width: 44px;
+      }
+
+      .pinwheel-head {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        overflow: hidden;
+        border: 2.5px solid var(--pw-color, #888);
+        box-shadow: 0 0 8px var(--pw-color, #888), 0 0 3px rgba(0,0,0,0.5);
+        box-sizing: border-box;
+      }
+
+      .pinwheel-stem {
+        width: 6px;
+        height: var(--stem-h, 50px);
+        background: linear-gradient(
+          90deg,
+          rgba(255,255,255,0.15) 0%,
+          var(--pw-color, #888) 35%,
+          rgba(255,255,255,0.2) 65%,
+          var(--pw-color, #888) 100%
+        );
+        border-radius: 3px;
+        box-shadow: 0 0 6px var(--pw-color, #888), 0 2px 4px rgba(0,0,0,0.4);
+      }
+
+      @keyframes pinwheel-spin {
+        from { transform: rotate(0deg); }
+        to   { transform: rotate(360deg); }
+      }
+
+      @media (max-width: 768px) {
+        .home-header {
+          align-items: center;
+          justify-content: space-between;
+          gap: 0.6rem;
+        }
+
+        .wrigley-sign {
+          display: flex;
+          align-items: flex-start;
+          transform: translateY(6px);
+        }
+
+        .wrigley-top-svg {
+          width: 188px;
+          height: 62px;
+        }
+
+        .wrigley-marquee {
+          display: none;
+        }
+
+        .pinwheels-area { display: none; }
       }
 
       /* Green Monster Top Scoring Day Ticker */
@@ -20536,11 +20677,19 @@
           flex-direction: row;
           align-items: center;
           justify-content: space-between;
+          gap: 0.5rem;
+          margin-bottom: 0.75rem;
+        }
+
+        .wrigley-top-svg {
+          width: 176px;
+          height: 58px;
         }
 
         .green-monster-ticker {
           position: static;
           gap: 0.4rem;
+          margin-left: auto;
         }
 
         .green-monster-label {
@@ -22916,7 +23065,99 @@
       <!-- Homepage Section -->
       <div id="home" class="section active">
         <div class="home-header">
-          <h2>Home</h2>
+
+          <!-- Wrigley Field Sign (desktop only) -->
+          <div class="wrigley-sign" id="wrigley-sign">
+            <div class="wrigley-board">
+              <svg class="wrigley-top-svg" viewBox="0 0 236 78" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <linearGradient id="wf-red" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#df2340"/>
+                    <stop offset="52%" stop-color="#cf1d37"/>
+                    <stop offset="100%" stop-color="#b9142e"/>
+                  </linearGradient>
+                  <linearGradient id="wf-red-gloss" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="rgba(255,255,255,0.24)"/>
+                    <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+                  </linearGradient>
+                  <path id="wf-arc" d="M 42 36 Q 118 17 194 36"/>
+                </defs>
+
+                <path
+                  d="M25 66V37c0-5 4-9 9-9h3v-5c0-5 4-9 9-9h8c10-9 31-14 64-14s54 5 64 14h8c5 0 9 4 9 9v5h3c5 0 9 4 9 9v29Z"
+                  fill="url(#wf-red)"
+                  stroke="#f4ead2"
+                  stroke-width="4"
+                  stroke-linejoin="round"
+                />
+
+                <path
+                  d="M31 62V38c0-3 3-6 6-6h6V24c0-3 2-5 5-5h9c9-8 28-12 61-12s52 4 61 12h9c3 0 5 2 5 5v8h6c3 0 6 3 6 6v24Z"
+                  fill="none"
+                  stroke="#f4ead2"
+                  stroke-width="1.8"
+                  opacity="0.92"
+                />
+                <path
+                  d="M36 58V39c0-2 2-4 4-4h9V26c0-2 2-4 4-4h10c8-6 25-10 55-10s47 4 55 10h10c2 0 4 2 4 4v9h9c2 0 4 2 4 4v19Z"
+                  fill="none"
+                  stroke="#f4ead2"
+                  stroke-width="0.9"
+                  opacity="0.42"
+                />
+
+                <path d="M45 18c10-11 34-17 73-17s63 6 73 17" fill="none" stroke="#f4ead2" stroke-width="2" opacity="0.94"/>
+                <path d="M53 20c10-8 31-13 65-13s55 5 65 13" fill="none" stroke="#f4ead2" stroke-width="0.8" opacity="0.38"/>
+
+                <path d="M25 66V37c0-5 4-9 9-9h3v-5c0-5 4-9 9-9h8" fill="none" stroke="#f4ead2" stroke-width="2.8"/>
+                <path d="M211 66V37c0-5-4-9-9-9h-3v-5c0-5-4-9-9-9h-8" fill="none" stroke="#f4ead2" stroke-width="2.8"/>
+
+                <path d="M36 58h164" fill="none" stroke="#f4ead2" stroke-width="1.2" opacity="0.72"/>
+                <path d="M36 62h164" fill="none" stroke="#f4ead2" stroke-width="0.7" opacity="0.38"/>
+
+                <path d="M46 17v18" fill="none" stroke="#f4ead2" stroke-width="1.8"/>
+                <path d="M190 17v18" fill="none" stroke="#f4ead2" stroke-width="1.8"/>
+                <circle cx="46" cy="17" r="4.2" fill="#cf1d37" stroke="#f4ead2" stroke-width="1.8"/>
+                <circle cx="190" cy="17" r="4.2" fill="#cf1d37" stroke="#f4ead2" stroke-width="1.8"/>
+                <circle cx="34" cy="32" r="5.5" fill="#cf1d37" stroke="#f4ead2" stroke-width="1.8"/>
+                <circle cx="202" cy="32" r="5.5" fill="#cf1d37" stroke="#f4ead2" stroke-width="1.8"/>
+                <circle cx="34" cy="32" r="1.8" fill="#f4ead2"/>
+                <circle cx="202" cy="32" r="1.8" fill="#f4ead2"/>
+
+                <path d="M61 15h114" fill="none" stroke="#f4ead2" stroke-width="1.5" opacity="0.75"/>
+                <path d="M69 41h98" fill="none" stroke="#f4ead2" stroke-width="1" opacity="0.6"/>
+
+                <rect x="34" y="10" width="168" height="22" fill="url(#wf-red-gloss)" opacity="0.34"/>
+
+                <text font-family="'Clarendon LT Pro', serif"
+                      font-size="15"
+                      font-weight="700"
+                      fill="#f4ead2"
+                      letter-spacing="0.2">
+                  <textPath href="#wf-arc" startOffset="50%" text-anchor="middle">Fantasy Baseball</textPath>
+                </text>
+
+                <text x="118" y="39" text-anchor="middle"
+                      font-family="'Clarendon LT Pro', serif"
+                      font-weight="700"
+                      font-size="8.5"
+                      fill="#f4ead2"
+                      letter-spacing="3.3">HOME OF</text>
+
+                <text x="118" y="53" text-anchor="middle"
+                      font-family="'Clarendon LT Pro', serif"
+                      font-weight="700"
+                      font-size="17.5"
+                      fill="#f4ead2"
+                      letter-spacing="0.85">CIVIL WAR IX</text>
+              </svg>
+            </div>
+            <div class="wrigley-marquee" id="wrigley-date-display"></div>
+          </div>
+
+          <!-- Comiskey Park Pinwheels (desktop only) -->
+          <div class="pinwheels-area" id="comiskey-pinwheels"></div>
+
           <!-- Green Monster Top Scoring Day -->
           <div
             class="green-monster-ticker"
@@ -57125,8 +57366,89 @@
         });
       }
 
+      // ===== WRIGLEY DATE DISPLAY =====
+      function updateWrigleyDate() {
+        const el = document.getElementById('wrigley-date-display');
+        if (!el) return;
+        const d = new Date();
+        const days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        el.textContent = `${days[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}`.toUpperCase();
+      }
+
+      // ===== COMISKEY PINWHEELS =====
+      function renderPinwheels() {
+        const container = document.getElementById('comiskey-pinwheels');
+        if (!container) return;
+        // getBoundingClientRect gives sub-pixel accuracy; subtract a small
+        // safety margin so a late font-load reflow never causes an overhang
+        const width = container.getBoundingClientRect().width - 4;
+        if (width <= 0) return;
+
+        const slotW  = 44;                                              // px per pinwheel slot
+        // Only render full wheels; justify-content:center keeps them centred
+        const count  = Math.floor(width / slotW);
+        if (count <= 0) return;
+
+        // Colors & stem heights cycle every 7 (symmetric arch: low→high→low)
+        const colors  = ['#1a7fff','#dd2222','#22cc44','#ffcc00','#22cc44','#dd2222','#1a7fff'];
+        const heights = [10, 16, 24, 34, 24, 16, 10];                    // stem px (taller)
+
+        const makeSvg = (color, delayS) => `
+          <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"
+               style="display:block;width:100%;height:100%;">
+            <circle cx="30" cy="30" r="28" fill="#111" stroke="${color}" stroke-width="2"/>
+            <g style="transform-box:fill-box;transform-origin:center;
+                      animation:pinwheel-spin 3.5s linear ${delayS}s infinite;">
+              <path d="M30,30 Q24,5 40,5 Q57,12 53,30 Z"
+                    fill="${color}" opacity="0.95"/>
+              <path d="M30,30 Q24,5 40,5 Q57,12 53,30 Z"
+                    transform="rotate(60,30,30)" fill="white" opacity="0.8"/>
+              <path d="M30,30 Q24,5 40,5 Q57,12 53,30 Z"
+                    transform="rotate(120,30,30)" fill="${color}" opacity="0.95"/>
+              <path d="M30,30 Q24,5 40,5 Q57,12 53,30 Z"
+                    transform="rotate(180,30,30)" fill="white" opacity="0.8"/>
+              <path d="M30,30 Q24,5 40,5 Q57,12 53,30 Z"
+                    transform="rotate(240,30,30)" fill="${color}" opacity="0.95"/>
+              <path d="M30,30 Q24,5 40,5 Q57,12 53,30 Z"
+                    transform="rotate(300,30,30)" fill="white" opacity="0.8"/>
+            </g>
+            <circle cx="30" cy="30" r="4" fill="${color}" stroke="white" stroke-width="1.5"/>
+          </svg>`;
+
+        let html = '';
+        for (let i = 0; i < count; i++) {
+          const ci    = i % 7;
+          const color = colors[ci];
+          const h     = heights[ci];
+          const delay = -((i % 7) * (3.5 / 7)).toFixed(2); // stagger so they don't all sync
+          html += `
+            <div class="pinwheel-unit">
+              <div class="pinwheel-head" style="--pw-color:${color};">
+                ${makeSvg(color, delay)}
+              </div>
+              <div class="pinwheel-stem" style="--pw-color:${color};--stem-h:${h}px;"></div>
+            </div>`;
+        }
+        container.innerHTML = html;
+      }
+
       async function loadHomepageData() {
         if (homepageDataLoaded) return;
+
+        // Kick off header elements immediately (no async needed)
+        updateWrigleyDate();
+        // Defer pinwheel render until the container has a real width
+        requestAnimationFrame(() => {
+          renderPinwheels();
+          window.addEventListener('resize', renderPinwheels, { passive: true });
+          // Re-render if the container changes size (e.g. after font-load reflow
+          // makes the Wrigley sign wider and shrinks the pinwheel area)
+          const pwContainer = document.getElementById('comiskey-pinwheels');
+          if (pwContainer && typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(renderPinwheels).observe(pwContainer);
+          }
+        });
 
         try {
           // Load teams data
