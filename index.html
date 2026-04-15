@@ -14097,6 +14097,7 @@
 
       .matchup-detail-team {
         text-align: center;
+        flex: 1;
       }
 
       .matchup-detail-team img {
@@ -56003,7 +56004,7 @@
         let proj1 = 0, proj2 = 0;
         let score1 = 0, score2 = 0;
         try {
-          const { matchupsByWeek, weeklyProjections } =
+          const { matchupsByWeek, weeklyProjections, benchPitcherData } =
             await loadSportsbookWeeklySources();
           const matchup = findWeeklyMatchup(matchupsByWeek, week, team1Key, team2Key);
           const weekKey = String(week);
@@ -56023,6 +56024,13 @@
               0,
           ) || 0;
 
+          // Apply bench pitcher boost (projected starts) when available for this week
+          if (benchPitcherData && Number(benchPitcherData.current_week) === week) {
+            const benchBoost = benchPitcherData.bench_boost || {};
+            proj1 += benchBoost[team1Key] || 0;
+            proj2 += benchBoost[team2Key] || 0;
+          }
+
           if (matchup) {
             if (matchup.team1_key === team1Key) {
               score1 = Number(matchup.team1_score ?? 0) || 0;
@@ -56034,31 +56042,25 @@
           }
         } catch (e) { /* ignore */ }
 
-        // Load rosters for top players
+        // Load YTD player stats for top players (actual season points)
         let t1Players = [], t2Players = [];
         try {
-          const rosterResp = await fetch('data/current_season/rosters.json');
-          if (rosterResp.ok) {
-            const rostersData = await rosterResp.json();
-            const enrichRoster = (players) => {
-              if (!Array.isArray(players)) return [];
-              return players.map(p => {
-                const nameRaw = (p.name || '').toLowerCase().trim();
-                const nameNorm = nameRaw.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-                const posType = p.position_type === 'P' ? 'pitcher' : 'batter';
-                const match = averageProjectionsMap[`${nameRaw}|${posType}`] || averageProjectionsMap[nameRaw] ||
-                  averageProjectionsMap[`${nameNorm}|${posType}`] || averageProjectionsMap[nameNorm] || {};
-                return {
-                  name: p.name,
-                  position: p.primary_position || p.display_position || '',
-                  headshot: p.headshot_url || match.headshot || '',
-                  points: match.avgPoints || p.projected_points || 0,
-                  mlb_team: p.editorial_team_abbr || match.mlb_team || '',
-                };
-              }).sort((a, b) => b.points - a.points);
-            };
-            t1Players = enrichRoster(rostersData[team1Key]);
-            t2Players = enrichRoster(rostersData[team2Key]);
+          const statsResp = await fetch('data/current_season/player_stats_windows.json');
+          if (statsResp.ok) {
+            const statsData = await statsResp.json();
+            const ytdPlayers = statsData?.windows?.ytd?.players || [];
+            const mapPlayers = (teamKey) => ytdPlayers
+              .filter(p => p.team_key === teamKey)
+              .map(p => ({
+                name: p.name,
+                position: p.primary_position || (p.eligible_positions || [])[0] || '',
+                headshot: p.headshot_url || '',
+                points: p.fantasy_points || 0,
+                mlb_team: p.mlb_team || '',
+              }))
+              .sort((a, b) => b.points - a.points);
+            t1Players = mapPlayers(team1Key);
+            t2Players = mapPlayers(team2Key);
           }
         } catch (e) { /* ignore */ }
 
