@@ -37,6 +37,11 @@
         src: url("data/fonts/synchroplain.ttf") format("truetype");
       }
 
+      @font-face {
+        font-family: "CF Green Monster";
+        src: url("data/fonts/CFGreenMonster-Regular.ttf") format("truetype");
+      }
+
       /* 2. Apply Basis33 to everything by default */
       body {
         font-family: "Basis33", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -20421,10 +20426,11 @@
       /* Home Header with Green Monster */
       .home-header {
         display: flex;
-        align-items: flex-end;
+        align-items: stretch;
         justify-content: space-between;
+        margin-top: -1rem;
         margin-bottom: 1rem;
-        gap: 0.5rem;
+        gap: 0;
       }
 
       .home-header h2 {
@@ -20433,12 +20439,16 @@
 
       /* ===== WRIGLEY FIELD SIGN ===== */
       .wrigley-sign {
-        flex-shrink: 0;
+        flex: 0 0 236px;
+        width: 236px;
+        margin-left: -25px;
+        margin-right: -22px;
+        padding-top: 0.75rem;
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: flex-end;
         user-select: none;
-        margin-left: -22px;
       }
 
       .wrigley-board {
@@ -20495,6 +20505,13 @@
         align-items: flex-end;
         justify-content: center;
         padding-top: 8px;       /* breathing room so heads aren't clipped */
+      }
+
+      .pinwheel-track {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        flex: 0 0 auto;
       }
 
       .pinwheel-unit {
@@ -20562,17 +20579,28 @@
 
       /* Green Monster Top Scoring Day Ticker */
       .green-monster-ticker {
+        flex: 0 0 auto;
+        width: auto;
         display: flex;
+        align-items: flex-end;
+        justify-content: center;
+      }
+
+      .green-monster-column {
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 0.6rem;
+        gap: 0.4rem;
       }
 
       .green-monster-label {
         color: #3d6b2a;
-        font-size: 0.7rem;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 0.6rem;
         font-weight: 700;
-        line-height: 1.2;
-        text-align: right;
+        line-height: 1.35;
+        text-align: center;
+        letter-spacing: 0.02em;
       }
 
       .green-monster-display {
@@ -20582,15 +20610,15 @@
         /* Authentic Green Monster faded green - weathered look */
         background: #4a7c3f;
         border-radius: 6px;
-        padding: 0.4rem 0.6rem;
+        padding: 0.6rem 0.7rem;
         box-shadow:
           inset 0 1px 2px rgba(0, 0, 0, 0.2),
           0 2px 6px rgba(0, 0, 0, 0.25);
       }
 
       .green-monster-logo {
-        width: 32px;
-        height: 32px;
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
         object-fit: cover;
         border: 2px solid rgba(255, 255, 255, 0.4);
@@ -20619,7 +20647,7 @@
 
       /* Individual number tiles - like the interchangeable plates on the Monster */
       .monster-digit {
-        font-family: "Basis33", "Arial Black", sans-serif;
+        font-family: "CF Green Monster", "Basis33", "Arial Black", sans-serif;
         font-weight: 900;
         color: #f5f5f0;
         text-align: center;
@@ -20639,7 +20667,7 @@
 
       /* Date digits - same size as score digits for alignment */
       .monster-digit.date-digit {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         min-width: 16px;
         padding: 3px 4px;
         line-height: 1;
@@ -20650,13 +20678,13 @@
         box-shadow: none;
         min-width: auto;
         padding: 0 1px;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         align-self: flex-end;
         margin-bottom: 2px;
       }
 
       .monster-digit.score-digit {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         min-width: 16px;
         padding: 3px 4px;
         line-height: 1;
@@ -20667,7 +20695,7 @@
         box-shadow: none;
         min-width: auto;
         padding: 0 1px;
-        font-size: 0.9rem;
+        font-size: 0.95rem;
         align-self: flex-end;
         margin-bottom: 2px;
       }
@@ -23125,8 +23153,6 @@
                 <circle cx="202" cy="32" r="1.8" fill="#f4ead2"/>
 
                 <path d="M61 15h114" fill="none" stroke="#f4ead2" stroke-width="1.5" opacity="0.75"/>
-                <path d="M69 41h98" fill="none" stroke="#f4ead2" stroke-width="1" opacity="0.6"/>
-
                 <rect x="34" y="10" width="168" height="22" fill="url(#wf-red-gloss)" opacity="0.34"/>
 
                 <text font-family="'Clarendon LT Pro', serif"
@@ -23134,7 +23160,7 @@
                       font-weight="700"
                       fill="#f4ead2"
                       letter-spacing="0.2">
-                  <textPath href="#wf-arc" startOffset="50%" text-anchor="middle">Fantasy Baseball</textPath>
+                  <textPath href="#wf-arc" startOffset="50%" text-anchor="middle" dy="7">Fantasy Baseball</textPath>
                 </text>
 
                 <text x="118" y="39" text-anchor="middle"
@@ -23164,17 +23190,19 @@
             id="green-monster-ticker"
             style="display: none"
           >
-            <span class="green-monster-label">2026 Top<br />Scoring Day</span>
-            <div class="green-monster-display">
-              <img
-                class="green-monster-logo"
-                id="green-monster-logo"
-                src="league_logo.png"
-                alt=""
-              />
-              <div class="green-monster-scoreboard">
-                <div class="green-monster-date" id="green-monster-date"></div>
-                <div class="green-monster-score" id="green-monster-score"></div>
+            <div class="green-monster-column">
+              <span class="green-monster-label">2026 Top<br />Scoring Day</span>
+              <div class="green-monster-display">
+                <img
+                  class="green-monster-logo"
+                  id="green-monster-logo"
+                  src="league_logo.png"
+                  alt=""
+                />
+                <div class="green-monster-scoreboard">
+                  <div class="green-monster-date" id="green-monster-date"></div>
+                  <div class="green-monster-score" id="green-monster-score"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -57380,19 +57408,24 @@
       function renderPinwheels() {
         const container = document.getElementById('comiskey-pinwheels');
         if (!container) return;
-        // getBoundingClientRect gives sub-pixel accuracy; subtract a small
-        // safety margin so a late font-load reflow never causes an overhang
-        const width = container.getBoundingClientRect().width - 4;
-        if (width <= 0) return;
+        const width = Math.floor(container.getBoundingClientRect().width);
+        if (width <= 0) {
+          container.innerHTML = '';
+          return;
+        }
 
         const slotW  = 44;                                              // px per pinwheel slot
-        // Only render full wheels; justify-content:center keeps them centred
+        // Only render full wheels, then center the exact-width track.
         const count  = Math.floor(width / slotW);
-        if (count <= 0) return;
+        if (count <= 0) {
+          container.innerHTML = '';
+          return;
+        }
+        const trackWidth = count * slotW;
 
         // Colors & stem heights cycle every 7 (symmetric arch: low→high→low)
         const colors  = ['#1a7fff','#dd2222','#22cc44','#ffcc00','#22cc44','#dd2222','#1a7fff'];
-        const heights = [10, 16, 24, 34, 24, 16, 10];                    // stem px (taller)
+        const heights = [18, 34, 52, 72, 52, 34, 18];                    // stem px — max matches sign height
 
         const makeSvg = (color, delayS) => `
           <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"
@@ -57430,7 +57463,7 @@
               <div class="pinwheel-stem" style="--pw-color:${color};--stem-h:${h}px;"></div>
             </div>`;
         }
-        container.innerHTML = html;
+        container.innerHTML = `<div class="pinwheel-track" style="width:${trackWidth}px">${html}</div>`;
       }
 
       async function loadHomepageData() {
@@ -57837,22 +57870,23 @@
 
         try {
           // Load roster data for the week
-          const [rosterData, transactionData, scoringSettings, playerDailyData] =
+          const [rosterData, transactionData, scoringSettings, playerDailyData, benchPitcherData] =
             await Promise.all([
               loadWeekRosterData(matchup.week),
               loadWeekTransactionData(matchup.week),
               loadCurrentScoringSettings(),
               loadPlayerDailyStats(),
+              loadBenchPitcherProjections(),
             ]);
 
           if (rosterData) {
             // Season is active - show actual stats
             body.innerHTML = `
                         <div class="matchup-popup-team-section">
-                            ${renderTeamPopupSection(matchup.team1, rosterData, transactionData, matchup.week, playerDailyData, scoringSettings, dailyData)}
+                            ${renderTeamPopupSection(matchup.team1, rosterData, transactionData, matchup.week, playerDailyData, scoringSettings, dailyData, benchPitcherData)}
                         </div>
                         <div class="matchup-popup-team-section">
-                            ${renderTeamPopupSection(matchup.team2, rosterData, transactionData, matchup.week, playerDailyData, scoringSettings, dailyData)}
+                            ${renderTeamPopupSection(matchup.team2, rosterData, transactionData, matchup.week, playerDailyData, scoringSettings, dailyData, benchPitcherData)}
                         </div>
                     `;
           } else {
@@ -57870,16 +57904,12 @@
               team2Players = await getKeeperPlayersWithAvgProjections(
                 matchup.team2.team_key, matchup.team2.manager);
             }
-
-            // Load transactions for streams/adds display
-            const transactionData = await loadWeekTransactionData(matchup.week);
-
             body.innerHTML = `
                         <div class="matchup-popup-team-section">
-                            ${renderTeamPopupSectionProjected(matchup.team1, team1Players, transactionData)}
+                            ${renderTeamPopupSectionProjected(matchup.team1, team1Players, transactionData, matchup.week, playerDailyData, dailyData, benchPitcherData)}
                         </div>
                         <div class="matchup-popup-team-section">
-                            ${renderTeamPopupSectionProjected(matchup.team2, team2Players, transactionData)}
+                            ${renderTeamPopupSectionProjected(matchup.team2, team2Players, transactionData, matchup.week, playerDailyData, dailyData, benchPitcherData)}
                         </div>
                     `;
           }
@@ -57976,6 +58006,21 @@
         return null;
       }
 
+      let benchPitcherProjectionsData = undefined;
+      async function loadBenchPitcherProjections() {
+        if (benchPitcherProjectionsData !== undefined) {
+          return benchPitcherProjectionsData;
+        }
+        try {
+          const response = await fetch("data/current_season/bench_pitcher_projections.json");
+          benchPitcherProjectionsData = response.ok ? await response.json() : null;
+        } catch (e) {
+          console.log("Could not load bench pitcher projections");
+          benchPitcherProjectionsData = null;
+        }
+        return benchPitcherProjectionsData;
+      }
+
       function normalizePlayerLookupName(name) {
         return (name || "")
           .toLowerCase()
@@ -58008,11 +58053,11 @@
         );
       }
 
-      function isStreamerPosition(position) {
+      function isPitcherPosition(position) {
         return String(position || "")
           .split(/[,\/]/)
           .map((part) => part.trim().toUpperCase())
-          .includes("SP");
+          .some((part) => ["SP", "RP", "P"].includes(part));
       }
 
       function calculateDailyPitchingFantasyPoints(stats, scoringSettings) {
@@ -58102,22 +58147,107 @@
         );
       }
 
-      // Check if a pitcher actually has MLB pitching activity during the week.
-      // Returns false if the player isn't in the daily stats at all (e.g. minor leaguer)
-      // or has no pitching stats for any date in the week.
-      function didPitcherPlayInWeek(playerName, week, dailyStatsData, dailyData) {
-        if (!dailyStatsData) return true; // no data to check, assume yes
+      function getWeekDateSet(week, dailyData, benchPitcherData) {
+        const weekDates = getWeekDates(week, dailyData);
+        if (weekDates.length > 0) {
+          return new Set(weekDates);
+        }
+
+        if (
+          benchPitcherData &&
+          Number(benchPitcherData.current_week) === Number(week) &&
+          benchPitcherData.week_start &&
+          benchPitcherData.week_end
+        ) {
+          const dates = new Set();
+          const current = new Date(`${benchPitcherData.week_start}T00:00:00`);
+          const end = new Date(`${benchPitcherData.week_end}T00:00:00`);
+          while (!Number.isNaN(current.getTime()) && current <= end) {
+            dates.add(current.toISOString().slice(0, 10));
+            current.setDate(current.getDate() + 1);
+          }
+          return dates;
+        }
+
+        return new Set();
+      }
+
+      // Check if a pitcher actually made an MLB start during the week.
+      function didPitcherStartInWeek(playerName, week, dailyStatsData, dailyData) {
+        if (!dailyStatsData) return false;
         const profile = findPlayerDailyProfile(playerName, dailyStatsData);
-        if (!profile?.playerId) return false; // not in MLB daily stats at all
-        if (!profile.has_pitching_stats) return false; // never pitched this season
+        if (!profile?.playerId || !profile.has_pitching_stats) return false;
 
         const weekDates = getWeekDates(week, dailyData);
-        if (weekDates.length === 0) return true; // can't determine dates, assume yes
+        if (weekDates.length === 0) return false;
 
         return weekDates.some((date) => {
           const playerDay = dailyStatsData?.dates?.[date]?.players?.[profile.playerId];
-          return playerDay?.pitching && Number(playerDay.pitching.G || 0) > 0;
+          return Number(playerDay?.pitching?.GS || 0) > 0;
         });
+      }
+
+      function isPitcherProjectedToStartInWeek(
+        playerName,
+        teamKey,
+        week,
+        dailyData,
+        benchPitcherData,
+      ) {
+        if (
+          !benchPitcherData ||
+          Number(benchPitcherData.current_week) !== Number(week)
+        ) {
+          return false;
+        }
+
+        const target = normalizePlayerLookupName(playerName);
+        if (!target) return false;
+
+        const weekDates = getWeekDateSet(week, dailyData, benchPitcherData);
+        const isInWeek = (dateStr) => weekDates.size === 0 || weekDates.has(dateStr);
+
+        const probableByDay = benchPitcherData.probable_starters_by_day || {};
+        for (const [dateStr, names] of Object.entries(probableByDay)) {
+          if (!isInWeek(dateStr) || !Array.isArray(names)) continue;
+          if (
+            names.some((name) => normalizePlayerLookupName(name) === target)
+          ) {
+            return true;
+          }
+        }
+
+        // Backward-compatible fallback for existing files that only include
+        // team-level bench starter details.
+        const teamDetails = benchPitcherData?.bench_details?.[teamKey] || [];
+        return teamDetails.some(
+          (detail) =>
+            isInWeek(detail?.date) &&
+            normalizePlayerLookupName(detail?.name) === target,
+        );
+      }
+
+      function isAddedPitcherStream(
+        position,
+        playerName,
+        teamKey,
+        week,
+        dailyStatsData,
+        dailyData,
+        benchPitcherData,
+      ) {
+        if (!isPitcherPosition(position)) return false;
+
+        return (
+          didPitcherStartInWeek(playerName, week, dailyStatsData, dailyData) ||
+          isPitcherProjectedToStartInWeek(
+            playerName,
+            teamKey,
+            week,
+            dailyData,
+            benchPitcherData,
+          )
+        );
       }
 
       function findPlayerDailyProfile(playerName, dailyStatsData) {
@@ -58185,6 +58315,7 @@
         dailyStatsData,
         scoringSettings,
         dailyData,
+        benchPitcherData,
       ) {
         // Get roster for this team
         let teamRoster = [];
@@ -58214,7 +58345,7 @@
             })
           : [];
 
-        // Count streams (SP adds) and regular adds
+        // Count streams (pitcher adds with actual or projected starts this week)
         let streamCount = 0;
         let regularAddCount = 0;
         const addedPlayers = [];
@@ -58226,8 +58357,15 @@
               const pos = p.position || "";
               const displayPos = getPrimaryPositionFromString(pos);
               const playerName = p.player_name || p.name || "";
-              // Only count as stream if SP-eligible AND actually pitched in MLB this week
-              const isStream = isStreamerPosition(pos) && didPitcherPlayInWeek(playerName, week, dailyStatsData, dailyData);
+              const isStream = isAddedPitcherStream(
+                pos,
+                playerName,
+                team.team_key,
+                week,
+                dailyStatsData,
+                dailyData,
+                benchPitcherData,
+              );
               if (isStream) {
                 streamCount++;
               } else {
@@ -58608,7 +58746,15 @@
       }
 
       // Render team section for preseason - shows top projected keepers
-      function renderTeamPopupSectionProjected(team, players, transactionData) {
+      function renderTeamPopupSectionProjected(
+        team,
+        players,
+        transactionData,
+        week,
+        dailyStatsData,
+        dailyData,
+        benchPitcherData,
+      ) {
         const batters = players
           .filter(
             (p) =>
@@ -58646,7 +58792,15 @@
             if (p.destination_team_key === team.team_key && p.transaction_type === "add") {
               const pos = p.position || "";
               const displayPos = getPrimaryPositionFromString(pos);
-              const isStream = isStreamerPosition(pos);
+              const isStream = isAddedPitcherStream(
+                pos,
+                p.player_name || p.name || "",
+                team.team_key,
+                week,
+                dailyStatsData,
+                dailyData,
+                benchPitcherData,
+              );
               if (isStream) {
                 streamCount++;
               } else {
