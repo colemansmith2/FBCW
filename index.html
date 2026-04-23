@@ -954,6 +954,7 @@
         display: none;
         max-height: 300px;
         overflow-y: auto;
+        max-width: calc(100vw - 1rem);
       }
 
       .week-dropdown.active {
@@ -8192,12 +8193,29 @@
         z-index: 1;
       }
 
-      .stats-heatmap-table th:first-child,
-      .stats-heatmap-table th:nth-child(2) {
-        text-align: left;
+      .stats-heatmap-table th:first-child {
+        text-align: center;
         position: sticky;
         left: 0;
-        z-index: 2;
+        z-index: 3;
+        background: var(--retro-blue);
+        width: 36px;
+        min-width: 36px;
+      }
+
+      .stats-heatmap-table th:nth-child(2) {
+        position: sticky;
+        left: 36px;
+        z-index: 3;
+        background: var(--retro-blue);
+        width: 40px;
+        min-width: 40px;
+        max-width: 40px;
+        padding: 0.6rem 0.2rem;
+      }
+
+      .stats-heatmap-table th:nth-child(3) {
+        text-align: left;
       }
 
       .stats-heatmap-table td {
@@ -8210,11 +8228,30 @@
         text-align: center;
         font-weight: 700;
         color: var(--retro-blue);
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: white;
       }
 
       .stats-heatmap-table td:nth-child(2) {
+        position: sticky;
+        left: 36px;
+        z-index: 1;
+        background: white;
+        padding: 0.5rem 0.2rem;
+        text-align: center;
+      }
+
+      .stats-heatmap-table td:nth-child(3) {
         text-align: left;
         white-space: nowrap;
+        transition: opacity 0.2s ease;
+      }
+
+      .stats-heatmap-table tbody tr:hover td:first-child,
+      .stats-heatmap-table tbody tr:hover td:nth-child(2) {
+        background: rgba(42, 82, 152, 0.05);
       }
 
       .stats-heatmap-table tbody tr:hover {
@@ -20720,9 +20757,16 @@
           margin-left: auto;
         }
 
+        .green-monster-column {
+          flex-direction: row;
+          align-items: center;
+          gap: 0.5rem;
+        }
+
         .green-monster-label {
-          font-size: 0.55rem;
-          line-height: 1.1;
+          font-size: 0.5rem;
+          line-height: 1.2;
+          text-align: right;
         }
 
         .green-monster-display {
@@ -21052,6 +21096,10 @@
         padding-left: 0.75rem;
         width: 160px;
         min-width: 140px;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        background: #234a31;
       }
 
       .scoreboard-innings-table thead th.total-col {
@@ -21080,6 +21128,10 @@
         text-align: left;
         padding: 0.4rem 0.75rem;
         border-left: none;
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: #234a31;
       }
 
       .scoreboard-team-info {
@@ -32682,11 +32734,28 @@
           populateWeekDropdown();
           dropdown.classList.add("active");
           overlay.classList.add("active");
+
+          // Clamp dropdown so it doesn't clip off either edge of the viewport
+          requestAnimationFrame(() => {
+            const rect = dropdown.getBoundingClientRect();
+            const padding = 8;
+            if (rect.right > window.innerWidth - padding) {
+              const overflowRight = rect.right - (window.innerWidth - padding);
+              dropdown.style.transform = `translateX(calc(-50% - ${overflowRight}px))`;
+            } else if (rect.left < padding) {
+              const overflowLeft = padding - rect.left;
+              dropdown.style.transform = `translateX(calc(-50% + ${overflowLeft}px))`;
+            } else {
+              dropdown.style.transform = "";
+            }
+          });
         }
       }
 
       function closeWeekDropdown() {
-        document.getElementById("week-dropdown").classList.remove("active");
+        const dropdown = document.getElementById("week-dropdown");
+        dropdown.classList.remove("active");
+        dropdown.style.transform = "";
         document
           .getElementById("week-dropdown-overlay")
           .classList.remove("active");
@@ -33009,6 +33078,7 @@
         headerEl.innerHTML = `
                 <tr>
                     <th>#</th>
+                    <th></th>
                     <th>Team</th>
                     ${columns.map((col) => `<th>${col}</th>`).join("")}
                 </tr>
@@ -33032,15 +33102,34 @@
         );
 
         // Build body
+        // Attach fade-on-scroll listener to the wrapper (once per table)
+        const statsWrapper = bodyEl.closest(".stats-table-wrapper");
+        if (statsWrapper && !statsWrapper._fadeBound) {
+          statsWrapper._fadeBound = true;
+          statsWrapper.addEventListener("scroll", () => {
+            const scrolled = statsWrapper.scrollLeft;
+            const opacity = Math.max(0.25, 1 - scrolled / 60);
+            statsWrapper.querySelectorAll(".stats-name-cell").forEach((el) => {
+              el.style.opacity = opacity;
+            });
+          });
+        }
+
         bodyEl.innerHTML = sortedStats
           .map((team, idx) => {
             const logo = teamLogos[team.team_key] || "";
 
+            const teamName = team.team_name || "Unknown";
+            const managerName = team.manager || "";
             return `
                     <tr>
                         <td>${idx + 1}</td>
-                        <td>
-                            ${renderStatsTeamCell(team, logo)}
+                        <td>${logo ? `<img src="${logo}" class="stats-team-logo" alt="">` : ""}</td>
+                        <td class="stats-name-cell">
+                            <div class="stats-team-copy">
+                                <span class="stats-team-name">${teamName}</span>
+                                <span class="stats-team-manager">${managerName}</span>
+                            </div>
                         </td>
                         ${columns
                           .map((col) => {
