@@ -20742,54 +20742,71 @@
           flex-direction: row;
           align-items: center;
           justify-content: space-between;
-          gap: 0.5rem;
+          gap: 0.4rem;
           margin-bottom: 0.75rem;
         }
 
+        /* Reset the fixed-width desktop Wrigley container */
+        .wrigley-sign {
+          flex: 0 0 auto;
+          width: auto;
+          margin-left: 0;
+          margin-right: 0;
+          padding-top: 0;
+          transform: none;
+          justify-content: center;
+        }
+
         .wrigley-top-svg {
-          width: 176px;
-          height: 58px;
+          width: 110px;
+          height: 37px;
+        }
+
+        .wrigley-marquee {
+          display: none;
         }
 
         .green-monster-ticker {
           position: static;
-          gap: 0.4rem;
           margin-left: auto;
+          flex-shrink: 0;
         }
 
+        /* Label to the left of display in a row */
         .green-monster-column {
           flex-direction: row;
           align-items: center;
-          gap: 0.5rem;
+          gap: 0.4rem;
         }
 
         .green-monster-label {
-          font-size: 0.5rem;
-          line-height: 1.2;
+          font-size: 0.45rem;
+          line-height: 1.25;
           text-align: right;
+          max-width: 44px;
+          flex-shrink: 0;
         }
 
         .green-monster-display {
-          padding: 0.3rem 0.4rem;
-          gap: 0.35rem;
+          padding: 0.25rem 0.35rem;
+          gap: 0.3rem;
         }
 
         .green-monster-logo {
-          width: 26px;
-          height: 26px;
+          width: 22px;
+          height: 22px;
         }
 
-        /* Mobile: same size for date and score digits */
         .monster-digit.date-digit,
         .monster-digit.score-digit {
-          font-size: 0.85rem;
-          min-width: 14px;
+          font-size: 0.75rem;
+          min-width: 12px;
           padding: 2px 3px;
         }
 
         .monster-digit.date-separator,
         .monster-digit.decimal {
-          font-size: 0.85rem;
+          font-size: 0.75rem;
           margin-bottom: 1px;
         }
       }
