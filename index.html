@@ -7308,183 +7308,15 @@
 
       /* Matchups Ticker Styles */
       .matchups-ticker-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        width: 100%;
-        max-width: 100%;
-        overflow: hidden;
-      }
-
-      .matchups-ticker-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 12px;
         width: 100%;
         max-width: 100%;
       }
 
-      .matchups-ticker-viewport {
-        flex: 1;
-        overflow: hidden;
-        position: relative;
-        min-width: 0;
-      }
-
-      .matchups-ticker-track {
-        display: flex;
-        gap: 0.75rem;
-        transition: transform 0.5s ease;
-      }
-
-      .matchup-ticker-card {
-        flex: 0 0 100%;
-        background: white;
-        border-radius: 8px;
-        padding: 0.75rem;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        box-sizing: border-box;
-      }
-
-      .matchup-teams {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
-      }
-
-      .matchup-team {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        flex: 1;
-        min-width: 0;
-      }
-
-      .matchup-team.winner .matchup-score {
-        color: #28a745;
-      }
-
-      .matchup-team.loser .matchup-score {
-        color: #dc3545;
-      }
-
-      .matchup-team-logo {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: contain;
-        margin-bottom: 0.15rem;
-      }
-
-      .matchup-team-hat {
-        width: 22px;
-        height: 22px;
-        object-fit: contain;
-        margin-bottom: 0.15rem;
-      }
-
-      .matchup-team-name {
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-      }
-
-      .matchup-manager {
-        font-size: 0.65rem;
-        color: #666;
-      }
-
-      .matchup-record {
-        font-size: 0.6rem;
-        color: #888;
-      }
-
-      .matchup-score {
-        font-size: 1.1rem;
-        font-weight: 700;
-      }
-
-      .matchup-vs {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #999;
-        padding: 0 0.25rem;
-      }
-
-      .matchup-ticker-nav-btn {
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        border: none;
-        background: var(--retro-blue);
-        color: white;
-        font-size: 1rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background 0.2s;
-        flex-shrink: 0;
-      }
-
-      .matchup-ticker-nav-btn:hover {
-        background: var(--retro-blue);
-      }
-
-      .matchup-ticker-dots {
-        display: flex;
-        justify-content: center;
-        gap: 0.3rem;
-        margin-top: 0.4rem;
-      }
-
-      .matchup-ticker-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #ccc;
-        cursor: pointer;
-        transition:
-          background 0.2s,
-          transform 0.2s;
-      }
-
-      .matchup-ticker-dot:hover {
-        background: #999;
-      }
-
-      .matchup-ticker-dot.active {
-        background: var(--retro-blue);
-        transform: scale(1.2);
-      }
-
-      @media (max-width: 768px) {
-        .matchup-team-logo {
-          width: 28px;
-          height: 28px;
-        }
-
-        .matchup-team-name {
-          font-size: 0.65rem;
-        }
-
-        .matchup-score {
-          font-size: 0.95rem;
-        }
-
-        .matchup-ticker-nav-btn {
-          width: 20px;
-          height: 20px;
-          font-size: 0.85rem;
-        }
+      .matchups-ticker-grid .mt-card {
+        flex: unset;
       }
 
       /* Mobile optimization for draft ticker */
@@ -20815,185 +20647,288 @@
         }
       }
 
-      /* Matchup Ticker */
-      .matchup-ticker-container {
-        background: var(--retro-blue);
-        border-radius: 12px;
-        padding: 0.75rem 1rem;
-        overflow: hidden;
-        margin-bottom: 1rem;
+      /* =========================================================
+         MATCHUP TICKER — retro scoreboard redesign
+         ========================================================= */
+      .mt-container {
+        width: 100%;
+        max-width: 1100px;
+        margin: 0 auto 1rem;
+        background: #0048ba;
+        border: 4px solid #ffcc00;
+        border-radius: 10px;
+        padding: 14px 16px 16px;
+        box-shadow: 6px 6px 0 #001f5e;
       }
 
-      .matchup-ticker-header {
+      .mt-header {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 0.5rem;
+        gap: 12px;
+        margin-bottom: 12px;
       }
 
-      .matchup-ticker-title {
-        color: white;
-        font-weight: 700;
-        font-size: 1.1rem;
+      .mt-title {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.62rem;
+        color: #ffcc00;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        line-height: 1;
       }
 
-      .matchup-ticker-week {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 0.25rem 0.75rem;
-        border-radius: 20px;
-        font-size: 0.75rem;
-        color: white;
-      }
-
-      .matchup-ticker-wrapper {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .matchup-ticker-arrow {
-        background: var(--retro-gold);
-        border: 2px solid #5d4037;
+      .mt-week-badge {
+        background: #ffcc00;
+        color: #0a1a4a;
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.45rem;
+        padding: 5px 10px;
         border-radius: 4px;
-        color: #5d4037;
-        width: 20px;
-        height: 20px;
+        border: 2px solid #0a1a4a;
+        box-shadow: 2px 2px 0 #0a1a4a;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .mt-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .mt-arrow {
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+        background: #ffcc00;
+        border: 3px solid #0a1a4a;
+        border-radius: 4px;
+        box-shadow: 3px 3px 0 #0a1a4a;
+        cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        box-shadow:
-          inset 0 -2px 0 rgba(0, 0, 0, 0.2),
-          inset 0 2px 0 rgba(255, 255, 255, 0.3),
-          1px 1px 2px rgba(0, 0, 0, 0.2);
-        flex-shrink: 0;
-        position: relative;
+        transition: transform 0.1s, box-shadow 0.1s;
+        padding: 0;
       }
-
-      /* CSS triangle arrows - no emoji issues */
-      .matchup-ticker-arrow::before {
+      .mt-arrow:hover { transform: translateY(-2px); box-shadow: 3px 5px 0 #0a1a4a; }
+      .mt-arrow:active { transform: translateY(1px); box-shadow: 2px 2px 0 #0a1a4a; }
+      .mt-arrow::before {
         content: "";
         display: block;
         width: 0;
         height: 0;
         border-style: solid;
       }
-
-      .matchup-ticker-arrow.arrow-left::before {
-        border-width: 5px 6px 5px 0;
-        border-color: transparent #5d4037 transparent transparent;
+      .mt-arrow.left::before {
+        border-width: 7px 9px 7px 0;
+        border-color: transparent #0a1a4a transparent transparent;
+      }
+      .mt-arrow.right::before {
+        border-width: 7px 0 7px 9px;
+        border-color: transparent transparent transparent #0a1a4a;
       }
 
-      .matchup-ticker-arrow.arrow-right::before {
-        border-width: 5px 0 5px 6px;
-        border-color: transparent transparent transparent #5d4037;
-      }
-
-      .matchup-ticker-arrow:hover {
-        background: var(--retro-gold-light);
-        transform: scale(1.1);
-      }
-
-      .matchup-ticker-arrow:active {
-        transform: scale(0.95);
-      }
-
-      .matchup-ticker-scroll {
-        display: flex;
-        gap: 1rem;
-        overflow-x: auto;
-        padding: 0.5rem 0;
-        scrollbar-width: none;
+      .mt-viewport {
         flex: 1;
-        scroll-snap-type: x mandatory;
-      }
-
-      .matchup-ticker-scroll::-webkit-scrollbar {
-        display: none;
-      }
-
-      .matchup-ticker-item {
-        flex: 0 0 calc((100% - 2rem) / 3);
-        background: white;
-        border-radius: 10px;
-        padding: 0.75rem 0.75rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         min-width: 0;
-        scroll-snap-align: start;
+        overflow: hidden;
+        padding: 6px 2px 8px;
+        margin: -6px -2px -8px;
+      }
+
+      .mt-track {
+        display: flex;
+        gap: 12px;
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+      }
+
+      .mt-card {
+        flex: 0 0 calc((100% - 24px) / 3);
+        min-width: 0;
+        background: #fffef2;
+        border: 3px solid #ffcc00;
+        border-radius: 8px;
+        box-shadow: 4px 4px 0 #001f5e;
+        overflow: hidden;
         cursor: pointer;
-        transition:
-          transform 0.15s ease,
-          box-shadow 0.15s ease;
+        transition: transform 0.15s, box-shadow 0.15s;
+      }
+      .mt-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 4px 7px 0 #001f5e;
       }
 
-      .matchup-ticker-item:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      .mt-card-body {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+        padding: 10px 8px;
       }
 
-      .matchup-team {
+      .mt-team {
+        flex: 1;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 0.2rem;
-        flex: 1;
+        gap: 4px;
         min-width: 0;
       }
 
-      .matchup-team-logo {
-        width: 40px;
-        height: 40px;
-        object-fit: cover;
+      .mt-logo {
+        width: 44px;
+        height: 44px;
         border-radius: 50%;
-        background: #f0f0f0;
-        border: 2px solid #e0e0e0;
+        object-fit: cover;
+        background: #e0e9ff;
       }
 
-      .matchup-team-name {
-        color: #333;
-        font-size: 0.6rem;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-        font-weight: 500;
-      }
-
-      .matchup-team-manager {
-        color: #666;
-        font-size: 0.55rem;
-      }
-
-      .matchup-score-box {
+      .mt-logo-placeholder {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: #c8d5f0;
         display: flex;
         align-items: center;
-        gap: 0.4rem;
-        padding: 0.3rem 0.5rem;
-        background: var(--retro-blue);
-        border-radius: 6px;
-        flex-shrink: 0;
+        justify-content: center;
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.5rem;
+        color: #0048ba;
       }
 
-      .matchup-score {
-        color: white;
-        font-weight: 700;
-        font-size: 0.85rem;
-        min-width: 30px;
+      .mt-team-name {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.38rem;
+        color: #0a1a4a;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1.4;
+        word-break: break-word;
+        max-width: 100%;
+        min-height: calc(2 * 1.4 * 0.38rem);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mt-manager {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 8px;
+        font-weight: 300;
+        color: #555;
         text-align: center;
       }
 
-      .matchup-score.winner {
-        color: #4ade80;
+      .mt-record {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 10px;
+        font-weight: 300;
+        color: #0a1a4a;
+        text-align: center;
+        line-height: 1.2;
       }
 
-      .matchup-vs {
-        color: rgba(255, 255, 255, 0.6);
+      .mt-place {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 8px;
+        font-weight: 300;
+        color: #555;
+        text-align: center;
+        line-height: 1.2;
+      }
+
+      .mt-team.winner .mt-team-name { color: #e63946; }
+      .mt-team.winner .mt-record    { color: #e63946; font-weight: bold; }
+      .mt-team.winner .mt-place     { color: #e63946; }
+
+      .mt-scoreboard {
+        flex-shrink: 0;
+        width: 90px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        background: #0a1a4a;
+        border-radius: 6px;
+        border: 2px solid #ffcc00;
+        margin: 0 6px;
+        padding: 8px 4px;
+      }
+
+      .mt-score-row {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+      }
+
+      .mt-scoreboard-hat {
+        width: 36px;
+        height: 30px;
+        object-fit: contain;
+        filter: brightness(1.1);
+      }
+
+      .mt-score {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.7rem;
+        color: #ccd6f6;
+        text-align: center;
+        line-height: 1;
+        letter-spacing: 0.5px;
+      }
+
+      .mt-score.winner { color: #ffcc00; }
+
+      .mt-score-label {
+        font-family: "Basis33", monospace;
         font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+
+      .mt-vs-divider {
+        width: 60%;
+        height: 2px;
+        background: #ffcc00;
+        border-radius: 1px;
+        opacity: 0.5;
+      }
+
+      .mt-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+      }
+      .mt-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.3);
+        border: 2px solid rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .mt-dot.active {
+        background: #ffcc00;
+        border-color: #ffcc00;
+      }
+
+      @media (max-width: 700px) {
+        .mt-card { flex: 0 0 100%; }
+        .mt-scoreboard { width: 80px; }
+        .mt-score { font-size: 0.6rem; }
+      }
+
+      @media (max-width: 480px) {
+        .mt-logo, .mt-logo-placeholder { width: 36px; height: 36px; }
+        .mt-scoreboard { width: 72px; margin: 0 4px; }
+        .mt-card-body { padding: 8px 6px; }
       }
 
       /* ============================================
@@ -22720,10 +22655,6 @@
         .homepage-three-columns .homepage-column:nth-child(3) {
           grid-column: 1 / -1;
         }
-
-        .matchup-ticker-item {
-          flex: 0 0 calc((100% - 1rem) / 2);
-        }
       }
 
       @media (max-width: 700px) {
@@ -22731,23 +22662,8 @@
           grid-template-columns: 1fr;
         }
 
-        .matchup-ticker-item {
-          flex: 0 0 100%;
-        }
-
         .transaction-item {
           min-width: 250px;
-        }
-      }
-
-      @media (max-width: 500px) {
-        .matchup-ticker-item {
-          padding: 0.5rem;
-        }
-
-        .matchup-team-logo {
-          width: 32px;
-          height: 32px;
         }
       }
     </style>
@@ -23282,26 +23198,29 @@
         </div>
 
         <!-- Matchup Ticker -->
-        <div class="matchup-ticker-container">
-          <div class="matchup-ticker-header">
-            <div class="matchup-ticker-title">Current Matchups</div>
-            <div class="matchup-ticker-week" id="home-matchup-week">Week 1</div>
+        <div class="mt-container" id="home-matchup-ticker-container">
+          <div class="mt-header">
+            <div class="mt-title">Current Matchups</div>
+            <div class="mt-week-badge" id="home-matchup-week">Week 1</div>
           </div>
-          <div class="matchup-ticker-wrapper">
+          <div class="mt-wrapper">
             <button
-              class="matchup-ticker-arrow arrow-left"
-              onclick="scrollMatchupTicker(-1)"
+              class="mt-arrow left"
+              onclick="matchupTickerPrev()"
               title="Previous"
             ></button>
-            <div class="matchup-ticker-scroll" id="home-matchup-ticker">
-              <div class="homepage-placeholder">Loading matchups...</div>
+            <div class="mt-viewport" id="home-matchup-ticker-viewport">
+              <div class="mt-track" id="home-matchup-ticker">
+                <div class="homepage-placeholder">Loading matchups...</div>
+              </div>
             </div>
             <button
-              class="matchup-ticker-arrow arrow-right"
-              onclick="scrollMatchupTicker(1)"
+              class="mt-arrow right"
+              onclick="matchupTickerNext()"
               title="Next"
             ></button>
           </div>
+          <div class="mt-dots" id="home-matchup-ticker-dots"></div>
         </div>
 
         <!-- Matchup Popup Modal -->
@@ -34153,120 +34072,166 @@
         }, 15000);
       }
 
+      function mtOrdinalPlace(n) {
+        if (typeof n !== "number" || !isFinite(n)) return "";
+        const s = ["th", "st", "nd", "rd"];
+        const v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]) + " Place";
+      }
+
+      function mtCardsPerPage() {
+        return window.innerWidth <= 700 ? 1 : 3;
+      }
+
       function renderMatchupsTicker(container, matchups, teamInfo, standings) {
-        container.innerHTML = `
-                <div class="matchups-ticker-wrapper">
-                    <button class="matchup-ticker-nav-btn" onclick="matchupTickerPrev()">‹</button>
-                    <div class="matchups-ticker-viewport">
-                        <div class="matchups-ticker-track" id="matchups-ticker-track">
-                            ${matchups
-                              .map((matchup, idx) => {
-                                const team1 = teamInfo[matchup.team1_key] || {
-                                  name: "Unknown",
-                                  manager: "Unknown",
-                                  logo: "",
-                                };
-                                const team2 = teamInfo[matchup.team2_key] || {
-                                  name: "Unknown",
-                                  manager: "Unknown",
-                                  logo: "",
-                                };
-                                const standing1 = standings[
-                                  matchup.team1_key
-                                ] || { rank: "-", wins: 0, losses: 0 };
-                                const standing2 = standings[
-                                  matchup.team2_key
-                                ] || { rank: "-", wins: 0, losses: 0 };
+        const buildTeam = (team, standing, isWinner) => {
+          const initial = (team.manager || team.name || "?")
+            .trim()
+            .charAt(0)
+            .toUpperCase();
+          const logoHTML = team.logo
+            ? `<img src="${team.logo}" class="mt-logo" alt="${team.name}" onerror="this.outerHTML='&lt;div class=\\'mt-logo-placeholder\\'&gt;${initial}&lt;/div&gt;'">`
+            : `<div class="mt-logo-placeholder">${initial}</div>`;
+          const rank = Number(standing.rank);
+          const placeText = mtOrdinalPlace(rank) || "—";
+          return `
+            <div class="mt-team ${isWinner ? "winner" : ""}">
+              ${logoHTML}
+              <div class="mt-team-name">${team.name}</div>
+              <div class="mt-manager">${team.manager}</div>
+              <div class="mt-record">${standing.wins}-${standing.losses}</div>
+              <div class="mt-place">${placeText}</div>
+            </div>`;
+        };
 
-                                const team1Winner =
-                                  matchup.team1_score > matchup.team2_score;
-                                const team2Winner =
-                                  matchup.team2_score > matchup.team1_score;
+        const cardsHTML = matchups
+          .map((matchup, idx) => {
+            const team1 = teamInfo[matchup.team1_key] || {
+              name: "Unknown",
+              manager: "Unknown",
+              logo: "",
+            };
+            const team2 = teamInfo[matchup.team2_key] || {
+              name: "Unknown",
+              manager: "Unknown",
+              logo: "",
+            };
+            const standing1 = standings[matchup.team1_key] || {
+              rank: "-",
+              wins: 0,
+              losses: 0,
+            };
+            const standing2 = standings[matchup.team2_key] || {
+              rank: "-",
+              wins: 0,
+              losses: 0,
+            };
 
-                                // Get hat filenames
-                                const hat1 = getManagerHatFilename(
-                                  team1.manager,
-                                );
-                                const hat2 = getManagerHatFilename(
-                                  team2.manager,
-                                );
+            const team1Winner = matchup.team1_score > matchup.team2_score;
+            const team2Winner = matchup.team2_score > matchup.team1_score;
 
-                                return `
-                                    <div class="matchup-ticker-card" data-index="${idx}">
-                                        <div class="matchup-teams">
-                                            <div class="matchup-team ${team1Winner ? "winner" : team2Winner ? "loser" : ""}">
-                                                ${team1.logo ? `<img src="${team1.logo}" class="matchup-team-logo" alt="">` : '<div class="matchup-team-logo" style="background:#e0e0e0;"></div>'}
-                                                <img src="data/hats/${hat1}" class="matchup-team-hat" alt="" onerror="this.style.display='none'">
-                                                <div class="matchup-team-name">${team1.name}</div>
-                                                <div class="matchup-manager">${team1.manager}</div>
-                                                <div class="matchup-record">(${standing1.wins}-${standing1.losses}) #${standing1.rank}</div>
-                                                <div class="matchup-score">${matchup.team1_score.toFixed(1)}</div>
-                                            </div>
-                                            <div class="matchup-vs">VS</div>
-                                            <div class="matchup-team ${team2Winner ? "winner" : team1Winner ? "loser" : ""}">
-                                                ${team2.logo ? `<img src="${team2.logo}" class="matchup-team-logo" alt="">` : '<div class="matchup-team-logo" style="background:#e0e0e0;"></div>'}
-                                                <img src="data/hats/${hat2}" class="matchup-team-hat" alt="" onerror="this.style.display='none'">
-                                                <div class="matchup-team-name">${team2.name}</div>
-                                                <div class="matchup-manager">${team2.manager}</div>
-                                                <div class="matchup-record">(${standing2.wins}-${standing2.losses}) #${standing2.rank}</div>
-                                                <div class="matchup-score">${matchup.team2_score.toFixed(1)}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                `;
-                              })
-                              .join("")}
-                        </div>
+            const hat1 = getManagerHatFilename(team1.manager);
+            const hat2 = getManagerHatFilename(team2.manager);
+
+            return `
+              <div class="mt-card" data-index="${idx}">
+                <div class="mt-card-body">
+                  ${buildTeam(team1, standing1, team1Winner)}
+                  <div class="mt-scoreboard">
+                    <div class="mt-score-row">
+                      ${hat1 ? `<img class="mt-scoreboard-hat" src="data/hats/${hat1}" alt="" onerror="this.style.display='none'">` : ""}
+                      <span class="mt-score ${team1Winner ? "winner" : ""}">${matchup.team1_score.toFixed(2)}</span>
                     </div>
-                    <button class="matchup-ticker-nav-btn" onclick="matchupTickerNext()">›</button>
+                    <div class="mt-vs-divider"></div>
+                    <div class="mt-score-label">vs</div>
+                    <div class="mt-vs-divider"></div>
+                    <div class="mt-score-row">
+                      <span class="mt-score ${team2Winner ? "winner" : ""}">${matchup.team2_score.toFixed(2)}</span>
+                      ${hat2 ? `<img class="mt-scoreboard-hat" src="data/hats/${hat2}" alt="" onerror="this.style.display='none'">` : ""}
+                    </div>
+                  </div>
+                  ${buildTeam(team2, standing2, team2Winner)}
                 </div>
-                <div class="matchup-ticker-dots" id="matchup-ticker-dots">
-                    ${matchups.map((_, idx) => `<span class="matchup-ticker-dot ${idx === 0 ? "active" : ""}" onclick="scrollToMatchupCard(${idx})"></span>`).join("")}
-                </div>
-            `;
+              </div>`;
+          })
+          .join("");
+
+        container.innerHTML = cardsHTML;
+
+        const dotsEl = document.getElementById("home-matchup-ticker-dots");
+        if (dotsEl) {
+          const perPage = mtCardsPerPage();
+          const pages = Math.max(1, Math.ceil(matchups.length / perPage));
+          dotsEl.innerHTML = Array.from(
+            { length: pages },
+            (_, i) =>
+              `<span class="mt-dot ${i === 0 ? "active" : ""}" onclick="scrollToMatchupCard(${i * perPage})"></span>`,
+          ).join("");
+        }
+
+        currentMatchupIndex = 0;
       }
 
       function scrollToMatchupCard(index) {
-        const track = document.getElementById("matchups-ticker-track");
-        const dots = document.querySelectorAll(".matchup-ticker-dot");
-        const cards = document.querySelectorAll(".matchup-ticker-card");
+        const track = document.getElementById("home-matchup-ticker");
+        const viewport = document.getElementById(
+          "home-matchup-ticker-viewport",
+        );
+        const cards = track
+          ? track.querySelectorAll(".mt-card")
+          : [];
 
-        if (!track || cards.length === 0) return;
+        if (!track || !viewport || cards.length === 0) return;
 
-        currentMatchupIndex = index;
+        const perPage = mtCardsPerPage();
+        const maxIndex = Math.max(0, cards.length - perPage);
+        currentMatchupIndex = Math.max(0, Math.min(index, maxIndex));
 
-        const viewport = track.parentElement;
-        const viewportWidth = viewport.offsetWidth;
-        const gap = 12;
-        track.style.transform = `translateX(-${index * (viewportWidth + gap)}px)`;
+        const cardGap = 12;
+        const hPad = 4; /* viewport left(2) + right(2) padding */
+        const cardW =
+          (viewport.offsetWidth - hPad - (perPage - 1) * cardGap) / perPage;
+        track.style.transform = `translateX(-${currentMatchupIndex * (cardW + cardGap)}px)`;
 
+        const dots = document.querySelectorAll(
+          "#home-matchup-ticker-dots .mt-dot",
+        );
         dots.forEach((dot, i) => {
-          dot.classList.toggle("active", i === index);
+          dot.classList.toggle(
+            "active",
+            i === Math.floor(currentMatchupIndex / perPage),
+          );
         });
 
         if (matchupsTickerInterval) {
           clearInterval(matchupsTickerInterval);
           matchupsTickerInterval = setInterval(() => {
-            currentMatchupIndex = (currentMatchupIndex + 1) % cards.length;
-            scrollToMatchupCard(currentMatchupIndex);
+            const next = currentMatchupIndex + mtCardsPerPage();
+            const max = Math.max(0, cards.length - mtCardsPerPage());
+            scrollToMatchupCard(next > max ? 0 : next);
           }, 15000);
         }
       }
 
       function matchupTickerPrev() {
-        const cards = document.querySelectorAll(".matchup-ticker-card");
-        if (cards.length === 0) return;
-        currentMatchupIndex =
-          (currentMatchupIndex - 1 + cards.length) % cards.length;
-        scrollToMatchupCard(currentMatchupIndex);
+        const step = mtCardsPerPage();
+        scrollToMatchupCard(currentMatchupIndex - step);
       }
 
       function matchupTickerNext() {
-        const cards = document.querySelectorAll(".matchup-ticker-card");
-        if (cards.length === 0) return;
-        currentMatchupIndex = (currentMatchupIndex + 1) % cards.length;
-        scrollToMatchupCard(currentMatchupIndex);
+        const track = document.getElementById("home-matchup-ticker");
+        const cards = track ? track.querySelectorAll(".mt-card") : [];
+        const step = mtCardsPerPage();
+        const max = Math.max(0, cards.length - step);
+        const next = currentMatchupIndex + step;
+        scrollToMatchupCard(next > max ? 0 : next);
       }
+
+      window.addEventListener("resize", () => {
+        if (typeof currentMatchupIndex === "number") {
+          scrollToMatchupCard(currentMatchupIndex);
+        }
+      });
 
       // ===== PLAYOFF BRACKET FUNCTIONS =====
       async function loadPlayoffBracket(seasonNum, standings, teamData) {
@@ -57475,26 +57440,6 @@
       let homeScoresData = [];
       let homeRostersData = null;
 
-      function scrollMatchupTicker(direction) {
-        const container = document.getElementById("home-matchup-ticker");
-        const items = container.querySelectorAll(".matchup-ticker-item");
-        if (items.length === 0) return;
-
-        // Get the width of one item plus the gap
-        const itemWidth = items[0].offsetWidth;
-        const gap = 16; // 1rem = 16px
-
-        // On mobile (<=700px), scroll 1 item at a time; on desktop, scroll 3
-        const isMobile = window.innerWidth <= 700;
-        const itemsToScroll = isMobile ? 1 : 3;
-
-        const scrollAmount = (itemWidth + gap) * itemsToScroll;
-        container.scrollBy({
-          left: direction * scrollAmount,
-          behavior: "smooth",
-        });
-      }
-
       function scrollTransactionsTicker(direction) {
         const container = document.getElementById("home-transactions-list");
         const scrollAmount = 320;
@@ -57789,32 +57734,93 @@
           return;
         }
 
+        const standingsByKey = {};
+        (homeStandingsData || []).forEach((s) => {
+          standingsByKey[s.team_key] = {
+            rank: Number(s.rank) || null,
+            wins: s.wins || 0,
+            losses: s.losses || 0,
+          };
+        });
+
+        const buildTeam = (t, standing, isWinner) => {
+          const managerDisplay = capitalizeManagerName(t.manager) || t.manager;
+          const initial = (managerDisplay || t.name || "?")
+            .trim()
+            .charAt(0)
+            .toUpperCase();
+          const logoHTML = t.logo
+            ? `<img src="${t.logo}" class="mt-logo" alt="${t.name}" onerror="this.outerHTML='&lt;div class=\\'mt-logo-placeholder\\'&gt;${initial}&lt;/div&gt;'">`
+            : `<div class="mt-logo-placeholder">${initial}</div>`;
+          const placeText = standing.rank
+            ? mtOrdinalPlace(standing.rank)
+            : "—";
+          return `
+            <div class="mt-team ${isWinner ? "winner" : ""}">
+              ${logoHTML}
+              <div class="mt-team-name">${t.name}</div>
+              <div class="mt-manager">${managerDisplay}</div>
+              <div class="mt-record">${standing.wins}-${standing.losses}</div>
+              <div class="mt-place">${placeText}</div>
+            </div>`;
+        };
+
         container.innerHTML = matchups
           .map((m, idx) => {
             const team1Winner = m.team1.score > m.team2.score;
             const team2Winner = m.team2.score > m.team1.score;
 
+            const s1 = standingsByKey[m.team1.team_key] || {
+              rank: null,
+              wins: 0,
+              losses: 0,
+            };
+            const s2 = standingsByKey[m.team2.team_key] || {
+              rank: null,
+              wins: 0,
+              losses: 0,
+            };
+
+            const hat1 = getManagerHatFilename(m.team1.manager);
+            const hat2 = getManagerHatFilename(m.team2.manager);
+
             return `
-                    <div class="matchup-ticker-item" onclick="openMatchupPopup(${idx})">
-                        <div class="matchup-team">
-                            <img src="${m.team1.logo}" class="matchup-team-logo" alt="${m.team1.name}" onerror="this.src='league_logo.png'">
-                            <div class="matchup-team-name">${m.team1.name}</div>
-                            <div class="matchup-team-manager">${capitalizeManagerName(m.team1.manager)}</div>
-                        </div>
-                        <div class="matchup-score-box">
-                            <div class="matchup-score ${team1Winner ? "winner" : ""}">${m.team1.score.toFixed(2)}</div>
-                            <div class="matchup-vs">vs</div>
-                            <div class="matchup-score ${team2Winner ? "winner" : ""}">${m.team2.score.toFixed(2)}</div>
-                        </div>
-                        <div class="matchup-team">
-                            <img src="${m.team2.logo}" class="matchup-team-logo" alt="${m.team2.name}" onerror="this.src='league_logo.png'">
-                            <div class="matchup-team-name">${m.team2.name}</div>
-                            <div class="matchup-team-manager">${capitalizeManagerName(m.team2.manager)}</div>
-                        </div>
+              <div class="mt-card" data-index="${idx}" onclick="openMatchupPopup(${idx})">
+                <div class="mt-card-body">
+                  ${buildTeam(m.team1, s1, team1Winner)}
+                  <div class="mt-scoreboard">
+                    <div class="mt-score-row">
+                      ${hat1 ? `<img class="mt-scoreboard-hat" src="data/hats/${hat1}" alt="" onerror="this.style.display='none'">` : ""}
+                      <span class="mt-score ${team1Winner ? "winner" : ""}">${m.team1.score.toFixed(2)}</span>
                     </div>
-                `;
+                    <div class="mt-vs-divider"></div>
+                    <div class="mt-score-label">vs</div>
+                    <div class="mt-vs-divider"></div>
+                    <div class="mt-score-row">
+                      <span class="mt-score ${team2Winner ? "winner" : ""}">${m.team2.score.toFixed(2)}</span>
+                      ${hat2 ? `<img class="mt-scoreboard-hat" src="data/hats/${hat2}" alt="" onerror="this.style.display='none'">` : ""}
+                    </div>
+                  </div>
+                  ${buildTeam(m.team2, s2, team2Winner)}
+                </div>
+              </div>`;
           })
           .join("");
+
+        // Populate dots (one per page) and reset scroll
+        const dotsEl = document.getElementById("home-matchup-ticker-dots");
+        if (dotsEl) {
+          const perPage = mtCardsPerPage();
+          const pages = Math.max(1, Math.ceil(matchups.length / perPage));
+          dotsEl.innerHTML = Array.from(
+            { length: pages },
+            (_, i) =>
+              `<span class="mt-dot ${i === 0 ? "active" : ""}" onclick="scrollToMatchupCard(${i * perPage})"></span>`,
+          ).join("");
+        }
+
+        currentMatchupIndex = 0;
+        scrollToMatchupCard(0);
       }
 
       // Load daily scores data
