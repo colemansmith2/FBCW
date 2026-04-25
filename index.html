@@ -46787,49 +46787,89 @@
         tradeAnalyzerData[`team${side}ConfigKey`] = configKey;
       }
 
+      // Build a map of 2027 draft pick ownership per team, applying in-season
+      // pick trades from current_season/transactions.json. The 2026 draft has
+      // already occurred, so any pick trades in the current season transaction
+      // log are for next year's (2027) draft (Yahoo leaves source_year empty).
+      // Cached on tradeAnalyzerData.nextYearPicks after the first call.
+      async function getNextYearPicksOwnedMap() {
+        if (tradeAnalyzerData.nextYearPicks) {
+          return tradeAnalyzerData.nextYearPicks;
+        }
+
+        const teamKeys = Object.keys(tradeAnalyzerData.teams || {});
+        const ownership = {};
+        teamKeys.forEach((tk) => {
+          ownership[tk] = [];
+          for (let round = 1; round <= 22; round++) {
+            ownership[tk].push({ round, originalTeam: tk });
+          }
+        });
+
+        let transactions = [];
+        try {
+          const resp = await fetch("data/current_season/transactions.json");
+          if (resp.ok) transactions = await resp.json();
+        } catch (e) {
+          console.log("Trade Analyzer: could not load transactions.json", e);
+        }
+
+        const trades = (transactions || []).filter(
+          (t) => t.type === "trade" && t.status === "successful",
+        );
+
+        trades.forEach((trade) => {
+          const pickList = Array.isArray(trade.picks) ? trade.picks : [];
+          pickList.forEach((entry) => {
+            const p = entry.pick || entry;
+            const round = parseInt(p.round, 10);
+            const fromKey = p.source_team_key;
+            const toKey = p.destination_team_key;
+            const originalKey = p.original_team_key || fromKey;
+            if (!round || !fromKey || !toKey) return;
+            if (!ownership[fromKey] || !ownership[toKey]) return;
+
+            const idx = ownership[fromKey].findIndex(
+              (op) => op.round === round && op.originalTeam === originalKey,
+            );
+            if (idx === -1) return;
+            const moved = ownership[fromKey].splice(idx, 1)[0];
+            ownership[toKey].push(moved);
+          });
+        });
+
+        Object.keys(ownership).forEach((tk) => {
+          ownership[tk].sort((a, b) => a.round - b.round);
+        });
+
+        tradeAnalyzerData.nextYearPicks = ownership;
+        console.log(
+          `Trade Analyzer: applied ${trades.length} in-season pick trade(s) to 2027 pick ownership`,
+        );
+        return ownership;
+      }
+
       async function loadTeamPicks(side, teamKey) {
         const picks = [];
 
-        // Use the configKey that was stored by loadTeamPlayers
-        const configKey = tradeAnalyzerData[`team${side}ConfigKey`] || teamKey;
-        console.log(
-          `Trade Analyzer loadTeamPicks: teamKey=${teamKey}, configKey=${configKey}`,
-        );
+        // 2026 Picks: Draft already happened, no 2026 picks are tradeable.
+        // 2027 Picks: start with rounds 1-22 then apply in-season trades from
+        // data/current_season/transactions.json so the analyzer only offers
+        // picks the team actually still owns.
+        const ownershipMap = await getNextYearPicksOwnedMap();
+        const ownedPicks = ownershipMap[teamKey] || [];
 
-        // Use existing getTeamPicks() which accounts for trades (using config key)
-        const teamPicks = getTeamPicks(configKey) || [];
-        console.log(
-          `Found ${teamPicks.length} picks in teamPicksOwned for ${configKey}`,
-        );
-
-        // Get rounds used by keepers using the configKey (where keeperSelections is stored)
-        const roundCosts = calculateTeamKeeperRoundCosts(configKey);
-        const usedRounds = {};
-        roundCosts.forEach((rc) => {
-          usedRounds[rc.actualRoundCost] =
-            (usedRounds[rc.actualRoundCost] || 0) + 1;
-        });
-
-        // Count available picks at each round
-        const pickCounts = {};
-        teamPicks.forEach((pick) => {
-          pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
-        });
-
-        // 2026 Picks: Draft already happened, no 2026 picks are tradeable
-
-        // 2027 Picks: Rounds 1-22 for all teams (no trades yet)
-        for (let round = 1; round <= 22; round++) {
-          const expectedPts = getExpectedPointsForRound(round);
+        ownedPicks.forEach((op) => {
+          const expectedPts = getExpectedPointsForRound(op.round);
           picks.push({
             type: "pick",
-            round: round,
+            round: op.round,
             year: 2027,
             value: expectedPts,
             baseValue: expectedPts,
-            originalTeam: teamKey,
+            originalTeam: op.originalTeam || teamKey,
           });
-        }
+        });
 
         // Sort picks by year then round
         picks.sort((a, b) => {
