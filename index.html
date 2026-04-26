@@ -7307,16 +7307,29 @@
       }
 
       /* Matchups Ticker Styles */
-      .matchups-ticker-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 12px;
-        width: 100%;
-        max-width: 100%;
+      /* Seasons-page matchup ticker lives in a narrow side column, so it
+         shows one card at a time and uses the shared mt-* horizontal-scroll
+         machinery (see #season-matchup-ticker). */
+      #season-matchup-ticker .mt-card {
+        flex: 0 0 100%;
       }
 
-      .matchups-ticker-grid .mt-card {
-        flex: unset;
+      /* The wrapper has no surrounding mt-container padding here, so add
+         room for the arrows' down-right box-shadow (and the taller hover
+         shadow). Without this the right arrow's shadow gets clipped. */
+      #matchups-ticker .mt-wrapper {
+        padding: 0 4px 6px 0;
+      }
+
+      /* Page background is light, so the default white-translucent dot
+         border is invisible. Use a navy outline against the cream page. */
+      #season-matchup-ticker-dots .mt-dot {
+        background: transparent;
+        border-color: var(--retro-blue);
+      }
+      #season-matchup-ticker-dots .mt-dot.active {
+        background: var(--retro-gold);
+        border-color: var(--retro-blue);
       }
 
       /* Mobile optimization for draft ticker */
@@ -23510,9 +23523,29 @@
               >
                 Week <span id="matchups-week-num">1</span> Matchups
               </h3>
-              <div id="matchups-cards" class="matchups-ticker-grid">
-                <!-- Populated by JS -->
+              <div class="mt-wrapper">
+                <button
+                  type="button"
+                  class="mt-arrow left"
+                  onclick="matchupTickerPrev('season-matchup-ticker')"
+                  title="Previous"
+                ></button>
+                <div
+                  class="mt-viewport"
+                  id="season-matchup-ticker-viewport"
+                >
+                  <div class="mt-track" id="season-matchup-ticker">
+                    <!-- Populated by JS -->
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="mt-arrow right"
+                  onclick="matchupTickerNext('season-matchup-ticker')"
+                  title="Next"
+                ></button>
               </div>
+              <div class="mt-dots" id="season-matchup-ticker-dots"></div>
             </div>
           </div>
         </div>
@@ -32090,7 +32123,7 @@
 
       async function loadMatchupsForWeek(week, teamData, teamLogos, standings) {
         const tickerContainer = document.getElementById("matchups-ticker");
-        const cardsContainer = document.getElementById("matchups-cards");
+        const cardsContainer = document.getElementById("season-matchup-ticker");
         const weekNumEl = document.getElementById("matchups-week-num");
 
         if (!tickerContainer || !cardsContainer) return;
@@ -32123,6 +32156,7 @@
               return;
             }
           }
+
 
           // Fall back to all_scores.json (already loaded), then week_X_scores.json
           let scoresData = [];
@@ -32183,14 +32217,17 @@
             matchups,
             teamInfoLookup,
             standingsLookup,
+            "season-matchup-ticker",
           );
           tickerContainer.style.display = "block";
 
           // Start auto-scroll
           currentMatchupIndex = 0;
           matchupsTickerInterval = setInterval(() => {
-            currentMatchupIndex = (currentMatchupIndex + 1) % matchups.length;
-            scrollToMatchupCard(currentMatchupIndex);
+            const step = mtCardsPerPage("season-matchup-ticker");
+            const next = currentMatchupIndex + step;
+            const max = Math.max(0, matchups.length - step);
+            scrollToMatchupCard(next > max ? 0 : next, "season-matchup-ticker");
           }, 15000);
         } catch (e) {
           console.log(`Error loading matchups for week ${week}:`, e);
@@ -32228,7 +32265,7 @@
         teamLogos,
         standings,
       ) {
-        const cardsContainer = document.getElementById("matchups-cards");
+        const cardsContainer = document.getElementById("season-matchup-ticker");
 
         // Build team info lookup
         const teamInfoLookup = {};
@@ -32262,6 +32299,7 @@
           matchups,
           teamInfoLookup,
           standingsLookup,
+          "season-matchup-ticker",
         );
 
         // Start auto-scroll
@@ -32270,8 +32308,10 @@
           clearInterval(matchupsTickerInterval);
         }
         matchupsTickerInterval = setInterval(() => {
-          currentMatchupIndex = (currentMatchupIndex + 1) % matchups.length;
-          scrollToMatchupCard(currentMatchupIndex);
+          const step = mtCardsPerPage("season-matchup-ticker");
+          const next = currentMatchupIndex + step;
+          const max = Math.max(0, matchups.length - step);
+          scrollToMatchupCard(next > max ? 0 : next, "season-matchup-ticker");
         }, 15000);
       }
 
@@ -33983,7 +34023,7 @@
         standings,
       ) {
         const tickerContainer = document.getElementById("matchups-ticker");
-        const cardsContainer = document.getElementById("matchups-cards");
+        const cardsContainer = document.getElementById("season-matchup-ticker");
         const weekNumEl = document.getElementById("matchups-week-num");
 
         if (!tickerContainer || !cardsContainer) return;
@@ -34061,14 +34101,17 @@
           matchups,
           teamInfoLookup,
           standingsLookup,
+          "season-matchup-ticker",
         );
         tickerContainer.style.display = "block";
 
         // Start auto-scroll
         currentMatchupIndex = 0;
         matchupsTickerInterval = setInterval(() => {
-          currentMatchupIndex = (currentMatchupIndex + 1) % matchups.length;
-          scrollToMatchupCard(currentMatchupIndex);
+          const step = mtCardsPerPage("season-matchup-ticker");
+          const next = currentMatchupIndex + step;
+          const max = Math.max(0, matchups.length - step);
+          scrollToMatchupCard(next > max ? 0 : next, "season-matchup-ticker");
         }, 15000);
       }
 
@@ -34079,11 +34122,15 @@
         return n + (s[(v - 20) % 10] || s[v] || s[0]) + " Place";
       }
 
-      function mtCardsPerPage() {
+      function mtCardsPerPage(trackId) {
+        // The seasons-page ticker lives in a narrow side column, so it
+        // always shows one card at a time regardless of viewport width.
+        if (trackId === "season-matchup-ticker") return 1;
         return window.innerWidth <= 700 ? 1 : 3;
       }
 
-      function renderMatchupsTicker(container, matchups, teamInfo, standings) {
+      function renderMatchupsTicker(container, matchups, teamInfo, standings, trackId) {
+        trackId = trackId || "home-matchup-ticker";
         const buildTeam = (team, standing, isWinner) => {
           const initial = (team.manager || team.name || "?")
             .trim()
@@ -34158,32 +34205,31 @@
 
         container.innerHTML = cardsHTML;
 
-        const dotsEl = document.getElementById("home-matchup-ticker-dots");
+        const dotsEl = document.getElementById(`${trackId}-dots`);
         if (dotsEl) {
-          const perPage = mtCardsPerPage();
+          const perPage = mtCardsPerPage(trackId);
           const pages = Math.max(1, Math.ceil(matchups.length / perPage));
           dotsEl.innerHTML = Array.from(
             { length: pages },
             (_, i) =>
-              `<span class="mt-dot ${i === 0 ? "active" : ""}" onclick="scrollToMatchupCard(${i * perPage})"></span>`,
+              `<span class="mt-dot ${i === 0 ? "active" : ""}" onclick="scrollToMatchupCard(${i * perPage}, '${trackId}')"></span>`,
           ).join("");
         }
 
         currentMatchupIndex = 0;
       }
 
-      function scrollToMatchupCard(index) {
-        const track = document.getElementById("home-matchup-ticker");
-        const viewport = document.getElementById(
-          "home-matchup-ticker-viewport",
-        );
+      function scrollToMatchupCard(index, trackId) {
+        trackId = trackId || "home-matchup-ticker";
+        const track = document.getElementById(trackId);
+        const viewport = document.getElementById(`${trackId}-viewport`);
         const cards = track
           ? track.querySelectorAll(".mt-card")
           : [];
 
         if (!track || !viewport || cards.length === 0) return;
 
-        const perPage = mtCardsPerPage();
+        const perPage = mtCardsPerPage(trackId);
         const maxIndex = Math.max(0, cards.length - perPage);
         currentMatchupIndex = Math.max(0, Math.min(index, maxIndex));
 
@@ -34193,9 +34239,7 @@
           (viewport.offsetWidth - hPad - (perPage - 1) * cardGap) / perPage;
         track.style.transform = `translateX(-${currentMatchupIndex * (cardW + cardGap)}px)`;
 
-        const dots = document.querySelectorAll(
-          "#home-matchup-ticker-dots .mt-dot",
-        );
+        const dots = document.querySelectorAll(`#${trackId}-dots .mt-dot`);
         dots.forEach((dot, i) => {
           dot.classList.toggle(
             "active",
@@ -34206,31 +34250,37 @@
         if (matchupsTickerInterval) {
           clearInterval(matchupsTickerInterval);
           matchupsTickerInterval = setInterval(() => {
-            const next = currentMatchupIndex + mtCardsPerPage();
-            const max = Math.max(0, cards.length - mtCardsPerPage());
-            scrollToMatchupCard(next > max ? 0 : next);
+            const step = mtCardsPerPage(trackId);
+            const next = currentMatchupIndex + step;
+            const max = Math.max(0, cards.length - step);
+            scrollToMatchupCard(next > max ? 0 : next, trackId);
           }, 15000);
         }
       }
 
-      function matchupTickerPrev() {
-        const step = mtCardsPerPage();
-        scrollToMatchupCard(currentMatchupIndex - step);
+      function matchupTickerPrev(trackId) {
+        trackId = trackId || "home-matchup-ticker";
+        const step = mtCardsPerPage(trackId);
+        scrollToMatchupCard(currentMatchupIndex - step, trackId);
       }
 
-      function matchupTickerNext() {
-        const track = document.getElementById("home-matchup-ticker");
+      function matchupTickerNext(trackId) {
+        trackId = trackId || "home-matchup-ticker";
+        const track = document.getElementById(trackId);
         const cards = track ? track.querySelectorAll(".mt-card") : [];
-        const step = mtCardsPerPage();
+        const step = mtCardsPerPage(trackId);
         const max = Math.max(0, cards.length - step);
         const next = currentMatchupIndex + step;
-        scrollToMatchupCard(next > max ? 0 : next);
+        scrollToMatchupCard(next > max ? 0 : next, trackId);
       }
 
       window.addEventListener("resize", () => {
-        if (typeof currentMatchupIndex === "number") {
-          scrollToMatchupCard(currentMatchupIndex);
-        }
+        ["home-matchup-ticker", "season-matchup-ticker"].forEach((tid) => {
+          const track = document.getElementById(tid);
+          if (track && track.querySelectorAll(".mt-card").length > 0) {
+            scrollToMatchupCard(currentMatchupIndex, tid);
+          }
+        });
       });
 
       // ===== PLAYOFF BRACKET FUNCTIONS =====
