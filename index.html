@@ -22781,6 +22781,465 @@
           min-width: 250px;
         }
       }
+
+      /* ═══════════════════════════════════════════
+         MY TEAM SECTION — scoped to #myteam
+      ═══════════════════════════════════════════ */
+      #myteam {
+        --pos-dh-dark: #546e7a;
+        --pos-dh-light: rgba(84, 110, 122, 0.13);
+      }
+      #myteam .mt-panel {
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 1.25rem 1.5rem 1.5rem;
+        max-width: 1180px;
+        margin: 0 auto;
+      }
+      #myteam .mt-empty {
+        padding: 3rem 1.5rem;
+        text-align: center;
+        font-family: "Basis33", sans-serif;
+        color: #666;
+      }
+      #myteam .mt-empty-title {
+        font-family: "Arcade Gamer", sans-serif;
+        color: var(--retro-blue);
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.6rem;
+      }
+
+      /* Team header */
+      #myteam .mt-team-hdr {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 14px;
+        margin-bottom: 14px;
+        border-bottom: 3px solid #ff6b6b;
+      }
+      #myteam .mt-team-logo {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #ddd;
+        background: #eee;
+        flex-shrink: 0;
+      }
+      #myteam .mt-team-name-block {
+        flex: 1;
+        min-width: 0;
+      }
+      #myteam .mt-team-name {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.78rem;
+        color: var(--retro-blue);
+        letter-spacing: 0.5px;
+        line-height: 1.5;
+      }
+      #myteam .mt-team-meta {
+        font-family: "Basis33", sans-serif;
+        font-size: 1rem;
+        color: #666;
+        margin-top: 4px;
+      }
+      #myteam .mt-score-block {
+        text-align: right;
+        flex-shrink: 0;
+      }
+      #myteam .mt-score-label {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.45rem;
+        color: #aaa;
+        letter-spacing: 1px;
+      }
+      #myteam .mt-score {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.95rem;
+        color: var(--retro-blue);
+        margin-top: 4px;
+      }
+      #myteam .mt-score-opp {
+        font-family: "Basis33", sans-serif;
+        font-size: 0.95rem;
+        color: var(--retro-red);
+        margin-top: 2px;
+      }
+      #myteam .mt-score-opp.winning {
+        color: var(--retro-green);
+      }
+
+      /* Tabs */
+      #myteam .mt-tabs {
+        display: flex;
+        border-bottom: 2px solid #eee;
+        margin-bottom: 14px;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      #myteam .mt-tabs::-webkit-scrollbar {
+        display: none;
+      }
+      #myteam .mt-tab {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.55rem;
+        color: #999;
+        padding: 9px 14px 11px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        white-space: nowrap;
+        letter-spacing: 0.5px;
+      }
+      #myteam .mt-tab.active {
+        color: var(--retro-blue);
+        border-bottom-color: var(--retro-blue);
+      }
+
+      /* Two-column lineup */
+      #myteam .mt-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      #myteam .mt-col h3 {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.7rem;
+        color: var(--retro-blue);
+        letter-spacing: 0.5px;
+        margin: 0 0 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      #myteam .mt-col-count {
+        font-family: "Basis33", sans-serif;
+        font-size: 0.85rem;
+        color: #aaa;
+        font-weight: normal;
+        letter-spacing: 0.5px;
+        text-transform: none;
+      }
+      #myteam .mt-box {
+        border: 1px solid #eee;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      /* Row header */
+      #myteam .mt-row-header {
+        display: grid;
+        grid-template-columns: 38px 32px 1fr 70px 60px 12px 56px;
+        gap: 5px;
+        align-items: center;
+        padding: 5px 8px 6px;
+        background: #f7f7f7;
+        border-bottom: 1px solid #e8e8e8;
+      }
+      #myteam .mt-row-header span {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.42rem;
+        color: #bbb;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+      }
+      #myteam .mt-pts-toggle {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.42rem;
+        color: var(--retro-blue);
+        background: rgba(0, 72, 186, 0.07);
+        border: 1px solid rgba(0, 72, 186, 0.2);
+        border-radius: 3px;
+        padding: 3px 6px;
+        cursor: pointer;
+        letter-spacing: 0.5px;
+        white-space: nowrap;
+        text-align: center;
+      }
+      #myteam .mt-pts-toggle:hover {
+        background: rgba(0, 72, 186, 0.14);
+      }
+
+      /* Slot column badges */
+      #myteam .mt-slot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.18rem 0.32rem;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        min-width: 36px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        user-select: none;
+      }
+      #myteam .mt-slot.slot-IL {
+        color: #fff;
+        background: var(--retro-red);
+      }
+      #myteam .mt-slot.slot-BN {
+        color: var(--pos-dh-dark);
+        background: var(--pos-dh-light);
+      }
+      #myteam .mt-slot.slot-Util {
+        color: var(--pos-dh-dark);
+        background: var(--pos-dh-light);
+      }
+
+      /* Eligibility badges (smaller) */
+      #myteam .mt-elig {
+        padding: 0.05rem 0.28rem;
+        border-radius: 3px;
+        font-size: 0.62rem;
+        font-weight: 700;
+        min-width: 22px;
+        text-transform: uppercase;
+        white-space: nowrap;
+        display: inline-block;
+      }
+
+      /* Player row */
+      #myteam .mt-row {
+        display: grid;
+        grid-template-columns: 38px 32px 1fr 70px 60px 12px 56px;
+        gap: 5px;
+        align-items: center;
+        padding: 6px 8px;
+        border-bottom: 1px solid #f2f2f2;
+        background: #fff;
+        min-height: 50px;
+      }
+      #myteam .mt-row:nth-child(even) {
+        background: #fafafa;
+      }
+      #myteam .mt-row:hover {
+        background: #f0f6ff;
+      }
+      #myteam .mt-row.is-il {
+        background: #fff5f5;
+      }
+      #myteam .mt-row.is-il:nth-child(even) {
+        background: #fff0f0;
+      }
+      #myteam .mt-row.is-bench {
+        opacity: 0.78;
+      }
+      #myteam .mt-row.is-bench:hover {
+        opacity: 1;
+        background: #fafff5;
+      }
+
+      /* Headshot */
+      #myteam .mt-hs {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: #e0e0e0;
+        border: 1.5px solid #e0e0e0;
+        flex-shrink: 0;
+      }
+
+      /* Player info */
+      #myteam .mt-info {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      #myteam .mt-pname {
+        font-family: "Basis33", sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #222;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #myteam .mt-pmeta {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: nowrap;
+        overflow: hidden;
+      }
+      #myteam .mt-mlb-logo {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+      #myteam .mt-mlb-abbr {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.45rem;
+        color: #777;
+        letter-spacing: 0.3px;
+      }
+
+      /* Game column */
+      #myteam .mt-game {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        font-family: "Basis33", sans-serif;
+        font-size: 0.85rem;
+        color: #555;
+      }
+      #myteam .mt-game-none {
+        color: #ccc;
+      }
+      #myteam .mt-game-il {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.45rem;
+        color: var(--retro-red);
+        letter-spacing: 0.3px;
+      }
+
+      /* Points */
+      #myteam .mt-pts {
+        text-align: center;
+      }
+      #myteam .mt-pts-val {
+        font-family: "Basis33", sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--retro-blue);
+        line-height: 1.1;
+        display: block;
+      }
+      #myteam .mt-pts-val.zero {
+        color: #ccc;
+      }
+      #myteam .mt-pts-sub {
+        font-family: "Basis33", sans-serif;
+        font-size: 0.75rem;
+        color: #bbb;
+        display: block;
+      }
+
+      /* Health dot */
+      #myteam .mt-dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        border: 1.5px solid rgba(0, 0, 0, 0.1);
+        justify-self: center;
+      }
+      #myteam .mt-dot.h-active {
+        background: #2ecc71;
+      }
+      #myteam .mt-dot.h-dtd {
+        background: var(--retro-orange);
+      }
+      #myteam .mt-dot.h-il {
+        background: var(--retro-red);
+      }
+
+      /* Bench divider */
+      #myteam .mt-bench-div {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px;
+        background: #f5f5f5;
+        border-top: 1px solid #e8e8e8;
+        border-bottom: 1px solid #e8e8e8;
+      }
+      #myteam .mt-bench-lbl {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.5rem;
+        color: #aaa;
+        letter-spacing: 1px;
+      }
+      #myteam .mt-bench-line {
+        flex: 1;
+        height: 1px;
+        background: #ddd;
+      }
+
+      /* Total row */
+      #myteam .mt-total-row {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 10px 4px;
+        border-top: 2px solid #eee;
+        background: #fafafa;
+      }
+      #myteam .mt-total-lbl {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.45rem;
+        color: #bbb;
+        letter-spacing: 1px;
+      }
+      #myteam .mt-total-val {
+        font-family: "Basis33", sans-serif;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--retro-blue);
+      }
+
+      /* Mobile: stack columns */
+      @media (max-width: 900px) {
+        #myteam .mt-grid {
+          grid-template-columns: 1fr;
+        }
+        #myteam .mt-team-name {
+          font-size: 0.62rem;
+        }
+        #myteam .mt-team-meta {
+          font-size: 0.85rem;
+        }
+        #myteam .mt-score {
+          font-size: 0.75rem;
+        }
+        #myteam .mt-score-opp {
+          font-size: 0.78rem;
+        }
+        #myteam .mt-panel {
+          padding: 0.85rem 0.85rem 1rem;
+        }
+      }
+      @media (max-width: 600px) {
+        #myteam .mt-row-header,
+        #myteam .mt-row {
+          grid-template-columns: 34px 28px 1fr 56px 8px;
+          gap: 4px;
+          padding: 5px 6px;
+        }
+        #myteam .mt-row-header > span:nth-child(4),
+        #myteam .mt-row > .mt-game {
+          display: none;
+        }
+        #myteam .mt-row-header > span:nth-child(5) {
+          grid-column: 4;
+        }
+        #myteam .mt-row-header > span:nth-child(6) {
+          grid-column: 5;
+        }
+        #myteam .mt-row-header > span:nth-child(7) {
+          display: none;
+        }
+        #myteam .mt-row > .mt-pts {
+          grid-column: 4;
+        }
+        #myteam .mt-row > .mt-dot {
+          grid-column: 5;
+        }
+        #myteam .mt-pname {
+          font-size: 0.92rem;
+        }
+        #myteam .mt-team-hdr {
+          gap: 8px;
+        }
+      }
     </style>
   </head>
 
@@ -22869,6 +23328,17 @@
         >
           <img src="data/page_logos/home_logo.png" alt="Home" />
           <span>Home</span>
+        </div>
+        <div
+          class="mobile-menu-item auth-only-nav"
+          style="display: none"
+          onclick="
+            showSection('myteam');
+            closeMobileMenu();
+          "
+        >
+          <img src="data/page_logos/my_team_logo.png" alt="My Team" />
+          <span>My Team</span>
         </div>
         <div
           class="mobile-menu-item"
@@ -23001,6 +23471,13 @@
     <!-- Old top nav - hidden -->
     <nav class="top-nav">
       <button onclick="showSection('home')" class="nav-btn active">Home</button>
+      <button
+        onclick="showSection('myteam')"
+        class="nav-btn auth-only-nav"
+        style="display: none"
+      >
+        My Team
+      </button>
       <button onclick="showSection('standings')" class="nav-btn">
         Seasons
       </button>
@@ -23037,6 +23514,14 @@
       <div class="side-nav-item active" onclick="showSection('home')">
         <img src="data/page_logos/home_logo.png" alt="Home" />
         <span class="side-nav-tooltip">Home</span>
+      </div>
+      <div
+        class="side-nav-item auth-only-nav"
+        style="display: none"
+        onclick="showSection('myteam')"
+      >
+        <img src="data/page_logos/my_team_logo.png" alt="My Team" />
+        <span class="side-nav-tooltip">My Team</span>
       </div>
       <div class="side-nav-item" onclick="showSection('standings')">
         <img
@@ -27072,6 +27557,16 @@
                 </li>
               </ul>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- My Team Section (auth-gated) -->
+      <div id="myteam" class="section">
+        <div class="mt-panel" id="myteam-panel">
+          <div class="mt-empty">
+            <div class="mt-empty-title">Sign in to view your team</div>
+            <div>Log in with your manager account to access your lineup.</div>
           </div>
         </div>
       </div>
@@ -31353,8 +31848,6 @@
       function normalizeAndMergeManagerData(managersData, historyData) {
         const managerMap = {};
 
-        console.log("Processing managers:", managersData.length);
-
         // Process each manager's data
         managersData.forEach((manager) => {
           // Determine normalized name based on season history
@@ -31367,53 +31860,28 @@
 
           // Handle Logan based on team keys in 2023 or years active
           if (normalizedName === "Logan") {
-            console.log("Found Logan:", manager.season_history);
-
-            // Check if they have 2023 season
             const season2023 = manager.season_history.find(
               (s) => s.year === 2023,
             );
 
             if (season2023) {
-              console.log("Logan has 2023, team:", season2023.team_name);
-              // Use team name to distinguish
               if (season2023.team_name.includes("Draft Pool")) {
                 normalizedName = "Logan C";
-                console.log("-> Logan C (Draft Pool)");
               } else if (
                 season2023.team_name.includes("Peanut Butter") ||
                 season2023.team_name.includes("Elly")
               ) {
                 normalizedName = "Logan S";
-                console.log("-> Logan S (Peanut Butter & Elly)");
-              } else {
-                console.log("-> Unknown team in 2023:", season2023.team_name);
               }
             } else {
-              // No 2023 season - use years to determine
               const years = manager.season_history.map((s) => s.year);
               const maxYear = Math.max(...years);
               const minYear = Math.min(...years);
 
-              console.log(
-                "Logan years:",
-                years,
-                "min:",
-                minYear,
-                "max:",
-                maxYear,
-              );
-
               if (maxYear <= 2022) {
-                // Only played 2020-2022 = Logan C
                 normalizedName = "Logan C";
-                console.log("-> Logan C (only 2020-2022)");
               } else if (minYear >= 2024) {
-                // Only played 2024+ = Logan S
                 normalizedName = "Logan S";
-                console.log("-> Logan S (only 2024+)");
-              } else {
-                console.log("-> Logan with unclear years");
               }
             }
           }
@@ -31431,7 +31899,6 @@
             !(normalizedName === "Logan C" || normalizedName === "Logan S");
 
           if (shouldMerge) {
-            console.log("Merging into existing manager:", normalizedName);
             // Merge stats
             managerMap[normalizedName].total_wins += manager.total_wins;
             managerMap[normalizedName].total_losses += manager.total_losses;
@@ -31456,7 +31923,6 @@
               manager.first_season,
             );
           } else {
-            console.log("Creating new manager entry:", normalizedName);
             // New manager entry
             managerMap[normalizedName] = {
               ...manager,
@@ -31465,8 +31931,6 @@
             };
           }
         });
-
-        console.log("Final managers:", Object.keys(managerMap));
 
         // Recalculate derived stats for merged managers
         Object.values(managerMap).forEach((manager) => {
@@ -31687,7 +32151,6 @@
               : null,
           };
 
-          console.log("Split Logan 2023 stats:", loganStats);
           return loganStats;
         } catch (error) {
           console.error("Error splitting Logan stats:", error);
@@ -31700,7 +32163,6 @@
         const logan2023Stats = await splitLogan2023Stats();
 
         if (!logan2023Stats) {
-          console.log("No Logan split needed or data unavailable");
           return managersData;
         }
 
@@ -31746,8 +32208,6 @@
               manager.avg_finish =
                 manager.season_history.reduce((sum, s) => sum + s.rank, 0) /
                 manager.season_history.length;
-
-              console.log(`Updated ${manager.manager_name} with 2023 stats`);
             }
           }
         });
@@ -32786,7 +33246,6 @@
         // Find team info
         const team = teamData.find((t) => t.team_key === teamKey);
         if (!team) {
-          console.log("Team not found:", teamKey);
           return;
         }
 
@@ -33321,10 +33780,6 @@
           type === "hitting" ? "table" : "none";
         document.getElementById("pitching-stats-table").style.display =
           type === "pitching" ? "table" : "none";
-      }
-
-      function loadWeeklyStats() {
-        // This function is no longer used - replaced by selectWeek
       }
 
       function renderWeeklyStats(
@@ -35608,13 +36063,11 @@
           }
 
           if (!scoresResponse.ok) {
-            console.log("No scores data available for chart");
             chartContainer.style.display = "none";
             return;
           }
 
           const scoresData = await scoresResponse.json();
-          console.log("Loaded scores data:", scoresData.length, "entries");
 
           // Process scores into both weekly and cumulative rankings
           currentChartData = processScoresForChart(
@@ -35623,14 +36076,8 @@
             teamLogos,
             teamData,
           );
-          console.log(
-            "Processed chart data:",
-            currentChartData.weeklyTeams.length,
-            "teams",
-          );
 
           if (currentChartData.weeklyTeams.length === 0) {
-            console.log("No team data to display");
             chartContainer.style.display = "none";
             return;
           }
@@ -35821,9 +36268,6 @@
         // Sort weekly by average rank, cumulative by final rank
         weeklyTeams.sort((a, b) => a.avgRank - b.avgRank);
         cumulativeTeams.sort((a, b) => a.finalRank - b.finalRank);
-
-        console.log("Teams with ranking data:", weeklyTeams.length);
-        console.log("Weeks:", weeks.length);
 
         return {
           weeklyTeams: weeklyTeams,
@@ -36846,8 +37290,6 @@
       async function calculateDraftGrades() {
         if (draftGradesLoaded) return managerDraftGrades;
 
-        console.log("Calculating draft grades...");
-
         // Load keepers data
         let allKeepersData = {};
         try {
@@ -36863,8 +37305,6 @@
         if (Object.keys(expectedPointsByRound).length === 0) {
           await calculateExpectedPoints();
         }
-
-        console.log("Using expected points by round:", expectedPointsByRound);
 
         // Years to analyze (completed seasons only)
         const years = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
@@ -37084,12 +37524,6 @@
           }
         }
 
-        console.log(
-          "Draft grades calculated:",
-          Object.keys(managerDraftGrades).length,
-          "managers",
-        );
-        console.log("Sample draft grades:", managerDraftGrades);
         draftGradesLoaded = true;
         return managerDraftGrades;
       }
@@ -37513,7 +37947,6 @@
                   (s) => (s.team_score || s.points || 0) > 0,
                 );
                 if (!hasGames && year === 2026) {
-                  console.log("Skipping 2026 - no games played yet");
                   continue;
                 }
 
@@ -39262,6 +39695,8 @@
           }
         } else if (sectionId === "opt-in") {
           await initializeOptInForm();
+        } else if (sectionId === "myteam") {
+          await loadMyTeam();
         }
       }
 
@@ -39846,7 +40281,6 @@
 
       // ===== LOAD AWARDS =====
       async function loadAwards() {
-        console.log("Loading awards...");
         const loadingEl = document.getElementById("awards-loading");
         const errorEl = document.getElementById("awards-error");
         const contentEl = document.getElementById("awards-content");
@@ -39859,8 +40293,6 @@
           // Load all seasons data
           const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025];
           const seasonData = {};
-
-          console.log("Fetching data for seasons:", seasons);
 
           for (const year of seasons) {
             try {
@@ -39878,10 +40310,6 @@
                 `data/historical/${year}/player_stats.json`,
               );
               draftResponse = await fetch(`data/historical/${year}/draft.json`);
-
-              console.log(
-                `${year}: standings=${standingsResponse.ok}, teams=${teamsResponse.ok}, playerStats=${playerStatsResponse.ok}`,
-              );
 
               if (standingsResponse.ok && teamsResponse.ok) {
                 const standings = await standingsResponse.json();
@@ -39928,8 +40356,6 @@
               console.error(`Error loading ${year}:`, e);
             }
           }
-
-          console.log("Loaded season data for:", Object.keys(seasonData));
 
           // Calculate awards
           const regularSeasonWinners = [];
@@ -40179,17 +40605,6 @@
             }
           }
 
-          console.log("Calculated awards:", {
-            regularSeasonWinners: regularSeasonWinners.length,
-            scoringChampions: scoringChampions.length,
-            garbageAwards: garbageAwards.length,
-            clownAwards: clownAwards.length,
-            troutAwards: troutAwards.length,
-            degromAwards: degromAwards.length,
-            diamondAwards: diamondAwards.length,
-            bustAwards: bustAwards.length,
-          });
-
           // Sort all by year (most recent first)
           [
             regularSeasonWinners,
@@ -40299,7 +40714,6 @@
                 `,
           );
 
-          console.log("Awards populated successfully");
           loadingEl.style.display = "none";
           contentEl.style.display = "block";
         } catch (error) {
@@ -40344,9 +40758,6 @@
           if (resp.ok) {
             const data = await resp.json();
             yahooPlayerPositionsCache = data.players || [];
-            console.log(
-              `Cached ${yahooPlayerPositionsCache.length} Yahoo player positions`,
-            );
           } else {
             yahooPlayerPositionsCache = [];
           }
@@ -40461,7 +40872,6 @@
             const pitchers = data.pitchers || [];
 
             if (batters.length === 0 && pitchers.length === 0) {
-              console.log(`Skipping ${system} - no projection data`);
               continue;
             }
 
@@ -40578,10 +40988,6 @@
                 playerProjections[playerKey].mlb_id = player.mlb_id;
               }
             });
-
-            console.log(
-              `Loaded ${system}: ${batters.length} batters, ${pitchers.length} pitchers`,
-            );
           } catch (e) {
             console.log(
               `Could not load ${system} projections for averaging:`,
@@ -40618,9 +41024,6 @@
               matched++;
             }
           });
-          console.log(
-            `Yahoo positions (avg projections): matched ${matched}/${yahooPlayers.length} players`,
-          );
         }
 
         // Calculate averages and detailed stats
@@ -40720,13 +41123,6 @@
         homeProjectionsBatters = homeDataBatters;
         homeProjectionsPitchers = homeDataPitchers;
         homeProjectionsLoaded = true;
-
-        console.log(
-          `Loaded average projections for ${Object.keys(averageProjectionsMap).length} players`,
-        );
-        console.log(
-          `Home projections: ${homeProjectionsBatters.length} batters, ${homeProjectionsPitchers.length} pitchers`,
-        );
         averageProjectionsLoaded = true;
       }
 
@@ -40849,10 +41245,6 @@
             allProjectionBatters = [...homeProjectionsBatters];
             allProjectionPitchers = [...homeProjectionsPitchers];
 
-            console.log(
-              `Loaded Home view: ${allProjectionBatters.length} batters and ${allProjectionPitchers.length} pitchers`,
-            );
-
             // Handle Shohei Ohtani specially - normalize position
             allProjectionBatters.forEach((p) => {
               const nameLower = p.name?.toLowerCase() || "";
@@ -40913,10 +41305,6 @@
 
           allProjectionBatters = projectionsData.batters || [];
           allProjectionPitchers = projectionsData.pitchers || [];
-
-          console.log(
-            `Loaded ${allProjectionBatters.length} batters and ${allProjectionPitchers.length} pitchers`,
-          );
 
           // BAT X now has full projections — no toast needed
 
@@ -42142,16 +42530,11 @@
             }
             firebaseDb = firebase.database();
             firebaseInitialized = true;
-            console.log("Firebase initialized successfully");
 
             // Monitor connection state
             firebaseDb.ref(".info/connected").on("value", (snapshot) => {
               const connected = snapshot.val() === true;
               updateFirebaseStatus(connected);
-              console.log(
-                "Firebase connection:",
-                connected ? "connected" : "disconnected",
-              );
             });
 
             // Set up real-time listener for keeper selections
@@ -42245,7 +42628,6 @@
                 }
               }
 
-              console.log("Keeper data updated from Firebase");
               // Invalidate merged roster cache so it rebuilds with new keeper data
               mergedRostersCache = null;
               displayLeagueKeepers();
@@ -42268,23 +42650,13 @@
       }
 
       async function saveKeepersToFirebase(teamKey, keepers) {
-        console.log(
-          "saveKeepersToFirebase called, firebaseDb:",
-          !!firebaseDb,
-          "firebaseInitialized:",
-          firebaseInitialized,
-        );
-
         if (!firebaseDb) {
-          console.log("Firebase not initialized, saving to localStorage only");
           return false;
         }
 
         try {
           const sanitizedKey = sanitizeFirebaseKey(teamKey);
-          console.log("Attempting to save to Firebase:", sanitizedKey, keepers);
           await firebaseDb.ref(`keepers_2026/${sanitizedKey}`).set(keepers);
-          console.log(`Successfully saved keepers for ${teamKey} to Firebase`);
           return true;
         } catch (e) {
           console.error("Error saving to Firebase:", e);
@@ -42703,6 +43075,9 @@
           showAdminTeamSelector(pendingPostLoginCallback, adminSelectorOptions);
         } else if (pendingPostLoginCallback) {
           pendingPostLoginCallback();
+        } else {
+          // No feature-specific callback — auto-navigate to My Team page
+          showSection("myteam");
         }
         authPostLoginCallback = null;
       }
@@ -42765,7 +43140,6 @@
           }
 
           updateAuthUI();
-          console.log("Session restored for", currentSession.displayName);
         } catch (e) {
           console.error("Error restoring session:", e);
           localStorage.removeItem("fcw_session");
@@ -42804,7 +43178,6 @@
         userConfig = null;
         localStorage.removeItem("fcw_session");
         updateAuthUI();
-        console.log("Session logged out");
       }
 
       let userMenuTimeout;
@@ -42876,6 +43249,28 @@
           if (mobileLogin) mobileLogin.style.display = "flex";
           if (mobileUser) mobileUser.style.display = "none";
         }
+
+        // Toggle My Team and other auth-only nav entries
+        const loggedIn = !!currentSession;
+        document.querySelectorAll(".auth-only-nav").forEach((el) => {
+          if (!loggedIn) {
+            el.style.display = "none";
+          } else if (el.classList.contains("side-nav-item")) {
+            el.style.display = "flex";
+          } else if (el.classList.contains("mobile-menu-item")) {
+            el.style.display = "flex";
+          } else {
+            el.style.display = "";
+          }
+        });
+
+        // If logged out and currently on My Team, redirect to home
+        if (!loggedIn) {
+          const mtSection = document.getElementById("myteam");
+          if (mtSection && mtSection.classList.contains("active")) {
+            showSection("home");
+          }
+        }
       }
 
       function getSessionTeamKey() {
@@ -42924,6 +43319,586 @@
 
       function isAdmin() {
         return currentSession?.role === "admin";
+      }
+
+      // ===== MY TEAM PAGE =====
+      const MT_PERIODS = [
+        { key: "last7", label: "LAST 7", sub: "last 7" },
+        { key: "current_week", label: "THIS WK", sub: "this wk" },
+        { key: "ytd", label: "SEASON", sub: "season" },
+      ];
+      let mtCurrentPeriodIdx = 1; // default THIS WK
+      const MT_BAT_SLOT_ORDER = [
+        "C",
+        "1B",
+        "2B",
+        "3B",
+        "SS",
+        "OF",
+        "OF",
+        "OF",
+        "Util",
+        "Util",
+        "Util",
+        "Util",
+      ];
+      const MT_PIT_SLOT_ORDER = ["SP", "SP", "SP", "RP", "P", "P"];
+
+      function mtEsc(s) {
+        return String(s == null ? "" : s).replace(
+          /[&<>"']/g,
+          (c) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            })[c],
+        );
+      }
+
+      function mtBadgeClass(pos) {
+        // Maps position to existing position-badge color class
+        const map = {
+          C: "pos-C",
+          "1B": "pos-1B",
+          "2B": "pos-2B",
+          "3B": "pos-3B",
+          SS: "pos-SS",
+          OF: "pos-OF",
+          LF: "pos-OF",
+          CF: "pos-OF",
+          RF: "pos-OF",
+          Util: "pos-Util",
+          DH: "pos-Util",
+          SP: "pos-SP",
+          RP: "pos-RP",
+          P: "pos-P",
+        };
+        return map[pos] || "";
+      }
+
+      function mtSlotBadgeHTML(selectedPos) {
+        if (selectedPos === "BN") {
+          return `<span class="mt-slot slot-BN">BN</span>`;
+        }
+        if (selectedPos === "IL" || selectedPos === "IL+" || selectedPos === "NA") {
+          return `<span class="mt-slot slot-IL">${mtEsc(selectedPos)}</span>`;
+        }
+        const cls = mtBadgeClass(selectedPos);
+        return `<span class="mt-slot position-badge ${cls}">${mtEsc(
+          selectedPos,
+        )}</span>`;
+      }
+
+      function mtEligBadgesHTML(eligible, selectedPos) {
+        if (!Array.isArray(eligible)) return "";
+        const filtered = eligible.filter(
+          (p) => p && p !== "Util" && p !== "BN" && p !== "IL" && p !== "P",
+        );
+        // Show up to 3 eligibility badges
+        return filtered
+          .slice(0, 3)
+          .map((p) => {
+            const cls = mtBadgeClass(p);
+            return `<span class="mt-elig position-badge ${cls}">${mtEsc(p)}</span>`;
+          })
+          .join("");
+      }
+
+      function mtHealthDot(status) {
+        const s = (status || "").toUpperCase();
+        if (s === "IL10" || s === "IL15" || s === "IL60" || s === "IL" || s === "NA")
+          return "h-il";
+        if (s === "DTD" || s === "DAY" || s === "Q") return "h-dtd";
+        return "h-active";
+      }
+
+      function mtPlayerHeadshot(p) {
+        if (p.headshot_url) return p.headshot_url;
+        if (p.player_id) {
+          return `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.player_id}/headshot/67/current`;
+        }
+        return "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2VlZSIvPjwvc3ZnPg==";
+      }
+
+      function mtRowHTML(player, periodPoints, statusOverride) {
+        const selectedPos = statusOverride || player.selected_position || "BN";
+        const isIL =
+          selectedPos === "IL" ||
+          selectedPos === "IL+" ||
+          selectedPos === "NA";
+        const isBench = selectedPos === "BN";
+        const dot = isIL
+          ? "h-il"
+          : mtHealthDot(player.status);
+        const mlbAbbr = player.mlb_team || "";
+        const mlbLogo = getMLBTeamLogo(mlbAbbr);
+        const eligHTML = mtEligBadgesHTML(
+          player.eligible_positions,
+          selectedPos,
+        );
+        const last7 = (periodPoints.last7 || 0).toFixed(1);
+        const week = (periodPoints.current_week || 0).toFixed(1);
+        const season = (periodPoints.ytd || 0).toFixed(1);
+        const periodKey = MT_PERIODS[mtCurrentPeriodIdx].key;
+        const sub = MT_PERIODS[mtCurrentPeriodIdx].sub;
+        const showVal = parseFloat(periodPoints[periodKey] || 0);
+        const valStr = showVal.toFixed(1);
+        const zero = showVal === 0 ? " zero" : "";
+
+        let gameHTML;
+        if (isIL) {
+          gameHTML = `<div class="mt-game"><span class="mt-game-il">${mtEsc(
+            (player.status || "IL").toUpperCase(),
+          )}</span></div>`;
+        } else {
+          gameHTML = `<div class="mt-game mt-game-none">—</div>`;
+        }
+
+        const rowCls = isIL
+          ? "mt-row is-il"
+          : isBench
+            ? "mt-row is-bench"
+            : "mt-row";
+
+        const mlbLogoHTML = mlbLogo
+          ? `<img class="mt-mlb-logo" src="${mtEsc(mlbLogo)}" alt="">`
+          : "";
+
+        return `
+          <div class="${rowCls}">
+            ${mtSlotBadgeHTML(selectedPos)}
+            <img class="mt-hs" src="${mtEsc(mtPlayerHeadshot(player))}" alt="" loading="lazy">
+            <div class="mt-info">
+              <span class="mt-pname">${mtEsc(player.name)}</span>
+              <div class="mt-pmeta">
+                ${mlbLogoHTML}
+                <span class="mt-mlb-abbr">${mtEsc(mlbAbbr)}</span>
+                ${eligHTML}
+              </div>
+            </div>
+            ${gameHTML}
+            <div class="mt-pts" data-last7="${last7}" data-week="${week}" data-season="${season}">
+              <span class="mt-pts-val${zero}">${valStr}</span>
+              <span class="mt-pts-sub">${mtEsc(sub)}</span>
+            </div>
+            <span class="mt-dot ${dot}"></span>
+            <div></div>
+          </div>
+        `;
+      }
+
+      function mtFillSlots(players, slotOrder) {
+        // Greedy fill: for each slot, find the first matching un-assigned player
+        const used = new Set();
+        const filled = [];
+        for (const slot of slotOrder) {
+          let chosen = null;
+          for (const p of players) {
+            if (used.has(p)) continue;
+            if (p.selected_position === slot) {
+              chosen = p;
+              break;
+            }
+          }
+          if (chosen) {
+            used.add(chosen);
+            filled.push({ player: chosen, slot });
+          } else {
+            filled.push({ player: null, slot });
+          }
+        }
+        return filled;
+      }
+
+      function mtFormatRecord(team) {
+        if (!team) return "";
+        const w = team.wins ?? 0,
+          l = team.losses ?? 0,
+          t = team.ties ?? 0;
+        return t > 0 ? `${w}-${l}-${t}` : `${w}-${l}`;
+      }
+
+      function mtOrdinal(n) {
+        if (!n) return "";
+        const s = ["th", "st", "nd", "rd"];
+        const v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+      }
+
+      async function loadMyTeam() {
+        const panel = document.getElementById("myteam-panel");
+        if (!panel) return;
+
+        // Logged-out state
+        if (!isAuthenticated()) {
+          panel.innerHTML = `
+            <div class="mt-empty">
+              <div class="mt-empty-title">Sign in to view your team</div>
+              <div>Log in with your manager account to access your lineup.</div>
+            </div>`;
+          return;
+        }
+
+        const teamKey = getSessionTeamKey();
+        const teamName = getSessionTeamName();
+        const managerName = getSessionManagerName();
+        const teamLogo = fixTeamLogo(getSessionTeamLogo() || "");
+
+        // Admin without team selected
+        if (isAdmin() && !teamKey) {
+          panel.innerHTML = `
+            <div class="mt-empty">
+              <div class="mt-empty-title">Admin: select a team to view</div>
+              <button class="mt-pts-toggle" style="font-size:.55rem;padding:8px 14px" onclick="showAdminTeamSelector(loadMyTeam)">Choose Team</button>
+            </div>`;
+          return;
+        }
+
+        if (!teamKey) {
+          panel.innerHTML = `
+            <div class="mt-empty">
+              <div class="mt-empty-title">Could not match your account to a team</div>
+              <div>Contact the commissioner to fix your account mapping.</div>
+            </div>`;
+          return;
+        }
+
+        // Show loading
+        panel.innerHTML = `
+          <div class="mt-empty">
+            <div class="mt-empty-title">Loading your team…</div>
+          </div>`;
+
+        try {
+          // Fetch all needed data in parallel
+          const [windowsResp, standingsResp] = await Promise.all([
+            fetch("data/current_season/player_stats_windows.json"),
+            fetch("data/current_season/standings.json"),
+          ]);
+          const windowsData = await windowsResp.json();
+          const standings = await standingsResp.json();
+
+          const currentWeek = windowsData.current_week || 1;
+
+          // Fetch this week's matchup
+          let matchup = null;
+          try {
+            const scoresResp = await fetch(
+              `data/current_season/week_${currentWeek}_scores.json`,
+            );
+            if (scoresResp.ok) {
+              const scores = await scoresResp.json();
+              matchup = scores.find((m) => m.team_key === teamKey);
+            }
+          } catch (_) {}
+
+          // Build per-player points map across all three windows
+          const periods = ["last7", "current_week", "ytd"];
+          const playerPoints = {}; // player_id -> { last7, current_week, ytd }
+          let myTeamPlayers = []; // From the most-detailed window (current_week or ytd)
+          for (const periodKey of periods) {
+            const list = windowsData.windows?.[periodKey]?.players || [];
+            for (const p of list) {
+              if (p.team_key !== teamKey) continue;
+              if (!playerPoints[p.player_id]) {
+                playerPoints[p.player_id] = { last7: 0, current_week: 0, ytd: 0 };
+              }
+              playerPoints[p.player_id][periodKey] = p.fantasy_points || 0;
+            }
+          }
+          // Use ytd for the canonical roster (has all rostered players)
+          myTeamPlayers = (windowsData.windows?.ytd?.players || []).filter(
+            (p) => p.team_key === teamKey,
+          );
+
+          // Standings — current team + opponent
+          const standingsArr = Array.isArray(standings) ? standings : [];
+          const myStanding = standingsArr.find((s) => s.team_key === teamKey);
+          let oppStanding = null,
+            oppManagerName = null;
+          if (matchup && matchup.opponent_key) {
+            oppStanding = standingsArr.find(
+              (s) => s.team_key === matchup.opponent_key,
+            );
+            if (oppStanding) {
+              oppManagerName = normalizeManagerName(
+                oppStanding.manager,
+                2026,
+                oppStanding.team_name,
+                oppStanding.team_key,
+              );
+            }
+          }
+
+          // Split players by type
+          const batters = myTeamPlayers.filter(
+            (p) => p.position_type === "B",
+          );
+          const pitchers = myTeamPlayers.filter(
+            (p) => p.position_type === "P",
+          );
+
+          // Active vs bench/IL
+          const isBenchOrIL = (p) =>
+            ["BN", "IL", "IL+", "NA"].includes(p.selected_position);
+          const batActive = batters.filter((p) => !isBenchOrIL(p));
+          const batBench = batters.filter((p) => isBenchOrIL(p));
+          const pitActive = pitchers.filter((p) => !isBenchOrIL(p));
+          const pitBench = pitchers.filter((p) => isBenchOrIL(p));
+
+          // Fill slots so we render in canonical order
+          const batFilled = mtFillSlots(batActive, MT_BAT_SLOT_ORDER);
+          // Any active batters not assigned to a canonical slot get appended
+          const usedBat = new Set(
+            batFilled.filter((s) => s.player).map((s) => s.player),
+          );
+          const batExtras = batActive.filter((p) => !usedBat.has(p));
+          const pitFilled = mtFillSlots(pitActive, MT_PIT_SLOT_ORDER);
+          const usedPit = new Set(
+            pitFilled.filter((s) => s.player).map((s) => s.player),
+          );
+          const pitExtras = pitActive.filter((p) => !usedPit.has(p));
+
+          // Render rows for a list of {player, slot} or just players
+          function rowsFromFilled(filled) {
+            return filled
+              .filter((s) => s.player)
+              .map((s) => {
+                const pts = playerPoints[s.player.player_id] || {
+                  last7: 0,
+                  current_week: 0,
+                  ytd: 0,
+                };
+                return mtRowHTML(s.player, pts, s.slot);
+              })
+              .join("");
+          }
+          function rowsFromPlayers(players) {
+            return players
+              .map((p) => {
+                const pts = playerPoints[p.player_id] || {
+                  last7: 0,
+                  current_week: 0,
+                  ytd: 0,
+                };
+                return mtRowHTML(p, pts);
+              })
+              .join("");
+          }
+
+          const batCount = batActive.length;
+          const pitCount = pitActive.length;
+
+          // Compute totals for each window
+          function totalFor(list, key) {
+            return list.reduce(
+              (sum, p) =>
+                sum + (playerPoints[p.player_id]?.[key] || 0),
+              0,
+            );
+          }
+
+          // Header data
+          const place = myStanding ? mtOrdinal(myStanding.rank) : "";
+          const record = mtFormatRecord(myStanding);
+
+          let scoreBlockHTML = "";
+          if (matchup) {
+            const myScore = (matchup.team_score || 0).toFixed(2);
+            const oppScore = (matchup.opponent_score || 0).toFixed(2);
+            const winning = matchup.team_score > matchup.opponent_score;
+            const arrow = winning ? "↑" : "↓";
+            const oppLabel = oppManagerName
+              ? `vs ${mtEsc(oppManagerName)}`
+              : "vs ?";
+            scoreBlockHTML = `
+              <div class="mt-score-block">
+                <div class="mt-score-label">Week ${currentWeek} Pts</div>
+                <div class="mt-score">${myScore}</div>
+                <div class="mt-score-opp ${winning ? "winning" : ""}">${oppLabel} · ${oppScore} ${arrow}</div>
+              </div>`;
+          }
+
+          const periodLabel = MT_PERIODS[mtCurrentPeriodIdx].label;
+
+          panel.innerHTML = `
+            <div class="mt-team-hdr">
+              <img class="mt-team-logo" src="${mtEsc(
+                teamLogo ||
+                  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzAwNDhiYSIvPjwvc3ZnPg==",
+              )}" alt="" onerror="this.style.background='#cce'">
+              <div class="mt-team-name-block">
+                <div class="mt-team-name">${mtEsc(teamName || "Team")}</div>
+                <div class="mt-team-meta">${mtEsc(managerName || "")}${
+                  record ? ` · ${record}` : ""
+                }${place ? ` · ${place} Place` : ""}</div>
+              </div>
+              ${scoreBlockHTML}
+            </div>
+
+            <div class="mt-tabs">
+              <div class="mt-tab active" data-tab="lineup">Lineup</div>
+              <div class="mt-tab" data-tab="roster">Roster</div>
+              <div class="mt-tab" data-tab="transactions">Transactions</div>
+            </div>
+
+            <div class="mt-grid">
+              <div class="mt-col">
+                <h3>Batters <span class="mt-col-count">${batCount} active · ${batBench.length} bench</span></h3>
+                <div class="mt-box">
+                  <div class="mt-row-header">
+                    <span>Slot</span><span></span><span>Player</span>
+                    <span>Game</span>
+                    <span><button class="mt-pts-toggle" id="mt-toggle-b">${periodLabel} ▾</button></span>
+                    <span></span><span></span>
+                  </div>
+                  ${rowsFromFilled(batFilled)}
+                  ${rowsFromPlayers(batExtras)}
+                  ${
+                    batBench.length
+                      ? `<div class="mt-bench-div"><span class="mt-bench-lbl">Bench</span><div class="mt-bench-line"></div></div>` +
+                        rowsFromPlayers(batBench)
+                      : ""
+                  }
+                  <div class="mt-total-row">
+                    <span class="mt-total-lbl">Batters Total</span>
+                    <span class="mt-total-val" id="mt-bat-total"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-col">
+                <h3>Pitchers <span class="mt-col-count">${pitCount} active · ${pitBench.length} bench</span></h3>
+                <div class="mt-box">
+                  <div class="mt-row-header">
+                    <span>Slot</span><span></span><span>Player</span>
+                    <span>Game</span>
+                    <span><button class="mt-pts-toggle" id="mt-toggle-p">${periodLabel} ▾</button></span>
+                    <span></span><span></span>
+                  </div>
+                  ${rowsFromFilled(pitFilled)}
+                  ${rowsFromPlayers(pitExtras)}
+                  ${
+                    pitBench.length
+                      ? `<div class="mt-bench-div"><span class="mt-bench-lbl">Bench</span><div class="mt-bench-line"></div></div>` +
+                        rowsFromPlayers(pitBench)
+                      : ""
+                  }
+                  <div class="mt-total-row">
+                    <span class="mt-total-lbl">Pitchers Total</span>
+                    <span class="mt-total-val" id="mt-pit-total"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+
+          // Save totals data on element so toggle can recompute
+          const allBat = [...batActive, ...batBench];
+          const allPit = [...pitActive, ...pitBench];
+          panel._mtBatPlayers = allBat;
+          panel._mtPitPlayers = allPit;
+          panel._mtPlayerPoints = playerPoints;
+
+          // Hook toggle buttons
+          const cyclePeriod = () => {
+            mtCurrentPeriodIdx = (mtCurrentPeriodIdx + 1) % MT_PERIODS.length;
+            mtApplyPeriod();
+          };
+          ["mt-toggle-b", "mt-toggle-p"].forEach((id) => {
+            const btn = document.getElementById(id);
+            if (btn) btn.addEventListener("click", cyclePeriod);
+          });
+
+          // Hook tab clicks (placeholder behavior for non-Lineup tabs)
+          panel.querySelectorAll(".mt-tab").forEach((tab) => {
+            tab.addEventListener("click", () => {
+              const tabName = tab.dataset.tab;
+              panel
+                .querySelectorAll(".mt-tab")
+                .forEach((t) => t.classList.remove("active"));
+              tab.classList.add("active");
+              const grid = panel.querySelector(".mt-grid");
+              if (!grid) return;
+              if (tabName === "lineup") {
+                grid.style.display = "";
+              } else {
+                grid.style.display = "none";
+                let placeholder = panel.querySelector(".mt-tab-placeholder");
+                if (!placeholder) {
+                  placeholder = document.createElement("div");
+                  placeholder.className = "mt-empty mt-tab-placeholder";
+                  panel.appendChild(placeholder);
+                }
+                placeholder.innerHTML = `
+                  <div class="mt-empty-title">Coming Soon</div>
+                  <div>The ${mtEsc(tabName)} view is on the way.</div>`;
+                placeholder.style.display = "";
+              }
+              if (tabName === "lineup") {
+                const placeholder = panel.querySelector(".mt-tab-placeholder");
+                if (placeholder) placeholder.style.display = "none";
+              }
+            });
+          });
+
+          // Update totals + period display once
+          mtApplyPeriod();
+        } catch (err) {
+          console.error("Error loading My Team:", err);
+          panel.innerHTML = `
+            <div class="mt-empty">
+              <div class="mt-empty-title">Could not load team data</div>
+              <div>${mtEsc(err.message || err)}</div>
+            </div>`;
+        }
+      }
+
+      function mtApplyPeriod() {
+        const panel = document.getElementById("myteam-panel");
+        if (!panel) return;
+        const period = MT_PERIODS[mtCurrentPeriodIdx];
+        const dataAttr =
+          period.key === "last7"
+            ? "last7"
+            : period.key === "current_week"
+              ? "week"
+              : "season";
+
+        // Update each row's pts-val from the corresponding data attribute
+        panel.querySelectorAll(".mt-pts").forEach((cell) => {
+          const v = parseFloat(cell.dataset[dataAttr] || 0);
+          const valEl = cell.querySelector(".mt-pts-val");
+          const subEl = cell.querySelector(".mt-pts-sub");
+          if (valEl) {
+            valEl.textContent = v.toFixed(1);
+            valEl.classList.toggle("zero", v === 0);
+          }
+          if (subEl) subEl.textContent = period.sub;
+        });
+
+        // Update toggle buttons
+        ["mt-toggle-b", "mt-toggle-p"].forEach((id) => {
+          const btn = document.getElementById(id);
+          if (btn) btn.textContent = `${period.label} ▾`;
+        });
+
+        // Recompute totals using stored player lists
+        const playerPoints = panel._mtPlayerPoints || {};
+        const sumFor = (list) =>
+          (list || []).reduce(
+            (s, p) => s + (playerPoints[p.player_id]?.[period.key] || 0),
+            0,
+          );
+        const batTot = sumFor(panel._mtBatPlayers);
+        const pitTot = sumFor(panel._mtPitPlayers);
+        const batEl = document.getElementById("mt-bat-total");
+        const pitEl = document.getElementById("mt-pit-total");
+        if (batEl) batEl.textContent = `${batTot.toFixed(1)} pts`;
+        if (pitEl) pitEl.textContent = `${pitTot.toFixed(1)} pts`;
       }
 
       async function showAdminTeamSelector(callback, options = {}) {
@@ -43309,26 +44284,11 @@
         // Get the team's available picks (including traded picks)
         const ownedPicks = getTeamPicks(teamKey);
 
-        console.log("=== calculateTeamKeeperRoundCosts DEBUG ===");
-        console.log("Team:", teamKey);
-        console.log(
-          "Keepers:",
-          keepers.map(
-            (k) => `${k.player_name} (baseRoundCost: ${k.roundCost})`,
-          ),
-        );
-        console.log(
-          "Owned picks:",
-          ownedPicks.map((p) => `Rd ${p.round}`).join(", "),
-        );
-
         // Build a count of how many picks the team has at each round
         const pickCounts = {};
         ownedPicks.forEach((pick) => {
           pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
         });
-
-        console.log("Pick counts by round:", pickCounts);
 
         // Get base round costs for each keeper (excluding prospects)
         let roundCosts = keepers.map((k) => ({
@@ -43342,11 +44302,6 @@
 
         // Sort by round cost (highest/latest rounds first for undrafted)
         roundCosts.sort((a, b) => b.baseRoundCost - a.baseRoundCost);
-
-        console.log(
-          "Sorted keepers (highest round first):",
-          roundCosts.map((k) => `${k.player_name} (${k.baseRoundCost})`),
-        );
 
         // Track used picks at each round
         const usedPicksAtRound = {};
@@ -43419,16 +44374,7 @@
           }
 
           keeper.actualRoundCost = assignedRound;
-          console.log(
-            `  ${keeper.player_name}: base=${keeper.baseRoundCost} -> actual=${assignedRound}`,
-          );
         });
-
-        console.log(
-          "Final assignments:",
-          roundCosts.map((k) => `${k.player_name}: Rd ${k.actualRoundCost}`),
-        );
-        console.log("=== END DEBUG ===");
 
         return roundCosts;
       }
@@ -43464,9 +44410,6 @@
             );
             if (draftResponse.ok) {
               keeperDraftData = await draftResponse.json();
-              console.log(
-                `Loaded ${keeperDraftData.length} draft picks for keeper costs`,
-              );
             }
           } catch (e) {
             console.log("Could not load draft data for keeper costs");
@@ -43489,7 +44432,6 @@
                     keeperSelections[teamKey] = Object.values(keepers);
                   }
                 });
-                console.log("Loaded keeper selections from Firebase");
               }
             } catch (e) {
               console.log("Could not load from Firebase, trying JSON file:", e);
@@ -43505,10 +44447,9 @@
               if (selectionsResponse.ok) {
                 const data = await selectionsResponse.json();
                 keeperSelections = data.keepers || {};
-                console.log("Loaded keeper selections from JSON file");
               }
             } catch (e) {
-              console.log("No JSON keeper file found");
+              // No JSON keeper file found
             }
           }
 
@@ -43744,13 +44685,6 @@
         loadingEl.style.display = "block";
         tbody.innerHTML = "";
 
-        // Debug: log current keeper selections for this team
-        console.log("Loading roster for team:", teamKey);
-        console.log(
-          "Current keeperSelections for this team:",
-          keeperSelections[teamKey],
-        );
-
         try {
           // Load 2025 player stats to get roster
           const response = await fetch(
@@ -43808,9 +44742,6 @@
                   });
                 }
               }
-              console.log(
-                `Added ${naPlayersForTeam.length} NA draft players to roster`,
-              );
             }
           } catch (e) {
             console.log("Could not load NA draft data:", e);
@@ -43831,9 +44762,6 @@
                       p.projected_points || 0;
                   },
                 );
-                console.log(
-                  `Loaded ${Object.keys(keeperProjectionsMap).length} projections from global data`,
-                );
               } else {
                 // Load from projections file directly
                 const projResponse = await fetch(
@@ -43848,9 +44776,6 @@
                     keeperProjectionsMap[normalizedName] =
                       p.projected_points || 0;
                   });
-                  console.log(
-                    `Loaded ${Object.keys(keeperProjectionsMap).length} projections from file`,
-                  );
                 }
               }
             } catch (e) {
@@ -43866,9 +44791,6 @@
               );
               if (historyResponse.ok) {
                 playerHistoryData = await historyResponse.json();
-                console.log(
-                  `Loaded player history for ${Object.keys(playerHistoryData).length} players`,
-                );
               }
             } catch (e) {
               console.log("Could not load player history:", e);
@@ -44260,21 +45182,6 @@
           keeperSelections[currentKeeperTeam] || []
         ).filter((k) => !isProspectKeeperEntry(k));
 
-        console.log(
-          "canKeepPlayerWithPick:",
-          playerName,
-          "requiredRound:",
-          requiredRound,
-        );
-        console.log(
-          "Current keepers for team:",
-          currentKeepers.map((k) => `${k.player_name} (Rd ${k.roundCost})`),
-        );
-        console.log(
-          "Team picks:",
-          teamPicks.map((p) => `Rd ${p.round}`),
-        );
-
         // Check if we have at least one pick at or before the required round
         const eligiblePicksForNewPlayer = teamPicks.filter(
           (p) => p.round <= requiredRound,
@@ -44308,11 +45215,6 @@
         // Sort by round cost descending (latest rounds first - they get assigned first)
         keeperRoundCosts.sort((a, b) => b.roundCost - a.roundCost);
 
-        console.log(
-          "Attempting to assign keepers:",
-          keeperRoundCosts.map((k) => `${k.player_name} (Rd ${k.roundCost})`),
-        );
-
         // Track used picks at each round
         const usedPicksAtRound = {};
 
@@ -44327,9 +45229,6 @@
             if (available > 0) {
               usedPicksAtRound[round] = (usedPicksAtRound[round] || 0) + 1;
               assigned = true;
-              console.log(
-                `  ${keeper.player_name} (needs Rd ${keeper.roundCost}) -> assigned to Rd ${round}`,
-              );
               break;
             }
           }
@@ -44834,7 +45733,6 @@
       async function displayLeagueKeepers() {
         // Prevent multiple simultaneous calls
         if (displayLeagueKeepersRunning) {
-          console.log("displayLeagueKeepers already running, skipping");
           return;
         }
         displayLeagueKeepersRunning = true;
@@ -46218,14 +47116,9 @@
               );
             }
             budgetsLoadedFromServer = true;
-            console.log(
-              `Loaded budget adjustments from server for ${Object.keys(manualBudgetAdjustments).length} teams`,
-            );
           }
         } catch (e) {
-          console.log(
-            "No server budget adjustments file found, checking localStorage",
-          );
+          // No server budget adjustments file found, checking localStorage
         }
 
         // If no server data, check localStorage
@@ -46526,11 +47419,9 @@
                 : `data/historical/${year}/draft.json`;
             const draftResponse = await fetch(draftPath);
             if (!draftResponse.ok) {
-              console.log(`Draft data not found for ${year}: ${draftPath}`);
               continue;
             }
             const draftData = await draftResponse.json();
-            console.log(`Loaded ${draftData.length} draft picks for ${year}`);
 
             // Load player stats for that year
             const statsPath =
@@ -46539,11 +47430,9 @@
                 : `data/historical/${year}/player_stats.json`;
             const statsResponse = await fetch(statsPath);
             if (!statsResponse.ok) {
-              console.log(`Player stats not found for ${year}: ${statsPath}`);
               continue;
             }
             const statsData = await statsResponse.json();
-            console.log(`Loaded ${statsData.length} player stats for ${year}`);
 
             // Create player lookup by name (handle Ohtani special case)
             const playerStatsByName = {};
@@ -46637,7 +47526,6 @@
         // Using least squares fitting on the log-transformed data
         fitExpectedPointsModel(result);
 
-        console.log("Expected points by round:", expectedPointsByRound);
         return result;
       }
 
@@ -46696,7 +47584,6 @@
         }
 
         expectedPointsModel = { a, b, c };
-        console.log("Fitted model parameters:", expectedPointsModel);
       }
 
       function predictExpectedPoints(round) {
@@ -46762,8 +47649,6 @@
 
       // Initialize Trade Analyzer when Value Suite loads
       async function initTradeAnalyzer() {
-        console.log("Initializing Trade Analyzer...");
-
         // Load current season Yahoo teams as primary source (2026 keys)
         try {
           const teamsResponse = await fetch("data/current_season/teams.json");
@@ -46822,16 +47707,6 @@
         // Detect in-season mode: if we have ROS data, use actual + ROS for 2026
         tradeAnalyzerData.isInSeason =
           Object.keys(tradeAnalyzerData.rosProjections).length > 0;
-        if (tradeAnalyzerData.isInSeason) {
-          const rosCount = Object.keys(tradeAnalyzerData.rosProjections).length;
-          const actualCount = Object.keys(tradeAnalyzerData.actualStats).length;
-          console.log(
-            `In-season mode active: ${rosCount} ROS projections, ${actualCount} actual stat lines`,
-          );
-        } else {
-          console.log("Preseason mode: using ZiPS projections only");
-        }
-
         // Populate team dropdowns
         populateTradeTeamDropdowns();
       }
@@ -46870,9 +47745,6 @@
               addToMap(data.batters, 'batter');
               addToMap(data.pitchers, 'pitcher');
               tradeAnalyzerData[targets[i]] = projMap;
-              console.log(
-                `Loaded ${Object.keys(projMap).length} ${targets[i]} projections from ${systems[i]}`,
-              );
             }
           } catch (e) {
             console.log(`Error loading ${systems[i]} projections:`, e);
@@ -46941,11 +47813,6 @@
         }
 
         tradeAnalyzerData.rosProjections = rosMap;
-        if (loadedCount > 0) {
-          console.log(
-            `Loaded ROS projections from ${loadedCount} systems, ${Object.keys(rosMap).length} players`,
-          );
-        }
       }
 
       async function loadPlayerActualStats() {
@@ -46970,11 +47837,6 @@
           }
 
           tradeAnalyzerData.actualStats = statsMap;
-          if (Object.keys(statsMap).length > 0) {
-            console.log(
-              `Loaded actual stats for ${Object.keys(statsMap).length} players`,
-            );
-          }
         } catch (e) {
           // player_stats.json may not exist yet
         }
@@ -47068,7 +47930,6 @@
       }
 
       async function loadTeamPlayers(side, teamKey) {
-        console.log(`Trade Analyzer loadTeamPlayers called for ${teamKey}`);
         const players = [];
 
         // Get manager name for this team
@@ -47130,7 +47991,6 @@
         await loadAverageProjections();
 
         if (yahooRoster.length > 0) {
-          console.log(`Using Yahoo roster: ${yahooRoster.length} players for ${teamKey}`);
           for (const rp of yahooRoster) {
             const playerName = rp.name || "Unknown";
             const playerNameLc = playerName.toLowerCase().trim();
@@ -47191,7 +48051,6 @@
         } else {
           // Fallback to keeperSelections (pre-draft only)
           const keepers = keeperSelections[configKey] || [];
-          console.log(`Fallback to keeperSelections: ${keepers.length} keepers for ${configKey}`);
 
           for (const keeper of keepers) {
             if (keeper && keeper.player_name) {
@@ -47230,9 +48089,6 @@
 
         // Sort by value descending
         players.sort((a, b) => b.value - a.value);
-        console.log(
-          `Trade Analyzer loadTeamPlayers for ${teamKey}: ${players.length} players loaded`,
-        );
         tradeAnalyzerData[`team${side}Assets`].players = players;
 
         // Store the configKey for use in loadTeamPicks
@@ -47295,9 +48151,6 @@
         });
 
         tradeAnalyzerData.nextYearPicks = ownership;
-        console.log(
-          `Trade Analyzer: applied ${trades.length} in-season pick trade(s) to 2027 pick ownership`,
-        );
         return ownership;
       }
 
@@ -47329,9 +48182,6 @@
           return a.round - b.round;
         });
 
-        console.log(
-          `Trade Analyzer loadTeamPicks for ${teamKey}: ${picks.length} picks loaded`,
-        );
         tradeAnalyzerData[`team${side}Assets`].picks = picks;
       }
 
@@ -49291,11 +50141,8 @@
       let foSortAsc = false;
 
       async function initFutureOutlook() {
-        console.log('Initializing Future Outlook...');
-
         // Ensure trade analyzer data is available (teams, zips, ros, actual stats)
         if (!tradeAnalyzerData || Object.keys(tradeAnalyzerData.teams).length === 0) {
-          console.log('Future Outlook: trade analyzer data not ready, skipping');
           return;
         }
 
@@ -49521,13 +50368,11 @@
         });
 
         futureOutlookData['__fa__'] = faPlayers;
-        console.log(`Future Outlook: ${faPlayers.length} free agents found`);
 
         // Populate dropdown
         populateFODropdown();
         // Default render
         renderFutureOutlook();
-        console.log(`Future Outlook loaded: ${Object.keys(futureOutlookData).length - 1} teams + free agents`);
       }
 
       function populateFODropdown() {
@@ -50240,10 +51085,6 @@
             managerToKeepers[manager.toLowerCase()] = keepers;
           }
         }
-        console.log(
-          "Value Suite - Manager to keepers mapping:",
-          Object.keys(managerToKeepers),
-        );
 
         for (const team of teamsData) {
           // Look up keepers by manager name (handles key mismatch between seasons)
@@ -50385,10 +51226,6 @@
             const roundCostsForTeam =
               calculateTeamKeeperRoundCosts(keeperConfigTeamKey);
 
-            console.log(
-              `${managerName}: keeperConfigTeamKey=${keeperConfigTeamKey}, picks=${teamPicks.length}`,
-            );
-
             // Count used rounds
             const usedRounds = {};
             roundCostsForTeam.forEach((rc) => {
@@ -50402,13 +51239,6 @@
               pickCounts[pick.round] = (pickCounts[pick.round] || 0) + 1;
             });
 
-            console.log(
-              `${managerName} pick calc: usedRounds=`,
-              usedRounds,
-              "pickCounts=",
-              pickCounts,
-            );
-
             // Calculate total unused pick value
             let totalPickValue = 0;
             Object.keys(pickCounts).forEach((round) => {
@@ -50418,14 +51248,9 @@
               const unused = available - used;
               if (unused > 0) {
                 const expectedPts = getExpectedPointsForRound(roundNum);
-                console.log(
-                  `  Round ${roundNum}: available=${available}, used=${used}, unused=${unused}, expectedPts=${expectedPts}`,
-                );
                 totalPickValue += expectedPts * unused;
               }
             });
-
-            console.log(`${managerName} totalPickValue: ${totalPickValue}`);
 
             teamValues.push({
               team_key: team.team_key,
@@ -50512,7 +51337,6 @@
       function renderExpectedPointsChart() {
         const ctx = document.getElementById("expected-points-chart");
         if (!ctx) {
-          console.log("Expected points chart canvas not found");
           return;
         }
 
@@ -50525,12 +51349,6 @@
           .map(Number)
           .sort((a, b) => a - b);
         const data = rounds.map((r) => expectedPointsByRound[r]?.avg || 0);
-
-        console.log(
-          "Rendering expected points chart with",
-          rounds.length,
-          "rounds",
-        );
 
         // If no data yet, show a message
         if (rounds.length === 0) {
@@ -50746,8 +51564,6 @@
                 positionPlayers["RP"].push(playerData);
             }
           });
-
-          console.log("Using averaged projections for position value chart");
         } else {
           // Fall back to currently loaded projection data
           allProjectionBatters.forEach((player) => {
@@ -50800,10 +51616,6 @@
             if (positions.includes("RP"))
               positionPlayers["RP"].push(playerData);
           });
-
-          console.log(
-            "Using current projection system for position value chart",
-          );
         }
 
         // Calculate stats for each position
@@ -50839,14 +51651,6 @@
             count: topPlayers.length,
           };
         });
-
-        console.log(
-          "Position value data calculated:",
-          Object.keys(positionStats).map(
-            (p) =>
-              `${p}: ${positionStats[p].count} players, avg=${positionStats[p].avg}`,
-          ),
-        );
 
         return positionStats;
       }
@@ -52450,12 +53254,9 @@
               const serverTrades = await response.json();
               tradeData = serverTrades;
               tradesLoadedFromServer = true;
-              console.log(
-                `Loaded ${tradeData.trades?.length || 0} trades from server`,
-              );
             }
           } catch (e) {
-            console.log("No server trades file found, checking localStorage");
+            // No server trades file found, checking localStorage
           }
 
           // If no server trades, check localStorage for commissioner's working copy
@@ -54779,8 +55580,6 @@
           const snapshot = await sportsbookBetsRef.once("value");
           const allBets = snapshot.val();
 
-          console.log("Loaded bets for stats:", allBets);
-
           if (!allBets) return stats;
 
           // Bets are stored as a flat list with push keys
@@ -54841,8 +55640,6 @@
               stats.teamBreakdown[managerKey].bets++;
             }
           });
-
-          console.log("Calculated stats:", stats);
         } catch (e) {
           console.log("Error loading bet stats:", e);
         }
@@ -55105,10 +55902,6 @@
           }
         }
 
-        console.log("Looking for bets for team:", teamKey);
-        console.log("Manager:", currentManager, "2025 key:", team2025Key);
-        console.log("Bet type prefix:", betTypePrefix);
-
         try {
           const snapshot = await sportsbookBetsRef.once("value");
           const allBets = snapshot.val();
@@ -55139,7 +55932,6 @@
                 stats.overUnits += bet.wager || 0;
                 stats.overBets++;
                 stats.totalUnits += bet.wager || 0;
-                console.log("✓ Found OVER bet:", bt, "wager:", bet.wager);
               }
             }
             // Check for under bets - match against both 2025 and 2026 keys
@@ -55160,12 +55952,9 @@
                 stats.underUnits += bet.wager || 0;
                 stats.underBets++;
                 stats.totalUnits += bet.wager || 0;
-                console.log("✓ Found UNDER bet:", bt, "wager:", bet.wager);
               }
             }
           });
-
-          console.log("Final team total stats:", stats);
         } catch (e) {
           console.log("Error loading team total stats:", e);
         }
@@ -55957,7 +56746,6 @@
                   valueRankingsData[teamName] = totalValue;
                 }
               });
-              console.log("Loaded values from table:", valueRankingsData);
             }
           }
         } catch (e) {
@@ -55966,11 +56754,8 @@
 
         // If we couldn't get values from the table, calculate them directly
         if (Object.keys(valueRankingsData).length === 0) {
-          console.log("Value table not available, calculating directly...");
           valueRankingsData = await calculateTeamValuesDirectly();
         }
-
-        console.log("Team values loaded:", valueRankingsData);
 
         for (const team of sportsbookTeamData) {
           const teamName = team.team_name;
@@ -56008,11 +56793,6 @@
               const keepersRef = firebaseDb.ref("keepers_2026");
               const snapshot = await keepersRef.once("value");
               allKeepers = snapshot.val() || {};
-              console.log(
-                "Loaded keepers from Firebase:",
-                Object.keys(allKeepers).length,
-                "teams",
-              );
             } catch (e) {
               console.log("Could not load keepers from Firebase:", e);
             }
@@ -56024,7 +56804,6 @@
               const keepersResponse = await fetch("data/keepers.json");
               if (keepersResponse.ok) {
                 allKeepers = await keepersResponse.json();
-                console.log("Loaded keepers from local file");
               }
             } catch (e) {
               console.log("Could not load keepers from local file:", e);
@@ -56055,10 +56834,6 @@
               managerToKeepers[manager.toLowerCase()] = keepers;
             }
           }
-          console.log(
-            "Manager to keepers mapping:",
-            Object.keys(managerToKeepers),
-          );
 
           // Load projections
           let projections = {};
@@ -56078,11 +56853,6 @@
                 projections[name] =
                   p.projected_points || p.Projected_Points || 0;
               });
-              console.log(
-                "Loaded projections:",
-                Object.keys(projections).length,
-                "players",
-              );
             }
           } catch (e) {
             console.log("Could not load projections:", e);
@@ -56207,9 +56977,6 @@
 
             const totalValue = keeperValue + draftValue;
             teamValues[team.team_name] = Math.max(totalValue, 1000);
-            console.log(
-              `${team.team_name}: keeperValue=${keeperValue.toFixed(0)}, draftValue=${draftValue.toFixed(0)}, total=${totalValue.toFixed(0)}`,
-            );
           }
         } catch (e) {
           console.log("Error calculating team values:", e);
@@ -57197,7 +57964,6 @@
         }
 
         managerWeeklyStats = stats;
-        console.log('Manager weekly variance loaded:', Object.keys(stats).length - 1, 'managers');
         return stats;
       }
 
@@ -60353,7 +61119,6 @@
         });
 
         mergedRostersCache = merged;
-        console.log(`Loaded merged rosters: ${Object.keys(merged).length} teams, NA players added from keepers`);
         return merged;
       }
 
@@ -60472,13 +61237,8 @@
 
           // Try to get keepers from Firebase - match by manager name since team_keys changed between seasons
           if (typeof firebaseDb !== "undefined" && firebaseDb) {
-            console.log(
-              "Fetching all keepers from Firebase for manager:",
-              manager,
-            );
             const snapshot = await firebaseDb.ref("keepers_2026").once("value");
             const allKeepersData = snapshot.val();
-            console.log("Firebase all keepers data:", allKeepersData);
 
             if (allKeepersData) {
               // Find the team's keepers by matching manager name
@@ -60540,12 +61300,6 @@
                       ))
                   ) {
                     teamKeepers = keepers;
-                    console.log(
-                      "Found keepers for manager:",
-                      manager,
-                      "via config key:",
-                      originalKey,
-                    );
                     break;
                   }
                 }
@@ -60587,8 +61341,6 @@
                     isProspect: projectedPoints === 0, // Flag prospects
                   });
                 }
-              } else {
-                console.log("No keepers found for manager:", manager);
               }
             }
           } else if (
@@ -60627,10 +61379,6 @@
                 isProspect: projectedPoints === 0,
               });
             }
-          } else {
-            console.log(
-              "Firebase not available and no keeper selections in memory",
-            );
           }
         } catch (e) {
           console.log("Error loading keepers for roster modal:", e);
@@ -61132,9 +61880,6 @@
               }
             });
           });
-
-          console.log(`Loaded prospect ownership from live rosters: ${Object.keys(prospectOwnershipData).length} prospects owned`);
-
         } catch (e) {
           console.log("Error loading prospect ownership from rosters:", e);
           // Fallback to empty ownership data
@@ -63172,7 +63917,6 @@
         sequence.forEach((p) => {
           pickCountsByTeam[p.teamKey] = (pickCountsByTeam[p.teamKey] || 0) + 1;
         });
-        console.log("Mock Draft Pick Counts by Team:", pickCountsByTeam);
         const expectedTotal = rounds;
         Object.entries(pickCountsByTeam).forEach(([tk, count]) => {
           if (count !== expectedTotal) {
