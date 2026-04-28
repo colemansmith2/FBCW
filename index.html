@@ -22872,31 +22872,25 @@
         color: var(--retro-green);
       }
 
-      /* Tabs */
-      #myteam .mt-tabs {
+      /* Period dropdown */
+      #myteam .mt-period-bar {
         display: flex;
-        border-bottom: 2px solid #eee;
-        margin-bottom: 14px;
-        overflow-x: auto;
-        scrollbar-width: none;
+        justify-content: flex-end;
+        margin-bottom: 10px;
       }
-      #myteam .mt-tabs::-webkit-scrollbar {
-        display: none;
-      }
-      #myteam .mt-tab {
+      #myteam .mt-period-select {
         font-family: "Arcade Gamer", sans-serif;
-        font-size: 0.55rem;
-        color: #999;
-        padding: 9px 14px 11px;
+        font-size: 0.45rem;
+        color: var(--retro-blue);
+        background: rgba(0, 72, 186, 0.07);
+        border: 1px solid rgba(0, 72, 186, 0.25);
+        border-radius: 4px;
+        padding: 5px 8px;
         cursor: pointer;
-        border-bottom: 3px solid transparent;
-        margin-bottom: -2px;
-        white-space: nowrap;
         letter-spacing: 0.5px;
       }
-      #myteam .mt-tab.active {
-        color: var(--retro-blue);
-        border-bottom-color: var(--retro-blue);
+      #myteam .mt-period-select:hover {
+        background: rgba(0, 72, 186, 0.14);
       }
 
       /* Two-column lineup */
@@ -22933,7 +22927,7 @@
       /* Row header */
       #myteam .mt-row-header {
         display: grid;
-        grid-template-columns: 38px 32px 1fr 70px 60px 12px 56px;
+        grid-template-columns: 38px 36px 1fr 70px 60px;
         gap: 5px;
         align-items: center;
         padding: 5px 8px 6px;
@@ -22946,22 +22940,6 @@
         color: #bbb;
         letter-spacing: 1px;
         text-transform: uppercase;
-      }
-      #myteam .mt-pts-toggle {
-        font-family: "Arcade Gamer", sans-serif;
-        font-size: 0.42rem;
-        color: var(--retro-blue);
-        background: rgba(0, 72, 186, 0.07);
-        border: 1px solid rgba(0, 72, 186, 0.2);
-        border-radius: 3px;
-        padding: 3px 6px;
-        cursor: pointer;
-        letter-spacing: 0.5px;
-        white-space: nowrap;
-        text-align: center;
-      }
-      #myteam .mt-pts-toggle:hover {
-        background: rgba(0, 72, 186, 0.14);
       }
 
       /* Slot column badges */
@@ -23006,7 +22984,7 @@
       /* Player row */
       #myteam .mt-row {
         display: grid;
-        grid-template-columns: 38px 32px 1fr 70px 60px 12px 56px;
+        grid-template-columns: 38px 36px 1fr 70px 60px;
         gap: 5px;
         align-items: center;
         padding: 6px 8px;
@@ -23026,6 +23004,15 @@
       #myteam .mt-row.is-il:nth-child(even) {
         background: #fff0f0;
       }
+      #myteam .mt-row.is-na {
+        background: rgba(23, 162, 184, 0.08);
+      }
+      #myteam .mt-row.is-na:nth-child(even) {
+        background: rgba(23, 162, 184, 0.13);
+      }
+      #myteam .mt-row.is-na:hover {
+        background: rgba(23, 162, 184, 0.18);
+      }
       #myteam .mt-row.is-bench {
         opacity: 0.78;
       }
@@ -23034,15 +23021,21 @@
         background: #fafff5;
       }
 
-      /* Headshot */
+      /* Headshot wrapper holds the active-status dot */
+      #myteam .mt-hs-wrap {
+        position: relative;
+        width: 36px;
+        height: 36px;
+        flex-shrink: 0;
+      }
       #myteam .mt-hs {
-        width: 32px;
-        height: 32px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         object-fit: cover;
         background: #e0e0e0;
         border: 1.5px solid #e0e0e0;
-        flex-shrink: 0;
+        display: block;
       }
 
       /* Player info */
@@ -23106,33 +23099,32 @@
       }
       #myteam .mt-pts-val {
         font-family: "Basis33", sans-serif;
-        font-size: 1.1rem;
+        font-size: 1.15rem;
         font-weight: 700;
         color: var(--retro-blue);
-        line-height: 1.1;
+        line-height: 1.2;
         display: block;
       }
       #myteam .mt-pts-val.zero {
         color: #ccc;
       }
-      #myteam .mt-pts-sub {
-        font-family: "Basis33", sans-serif;
-        font-size: 0.75rem;
-        color: #bbb;
-        display: block;
-      }
 
-      /* Health dot */
+      /* Active-status dot (overlay on headshot) */
       #myteam .mt-dot {
-        width: 9px;
-        height: 9px;
+        position: absolute;
+        right: -1px;
+        bottom: -1px;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
-        flex-shrink: 0;
-        border: 1.5px solid rgba(0, 0, 0, 0.1);
-        justify-self: center;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.1);
       }
       #myteam .mt-dot.h-active {
         background: #2ecc71;
+      }
+      #myteam .mt-dot.h-inactive {
+        background: #cccccc;
       }
       #myteam .mt-dot.h-dtd {
         background: var(--retro-orange);
@@ -23210,7 +23202,7 @@
       @media (max-width: 600px) {
         #myteam .mt-row-header,
         #myteam .mt-row {
-          grid-template-columns: 34px 28px 1fr 56px 8px;
+          grid-template-columns: 34px 32px 1fr 60px;
           gap: 4px;
           padding: 5px 6px;
         }
@@ -23221,23 +23213,19 @@
         #myteam .mt-row-header > span:nth-child(5) {
           grid-column: 4;
         }
-        #myteam .mt-row-header > span:nth-child(6) {
-          grid-column: 5;
-        }
-        #myteam .mt-row-header > span:nth-child(7) {
-          display: none;
-        }
         #myteam .mt-row > .mt-pts {
           grid-column: 4;
-        }
-        #myteam .mt-row > .mt-dot {
-          grid-column: 5;
         }
         #myteam .mt-pname {
           font-size: 0.92rem;
         }
         #myteam .mt-team-hdr {
           gap: 8px;
+        }
+        #myteam .mt-hs-wrap,
+        #myteam .mt-hs {
+          width: 32px;
+          height: 32px;
         }
       }
     </style>
@@ -43323,11 +43311,12 @@
 
       // ===== MY TEAM PAGE =====
       const MT_PERIODS = [
-        { key: "last7", label: "LAST 7", sub: "last 7" },
-        { key: "current_week", label: "THIS WK", sub: "this wk" },
-        { key: "ytd", label: "SEASON", sub: "season" },
+        { key: "last7", label: "Last 7" },
+        { key: "current_week", label: "Week" },
+        { key: "ytd", label: "Season" },
       ];
-      let mtCurrentPeriodIdx = 1; // default THIS WK
+      let mtCurrentPeriodIdx = 1; // default Week
+      let mtTodayMlbTeams = null; // Set<string> of MLB abbrevs with games today
       const MT_BAT_SLOT_ORDER = [
         "C",
         "1B",
@@ -43379,12 +43368,18 @@
         return map[pos] || "";
       }
 
-      function mtSlotBadgeHTML(selectedPos) {
+      function mtSlotBadgeHTML(selectedPos, primaryPos) {
         if (selectedPos === "BN") {
           return `<span class="mt-slot slot-BN">BN</span>`;
         }
-        if (selectedPos === "IL" || selectedPos === "IL+" || selectedPos === "NA") {
+        if (selectedPos === "IL" || selectedPos === "IL+") {
           return `<span class="mt-slot slot-IL">${mtEsc(selectedPos)}</span>`;
+        }
+        if (selectedPos === "NA") {
+          // Render the player's primary position instead of "NA" text.
+          const fallback = primaryPos || "—";
+          const cls = mtBadgeClass(fallback);
+          return `<span class="mt-slot position-badge ${cls}">${mtEsc(fallback)}</span>`;
         }
         const cls = mtBadgeClass(selectedPos);
         return `<span class="mt-slot position-badge ${cls}">${mtEsc(
@@ -43394,9 +43389,17 @@
 
       function mtEligBadgesHTML(eligible, selectedPos) {
         if (!Array.isArray(eligible)) return "";
-        const filtered = eligible.filter(
-          (p) => p && p !== "Util" && p !== "BN" && p !== "IL" && p !== "P",
-        );
+        const skip = new Set(["Util", "UTIL", "BN", "IL", "IL+", "NA", "P"]);
+        // Dedupe (Yahoo sometimes lists both "UTIL" and "Util")
+        const seen = new Set();
+        const filtered = [];
+        for (const p of eligible) {
+          if (!p || skip.has(p)) continue;
+          const key = p.toUpperCase();
+          if (seen.has(key)) continue;
+          seen.add(key);
+          filtered.push(p);
+        }
         // Show up to 3 eligibility badges
         return filtered
           .slice(0, 3)
@@ -43407,11 +43410,20 @@
           .join("");
       }
 
-      function mtHealthDot(status) {
-        const s = (status || "").toUpperCase();
-        if (s === "IL10" || s === "IL15" || s === "IL60" || s === "IL" || s === "NA")
-          return "h-il";
+      // Determines the colored dot on a player's headshot:
+      //  - h-il      red    — player on IL or NA list
+      //  - h-dtd     orange — player day-to-day or questionable
+      //  - h-active  green  — player's MLB team has a game today
+      //  - h-inactive gray  — no game today
+      function mtActiveDot(player, todayMlbTeams) {
+        const s = (player.status || "").toUpperCase();
+        if (s.startsWith("IL") || s === "NA") return "h-il";
         if (s === "DTD" || s === "DAY" || s === "Q") return "h-dtd";
+        if (todayMlbTeams && player.mlb_team) {
+          return todayMlbTeams.has(player.mlb_team.toUpperCase())
+            ? "h-active"
+            : "h-inactive";
+        }
         return "h-active";
       }
 
@@ -43423,16 +43435,12 @@
         return "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2VlZSIvPjwvc3ZnPg==";
       }
 
-      function mtRowHTML(player, periodPoints, statusOverride) {
-        const selectedPos = statusOverride || player.selected_position || "BN";
-        const isIL =
-          selectedPos === "IL" ||
-          selectedPos === "IL+" ||
-          selectedPos === "NA";
+      function mtRowHTML(player, periodPoints, slotOverride, todayMlbTeams) {
+        const selectedPos = slotOverride || player.selected_position || "BN";
+        const isIL = selectedPos === "IL" || selectedPos === "IL+";
+        const isNA = selectedPos === "NA";
         const isBench = selectedPos === "BN";
-        const dot = isIL
-          ? "h-il"
-          : mtHealthDot(player.status);
+        const dot = mtActiveDot(player, todayMlbTeams);
         const mlbAbbr = player.mlb_team || "";
         const mlbLogo = getMLBTeamLogo(mlbAbbr);
         const eligHTML = mtEligBadgesHTML(
@@ -43443,7 +43451,6 @@
         const week = (periodPoints.current_week || 0).toFixed(1);
         const season = (periodPoints.ytd || 0).toFixed(1);
         const periodKey = MT_PERIODS[mtCurrentPeriodIdx].key;
-        const sub = MT_PERIODS[mtCurrentPeriodIdx].sub;
         const showVal = parseFloat(periodPoints[periodKey] || 0);
         const valStr = showVal.toFixed(1);
         const zero = showVal === 0 ? " zero" : "";
@@ -43453,15 +43460,19 @@
           gameHTML = `<div class="mt-game"><span class="mt-game-il">${mtEsc(
             (player.status || "IL").toUpperCase(),
           )}</span></div>`;
+        } else if (isNA) {
+          gameHTML = `<div class="mt-game"><span class="mt-game-il" style="color:#17a2b8">NA</span></div>`;
         } else {
           gameHTML = `<div class="mt-game mt-game-none">—</div>`;
         }
 
         const rowCls = isIL
           ? "mt-row is-il"
-          : isBench
-            ? "mt-row is-bench"
-            : "mt-row";
+          : isNA
+            ? "mt-row is-na"
+            : isBench
+              ? "mt-row is-bench"
+              : "mt-row";
 
         const mlbLogoHTML = mlbLogo
           ? `<img class="mt-mlb-logo" src="${mtEsc(mlbLogo)}" alt="">`
@@ -43469,8 +43480,11 @@
 
         return `
           <div class="${rowCls}">
-            ${mtSlotBadgeHTML(selectedPos)}
-            <img class="mt-hs" src="${mtEsc(mtPlayerHeadshot(player))}" alt="" loading="lazy">
+            ${mtSlotBadgeHTML(selectedPos, player.primary_position)}
+            <div class="mt-hs-wrap">
+              <img class="mt-hs" src="${mtEsc(mtPlayerHeadshot(player))}" alt="" loading="lazy">
+              <span class="mt-dot ${dot}"></span>
+            </div>
             <div class="mt-info">
               <span class="mt-pname">${mtEsc(player.name)}</span>
               <div class="mt-pmeta">
@@ -43482,10 +43496,7 @@
             ${gameHTML}
             <div class="mt-pts" data-last7="${last7}" data-week="${week}" data-season="${season}">
               <span class="mt-pts-val${zero}">${valStr}</span>
-              <span class="mt-pts-sub">${mtEsc(sub)}</span>
             </div>
-            <span class="mt-dot ${dot}"></span>
-            <div></div>
           </div>
         `;
       }
@@ -43574,12 +43585,26 @@
 
         try {
           // Fetch all needed data in parallel
-          const [windowsResp, standingsResp] = await Promise.all([
+          const [windowsResp, standingsResp, gamesResp] = await Promise.all([
             fetch("data/current_season/player_stats_windows.json"),
             fetch("data/current_season/standings.json"),
+            fetch("data/current_season/daily_games.json").catch(() => null),
           ]);
           const windowsData = await windowsResp.json();
           const standings = await standingsResp.json();
+
+          // Build today's playing-teams set (best-effort; file may not exist yet)
+          mtTodayMlbTeams = null;
+          if (gamesResp && gamesResp.ok) {
+            try {
+              const gamesData = await gamesResp.json();
+              if (Array.isArray(gamesData.teams_playing)) {
+                mtTodayMlbTeams = new Set(
+                  gamesData.teams_playing.map((t) => String(t).toUpperCase()),
+                );
+              }
+            } catch (_) {}
+          }
 
           const currentWeek = windowsData.current_week || 1;
 
@@ -43672,7 +43697,7 @@
                   current_week: 0,
                   ytd: 0,
                 };
-                return mtRowHTML(s.player, pts, s.slot);
+                return mtRowHTML(s.player, pts, s.slot, mtTodayMlbTeams);
               })
               .join("");
           }
@@ -43684,7 +43709,7 @@
                   current_week: 0,
                   ytd: 0,
                 };
-                return mtRowHTML(p, pts);
+                return mtRowHTML(p, pts, null, mtTodayMlbTeams);
               })
               .join("");
           }
@@ -43722,7 +43747,12 @@
               </div>`;
           }
 
-          const periodLabel = MT_PERIODS[mtCurrentPeriodIdx].label;
+          const periodOptionsHTML = MT_PERIODS.map(
+            (p, i) =>
+              `<option value="${i}"${
+                i === mtCurrentPeriodIdx ? " selected" : ""
+              }>${mtEsc(p.label)}</option>`,
+          ).join("");
 
           panel.innerHTML = `
             <div class="mt-team-hdr">
@@ -43739,10 +43769,8 @@
               ${scoreBlockHTML}
             </div>
 
-            <div class="mt-tabs">
-              <div class="mt-tab active" data-tab="lineup">Lineup</div>
-              <div class="mt-tab" data-tab="roster">Roster</div>
-              <div class="mt-tab" data-tab="transactions">Transactions</div>
+            <div class="mt-period-bar">
+              <select class="mt-period-select" id="mt-period-select">${periodOptionsHTML}</select>
             </div>
 
             <div class="mt-grid">
@@ -43752,8 +43780,7 @@
                   <div class="mt-row-header">
                     <span>Slot</span><span></span><span>Player</span>
                     <span>Game</span>
-                    <span><button class="mt-pts-toggle" id="mt-toggle-b">${periodLabel} ▾</button></span>
-                    <span></span><span></span>
+                    <span>Pts</span>
                   </div>
                   ${rowsFromFilled(batFilled)}
                   ${rowsFromPlayers(batExtras)}
@@ -43776,8 +43803,7 @@
                   <div class="mt-row-header">
                     <span>Slot</span><span></span><span>Player</span>
                     <span>Game</span>
-                    <span><button class="mt-pts-toggle" id="mt-toggle-p">${periodLabel} ▾</button></span>
-                    <span></span><span></span>
+                    <span>Pts</span>
                   </div>
                   ${rowsFromFilled(pitFilled)}
                   ${rowsFromPlayers(pitExtras)}
@@ -43803,47 +43829,14 @@
           panel._mtPitPlayers = allPit;
           panel._mtPlayerPoints = playerPoints;
 
-          // Hook toggle buttons
-          const cyclePeriod = () => {
-            mtCurrentPeriodIdx = (mtCurrentPeriodIdx + 1) % MT_PERIODS.length;
-            mtApplyPeriod();
-          };
-          ["mt-toggle-b", "mt-toggle-p"].forEach((id) => {
-            const btn = document.getElementById(id);
-            if (btn) btn.addEventListener("click", cyclePeriod);
-          });
-
-          // Hook tab clicks (placeholder behavior for non-Lineup tabs)
-          panel.querySelectorAll(".mt-tab").forEach((tab) => {
-            tab.addEventListener("click", () => {
-              const tabName = tab.dataset.tab;
-              panel
-                .querySelectorAll(".mt-tab")
-                .forEach((t) => t.classList.remove("active"));
-              tab.classList.add("active");
-              const grid = panel.querySelector(".mt-grid");
-              if (!grid) return;
-              if (tabName === "lineup") {
-                grid.style.display = "";
-              } else {
-                grid.style.display = "none";
-                let placeholder = panel.querySelector(".mt-tab-placeholder");
-                if (!placeholder) {
-                  placeholder = document.createElement("div");
-                  placeholder.className = "mt-empty mt-tab-placeholder";
-                  panel.appendChild(placeholder);
-                }
-                placeholder.innerHTML = `
-                  <div class="mt-empty-title">Coming Soon</div>
-                  <div>The ${mtEsc(tabName)} view is on the way.</div>`;
-                placeholder.style.display = "";
-              }
-              if (tabName === "lineup") {
-                const placeholder = panel.querySelector(".mt-tab-placeholder");
-                if (placeholder) placeholder.style.display = "none";
-              }
+          // Period dropdown
+          const periodSelect = document.getElementById("mt-period-select");
+          if (periodSelect) {
+            periodSelect.addEventListener("change", (e) => {
+              mtCurrentPeriodIdx = parseInt(e.target.value, 10) || 0;
+              mtApplyPeriod();
             });
-          });
+          }
 
           // Update totals + period display once
           mtApplyPeriod();
@@ -43872,19 +43865,17 @@
         panel.querySelectorAll(".mt-pts").forEach((cell) => {
           const v = parseFloat(cell.dataset[dataAttr] || 0);
           const valEl = cell.querySelector(".mt-pts-val");
-          const subEl = cell.querySelector(".mt-pts-sub");
           if (valEl) {
             valEl.textContent = v.toFixed(1);
             valEl.classList.toggle("zero", v === 0);
           }
-          if (subEl) subEl.textContent = period.sub;
         });
 
-        // Update toggle buttons
-        ["mt-toggle-b", "mt-toggle-p"].forEach((id) => {
-          const btn = document.getElementById(id);
-          if (btn) btn.textContent = `${period.label} ▾`;
-        });
+        // Sync the dropdown if open elsewhere
+        const sel = document.getElementById("mt-period-select");
+        if (sel && parseInt(sel.value, 10) !== mtCurrentPeriodIdx) {
+          sel.value = String(mtCurrentPeriodIdx);
+        }
 
         // Recompute totals using stored player lists
         const playerPoints = panel._mtPlayerPoints || {};
