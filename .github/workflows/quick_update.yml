@@ -58,6 +58,9 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: python collect_data.py quick
 
+      - name: Fetch daily MLB games and lineups
+        run: python fetch_daily_games.py
+
       - name: Commit and push changes
         run: |
           git config --local user.email "action@github.com"
