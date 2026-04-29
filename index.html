@@ -23077,20 +23077,67 @@
       /* Game column */
       #myteam .mt-game {
         display: flex;
-        align-items: center;
-        gap: 3px;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 1px;
         font-family: "Basis33", sans-serif;
         font-size: 0.85rem;
         color: #555;
       }
       #myteam .mt-game-none {
         color: #ccc;
+        flex-direction: row;
+        align-items: center;
       }
       #myteam .mt-game-il {
         font-family: "Arcade Gamer", sans-serif;
         font-size: 0.45rem;
         color: var(--retro-red);
         letter-spacing: 0.3px;
+      }
+      #myteam .mt-game-opp {
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: #444;
+        white-space: nowrap;
+        line-height: 1.2;
+      }
+      #myteam .mt-game-time {
+        font-size: 0.68rem;
+        color: #999;
+        white-space: nowrap;
+        line-height: 1.2;
+      }
+      #myteam .mt-game-sp {
+        color: #c49a00;
+      }
+      #myteam .mt-game-live {
+        font-size: 0.68rem;
+        color: #2ecc71;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        white-space: nowrap;
+        line-height: 1.2;
+      }
+      #myteam .mt-live-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #2ecc71;
+        animation: mt-live-pulse 1.2s ease-in-out infinite;
+        flex-shrink: 0;
+      }
+      @keyframes mt-live-pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.3; }
+      }
+      #myteam .mt-game-final {
+        font-size: 0.68rem;
+        color: #bbb;
+        white-space: nowrap;
+        line-height: 1.2;
       }
 
       /* Points */
@@ -43317,6 +43364,7 @@
       ];
       let mtCurrentPeriodIdx = 1; // default Week
       let mtTodayMlbTeams = null; // Set<string> of MLB abbrevs with games today
+      let mtTodayGamesMap = null; // mlbAbbr (uppercase) -> { opponent, isHome, status, gameDate, myProbableName, oppProbableName }
       const MT_BAT_SLOT_ORDER = [
         "C",
         "1B",
@@ -43463,7 +43511,53 @@
         } else if (isNA) {
           gameHTML = `<div class="mt-game"><span class="mt-game-il" style="color:#17a2b8">NA</span></div>`;
         } else {
-          gameHTML = `<div class="mt-game mt-game-none">—</div>`;
+          const gameInfo = mtTodayGamesMap
+            ? mtTodayGamesMap[(mlbAbbr || "").toUpperCase()]
+            : null;
+          if (gameInfo) {
+            const oppAbbr = gameInfo.opponent || "?";
+            const homeAway = gameInfo.isHome ? "vs" : "@";
+            const st = (gameInfo.status || "").toLowerCase();
+            const isLive =
+              st.includes("progress") ||
+              st === "live" ||
+              st.includes("warmup") ||
+              st.includes("pre-game") ||
+              st.includes("pregame");
+            const isFinal =
+              st.includes("final") ||
+              st.includes("complete") ||
+              st.includes("game over");
+            // Match probable pitcher by name (accent-stripped, lowercase)
+            const playerNameNorm = stripAccents(player.name || "").toLowerCase();
+            const isProb =
+              gameInfo.myProbableName &&
+              playerNameNorm === stripAccents(gameInfo.myProbableName).toLowerCase();
+            let statusLine = "";
+            if (isLive) {
+              statusLine = `<div class="mt-game-live"><span class="mt-live-dot"></span>Live</div>`;
+            } else if (isFinal) {
+              statusLine = `<div class="mt-game-final">Final</div>`;
+            } else if (gameInfo.gameDate) {
+              try {
+                const raw = new Date(gameInfo.gameDate).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                  timeZone: "America/New_York",
+                });
+                // "7:10 PM" → "7:10p", "2:00 PM" → "2p"
+                const timeStr = raw
+                  .replace(/:00\s/, " ")
+                  .replace(/\s?AM$/i, "a")
+                  .replace(/\s?PM$/i, "p");
+                statusLine = `<div class="mt-game-time${isProb ? " mt-game-sp" : ""}">${isProb ? "⚾ " : ""}${mtEsc(timeStr)}</div>`;
+              } catch (_) {}
+            }
+            gameHTML = `<div class="mt-game"><div class="mt-game-opp">${mtEsc(homeAway + " " + oppAbbr)}</div>${statusLine}</div>`;
+          } else {
+            gameHTML = `<div class="mt-game mt-game-none">—</div>`;
+          }
         }
 
         const rowCls = isIL
@@ -43593,8 +43687,9 @@
           const windowsData = await windowsResp.json();
           const standings = await standingsResp.json();
 
-          // Build today's playing-teams set (best-effort; file may not exist yet)
+          // Build today's playing-teams set and per-game info map (best-effort; file may not exist yet)
           mtTodayMlbTeams = null;
+          mtTodayGamesMap = null;
           if (gamesResp && gamesResp.ok) {
             try {
               const gamesData = await gamesResp.json();
@@ -43602,6 +43697,33 @@
                 mtTodayMlbTeams = new Set(
                   gamesData.teams_playing.map((t) => String(t).toUpperCase()),
                 );
+              }
+              if (Array.isArray(gamesData.games)) {
+                mtTodayGamesMap = {};
+                for (const g of gamesData.games) {
+                  const home = (g.home_team || "").toUpperCase();
+                  const away = (g.away_team || "").toUpperCase();
+                  if (home) {
+                    mtTodayGamesMap[home] = {
+                      opponent: away,
+                      isHome: true,
+                      status: g.status || "",
+                      gameDate: g.game_date,
+                      myProbableName: (g.home_probable_pitcher?.name || "").toLowerCase(),
+                      oppProbableName: (g.away_probable_pitcher?.name || "").toLowerCase(),
+                    };
+                  }
+                  if (away) {
+                    mtTodayGamesMap[away] = {
+                      opponent: home,
+                      isHome: false,
+                      status: g.status || "",
+                      gameDate: g.game_date,
+                      myProbableName: (g.away_probable_pitcher?.name || "").toLowerCase(),
+                      oppProbableName: (g.home_probable_pitcher?.name || "").toLowerCase(),
+                    };
+                  }
+                }
               }
             } catch (_) {}
           }
