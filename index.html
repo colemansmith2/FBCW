@@ -23078,7 +23078,7 @@
       #myteam .mt-game {
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
+        align-items: center;
         justify-content: center;
         gap: 1px;
         font-family: "Basis33", sans-serif;
@@ -23097,11 +23097,20 @@
         letter-spacing: 0.3px;
       }
       #myteam .mt-game-opp {
+        display: flex;
+        align-items: center;
+        gap: 4px;
         font-size: 0.82rem;
         font-weight: 600;
         color: #444;
         white-space: nowrap;
         line-height: 1.2;
+      }
+      #myteam .mt-game-opp-logo {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+        flex-shrink: 0;
       }
       #myteam .mt-game-time {
         font-size: 0.68rem;
@@ -23110,34 +23119,25 @@
         line-height: 1.2;
       }
       #myteam .mt-game-sp {
-        color: #c49a00;
-      }
-      #myteam .mt-game-live {
-        font-size: 0.68rem;
-        color: #2ecc71;
-        display: flex;
-        align-items: center;
-        gap: 3px;
-        white-space: nowrap;
-        line-height: 1.2;
-      }
-      #myteam .mt-live-dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 50%;
-        background: #2ecc71;
-        animation: mt-live-pulse 1.2s ease-in-out infinite;
-        flex-shrink: 0;
-      }
-      @keyframes mt-live-pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.3; }
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.42rem;
+        color: var(--retro-gold);
       }
       #myteam .mt-game-final {
         font-size: 0.68rem;
         color: #bbb;
         white-space: nowrap;
         line-height: 1.2;
+      }
+      #myteam .mt-pstats {
+        font-family: "Basis33", sans-serif;
+        font-size: 0.72rem;
+        color: #888;
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 0.9em;
       }
 
       /* Points */
@@ -23178,6 +23178,9 @@
       }
       #myteam .mt-dot.h-il {
         background: var(--retro-red);
+      }
+      #myteam .mt-dot.h-sp {
+        background: var(--retro-gold);
       }
 
       /* Bench divider */
@@ -23249,22 +23252,31 @@
       @media (max-width: 600px) {
         #myteam .mt-row-header,
         #myteam .mt-row {
-          grid-template-columns: 34px 32px 1fr 60px;
+          grid-template-columns: 34px 32px 1fr 52px 44px;
           gap: 4px;
           padding: 5px 6px;
-        }
-        #myteam .mt-row-header > span:nth-child(4),
-        #myteam .mt-row > .mt-game {
-          display: none;
-        }
-        #myteam .mt-row-header > span:nth-child(5) {
-          grid-column: 4;
-        }
-        #myteam .mt-row > .mt-pts {
-          grid-column: 4;
+          min-height: 62px;
         }
         #myteam .mt-pname {
           font-size: 0.92rem;
+        }
+        #myteam .mt-pts-val {
+          font-size: 0.95rem;
+        }
+        #myteam .mt-game-opp-logo {
+          width: 11px;
+          height: 11px;
+        }
+        #myteam .mt-game-opp {
+          font-size: 0.74rem;
+          gap: 3px;
+        }
+        #myteam .mt-game-time,
+        #myteam .mt-game-final {
+          font-size: 0.62rem;
+        }
+        #myteam .mt-game-il {
+          font-size: 0.4rem;
         }
         #myteam .mt-team-hdr {
           gap: 8px;
@@ -43358,13 +43370,15 @@
 
       // ===== MY TEAM PAGE =====
       const MT_PERIODS = [
+        { key: "today", label: "Today" },
         { key: "last7", label: "Last 7" },
         { key: "current_week", label: "Week" },
         { key: "ytd", label: "Season" },
       ];
-      let mtCurrentPeriodIdx = 1; // default Week
+      let mtCurrentPeriodIdx = 0; // default Today
       let mtTodayMlbTeams = null; // Set<string> of MLB abbrevs with games today
       let mtTodayGamesMap = null; // mlbAbbr (uppercase) -> { opponent, isHome, status, gameDate, myProbableName, oppProbableName }
+      let mtPlayerStatsMap = null; // player_id -> { last7: stats{}, current_week: stats{}, ytd: stats{} }
       const MT_BAT_SLOT_ORDER = [
         "C",
         "1B",
@@ -43463,6 +43477,39 @@
       //  - h-dtd     orange — player day-to-day or questionable
       //  - h-active  green  — player's MLB team has a game today
       //  - h-inactive gray  — no game today
+      function mtFormatStatLine(stats, posType) {
+        if (!stats || Object.keys(stats).length === 0) return "";
+        const fmt = (v, lbl) => v === 1 ? lbl : `${v} ${lbl}`;
+        if (posType === "B") {
+          const h = stats.H ?? 0;
+          const ab = stats.AB ?? 0;
+          const parts = [`${h}/${ab}`];
+          const BCAT = [
+            ["2B","2B"],["3B","3B"],["HR","HR"],["RBI","RBI"],
+            ["SB","SB"],["CS","CS"],["BB","BB"],["IBB","IBB"],
+            ["HBP","HBP"],["SO","K"],["CYC","CYC"],["SLAM","SLM"],
+          ];
+          for (const [k, lbl] of BCAT) {
+            const v = stats[k];
+            if (v) parts.push(fmt(v, lbl));
+          }
+          return parts.join(", ");
+        } else {
+          const ip = stats.IP != null ? stats.IP : 0;
+          const parts = [`${ip} IP`];
+          const PCAT = [
+            ["W","W"],["L","L"],["SV","SV"],["HLD","HLD"],["QS","QS"],
+            ["SO","K"],["H","H"],["ER","ER"],["BB","BB"],
+            ["CG","CG"],["ShO","ShO"],["NH","NH"],["PICK","PK"],
+          ];
+          for (const [k, lbl] of PCAT) {
+            const v = stats[k];
+            if (v) parts.push(fmt(v, lbl));
+          }
+          return parts.join(", ");
+        }
+      }
+
       function mtActiveDot(player, todayMlbTeams) {
         const s = (player.status || "").toUpperCase();
         if (s.startsWith("IL") || s === "NA") return "h-il";
@@ -43488,8 +43535,19 @@
         const isIL = selectedPos === "IL" || selectedPos === "IL+";
         const isNA = selectedPos === "NA";
         const isBench = selectedPos === "BN";
-        const dot = mtActiveDot(player, todayMlbTeams);
         const mlbAbbr = player.mlb_team || "";
+
+        // Pre-compute game info and SP status so dot can reflect it
+        const gameInfo = (!isIL && !isNA && mtTodayGamesMap)
+          ? mtTodayGamesMap[mlbAbbr.toUpperCase()] || null
+          : null;
+        const playerNameNorm = stripAccents(player.name || "").toLowerCase();
+        const isProb = !!(gameInfo?.myProbableName &&
+          playerNameNorm === stripAccents(gameInfo.myProbableName).toLowerCase());
+
+        let dot = mtActiveDot(player, todayMlbTeams);
+        if (isProb) dot = "h-sp";
+
         const mlbLogo = getMLBTeamLogo(mlbAbbr);
         const eligHTML = mtEligBadgesHTML(
           player.eligible_positions,
@@ -43499,10 +43557,21 @@
         const week = (periodPoints.current_week || 0).toFixed(1);
         const season = (periodPoints.ytd || 0).toFixed(1);
         const periodKey = MT_PERIODS[mtCurrentPeriodIdx].key;
-        const showVal = parseFloat(periodPoints[periodKey] || 0);
+        const showVal =
+          periodKey === "today"
+            ? 0
+            : parseFloat(periodPoints[periodKey] || 0);
         const valStr = showVal.toFixed(1);
         const zero = showVal === 0 ? " zero" : "";
 
+        // Stat breakdown lines (skipped for NA/IL rows)
+        const posType = player.position_type || "B";
+        const pStats = mtPlayerStatsMap?.[player.player_id] || {};
+        const statLast7 = (isNA || isIL) ? "" : mtFormatStatLine(pStats.last7, posType);
+        const statWeek = (isNA || isIL) ? "" : mtFormatStatLine(pStats.current_week, posType);
+        const statSeason = (isNA || isIL) ? "" : mtFormatStatLine(pStats.ytd, posType);
+
+        // Game column
         let gameHTML;
         if (isIL) {
           gameHTML = `<div class="mt-game"><span class="mt-game-il">${mtEsc(
@@ -43511,32 +43580,20 @@
         } else if (isNA) {
           gameHTML = `<div class="mt-game"><span class="mt-game-il" style="color:#17a2b8">NA</span></div>`;
         } else {
-          const gameInfo = mtTodayGamesMap
-            ? mtTodayGamesMap[(mlbAbbr || "").toUpperCase()]
-            : null;
           if (gameInfo) {
             const oppAbbr = gameInfo.opponent || "?";
+            const oppLogo = getMLBTeamLogo(oppAbbr);
+            const oppLogoHTML = oppLogo
+              ? `<img class="mt-game-opp-logo" src="${mtEsc(oppLogo)}" alt="">`
+              : "";
             const homeAway = gameInfo.isHome ? "vs" : "@";
             const st = (gameInfo.status || "").toLowerCase();
-            const isLive =
-              st.includes("progress") ||
-              st === "live" ||
-              st.includes("warmup") ||
-              st.includes("pre-game") ||
-              st.includes("pregame");
             const isFinal =
               st.includes("final") ||
               st.includes("complete") ||
               st.includes("game over");
-            // Match probable pitcher by name (accent-stripped, lowercase)
-            const playerNameNorm = stripAccents(player.name || "").toLowerCase();
-            const isProb =
-              gameInfo.myProbableName &&
-              playerNameNorm === stripAccents(gameInfo.myProbableName).toLowerCase();
             let statusLine = "";
-            if (isLive) {
-              statusLine = `<div class="mt-game-live"><span class="mt-live-dot"></span>Live</div>`;
-            } else if (isFinal) {
+            if (isFinal) {
               statusLine = `<div class="mt-game-final">Final</div>`;
             } else if (gameInfo.gameDate) {
               try {
@@ -43546,15 +43603,14 @@
                   hour12: true,
                   timeZone: "America/New_York",
                 });
-                // "7:10 PM" → "7:10p", "2:00 PM" → "2p"
                 const timeStr = raw
                   .replace(/:00\s/, " ")
                   .replace(/\s?AM$/i, "a")
                   .replace(/\s?PM$/i, "p");
-                statusLine = `<div class="mt-game-time${isProb ? " mt-game-sp" : ""}">${isProb ? "⚾ " : ""}${mtEsc(timeStr)}</div>`;
+                statusLine = `<div class="mt-game-time${isProb ? " mt-game-sp" : ""}">${mtEsc(timeStr)}</div>`;
               } catch (_) {}
             }
-            gameHTML = `<div class="mt-game"><div class="mt-game-opp">${mtEsc(homeAway + " " + oppAbbr)}</div>${statusLine}</div>`;
+            gameHTML = `<div class="mt-game"><div class="mt-game-opp">${mtEsc(homeAway)} ${oppLogoHTML}${mtEsc(oppAbbr)}</div>${statusLine}</div>`;
           } else {
             gameHTML = `<div class="mt-game mt-game-none">—</div>`;
           }
@@ -43586,9 +43642,10 @@
                 <span class="mt-mlb-abbr">${mtEsc(mlbAbbr)}</span>
                 ${eligHTML}
               </div>
+              <div class="mt-pstats" data-last7="${statLast7}" data-week="${statWeek}" data-season="${statSeason}" data-today=""></div>
             </div>
             ${gameHTML}
-            <div class="mt-pts" data-last7="${last7}" data-week="${week}" data-season="${season}">
+            <div class="mt-pts" data-last7="${last7}" data-week="${week}" data-season="${season}" data-today="0">
               <span class="mt-pts-val${zero}">${valStr}</span>
             </div>
           </div>
@@ -43678,14 +43735,18 @@
           </div>`;
 
         try {
+          console.time("myteam-load");
           // Fetch all needed data in parallel
           const [windowsResp, standingsResp, gamesResp] = await Promise.all([
             fetch("data/current_season/player_stats_windows.json"),
             fetch("data/current_season/standings.json"),
             fetch("data/current_season/daily_games.json").catch(() => null),
           ]);
+          console.timeLog("myteam-load", "fetches complete");
           const windowsData = await windowsResp.json();
+          console.timeLog("myteam-load", "windows JSON parsed");
           const standings = await standingsResp.json();
+          console.timeLog("myteam-load", "standings JSON parsed");
 
           // Build today's playing-teams set and per-game info map (best-effort; file may not exist yet)
           mtTodayMlbTeams = null;
@@ -43742,9 +43803,10 @@
             }
           } catch (_) {}
 
-          // Build per-player points map across all three windows
+          // Build per-player points and stats maps across all three windows
           const periods = ["last7", "current_week", "ytd"];
           const playerPoints = {}; // player_id -> { last7, current_week, ytd }
+          const playerStatsLocal = {}; // player_id -> { last7, current_week, ytd } stats objects
           let myTeamPlayers = []; // From the most-detailed window (current_week or ytd)
           for (const periodKey of periods) {
             const list = windowsData.windows?.[periodKey]?.players || [];
@@ -43754,8 +43816,13 @@
                 playerPoints[p.player_id] = { last7: 0, current_week: 0, ytd: 0 };
               }
               playerPoints[p.player_id][periodKey] = p.fantasy_points || 0;
+              if (p.stats) {
+                if (!playerStatsLocal[p.player_id]) playerStatsLocal[p.player_id] = {};
+                playerStatsLocal[p.player_id][periodKey] = p.stats;
+              }
             }
           }
+          mtPlayerStatsMap = playerStatsLocal;
           // Use ytd for the canonical roster (has all rostered players)
           myTeamPlayers = (windowsData.windows?.ytd?.players || []).filter(
             (p) => p.team_key === teamKey,
@@ -43876,6 +43943,7 @@
               }>${mtEsc(p.label)}</option>`,
           ).join("");
 
+          console.timeLog("myteam-load", `rendering ${batActive.length}B/${pitActive.length}P active, ${batBench.length + pitBench.length} bench`);
           panel.innerHTML = `
             <div class="mt-team-hdr">
               <img class="mt-team-logo" src="${mtEsc(
@@ -43962,6 +44030,7 @@
 
           // Update totals + period display once
           mtApplyPeriod();
+          console.timeEnd("myteam-load");
         } catch (err) {
           console.error("Error loading My Team:", err);
           panel.innerHTML = `
@@ -43976,12 +44045,15 @@
         const panel = document.getElementById("myteam-panel");
         if (!panel) return;
         const period = MT_PERIODS[mtCurrentPeriodIdx];
+        const isToday = period.key === "today";
         const dataAttr =
           period.key === "last7"
             ? "last7"
             : period.key === "current_week"
               ? "week"
-              : "season";
+              : period.key === "ytd"
+                ? "season"
+                : "today"; // today
 
         // Update each row's pts-val from the corresponding data attribute
         panel.querySelectorAll(".mt-pts").forEach((cell) => {
@@ -43991,6 +44063,11 @@
             valEl.textContent = v.toFixed(1);
             valEl.classList.toggle("zero", v === 0);
           }
+        });
+
+        // Update stat breakdown lines
+        panel.querySelectorAll(".mt-pstats").forEach((el) => {
+          el.textContent = el.dataset[dataAttr] || "";
         });
 
         // Sync the dropdown if open elsewhere
@@ -44003,7 +44080,7 @@
         const playerPoints = panel._mtPlayerPoints || {};
         const sumFor = (list) =>
           (list || []).reduce(
-            (s, p) => s + (playerPoints[p.player_id]?.[period.key] || 0),
+            (s, p) => s + (isToday ? 0 : (playerPoints[p.player_id]?.[period.key] || 0)),
             0,
           );
         const batTot = sumFor(panel._mtBatPlayers);
