@@ -23129,18 +23129,11 @@
         white-space: nowrap;
         line-height: 1.2;
       }
-      #myteam .mt-game-dh-label {
-        font-family: "Arcade Gamer", sans-serif;
-        font-size: 0.38rem;
+      #myteam .mt-game-dh-badge {
+        font-size: 0.7em;
         color: var(--retro-orange);
-        letter-spacing: 0.5px;
-        margin-bottom: 1px;
-      }
-      #myteam .mt-game-dh-sep {
-        width: 100%;
-        height: 1px;
-        background: #e0e0e0;
-        margin: 2px 0;
+        font-weight: 700;
+        margin-left: 1px;
       }
       #myteam .mt-pstats {
         font-family: "Basis33", sans-serif;
@@ -43577,12 +43570,22 @@
         }
       }
 
+      // Normalize Yahoo team abbrevs to the MLB API abbrevs used in daily_games.json
+      const MT_TEAM_ABBR_MAP = {
+        AZ: "ARI", ATH: "OAK", TBR: "TB", CHW: "CWS", KCR: "KC",
+        ANA: "LAA", FLA: "MIA", WAS: "WSH", WSN: "WSH", SDP: "SD", SFG: "SF",
+      };
+      function mtNormalizeTeamAbbr(abbr) {
+        const up = (abbr || "").toUpperCase();
+        return MT_TEAM_ABBR_MAP[up] || up;
+      }
+
       function mtActiveDot(player, todayMlbTeams) {
         const s = (player.status || "").toUpperCase();
         if (s.startsWith("IL") || s === "NA") return "h-il";
         if (s === "DTD" || s === "DAY" || s === "Q") return "h-dtd";
         if (todayMlbTeams && player.mlb_team) {
-          return todayMlbTeams.has(player.mlb_team.toUpperCase())
+          return todayMlbTeams.has(mtNormalizeTeamAbbr(player.mlb_team))
             ? "h-active"
             : "h-inactive";
         }
@@ -43606,7 +43609,7 @@
 
         // Pre-compute game info (array for doubleheader support) and SP status
         const gameInfoArr = (!isIL && !isNA && mtTodayGamesMap)
-          ? mtTodayGamesMap[mlbAbbr.toUpperCase()] || null
+          ? mtTodayGamesMap[mtNormalizeTeamAbbr(mlbAbbr)] || null
           : null;
         const playerNameNorm = stripAccents(player.name || "").toLowerCase();
         const isProb = !!(gameInfoArr?.some(g =>
@@ -43640,32 +43643,20 @@
           mtTodayStatsObj(mtTodayPlayerStats?.[String(player.player_id)], posType), posType
         );
 
-        // Renders one game entry (opp line + time/status line)
-        const renderOneGame = (g) => {
-          const oppAbbr = g.opponent || "?";
-          const oppLogo = getMLBTeamLogo(oppAbbr);
-          const oppLogoHTML = oppLogo ? `<img class="mt-game-opp-logo" src="${mtEsc(oppLogo)}" alt="">` : "";
-          const homeAway = g.isHome ? "vs" : "@";
+        // Returns a time/status string for one game in a DH subtext
+        const gameTimeLabel = (g) => {
           const st = (g.status || "").toLowerCase();
-          const isFinal = st.includes("final") || st.includes("complete") || st.includes("game over");
-          const isPostponed = st.includes("postpone") || st.includes("cancel") || st.includes("suspend");
-          const thisPitcherStarts = !!(g.myProbableName &&
-            playerNameNorm === stripAccents(g.myProbableName).toLowerCase());
-          let statusLine = "";
-          if (isPostponed) {
-            statusLine = `<div class="mt-game-final">PPD</div>`;
-          } else if (isFinal) {
-            statusLine = `<div class="mt-game-final">Final</div>`;
-          } else if (g.gameDate) {
+          if (st.includes("postpone") || st.includes("cancel") || st.includes("suspend")) return "PPD";
+          if (st.includes("final") || st.includes("complete") || st.includes("game over")) return "Final";
+          if (g.gameDate) {
             try {
               const raw = new Date(g.gameDate).toLocaleTimeString("en-US", {
                 hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/New_York",
               });
-              const timeStr = raw.replace(/:00\s/, " ").replace(/\s?AM$/i, "a").replace(/\s?PM$/i, "p");
-              statusLine = `<div class="mt-game-time${thisPitcherStarts ? " mt-game-sp" : ""}">${mtEsc(timeStr)}</div>`;
+              return raw.replace(/:00\s/, " ").replace(/\s?AM$/i, "a").replace(/\s?PM$/i, "p");
             } catch (_) {}
           }
-          return `<div class="mt-game-opp">${mtEsc(homeAway)} ${oppLogoHTML}${mtEsc(oppAbbr)}</div>${statusLine}`;
+          return "—";
         };
 
         // Game column
@@ -43677,11 +43668,37 @@
         } else if (isNA) {
           gameHTML = `<div class="mt-game"><span class="mt-game-il" style="color:#17a2b8">NA</span></div>`;
         } else if (gameInfoArr && gameInfoArr.length > 0) {
+          const g0 = gameInfoArr[0];
+          const oppAbbr = g0.opponent || "?";
+          const oppLogo = getMLBTeamLogo(oppAbbr);
+          const oppLogoHTML = oppLogo ? `<img class="mt-game-opp-logo" src="${mtEsc(oppLogo)}" alt="">` : "";
+          const homeAway = g0.isHome ? "vs" : "@";
           const isDH = gameInfoArr.length > 1;
-          const inner = isDH
-            ? `<div class="mt-game-dh-label">DH</div>${gameInfoArr.map(renderOneGame).join('<div class="mt-game-dh-sep"></div>')}`
-            : renderOneGame(gameInfoArr[0]);
-          gameHTML = `<div class="mt-game">${inner}</div>`;
+          const dhBadge = isDH ? ` <span class="mt-game-dh-badge">(2)</span>` : "";
+
+          let statusLine = "";
+          if (isDH) {
+            const times = gameInfoArr.map(gameTimeLabel).join(" | ");
+            statusLine = `<div class="mt-game-time${isProb ? " mt-game-sp" : ""}">${mtEsc(times)}</div>`;
+          } else {
+            const st = (g0.status || "").toLowerCase();
+            const isPostponed = st.includes("postpone") || st.includes("cancel") || st.includes("suspend");
+            const isFinal = st.includes("final") || st.includes("complete") || st.includes("game over");
+            if (isPostponed) {
+              statusLine = `<div class="mt-game-final">PPD</div>`;
+            } else if (isFinal) {
+              statusLine = `<div class="mt-game-final">Final</div>`;
+            } else if (g0.gameDate) {
+              try {
+                const raw = new Date(g0.gameDate).toLocaleTimeString("en-US", {
+                  hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/New_York",
+                });
+                const timeStr = raw.replace(/:00\s/, " ").replace(/\s?AM$/i, "a").replace(/\s?PM$/i, "p");
+                statusLine = `<div class="mt-game-time${isProb ? " mt-game-sp" : ""}">${mtEsc(timeStr)}</div>`;
+              } catch (_) {}
+            }
+          }
+          gameHTML = `<div class="mt-game"><div class="mt-game-opp">${mtEsc(homeAway)} ${oppLogoHTML}${mtEsc(oppAbbr)}${dhBadge}</div>${statusLine}</div>`;
         } else {
           gameHTML = `<div class="mt-game mt-game-none">—</div>`;
         }
