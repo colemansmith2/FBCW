@@ -1,5 +1,120 @@
 [
   {
+    "transaction_key": "469.l.4114.tr.415",
+    "transaction_id": "415",
+    "type": "drop",
+    "timestamp": "1777677174",
+    "status": "successful",
+    "players": [
+      {
+        "player_key": "469.p.10538",
+        "player_id": "10538",
+        "player_name": "Anthony Kay",
+        "team_abbr": "CWS",
+        "position": "SP",
+        "transaction_type": "drop",
+        "source_type": "team",
+        "source_team_key": "469.l.4114.t.9",
+        "source_team_name": "Peanut Butter & Elly",
+        "destination_type": "freeagents",
+        "destination_team_key": "",
+        "destination_team_name": ""
+      }
+    ],
+    "draft_picks": []
+  },
+  {
+    "transaction_key": "469.l.4114.tr.414",
+    "transaction_id": "414",
+    "type": "trade",
+    "timestamp": "1777677174",
+    "status": "successful",
+    "players": [
+      {
+        "player_key": "469.p.62957",
+        "player_id": "62957",
+        "player_name": "Bryce Eldridge",
+        "team_abbr": "SF",
+        "position": "1B",
+        "transaction_type": "trade",
+        "source_type": "team",
+        "source_team_key": "469.l.4114.t.9",
+        "source_team_name": "Peanut Butter & Elly",
+        "destination_type": "team",
+        "destination_team_key": "469.l.4114.t.8",
+        "destination_team_name": "Tyler"
+      },
+      {
+        "player_key": "469.p.10489",
+        "player_id": "10489",
+        "player_name": "Foster Griffin",
+        "team_abbr": "WSH",
+        "position": "SP,RP",
+        "transaction_type": "trade",
+        "source_type": "team",
+        "source_team_key": "469.l.4114.t.8",
+        "source_team_name": "Tyler",
+        "destination_type": "team",
+        "destination_team_key": "469.l.4114.t.9",
+        "destination_team_name": "Peanut Butter & Elly"
+      }
+    ],
+    "trader_team_key": "469.l.4114.t.9",
+    "trader_team_name": "Peanut Butter & Elly",
+    "tradee_team_key": "469.l.4114.t.8",
+    "tradee_team_name": "Tyler",
+    "picks": [
+      {
+        "pick": {
+          "source_team_key": "469.l.4114.t.9",
+          "source_team_name": "Peanut Butter & Elly",
+          "destination_team_key": "469.l.4114.t.8",
+          "destination_team_name": "Tyler",
+          "original_team_key": "469.l.4114.t.12",
+          "original_team_name": "Team Beer",
+          "round": "3"
+        }
+      },
+      {
+        "pick": {
+          "source_team_key": "469.l.4114.t.8",
+          "source_team_name": "Tyler",
+          "destination_team_key": "469.l.4114.t.9",
+          "destination_team_name": "Peanut Butter & Elly",
+          "original_team_key": "469.l.4114.t.8",
+          "original_team_name": "Tyler",
+          "round": "22"
+        }
+      }
+    ],
+    "draft_picks": [
+      {
+        "display_name": "Round 3 Pick",
+        "round": "3",
+        "source_year": "",
+        "destination_year": "",
+        "source_type": "",
+        "source_team_key": "469.l.4114.t.9",
+        "source_team_name": "Peanut Butter & Elly",
+        "destination_type": "",
+        "destination_team_key": "469.l.4114.t.8",
+        "destination_team_name": "Tyler"
+      },
+      {
+        "display_name": "Round 22 Pick",
+        "round": "22",
+        "source_year": "",
+        "destination_year": "",
+        "source_type": "",
+        "source_team_key": "469.l.4114.t.8",
+        "source_team_name": "Tyler",
+        "destination_type": "",
+        "destination_team_key": "469.l.4114.t.9",
+        "destination_team_name": "Peanut Butter & Elly"
+      }
+    ]
+  },
+  {
     "transaction_key": "469.l.4114.tr.413",
     "transaction_id": "413",
     "type": "add/drop",
