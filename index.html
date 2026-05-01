@@ -23129,6 +23129,19 @@
         white-space: nowrap;
         line-height: 1.2;
       }
+      #myteam .mt-game-dh-label {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.38rem;
+        color: var(--retro-orange);
+        letter-spacing: 0.5px;
+        margin-bottom: 1px;
+      }
+      #myteam .mt-game-dh-sep {
+        width: 100%;
+        height: 1px;
+        background: #e0e0e0;
+        margin: 2px 0;
+      }
       #myteam .mt-pstats {
         font-family: "Basis33", sans-serif;
         font-size: 0.72rem;
@@ -43379,6 +43392,7 @@
       let mtTodayMlbTeams = null; // Set<string> of MLB abbrevs with games today
       let mtTodayGamesMap = null; // mlbAbbr (uppercase) -> { opponent, isHome, status, gameDate, myProbableName, oppProbableName }
       let mtPlayerStatsMap = null; // player_id -> { last7: stats{}, current_week: stats{}, ytd: stats{} }
+      let mtTodayPlayerStats = null; // player_id (string) -> { batting?: {}, pitching?: {} } from player_daily_stats
       const MT_BAT_SLOT_ORDER = [
         "C",
         "1B",
@@ -43472,6 +43486,59 @@
           .join("");
       }
 
+      function mtTodayFantasyPoints(dailyEntry, posType) {
+        if (!dailyEntry) return 0;
+        if (posType === "B") {
+          const b = dailyEntry.batting || {};
+          const singles = (b.H ?? 0) - (b["2B"] ?? 0) - (b["3B"] ?? 0) - (b.HR ?? 0);
+          return (
+            singles         *  1.1 +
+            (b["2B"] ?? 0) *  2.2 +
+            (b["3B"] ?? 0) *  3.3 +
+            (b.HR    ?? 0) *  4.4 +
+            (b.RBI   ?? 0) *  1.0 +
+            (b.SB    ?? 0) *  2.0 +
+            (b.CS    ?? 0) * -1.0 +
+            (b.BB    ?? 0) *  1.0 +
+            (b.IBB   ?? 0) *  1.0 +
+            (b.HBP   ?? 0) *  1.0 +
+            (b.SO    ?? 0) * -0.5 +
+            (b.CYC   ?? 0) *  5.0 +
+            (b.SLAM  ?? 0) *  2.0
+          );
+        } else {
+          const p = dailyEntry.pitching || {};
+          const ip = (p.OUTS ?? 0) / 3;
+          return (
+            ip              *  2.5 +
+            (p.W    ?? 0)  *  2.5 +
+            (p.L    ?? 0)  * -3.0 +
+            (p.SV   ?? 0)  *  5.0 +
+            (p.HLD  ?? 0)  *  2.0 +
+            (p.SO   ?? 0)  *  1.5 +
+            (p.H    ?? 0)  * -0.75 +
+            (p.ER   ?? 0)  * -1.75 +
+            (p.BB   ?? 0)  * -0.75 +
+            (p.QS   ?? 0)  *  3.0 +
+            (p.CG   ?? 0)  *  5.0 +
+            (p.ShO  ?? 0)  *  5.0 +
+            (p.NH   ?? 0)  * 10.0 +
+            (p.PICK ?? 0)  *  3.0
+          );
+        }
+      }
+
+      function mtTodayStatsObj(dailyEntry, posType) {
+        if (!dailyEntry) return {};
+        if (posType === "B") return dailyEntry.batting || {};
+        const p = dailyEntry.pitching || {};
+        const outs = p.OUTS ?? 0;
+        const ipFull = Math.floor(outs / 3);
+        const ipFrac = outs % 3;
+        const ip = ipFrac === 0 ? ipFull : parseFloat(`${ipFull}.${ipFrac}`);
+        return { ...p, IP: ip };
+      }
+
       // Determines the colored dot on a player's headshot:
       //  - h-il      red    — player on IL or NA list
       //  - h-dtd     orange — player day-to-day or questionable
@@ -43537,13 +43604,14 @@
         const isBench = selectedPos === "BN";
         const mlbAbbr = player.mlb_team || "";
 
-        // Pre-compute game info and SP status so dot can reflect it
-        const gameInfo = (!isIL && !isNA && mtTodayGamesMap)
+        // Pre-compute game info (array for doubleheader support) and SP status
+        const gameInfoArr = (!isIL && !isNA && mtTodayGamesMap)
           ? mtTodayGamesMap[mlbAbbr.toUpperCase()] || null
           : null;
         const playerNameNorm = stripAccents(player.name || "").toLowerCase();
-        const isProb = !!(gameInfo?.myProbableName &&
-          playerNameNorm === stripAccents(gameInfo.myProbableName).toLowerCase());
+        const isProb = !!(gameInfoArr?.some(g =>
+          g.myProbableName && playerNameNorm === stripAccents(g.myProbableName).toLowerCase()
+        ));
 
         let dot = mtActiveDot(player, todayMlbTeams);
         if (isProb) dot = "h-sp";
@@ -43556,11 +43624,9 @@
         const last7 = (periodPoints.last7 || 0).toFixed(1);
         const week = (periodPoints.current_week || 0).toFixed(1);
         const season = (periodPoints.ytd || 0).toFixed(1);
+        const todayPts = (periodPoints.today || 0).toFixed(1);
         const periodKey = MT_PERIODS[mtCurrentPeriodIdx].key;
-        const showVal =
-          periodKey === "today"
-            ? 0
-            : parseFloat(periodPoints[periodKey] || 0);
+        const showVal = parseFloat(periodPoints[periodKey] || 0);
         const valStr = showVal.toFixed(1);
         const zero = showVal === 0 ? " zero" : "";
 
@@ -43570,6 +43636,37 @@
         const statLast7 = (isNA || isIL) ? "" : mtFormatStatLine(pStats.last7, posType);
         const statWeek = (isNA || isIL) ? "" : mtFormatStatLine(pStats.current_week, posType);
         const statSeason = (isNA || isIL) ? "" : mtFormatStatLine(pStats.ytd, posType);
+        const statToday = (isNA || isIL) ? "" : mtFormatStatLine(
+          mtTodayStatsObj(mtTodayPlayerStats?.[String(player.player_id)], posType), posType
+        );
+
+        // Renders one game entry (opp line + time/status line)
+        const renderOneGame = (g) => {
+          const oppAbbr = g.opponent || "?";
+          const oppLogo = getMLBTeamLogo(oppAbbr);
+          const oppLogoHTML = oppLogo ? `<img class="mt-game-opp-logo" src="${mtEsc(oppLogo)}" alt="">` : "";
+          const homeAway = g.isHome ? "vs" : "@";
+          const st = (g.status || "").toLowerCase();
+          const isFinal = st.includes("final") || st.includes("complete") || st.includes("game over");
+          const isPostponed = st.includes("postpone") || st.includes("cancel") || st.includes("suspend");
+          const thisPitcherStarts = !!(g.myProbableName &&
+            playerNameNorm === stripAccents(g.myProbableName).toLowerCase());
+          let statusLine = "";
+          if (isPostponed) {
+            statusLine = `<div class="mt-game-final">PPD</div>`;
+          } else if (isFinal) {
+            statusLine = `<div class="mt-game-final">Final</div>`;
+          } else if (g.gameDate) {
+            try {
+              const raw = new Date(g.gameDate).toLocaleTimeString("en-US", {
+                hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/New_York",
+              });
+              const timeStr = raw.replace(/:00\s/, " ").replace(/\s?AM$/i, "a").replace(/\s?PM$/i, "p");
+              statusLine = `<div class="mt-game-time${thisPitcherStarts ? " mt-game-sp" : ""}">${mtEsc(timeStr)}</div>`;
+            } catch (_) {}
+          }
+          return `<div class="mt-game-opp">${mtEsc(homeAway)} ${oppLogoHTML}${mtEsc(oppAbbr)}</div>${statusLine}`;
+        };
 
         // Game column
         let gameHTML;
@@ -43579,41 +43676,14 @@
           )}</span></div>`;
         } else if (isNA) {
           gameHTML = `<div class="mt-game"><span class="mt-game-il" style="color:#17a2b8">NA</span></div>`;
+        } else if (gameInfoArr && gameInfoArr.length > 0) {
+          const isDH = gameInfoArr.length > 1;
+          const inner = isDH
+            ? `<div class="mt-game-dh-label">DH</div>${gameInfoArr.map(renderOneGame).join('<div class="mt-game-dh-sep"></div>')}`
+            : renderOneGame(gameInfoArr[0]);
+          gameHTML = `<div class="mt-game">${inner}</div>`;
         } else {
-          if (gameInfo) {
-            const oppAbbr = gameInfo.opponent || "?";
-            const oppLogo = getMLBTeamLogo(oppAbbr);
-            const oppLogoHTML = oppLogo
-              ? `<img class="mt-game-opp-logo" src="${mtEsc(oppLogo)}" alt="">`
-              : "";
-            const homeAway = gameInfo.isHome ? "vs" : "@";
-            const st = (gameInfo.status || "").toLowerCase();
-            const isFinal =
-              st.includes("final") ||
-              st.includes("complete") ||
-              st.includes("game over");
-            let statusLine = "";
-            if (isFinal) {
-              statusLine = `<div class="mt-game-final">Final</div>`;
-            } else if (gameInfo.gameDate) {
-              try {
-                const raw = new Date(gameInfo.gameDate).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                  timeZone: "America/New_York",
-                });
-                const timeStr = raw
-                  .replace(/:00\s/, " ")
-                  .replace(/\s?AM$/i, "a")
-                  .replace(/\s?PM$/i, "p");
-                statusLine = `<div class="mt-game-time${isProb ? " mt-game-sp" : ""}">${mtEsc(timeStr)}</div>`;
-              } catch (_) {}
-            }
-            gameHTML = `<div class="mt-game"><div class="mt-game-opp">${mtEsc(homeAway)} ${oppLogoHTML}${mtEsc(oppAbbr)}</div>${statusLine}</div>`;
-          } else {
-            gameHTML = `<div class="mt-game mt-game-none">—</div>`;
-          }
+          gameHTML = `<div class="mt-game mt-game-none">—</div>`;
         }
 
         const rowCls = isIL
@@ -43642,10 +43712,10 @@
                 <span class="mt-mlb-abbr">${mtEsc(mlbAbbr)}</span>
                 ${eligHTML}
               </div>
-              <div class="mt-pstats" data-last7="${statLast7}" data-week="${statWeek}" data-season="${statSeason}" data-today=""></div>
+              <div class="mt-pstats" data-last7="${statLast7}" data-week="${statWeek}" data-season="${statSeason}" data-today="${statToday}"></div>
             </div>
             ${gameHTML}
-            <div class="mt-pts" data-last7="${last7}" data-week="${week}" data-season="${season}" data-today="0">
+            <div class="mt-pts" data-last7="${last7}" data-week="${week}" data-season="${season}" data-today="${todayPts}">
               <span class="mt-pts-val${zero}">${valStr}</span>
             </div>
           </div>
@@ -43737,10 +43807,11 @@
         try {
           console.time("myteam-load");
           // Fetch all needed data in parallel
-          const [windowsResp, standingsResp, gamesResp] = await Promise.all([
+          const [windowsResp, standingsResp, gamesResp, dailyStatsResp] = await Promise.all([
             fetch("data/current_season/player_stats_windows.json"),
             fetch("data/current_season/standings.json"),
             fetch("data/current_season/daily_games.json").catch(() => null),
+            fetch("data/current_season/player_daily_stats.json").catch(() => null),
           ]);
           console.timeLog("myteam-load", "fetches complete");
           const windowsData = await windowsResp.json();
@@ -43764,25 +43835,21 @@
                 for (const g of gamesData.games) {
                   const home = (g.home_team || "").toUpperCase();
                   const away = (g.away_team || "").toUpperCase();
+                  const mkEntry = (isHome) => ({
+                    opponent: isHome ? away : home,
+                    isHome,
+                    status: g.status || "",
+                    gameDate: g.game_date,
+                    myProbableName: ((isHome ? g.home_probable_pitcher : g.away_probable_pitcher)?.name || "").toLowerCase(),
+                    oppProbableName: ((isHome ? g.away_probable_pitcher : g.home_probable_pitcher)?.name || "").toLowerCase(),
+                  });
                   if (home) {
-                    mtTodayGamesMap[home] = {
-                      opponent: away,
-                      isHome: true,
-                      status: g.status || "",
-                      gameDate: g.game_date,
-                      myProbableName: (g.home_probable_pitcher?.name || "").toLowerCase(),
-                      oppProbableName: (g.away_probable_pitcher?.name || "").toLowerCase(),
-                    };
+                    if (!mtTodayGamesMap[home]) mtTodayGamesMap[home] = [];
+                    mtTodayGamesMap[home].push(mkEntry(true));
                   }
                   if (away) {
-                    mtTodayGamesMap[away] = {
-                      opponent: home,
-                      isHome: false,
-                      status: g.status || "",
-                      gameDate: g.game_date,
-                      myProbableName: (g.away_probable_pitcher?.name || "").toLowerCase(),
-                      oppProbableName: (g.home_probable_pitcher?.name || "").toLowerCase(),
-                    };
+                    if (!mtTodayGamesMap[away]) mtTodayGamesMap[away] = [];
+                    mtTodayGamesMap[away].push(mkEntry(false));
                   }
                 }
               }
@@ -43827,6 +43894,24 @@
           myTeamPlayers = (windowsData.windows?.ytd?.players || []).filter(
             (p) => p.team_key === teamKey,
           );
+
+          // Load today's per-player stats from player_daily_stats.json
+          mtTodayPlayerStats = {};
+          if (dailyStatsResp && dailyStatsResp.ok) {
+            try {
+              const dailyData = await dailyStatsResp.json();
+              const todayET = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+              const todayEntry = dailyData.dates?.[todayET];
+              if (todayEntry?.players) mtTodayPlayerStats = todayEntry.players;
+            } catch (_) {}
+          }
+          // Inject today's fantasy points into playerPoints so mtApplyPeriod can total them
+          for (const p of myTeamPlayers) {
+            const pid = String(p.player_id);
+            const posType = p.position_type || "B";
+            if (!playerPoints[p.player_id]) playerPoints[p.player_id] = { last7: 0, current_week: 0, ytd: 0 };
+            playerPoints[p.player_id].today = mtTodayFantasyPoints(mtTodayPlayerStats[pid], posType);
+          }
 
           // Standings — current team + opponent
           const standingsArr = Array.isArray(standings) ? standings : [];
@@ -44080,7 +44165,7 @@
         const playerPoints = panel._mtPlayerPoints || {};
         const sumFor = (list) =>
           (list || []).reduce(
-            (s, p) => s + (isToday ? 0 : (playerPoints[p.player_id]?.[period.key] || 0)),
+            (s, p) => s + (playerPoints[p.player_id]?.[period.key] || 0),
             0,
           );
         const batTot = sumFor(panel._mtBatPlayers);
