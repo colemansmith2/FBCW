@@ -9870,6 +9870,14 @@
         flex-direction: column;
         gap: 0px;
         line-height: 1.2;
+        min-width: 0;
+        flex: 1;
+      }
+      .trans-player-name-row {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
       }
       .trans-player-name {
         font-size: 0.65rem;
@@ -10736,8 +10744,7 @@
       }
 
       /* halftone corner dots */
-      #player-modal.pcm-active .player-modal-layout::before,
-      #player-modal.pcm-active .player-modal-layout::after {
+      #player-modal.pcm-active .player-modal-layout::before {
         content: '';
         position: absolute; width: 110px; height: 110px;
         background-image: radial-gradient(var(--pcm-line) 22%, transparent 24%);
@@ -10747,7 +10754,6 @@
         z-index: 0;
       }
       #player-modal.pcm-active .player-modal-layout::before { top: 6px; left: 6px; }
-      #player-modal.pcm-active .player-modal-layout::after  { bottom: 6px; right: 6px; }
 
       /* top ribbon (player name banner) */
       #player-modal.pcm-active .pcm-ribbon {
@@ -10897,7 +10903,6 @@
         position: relative;
         aspect-ratio: 16/10;
         background: var(--pcm-field-deep);
-        overflow: hidden;
         border-bottom: 4px solid var(--pcm-line);
       }
       #player-modal.pcm-active .pcm-hero-img {
@@ -10907,9 +10912,10 @@
         background-image:
           repeating-linear-gradient(45deg,
             rgba(255,255,255,0.06) 0 14px, rgba(0,0,0,0.06) 14px 28px);
+        overflow: hidden;
       }
       #player-modal.pcm-active .pcm-hero-pillar {
-        position: absolute; left: 14px; top: 14px;
+        position: absolute; left: -6px; top: -6px;
         width: 64px; height: 64px;
         background: #fff;
         border: 4px solid var(--pcm-line);
@@ -10917,12 +10923,13 @@
         box-shadow: 4px 4px 0 0 var(--pcm-line);
         display: grid; place-items: center;
         overflow: hidden;
+        z-index: 2;
       }
       #player-modal.pcm-active .pcm-hero-pillar img {
         width: 100%; height: 100%; object-fit: contain; padding: 6px;
       }
       #player-modal.pcm-active .pcm-hero-fantasy {
-        position: absolute; right: 14px; bottom: 14px;
+        position: absolute; right: -6px; bottom: -6px;
         width: 70px; height: 70px;
         background: var(--pcm-hi);
         border: 4px solid var(--pcm-line);
@@ -10930,6 +10937,7 @@
         box-shadow: 4px 4px 0 0 var(--pcm-line);
         display: grid; place-items: center;
         overflow: hidden;
+        z-index: 2;
       }
       #player-modal.pcm-active .pcm-hero-fantasy img {
         width: 100%; height: 100%; object-fit: cover;
@@ -11413,12 +11421,14 @@
         margin-top: 6px;
         font-family: 'Arcade Gamer', monospace;
         font-size: 9px;
+        letter-spacing: -0.5px;
         color: var(--pcm-ink);
         text-align: center;
         height: 14px;
       }
       #player-modal.pcm-active .pcm-bar-axis span {
-        display: inline-block;
+        display: block;
+        overflow: hidden;
         white-space: nowrap;
       }
       #player-modal.pcm-active .pcm-bar-axis span.proj { color: var(--pcm-hi-deep); }
@@ -11445,7 +11455,7 @@
       /* Percentile rank rows */
       #player-modal.pcm-active .pcm-pct-block {
         display: grid;
-        grid-template-columns: 60px 1fr;
+        grid-template-columns: 64px 1fr;
         align-items: center;
         gap: 10px;
         margin: 8px 0;
@@ -11454,7 +11464,8 @@
         font-family: 'Arcade Gamer', monospace;
         font-size: 9px;
         color: var(--pcm-ink);
-        letter-spacing: 1px;
+        letter-spacing: 0;
+        word-spacing: -2px;
       }
       #player-modal.pcm-active .pcm-pct-bars {
         display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
@@ -11492,6 +11503,9 @@
         border: 2px solid var(--pcm-line); margin-right: 4px;
       }
 
+      /* mobile tab nav — hidden on desktop, shown via mobile media queries below */
+      #player-modal.pcm-active .pcm-mobile-tabs { display: none; }
+
       /* responsive */
       @media (max-width: 1280px) {
         #player-modal.pcm-active .player-modal-layout {
@@ -11499,7 +11513,7 @@
         }
         #player-modal.pcm-active .pcm-name { font-size: 38px; }
       }
-      @media (max-width: 1080px) {
+      @media (max-width: 1080px) and (min-width: 769px) {
         #player-modal.pcm-active .player-modal-layout {
           grid-template-columns: 1fr;
           grid-template-rows: auto auto auto auto;
@@ -11512,8 +11526,26 @@
           border: 0; border-top: 3px dashed var(--pcm-line);
         }
       }
-      @media (max-width: 700px) {
+
+      /* ---------- Mobile (<=768px): tabbed single-panel layout ---------- */
+      @media (max-width: 768px) {
+        #player-modal.pcm-active { padding: 0; }
+        #player-modal.pcm-active .modal-content.player-modal-content {
+          width: 100%; max-width: 100%;
+          height: 100%; max-height: 100%;
+        }
+        #player-modal.pcm-active .player-modal-layout {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto minmax(0, 1fr);
+          border-width: 0;
+          box-shadow: none;
+          overflow: hidden;
+        }
+        #player-modal.pcm-active .player-modal-layout::before { display: none; }
+
+        /* Ribbon stays sticky at top */
         #player-modal.pcm-active .pcm-ribbon {
+          grid-row: 1;
           grid-template-columns: auto 1fr auto;
           gap: 10px;
           padding: 10px 12px 14px;
@@ -11521,6 +11553,58 @@
         #player-modal.pcm-active .pcm-name { font-size: 26px; }
         #player-modal.pcm-active .pcm-meta { font-size: 14px; }
         #player-modal.pcm-active .pcm-season-pill { display: none; }
+
+        /* Tab nav row */
+        #player-modal.pcm-active .pcm-mobile-tabs {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          grid-row: 2;
+          grid-column: 1;
+          background: var(--pcm-ink);
+          border-bottom: 3px solid var(--pcm-line);
+          z-index: 3;
+        }
+        #player-modal.pcm-active .pcm-mobile-tabs button {
+          appearance: none;
+          background: var(--pcm-ink);
+          color: #fff;
+          border: 0;
+          border-right: 2px solid var(--pcm-line);
+          font-family: 'Arcade Gamer', monospace;
+          font-size: 9px;
+          letter-spacing: 1px;
+          padding: 11px 4px;
+          cursor: pointer;
+        }
+        #player-modal.pcm-active .pcm-mobile-tabs button:last-child { border-right: 0; }
+        #player-modal.pcm-active .pcm-mobile-tabs button.active {
+          background: var(--pcm-hi);
+          color: var(--pcm-ink);
+        }
+
+        /* All three panels share grid-row 3, only one shown at a time */
+        #player-modal.pcm-active .player-trans-panel,
+        #player-modal.pcm-active #player-modal-card-wrapper,
+        #player-modal.pcm-active .player-charts-container {
+          grid-row: 3;
+          grid-column: 1;
+          border: 0;
+          width: auto !important;
+          max-width: none !important;
+          height: auto !important;
+          max-height: none !important;
+          min-height: 0;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
+          padding: 14px 12px 24px;
+          display: none;
+          order: unset;
+        }
+        #player-modal.pcm-active[data-pcm-tab="card"] #player-modal-card-wrapper { display: block; }
+        #player-modal.pcm-active[data-pcm-tab="trans"] .player-trans-panel { display: block; }
+        #player-modal.pcm-active[data-pcm-tab="charts"] .player-charts-container { display: block; }
+
+        /* Stat row sizing for narrow screens */
         #player-modal.pcm-active .pcm-stat-row {
           grid-template-columns: 55px repeat(7, 1fr);
         }
@@ -11529,6 +11613,15 @@
         #player-modal.pcm-active .pcm-lh-row {
           grid-template-columns: 50px 1fr 40px 40px 50px 50px;
         }
+        #player-modal.pcm-active .pcm-lh-row > div,
+        #player-modal.pcm-active .pcm-lh-head > div { font-size: 12px; }
+
+        /* Charts: tighter heights and full-width cards */
+        #player-modal.pcm-active .pcm-bars { height: 140px; }
+        #player-modal.pcm-active .pcm-chart-card { padding: 12px 12px 14px; margin-bottom: 14px; }
+
+        /* Close button stays accessible */
+        #player-modal.pcm-active .pcm-closer { width: 36px; height: 36px; font-size: 14px; }
       }
 
       /* Projection Modal Styles */
@@ -26002,6 +26095,11 @@
           <span class="modal-close" onclick="closePlayerModal()">&times;</span>
           <div class="player-modal-layout">
             <div class="pcm-ribbon" id="pcm-ribbon" style="display:none;"></div>
+            <div class="pcm-mobile-tabs" id="pcm-mobile-tabs" role="tablist">
+              <button type="button" class="active" data-pcm-tab="card" onclick="switchPcmMobileTab('card')">CARD</button>
+              <button type="button" data-pcm-tab="trans" onclick="switchPcmMobileTab('trans')">TRANSACT</button>
+              <button type="button" data-pcm-tab="charts" onclick="switchPcmMobileTab('charts')">ANALYTICS</button>
+            </div>
             <div class="player-trans-panel" id="player-trans-panel"></div>
             <div id="player-modal-card-wrapper">
               <div id="player-modal-header"></div>
@@ -31649,12 +31747,13 @@
         const info = _lookupTransPlayerInfo(playerName);
         const mlbLogo = info.mlbTeam ? getMLBTeamLogo(info.mlbTeam) : "";
         const posBadges = _renderPosBadges(info.primaryPos);
-        const mlbInfoHtml = info.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${info.mlbTeam}</span>${posBadges}</div>` : (posBadges ? `<div class="trans-player-mlb-info">${posBadges}</div>` : "");
+        const nameRowHtml = `<div class="trans-player-name-row"><span class="trans-player-name">${playerName}</span>${posBadges}</div>`;
+        const mlbInfoHtml = info.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${info.mlbTeam}</span></div>` : "";
         const symbolClass = actionSymbol === "+" ? "add-symbol" : "drop-symbol";
         return `<div class="trans-main-row" style="align-items:flex-start;">
             <span class="trans-add-drop-symbol ${symbolClass}">${actionSymbol}</span>
             <img src="${hsSrc}" class="trans-player-headshot" alt="" onerror="this.src='${_transPlaceholderHs}'">
-            <div class="trans-player-info-col"><span class="trans-player-name">${playerName}</span>${mlbInfoHtml}</div>
+            <div class="trans-player-info-col">${nameRowHtml}${mlbInfoHtml}</div>
         </div>`;
       }
 
@@ -31822,8 +31921,9 @@
               const hsHtml = `<img src="${hsSrc}" class="trans-player-headshot" alt="" onerror="this.src='${_transPlaceholderHs}'">`;
               const mlbLogo = p.mlbTeam ? getMLBTeamLogo(p.mlbTeam) : "";
               const posBadges = _renderPosBadges(p.primaryPos);
-              const mlbInfoHtml = p.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${p.mlbTeam}</span>${posBadges}</div>` : (posBadges ? `<div class="trans-player-mlb-info">${posBadges}</div>` : "");
-              return `<div class="trans-trade-player">${hsHtml}<div class="trans-player-info-col"><span class="trans-player-name">${p.name}</span>${mlbInfoHtml}</div></div>`;
+              const nameRowHtml = `<div class="trans-player-name-row"><span class="trans-player-name">${p.name}</span>${posBadges}</div>`;
+              const mlbInfoHtml = p.mlbTeam ? `<div class="trans-player-mlb-info">${mlbLogo ? `<img src="${mlbLogo}" class="trans-mlb-team-logo" alt="">` : ""}<span class="trans-mlb-abbr">${p.mlbTeam}</span></div>` : "";
+              return `<div class="trans-trade-player">${hsHtml}<div class="trans-player-info-col">${nameRowHtml}${mlbInfoHtml}</div></div>`;
             })
             .join("");
           const picksHtml = side.picks
@@ -32810,6 +32910,9 @@
           }
           bodyEl.innerHTML = pcmCardHtml;
           modal.classList.add("pcm-active");
+          modal.setAttribute("data-pcm-tab", "card");
+          const _pcmTabBtns = modal.querySelectorAll(".pcm-mobile-tabs button");
+          _pcmTabBtns.forEach((b) => b.classList.toggle("active", b.getAttribute("data-pcm-tab") === "card"));
         } catch (pcmErr) {
           console.error("Failed to render pcm modal:", pcmErr);
           modal.classList.remove("pcm-active");
@@ -32851,6 +32954,22 @@
             chartsContainer.style.display = "none";
           }
         }
+      }
+
+      function switchPcmMobileTab(tab) {
+        const modal = document.getElementById("player-modal");
+        if (!modal) return;
+        modal.setAttribute("data-pcm-tab", tab);
+        modal.querySelectorAll(".pcm-mobile-tabs button").forEach((b) => {
+          b.classList.toggle("active", b.getAttribute("data-pcm-tab") === tab);
+        });
+        const targetMap = {
+          card: "#player-modal-card-wrapper",
+          trans: "#player-trans-panel",
+          charts: "#player-charts-container",
+        };
+        const target = modal.querySelector(targetMap[tab]);
+        if (target) target.scrollTop = 0;
       }
 
       // PCM-style historical & projected points chart (div-based pixel art)
