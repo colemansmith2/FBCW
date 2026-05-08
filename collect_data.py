@@ -2265,7 +2265,13 @@ def build_mlb_cache_player_lookup(cache: Dict[str, Any]) -> Dict[str, List[Dict[
 def build_current_season_roster_lookup(
     rosters: Dict[str, List[Dict[str, Any]]],
 ) -> Dict[str, Dict[str, Any]]:
-    """Index current Yahoo rosters by normalized player name."""
+    """Index current Yahoo rosters by normalized player name.
+
+    Two-way players (e.g. 'Shohei Ohtani (Batter)' / 'Shohei Ohtani (Pitcher)')
+    both normalize to the same base name.  When that happens we store the
+    first entry under the plain key AND both entries under typed composite
+    keys (name_B / name_P) so the window builder can emit two separate rows.
+    """
     roster_lookup: Dict[str, Dict[str, Any]] = {}
 
     for roster_players in rosters.values():
@@ -2273,6 +2279,18 @@ def build_current_season_roster_lookup(
             normalized_name = normalize_player_name(player.get('name', ''))
             if not normalized_name:
                 continue
+            position_type = player.get('position_type', '')
+            if normalized_name in roster_lookup:
+                existing = roster_lookup[normalized_name]
+                existing_pt = existing.get('position_type', '')
+                if position_type and existing_pt and position_type != existing_pt:
+                    # Two-way player: persist both versions under typed keys
+                    roster_lookup[f"{normalized_name}_{existing_pt}"] = existing
+                    roster_lookup[f"{normalized_name}_{position_type}"] = dict(player)
+                    # Keep base key pointing to the pitcher side (canonical P side)
+                    if position_type == 'P':
+                        roster_lookup[normalized_name] = dict(player)
+                    continue
             roster_lookup[normalized_name] = dict(player)
 
     return roster_lookup
@@ -2557,9 +2575,41 @@ def build_current_season_window_players_from_mlb(
 
     for player_id, cache_meta in cache_players.items():
         normalized_name = normalize_player_name(cache_meta.get('name', ''))
-        roster_player = roster_lookup.get(normalized_name)
         stats_payload = aggregated_stats.get(player_id, {})
 
+        # Two-way player: if both typed keys exist, emit one entry per side
+        roster_b = roster_lookup.get(f"{normalized_name}_B")
+        roster_p = roster_lookup.get(f"{normalized_name}_P")
+        if roster_b and roster_p:
+            for side_roster, side_pt in ((roster_b, 'B'), (roster_p, 'P')):
+                entry = build_current_season_player_entry_from_mlb(
+                    player_id, cache_meta, stats_payload,
+                    batting_scoring, pitching_scoring, side_roster,
+                )
+                # Force the correct side regardless of what infer decided
+                entry['position_type'] = side_pt
+                # Use the roster's original Yahoo name (includes "(Batter)"/"(Pitcher)"
+                # suffix) so each side has a unique name in allPlayersData and the
+                # frontend can look them up independently.
+                roster_original_name = side_roster.get('name', '')
+                if roster_original_name:
+                    entry['name'] = roster_original_name
+                if side_pt == 'P' and stats_payload.get('pitching'):
+                    entry['stats'] = finalize_mlb_pitcher_stats(stats_payload['pitching'])
+                    entry['fantasy_points'] = calculate_pitching_fantasy_points_from_outs(
+                        entry['stats'], pitching_scoring,
+                    )
+                elif side_pt == 'B' and stats_payload.get('batting'):
+                    entry['stats'] = finalize_mlb_batter_stats(stats_payload['batting'])
+                    entry['fantasy_points'] = calculate_batting_fantasy_points(
+                        entry['stats'], batting_scoring,
+                    )
+                all_players.append(entry)
+            if normalized_name:
+                included_names.add(normalized_name)
+            continue
+
+        roster_player = roster_lookup.get(normalized_name)
         player_entry = build_current_season_player_entry_from_mlb(
             player_id,
             cache_meta,
@@ -2574,6 +2624,11 @@ def build_current_season_window_players_from_mlb(
 
     for normalized_name, roster_player in roster_lookup.items():
         if normalized_name in included_names:
+            continue
+        # Skip typed composite keys (e.g. "shohei ohtani_B") when the base
+        # name was already handled by the two-way player path above.
+        base_name = normalized_name.removesuffix('_B').removesuffix('_P')
+        if base_name != normalized_name and base_name in included_names:
             continue
 
         supplemental = supplemental_players.get(normalized_name, {})
@@ -4067,6 +4122,9 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
         "week_end": "2026-04-12",
         "total_days": 7,
         "days_completed": 3,
+        "probable_starters_by_day": {
+            "2026-04-09": ["Tanner Bibee", "..."]
+        },
         "bench_boost": { "469.l.4114.t.1": 15.5, ... },
         "bench_details": {
             "469.l.4114.t.1": [
@@ -4143,12 +4201,14 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
         # Pre-fetch MLB probable starters for each remaining day (one API call per day).
         # Using MLB Stats API so we're independent of Yahoo's lineup-position restrictions.
         probable_by_day: Dict[str, set] = {}
+        probable_starters_by_day: Dict[str, List[str]] = {}
         for day_str in remaining_days:
             try:
                 url = (f"{MLB_STATS_API_BASE_URL}/schedule"
                        f"?sportId=1&date={day_str}&hydrate=probablePitcher")
                 resp = requests.get(url, timeout=10)
                 names: set = set()
+                display_names: set = set()
                 if resp.ok:
                     for date_entry in resp.json().get('dates', []):
                         for game in date_entry.get('games', []):
@@ -4159,11 +4219,14 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
                                 pname = pp.get('fullName', '')
                                 if pname:
                                     names.add(normalize_player_name(pname))
+                                    display_names.add(pname)
                 probable_by_day[day_str] = names
+                probable_starters_by_day[day_str] = sorted(display_names)
                 print(f"  Probable starters {day_str}: {len(names)} pitchers confirmed")
             except Exception as e:
                 print(f"  ⚠ Could not fetch probable pitchers for {day_str}: {e}")
                 probable_by_day[day_str] = set()
+                probable_starters_by_day[day_str] = []
 
         bench_boost = {}
         bench_details = {}
@@ -4272,6 +4335,7 @@ def collect_bench_pitcher_projections(oauth, year: int, lg):
             "week_end": week_end.strftime("%Y-%m-%d"),
             "total_days": total_days,
             "days_completed": days_completed,
+            "probable_starters_by_day": probable_starters_by_day,
             "bench_boost": bench_boost,
             "bench_details": bench_details
         }

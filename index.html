@@ -10623,6 +10623,914 @@
         padding-top: 2rem;
       }
 
+      /* =====================================================================
+         REDESIGNED PLAYER CARD MODAL — bright retro baseball-card aesthetic.
+         All styles are scoped under #player-modal.pcm-active so they only
+         take effect when showPlayerDetail() flips the modal into the new
+         design. The classic .baseball-card layout below is preserved for
+         projection-card-container and other re-uses.
+         ================================================================== */
+      #player-modal.pcm-active {
+        overflow: hidden;
+        align-items: stretch;
+        padding: 1rem;
+        --pcm-ink:        #14213d;
+        --pcm-ink-soft:   #2a3a5e;
+        --pcm-paper:      #fff4d6;
+        --pcm-paper-dim:  #f5e3b3;
+        --pcm-line:       #14213d;
+        --pcm-field:      #1473e6;
+        --pcm-field-deep: #0d4ea3;
+        --pcm-hi:         #ffcc00;
+        --pcm-hi-deep:    #f0a500;
+        --pcm-pop:        #ff4d3d;
+        --pcm-pop-deep:   #c5311e;
+        --pcm-leaf:       #2ecc71;
+        --pcm-teal:       #00b3a4;
+        --pcm-plum:       #a347ff;
+      }
+
+      #player-modal.pcm-active .modal-content.player-modal-content {
+        max-width: 1480px;
+        width: min(1480px, 100%);
+        max-height: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      #player-modal.pcm-active .player-modal-layout {
+        flex: 1 1 auto;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: 280px minmax(480px, 1fr) 380px;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 0;
+        background: var(--pcm-paper);
+        border: 4px solid var(--pcm-line);
+        box-shadow:
+          0 0 0 2px var(--pcm-paper),
+          0 0 0 6px var(--pcm-line),
+          14px 14px 0 0 rgba(20,33,61,0.55);
+        position: relative;
+        padding: 0;
+        align-items: stretch;
+        overflow: hidden;
+      }
+      #player-modal.pcm-active .pcm-ribbon {
+        grid-column: 1 / -1;
+        grid-row: 1;
+        position: relative;
+        z-index: 4;
+      }
+      #player-modal.pcm-active .player-trans-panel,
+      #player-modal.pcm-active #player-modal-card-wrapper,
+      #player-modal.pcm-active .player-charts-container {
+        grid-row: 2;
+        min-height: 0;
+        height: 100%;
+        max-height: 100%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        align-self: stretch;
+      }
+      #player-modal.pcm-active .player-trans-panel {
+        grid-column: 1;
+        flex: unset; max-width: none;
+        background: var(--pcm-paper);
+        border: 0; border-right: 3px dashed var(--pcm-line); border-radius: 0;
+        padding: 18px 16px 22px; min-width: 0;
+      }
+      #player-modal.pcm-active .player-trans-panel::-webkit-scrollbar,
+      #player-modal.pcm-active #player-modal-card-wrapper::-webkit-scrollbar,
+      #player-modal.pcm-active .player-charts-container::-webkit-scrollbar { width: 8px; }
+      #player-modal.pcm-active .player-trans-panel::-webkit-scrollbar-track,
+      #player-modal.pcm-active #player-modal-card-wrapper::-webkit-scrollbar-track,
+      #player-modal.pcm-active .player-charts-container::-webkit-scrollbar-track { background: var(--pcm-paper-dim); }
+      #player-modal.pcm-active .player-trans-panel::-webkit-scrollbar-thumb,
+      #player-modal.pcm-active #player-modal-card-wrapper::-webkit-scrollbar-thumb,
+      #player-modal.pcm-active .player-charts-container::-webkit-scrollbar-thumb { background: var(--pcm-line); border: 1px solid var(--pcm-paper); }
+      #player-modal.pcm-active #player-modal-card-wrapper {
+        grid-column: 2;
+        flex: unset; max-width: none;
+        padding: 22px 22px 22px;
+        background: var(--pcm-paper-dim);
+        min-width: 0;
+      }
+      #player-modal.pcm-active .player-charts-container {
+        grid-column: 3;
+        flex: unset; max-width: none;
+        background: var(--pcm-paper);
+        border-left: 3px dashed var(--pcm-line);
+        padding: 18px 16px 22px; min-width: 0;
+        gap: 0;
+      }
+      #player-modal.pcm-active #player-modal-body { padding: 0; max-height: none; overflow: visible; }
+      #player-modal.pcm-active .player-trans-panel .trans-panel-title { display: none; }
+      #player-modal.pcm-active .player-trans-panel .trans-panel-body {
+        padding: 0; overflow: visible; flex: unset;
+      }
+      #player-modal.pcm-active .player-chart-box {
+        background: transparent; border: 0; border-radius: 0; padding: 0; margin: 0;
+      }
+
+      /* halftone corner dots */
+      #player-modal.pcm-active .player-modal-layout::before,
+      #player-modal.pcm-active .player-modal-layout::after {
+        content: '';
+        position: absolute; width: 110px; height: 110px;
+        background-image: radial-gradient(var(--pcm-line) 22%, transparent 24%);
+        background-size: 12px 12px;
+        pointer-events: none;
+        opacity: .45;
+        z-index: 0;
+      }
+      #player-modal.pcm-active .player-modal-layout::before { top: 6px; left: 6px; }
+      #player-modal.pcm-active .player-modal-layout::after  { bottom: 6px; right: 6px; }
+
+      /* top ribbon (player name banner) */
+      #player-modal.pcm-active .pcm-ribbon {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto;
+        align-items: center;
+        gap: 18px;
+        padding: 14px 22px 18px;
+        background: var(--pcm-field);
+        color: #fff;
+        border-bottom: 4px solid var(--pcm-line);
+        position: relative;
+        z-index: 1;
+      }
+      #player-modal.pcm-active .pcm-ribbon::after {
+        content: '';
+        position: absolute; left: 0; right: 0; bottom: -10px; height: 6px;
+        background:
+          repeating-linear-gradient(90deg,
+            var(--pcm-hi) 0 14px, var(--pcm-line) 14px 16px, var(--pcm-hi) 16px 30px, var(--pcm-line) 30px 32px);
+      }
+      #player-modal.pcm-active .pcm-pos-badge {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 16px;
+        background: var(--pcm-hi);
+        color: var(--pcm-ink);
+        border: 3px solid var(--pcm-line);
+        padding: 10px 14px;
+        line-height: 1;
+        box-shadow: 4px 4px 0 0 var(--pcm-line);
+      }
+      #player-modal.pcm-active .pcm-name-block {
+        font-family: 'Basis33', monospace;
+        line-height: .85;
+        min-width: 0;
+      }
+      #player-modal.pcm-active .pcm-name {
+        font-size: 48px;
+        letter-spacing: 1px;
+        color: #fff;
+        text-transform: uppercase;
+        text-shadow: 3px 3px 0 var(--pcm-line);
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #player-modal.pcm-active .pcm-meta {
+        margin-top: 6px;
+        font-size: 18px;
+        color: var(--pcm-hi);
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+      #player-modal.pcm-active .pcm-meta .dot { color: #fff; opacity: .7; margin: 0 8px; }
+      #player-modal.pcm-active .pcm-meta .ftc { color: #fff; }
+      #player-modal.pcm-active .pcm-season-pill {
+        font-family: 'Arcade Gamer', monospace;
+        background: var(--pcm-pop);
+        color: #fff;
+        border: 3px solid var(--pcm-line);
+        padding: 10px 12px;
+        box-shadow: 4px 4px 0 0 var(--pcm-line);
+        font-size: 13px;
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-closer {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 14px;
+        width: 40px; height: 40px;
+        background: var(--pcm-ink);
+        color: var(--pcm-hi);
+        border: 3px solid var(--pcm-line);
+        box-shadow: 4px 4px 0 0 var(--pcm-line);
+        cursor: pointer;
+        display: grid; place-items: center;
+        position: static; top: auto; right: auto;
+        border-radius: 0;
+      }
+      #player-modal.pcm-active .pcm-closer:hover { background: var(--pcm-pop); color: #fff; }
+
+      /* hide the legacy round close button when in pcm mode */
+      #player-modal.pcm-active > .modal-content > .modal-close { display: none; }
+
+      /* section headers */
+      #player-modal.pcm-active .pcm-sect-head {
+        display: flex; align-items: center; gap: 8px;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 11px;
+        color: var(--pcm-ink);
+        margin-bottom: 14px;
+        flex-wrap: nowrap;
+        white-space: nowrap;
+      }
+      #player-modal.pcm-active .pcm-sect-head > span:not(.pcm-swatch):not(.pcm-rule):not(.pcm-tag) {
+        flex: 0 0 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      #player-modal.pcm-active .pcm-sect-head .pcm-swatch {
+        width: 14px; height: 14px;
+        background: var(--pcm-pop);
+        border: 2px solid var(--pcm-line);
+        flex: 0 0 auto;
+      }
+      #player-modal.pcm-active .pcm-sect-head .pcm-swatch.b { background: var(--pcm-hi); }
+      #player-modal.pcm-active .pcm-sect-head .pcm-swatch.c { background: var(--pcm-leaf); }
+      #player-modal.pcm-active .pcm-sect-head .pcm-rule {
+        flex: 1 1 auto; min-width: 8px; height: 3px;
+        background: linear-gradient(var(--pcm-line), var(--pcm-line)) center/100% 3px no-repeat;
+      }
+      #player-modal.pcm-active .pcm-sect-head .pcm-tag {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-ink);
+        opacity: .65;
+        flex: 0 0 auto;
+      }
+      #player-modal.pcm-active .pcm-sect-head .pcm-tx-filter {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-ink);
+        background: var(--pcm-paper);
+        border: 2px solid var(--pcm-line);
+        padding: 2px 4px;
+        cursor: pointer;
+        flex: 0 0 auto;
+        text-transform: uppercase;
+      }
+
+      /* ---------- Center: the card ---------- */
+      #player-modal.pcm-active .pcm-card {
+        background: var(--pcm-field);
+        border: 4px solid var(--pcm-line);
+        box-shadow: 6px 6px 0 0 var(--pcm-line);
+        position: relative;
+        color: #fff;
+        overflow: hidden;
+      }
+      #player-modal.pcm-active .pcm-card-frame {
+        padding: 12px;
+        background: repeating-linear-gradient(45deg, var(--pcm-hi) 0 8px, var(--pcm-pop) 8px 16px);
+      }
+      #player-modal.pcm-active .pcm-card-inner { background: var(--pcm-field); padding: 0; }
+
+      #player-modal.pcm-active .pcm-hero {
+        position: relative;
+        aspect-ratio: 16/10;
+        background: var(--pcm-field-deep);
+        overflow: hidden;
+        border-bottom: 4px solid var(--pcm-line);
+      }
+      #player-modal.pcm-active .pcm-hero-img {
+        position: absolute; inset: 0;
+        background-size: cover; background-position: center top;
+        background-color: #1a3556;
+        background-image:
+          repeating-linear-gradient(45deg,
+            rgba(255,255,255,0.06) 0 14px, rgba(0,0,0,0.06) 14px 28px);
+      }
+      #player-modal.pcm-active .pcm-hero-pillar {
+        position: absolute; left: 14px; top: 14px;
+        width: 64px; height: 64px;
+        background: #fff;
+        border: 4px solid var(--pcm-line);
+        border-radius: 50%;
+        box-shadow: 4px 4px 0 0 var(--pcm-line);
+        display: grid; place-items: center;
+        overflow: hidden;
+      }
+      #player-modal.pcm-active .pcm-hero-pillar img {
+        width: 100%; height: 100%; object-fit: contain; padding: 6px;
+      }
+      #player-modal.pcm-active .pcm-hero-fantasy {
+        position: absolute; right: 14px; bottom: 14px;
+        width: 70px; height: 70px;
+        background: var(--pcm-hi);
+        border: 4px solid var(--pcm-line);
+        border-radius: 50%;
+        box-shadow: 4px 4px 0 0 var(--pcm-line);
+        display: grid; place-items: center;
+        overflow: hidden;
+      }
+      #player-modal.pcm-active .pcm-hero-fantasy img {
+        width: 100%; height: 100%; object-fit: cover;
+      }
+      #player-modal.pcm-active .pcm-hero-fantasy.fa {
+        font-family: 'Arcade Gamer', monospace;
+        color: var(--pcm-ink);
+        font-size: 12px;
+      }
+      #player-modal.pcm-active .pcm-hero-jersey {
+        position: absolute; left: 14px; bottom: 14px;
+        background: var(--pcm-pop);
+        border: 3px solid var(--pcm-line);
+        box-shadow: 3px 3px 0 0 var(--pcm-line);
+        color: #fff;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 11px;
+        padding: 6px 8px;
+      }
+      #player-modal.pcm-active .pcm-hero-tape {
+        position: absolute; top: 0; right: 0;
+        background: var(--pcm-pop);
+        border-left: 3px solid var(--pcm-line);
+        border-bottom: 3px solid var(--pcm-line);
+        color: #fff;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 10px;
+        padding: 8px 12px;
+        letter-spacing: 1px;
+      }
+
+      /* nameplate */
+      #player-modal.pcm-active .pcm-nameplate {
+        background: var(--pcm-ink);
+        color: var(--pcm-hi);
+        padding: 12px 16px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 14px;
+        border-bottom: 4px solid var(--pcm-line);
+      }
+      #player-modal.pcm-active .pcm-np-num {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 22px;
+        background: var(--pcm-hi);
+        color: var(--pcm-ink);
+        border: 3px solid var(--pcm-line);
+        box-shadow: 4px 4px 0 0 var(--pcm-line);
+        padding: 10px 12px;
+        line-height: 1;
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-np-name {
+        font-family: 'Basis33', monospace;
+        font-size: 32px;
+        color: #fff;
+        line-height: 1;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+      }
+      #player-modal.pcm-active .pcm-np-sub {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 10px;
+        color: var(--pcm-hi);
+        margin-top: 6px;
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-np-headshot {
+        width: 64px; height: 64px;
+        background: var(--pcm-paper);
+        border: 3px solid var(--pcm-hi);
+        overflow: hidden;
+        flex: 0 0 auto;
+        position: relative;
+      }
+      #player-modal.pcm-active .pcm-np-headshot img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: cover; object-position: center 25%;
+        display: block;
+      }
+
+      /* window selector tabs */
+      #player-modal.pcm-active .pcm-window-tabs {
+        display: flex;
+        background: var(--pcm-ink);
+        border-bottom: 4px solid var(--pcm-line);
+      }
+      #player-modal.pcm-active .pcm-window-tabs button {
+        flex: 1;
+        appearance: none;
+        background: var(--pcm-ink);
+        color: #fff;
+        border: 0;
+        border-right: 2px solid var(--pcm-line);
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 10px;
+        padding: 10px 6px;
+        cursor: pointer;
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-window-tabs button:last-child { border-right: 0; }
+      #player-modal.pcm-active .pcm-window-tabs button.active {
+        background: var(--pcm-hi);
+        color: var(--pcm-ink);
+      }
+      #player-modal.pcm-active .pcm-window-tabs button:hover:not(.active) {
+        background: var(--pcm-field-deep);
+      }
+      #player-modal.pcm-active .pcm-window-tabs button:disabled {
+        opacity: .4; cursor: not-allowed;
+      }
+
+      /* stat tables */
+      #player-modal.pcm-active .pcm-stat-block {
+        background: var(--pcm-paper);
+        color: var(--pcm-ink);
+        border-bottom: 4px solid var(--pcm-line);
+      }
+      #player-modal.pcm-active .pcm-stat-row {
+        display: grid;
+        grid-template-columns: 70px repeat(7, 1fr);
+        align-items: stretch;
+      }
+      #player-modal.pcm-active .pcm-stat-row > div {
+        padding: 8px 4px;
+        border-right: 2px solid var(--pcm-line);
+        text-align: center;
+        font-family: 'Basis33', monospace;
+        font-size: 18px;
+        line-height: 1;
+      }
+      #player-modal.pcm-active .pcm-stat-row > div:last-child { border-right: 0; }
+      #player-modal.pcm-active .pcm-stat-row.head > div {
+        background: var(--pcm-ink);
+        color: var(--pcm-hi);
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 10px;
+        padding: 8px 4px;
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-stat-row.head > div:first-child {
+        background: var(--pcm-pop);
+        color: #fff;
+      }
+      #player-modal.pcm-active .pcm-stat-row.body > div:first-child {
+        background: var(--pcm-hi);
+        color: var(--pcm-ink);
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 10px;
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-stat-row + .pcm-stat-row { border-top: 2px solid var(--pcm-line); }
+
+      /* fantasy points strip */
+      #player-modal.pcm-active .pcm-fp-strip {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        background: var(--pcm-field-deep);
+        color: #fff;
+        padding: 12px 18px;
+        border-bottom: 4px solid var(--pcm-line);
+        font-family: 'Arcade Gamer', monospace;
+      }
+      #player-modal.pcm-active .pcm-fp-strip .lbl { font-size: 11px; letter-spacing: 1px; }
+      #player-modal.pcm-active .pcm-fp-strip .val {
+        background: var(--pcm-hi);
+        color: var(--pcm-ink);
+        padding: 6px 14px;
+        font-size: 22px;
+        border: 3px solid var(--pcm-line);
+        box-shadow: 3px 3px 0 0 var(--pcm-line);
+      }
+      #player-modal.pcm-active .pcm-fp-strip .rk { text-align: right; font-size: 13px; color: var(--pcm-hi); }
+
+      #player-modal.pcm-active .pcm-draft-strip {
+        background: var(--pcm-paper);
+        color: var(--pcm-ink);
+        text-align: center;
+        padding: 8px 12px;
+        border-bottom: 4px solid var(--pcm-line);
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 11px;
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-draft-strip b { color: var(--pcm-pop); }
+
+      /* league history */
+      #player-modal.pcm-active .pcm-league-history { background: var(--pcm-paper); padding-bottom: 4px; }
+      #player-modal.pcm-active .pcm-lh-head {
+        display: grid;
+        grid-template-columns: 60px 1fr 50px 50px 60px 60px;
+        background: var(--pcm-ink);
+        color: var(--pcm-hi);
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        padding: 8px 0;
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-lh-head > div {
+        padding: 0 6px;
+        border-right: 2px solid var(--pcm-field);
+        text-align: center;
+      }
+      #player-modal.pcm-active .pcm-lh-head > div:last-child { border-right: 0; }
+      #player-modal.pcm-active .pcm-lh-head > div:nth-child(2) { text-align: left; }
+      #player-modal.pcm-active .pcm-lh-row {
+        display: grid;
+        grid-template-columns: 60px 1fr 50px 50px 60px 60px;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 2px dotted var(--pcm-line);
+        font-family: 'Basis33', monospace;
+        font-size: 18px;
+        color: var(--pcm-ink);
+      }
+      #player-modal.pcm-active .pcm-lh-row:last-child { border-bottom: 0; }
+      #player-modal.pcm-active .pcm-lh-row > div { padding: 0 6px; text-align: center; }
+      #player-modal.pcm-active .pcm-lh-row > .yr {
+        color: var(--pcm-field);
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 11px;
+      }
+      #player-modal.pcm-active .pcm-lh-row > .mgr {
+        text-align: left;
+        display: flex; align-items: center; gap: 8px;
+        font-size: 14px;
+      }
+      #player-modal.pcm-active .pcm-lh-row .mgr-av {
+        width: 22px; height: 22px;
+        border: 2px solid var(--pcm-line);
+        border-radius: 50%;
+        background: var(--pcm-hi);
+        flex: 0 0 auto;
+        overflow: hidden;
+        display: grid; place-items: center;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 8px;
+        color: var(--pcm-ink);
+      }
+      #player-modal.pcm-active .pcm-lh-row .mgr-av img {
+        width: 100%; height: 100%; object-fit: cover;
+      }
+      #player-modal.pcm-active .pcm-lh-row .pill {
+        background: var(--pcm-field);
+        color: #fff;
+        border: 2px solid var(--pcm-line);
+        padding: 2px 6px;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        letter-spacing: 0;
+        display: inline-block;
+      }
+      #player-modal.pcm-active .pcm-lh-row .pill.gold { background: var(--pcm-hi); color: var(--pcm-ink); }
+      #player-modal.pcm-active .pcm-lh-row .pts { color: var(--pcm-field); font-weight: bold; }
+
+      /* ---------- Left rail: transactions ---------- */
+      #player-modal.pcm-active .pcm-tx-year {
+        background: var(--pcm-ink);
+        color: var(--pcm-hi);
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 11px;
+        padding: 6px 10px;
+        margin-bottom: 8px;
+        letter-spacing: 1px;
+        display: flex; justify-content: space-between; align-items: center;
+        border: 2px solid var(--pcm-line);
+        box-shadow: 3px 3px 0 0 var(--pcm-line);
+        cursor: pointer;
+        user-select: none;
+        gap: 8px;
+      }
+      #player-modal.pcm-active .pcm-tx-year .pcm-tx-year-label { flex: 1 1 auto; min-width: 0; }
+      #player-modal.pcm-active .pcm-tx-year .ct {
+        background: var(--pcm-hi);
+        color: var(--pcm-ink);
+        padding: 2px 6px;
+        font-size: 10px;
+        flex: 0 0 auto;
+      }
+      #player-modal.pcm-active .pcm-tx-year .pcm-tx-chev {
+        display: inline-block;
+        font-size: 10px;
+        color: var(--pcm-hi);
+        transition: transform .15s ease;
+        flex: 0 0 auto;
+      }
+      #player-modal.pcm-active .pcm-tx-group { margin-bottom: 4px; }
+      #player-modal.pcm-active .pcm-tx-group.collapsed .pcm-tx-items { display: none; }
+      #player-modal.pcm-active .pcm-tx-group.collapsed .pcm-tx-chev { transform: rotate(-90deg); }
+      #player-modal.pcm-active .pcm-tx-empty-group {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-ink);
+        opacity: .55;
+        padding: 6px 4px 14px;
+        text-align: center;
+      }
+
+      /* Player rows inside tx items */
+      #player-modal.pcm-active .pcm-tx-player {
+        display: flex; align-items: center; gap: 6px;
+        padding: 4px 0;
+        margin-left: 18px;
+        font-family: 'Basis33', monospace;
+        font-size: 14px;
+        color: var(--pcm-ink);
+      }
+      #player-modal.pcm-active .pcm-tx-player.focus { font-weight: bold; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-headshot {
+        width: 24px; height: 24px;
+        background: var(--pcm-paper-dim);
+        border: 2px solid var(--pcm-line);
+        border-radius: 50%;
+        overflow: hidden;
+        flex: 0 0 auto;
+      }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-headshot img {
+        width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
+      }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-name {
+        flex: 1 1 auto; min-width: 0;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-mlb {
+        width: 16px; height: 16px;
+        flex: 0 0 auto;
+      }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-mlb img { width: 100%; height: 100%; object-fit: contain; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 8px;
+        background: var(--pcm-field);
+        color: #fff;
+        border: 1px solid var(--pcm-line);
+        padding: 2px 4px;
+        flex: 0 0 auto;
+        line-height: 1;
+      }
+      #player-modal.pcm-active .pcm-tx-item {
+        background: var(--pcm-paper);
+        border: 2px solid var(--pcm-line);
+        padding: 10px;
+        margin-bottom: 14px;
+        box-shadow: 3px 3px 0 0 var(--pcm-line);
+        position: relative;
+      }
+      #player-modal.pcm-active .pcm-tx-tag {
+        position: absolute; top: -10px; left: 8px;
+        background: var(--pcm-pop);
+        color: #fff;
+        border: 2px solid var(--pcm-line);
+        padding: 2px 8px;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-tx-tag.draft { background: var(--pcm-leaf); }
+      #player-modal.pcm-active .pcm-tx-tag.trade { background: var(--pcm-plum); }
+      #player-modal.pcm-active .pcm-tx-tag.add   { background: var(--pcm-teal); }
+      #player-modal.pcm-active .pcm-tx-tag.drop  { background: var(--pcm-pop-deep); }
+      #player-modal.pcm-active .pcm-tx-date {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-ink);
+        opacity: .7;
+        margin-top: 4px;
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-tx-line {
+        font-family: 'Basis33', monospace;
+        font-size: 16px;
+        color: var(--pcm-ink);
+        line-height: 1.1;
+        display: flex; align-items: center; gap: 8px;
+        margin: 4px 0;
+      }
+      #player-modal.pcm-active .pcm-tx-line .av {
+        width: 20px; height: 20px;
+        border: 2px solid var(--pcm-line);
+        border-radius: 50%;
+        flex: 0 0 auto;
+        background: var(--pcm-hi);
+        overflow: hidden;
+        display: grid; place-items: center;
+      }
+      #player-modal.pcm-active .pcm-tx-line .av img {
+        width: 100%; height: 100%; object-fit: cover;
+      }
+      #player-modal.pcm-active .pcm-tx-pick {
+        display: inline-block;
+        background: var(--pcm-field);
+        color: #fff;
+        border: 2px solid var(--pcm-line);
+        padding: 2px 6px;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        margin-right: 4px;
+      }
+      #player-modal.pcm-active .pcm-tx-empty {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 10px;
+        color: var(--pcm-ink);
+        opacity: .55;
+        padding: 12px 6px;
+        text-align: center;
+      }
+
+      /* ---------- Right rail: charts ---------- */
+      #player-modal.pcm-active .pcm-chart-card {
+        background: var(--pcm-paper);
+        border: 3px solid var(--pcm-line);
+        box-shadow: 4px 4px 0 0 var(--pcm-line);
+        padding: 14px 14px 16px;
+        margin-bottom: 18px;
+      }
+      #player-modal.pcm-active .pcm-chart-card .player-chart-title { display: none; }
+      #player-modal.pcm-active .pcm-chart-card .player-chart-canvas-wrap { display: none; }
+
+      /* In chart cards, allow the title to span the full width so it doesn't wrap awkwardly. */
+      #player-modal.pcm-active .pcm-chart-card .pcm-sect-head {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      #player-modal.pcm-active .pcm-chart-card .pcm-sect-head > span:nth-child(2) {
+        white-space: normal;
+        font-size: 10px;
+        line-height: 1.2;
+      }
+      #player-modal.pcm-active .pcm-chart-card .pcm-sect-head .pcm-rule { display: none; }
+
+      #player-modal.pcm-active .pcm-bars {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        align-items: end;
+        gap: 6px;
+        height: 170px;
+        padding: 14px 4px 4px;
+        background:
+          linear-gradient(to top, var(--pcm-line) 0 2px, transparent 2px 100%),
+          repeating-linear-gradient(to top,
+            transparent 0 33px, rgba(20,33,61,0.15) 33px 34px);
+        border-bottom: 3px solid var(--pcm-line);
+      }
+      #player-modal.pcm-active .pcm-bar {
+        background: var(--pcm-leaf);
+        border: 2px solid var(--pcm-line);
+        position: relative;
+        min-height: 6px;
+      }
+      #player-modal.pcm-active .pcm-bar.pcm-bar-actual { background: var(--pcm-leaf); }
+      #player-modal.pcm-active .pcm-bar.pcm-bar-projband {
+        background:
+          repeating-linear-gradient(45deg,
+            var(--pcm-hi) 0 6px, var(--pcm-hi-deep) 6px 12px);
+      }
+      #player-modal.pcm-active .pcm-bar.pcm-bar-current::after {
+        content: '';
+        position: absolute; inset: -4px;
+        border: 3px solid var(--pcm-pop);
+        pointer-events: none;
+      }
+      #player-modal.pcm-active .pcm-bar .pcm-bar-val {
+        position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 8px;
+        color: var(--pcm-ink);
+        white-space: nowrap;
+      }
+      #player-modal.pcm-active .pcm-bar-axis {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        gap: 6px;
+        margin-top: 6px;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-ink);
+        text-align: center;
+        height: 14px;
+      }
+      #player-modal.pcm-active .pcm-bar-axis span {
+        display: inline-block;
+        white-space: nowrap;
+      }
+      #player-modal.pcm-active .pcm-bar-axis span.proj { color: var(--pcm-hi-deep); }
+      #player-modal.pcm-active .pcm-bar-axis span.cur  { color: var(--pcm-pop); }
+
+      #player-modal.pcm-active .pcm-legend {
+        display: flex; flex-wrap: wrap; gap: 12px;
+        margin-top: 10px;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-ink);
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-legend .sw {
+        display: inline-block; width: 14px; height: 10px;
+        border: 2px solid var(--pcm-line);
+        margin-right: 4px;
+        vertical-align: middle;
+      }
+      #player-modal.pcm-active .pcm-legend .sw.actual { background: var(--pcm-leaf); }
+      #player-modal.pcm-active .pcm-legend .sw.proj   { background: var(--pcm-hi); }
+      #player-modal.pcm-active .pcm-legend .sw.curr   { background: transparent; border-color: var(--pcm-pop); }
+
+      /* Percentile rank rows */
+      #player-modal.pcm-active .pcm-pct-block {
+        display: grid;
+        grid-template-columns: 60px 1fr;
+        align-items: center;
+        gap: 10px;
+        margin: 8px 0;
+      }
+      #player-modal.pcm-active .pcm-pct-label {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-ink);
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-pct-bars {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+      }
+      #player-modal.pcm-active .pcm-pct-bar {
+        height: 22px; position: relative;
+        background: var(--pcm-paper-dim);
+        border: 2px solid var(--pcm-line);
+        overflow: hidden;
+      }
+      #player-modal.pcm-active .pcm-pct-fill {
+        position: absolute; left: 0; top: 0; bottom: 0;
+        background: var(--pcm-field);
+      }
+      #player-modal.pcm-active .pcm-pct-fill.b { background: var(--pcm-leaf); }
+      #player-modal.pcm-active .pcm-pct-fill.c { background: var(--pcm-hi); }
+      #player-modal.pcm-active .pcm-pct-num {
+        position: absolute; right: 4px; top: 50%; transform: translateY(-50%);
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-ink);
+        text-shadow: 0 0 2px var(--pcm-paper);
+      }
+      #player-modal.pcm-active .pcm-pct-key {
+        display: flex; gap: 12px; flex-wrap: wrap;
+        margin-top: 8px;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-ink);
+        letter-spacing: 1px;
+      }
+      #player-modal.pcm-active .pcm-pct-key span { display: inline-flex; align-items: center; }
+      #player-modal.pcm-active .pcm-pct-key i {
+        display: inline-block; width: 12px; height: 10px;
+        border: 2px solid var(--pcm-line); margin-right: 4px;
+      }
+
+      /* responsive */
+      @media (max-width: 1280px) {
+        #player-modal.pcm-active .player-modal-layout {
+          grid-template-columns: 240px minmax(440px, 1fr) 320px;
+        }
+        #player-modal.pcm-active .pcm-name { font-size: 38px; }
+      }
+      @media (max-width: 1080px) {
+        #player-modal.pcm-active .player-modal-layout {
+          grid-template-columns: 1fr;
+          grid-template-rows: auto auto auto auto;
+        }
+        #player-modal.pcm-active .pcm-ribbon { grid-column: 1; }
+        #player-modal.pcm-active .player-trans-panel,
+        #player-modal.pcm-active #player-modal-card-wrapper,
+        #player-modal.pcm-active .player-charts-container {
+          grid-column: 1; grid-row: auto;
+          border: 0; border-top: 3px dashed var(--pcm-line);
+        }
+      }
+      @media (max-width: 700px) {
+        #player-modal.pcm-active .pcm-ribbon {
+          grid-template-columns: auto 1fr auto;
+          gap: 10px;
+          padding: 10px 12px 14px;
+        }
+        #player-modal.pcm-active .pcm-name { font-size: 26px; }
+        #player-modal.pcm-active .pcm-meta { font-size: 14px; }
+        #player-modal.pcm-active .pcm-season-pill { display: none; }
+        #player-modal.pcm-active .pcm-stat-row {
+          grid-template-columns: 55px repeat(7, 1fr);
+        }
+        #player-modal.pcm-active .pcm-stat-row > div { font-size: 14px; padding: 6px 2px; }
+        #player-modal.pcm-active .pcm-lh-head,
+        #player-modal.pcm-active .pcm-lh-row {
+          grid-template-columns: 50px 1fr 40px 40px 50px 50px;
+        }
+      }
+
       /* Projection Modal Styles */
       .projection-modal-content {
         max-width: 1500px;
@@ -22813,84 +23721,154 @@
 
       /* Team header */
       #myteam .mt-team-hdr {
-        display: flex;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 16px;
         align-items: center;
-        gap: 12px;
         padding-bottom: 14px;
         margin-bottom: 14px;
         border-bottom: 3px solid #ff6b6b;
       }
+
+      /* ── LEFT: identity + stats ── */
+      #myteam .mt-hdr-left { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+      #myteam .mt-hdr-identity { display: flex; align-items: center; gap: 10px; }
       #myteam .mt-team-logo {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid #ddd;
-        background: #eee;
-        flex-shrink: 0;
-      }
-      #myteam .mt-team-name-block {
-        flex: 1;
-        min-width: 0;
+        width: 52px; height: 52px; border-radius: 50%;
+        object-fit: cover; border: 2px solid #ddd;
+        background: #eee; flex-shrink: 0;
       }
       #myteam .mt-team-name {
         font-family: "Arcade Gamer", sans-serif;
-        font-size: 0.78rem;
-        color: var(--retro-blue);
-        letter-spacing: 0.5px;
-        line-height: 1.5;
+        font-size: 0.75rem; color: var(--retro-blue);
+        letter-spacing: 0.5px; line-height: 1.4;
       }
-      #myteam .mt-team-meta {
+      #myteam .mt-hdr-manager-sub {
         font-family: "Basis33", sans-serif;
-        font-size: 1rem;
-        color: #666;
-        margin-top: 4px;
+        font-size: 0.95rem; color: #777; margin-top: 1px;
       }
-      #myteam .mt-score-block {
-        text-align: right;
-        flex-shrink: 0;
+      #myteam .mt-hdr-stats-row {
+        display: flex; align-items: center; gap: 5px;
+        font-family: "Basis33", sans-serif;
+        font-size: 0.9rem; color: #555; flex-wrap: wrap;
       }
-      #myteam .mt-score-label {
+      #myteam .mt-hdr-sep { color: #ccc; }
+      #myteam .mt-hdr-stat-item { white-space: nowrap; }
+
+      /* ── CENTER: week label + add tracker ── */
+      #myteam .mt-hdr-center {
+        display: flex; flex-direction: column;
+        align-items: center; gap: 4px; text-align: center;
+      }
+      #myteam .mt-hdr-week-label {
         font-family: "Arcade Gamer", sans-serif;
-        font-size: 0.45rem;
+        font-size: 0.45rem; color: #aaa; letter-spacing: 1.5px;
+        text-transform: uppercase;
+      }
+      #myteam .mt-hdr-vs-label {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.6rem; color: var(--retro-blue); letter-spacing: 0.5px;
+        display: flex; align-items: center; gap: 4px;
+      }
+      #myteam .mt-opp-hat {
+        width: 28px; height: 28px; border-radius: 50%;
+        object-fit: cover; border: 1px solid #ddd; flex-shrink: 0;
+      }
+      #myteam .mt-hdr-add-tracker {
+        display: flex; gap: 6px; align-items: center; margin-top: 8px;
+        background: rgba(0,0,0,0.06); padding: 3px 7px;
+        border-radius: 4px; border: 1px solid rgba(0,0,0,0.08);
+      }
+      #myteam .mt-hdr-add-tracker .add-tracker-label {
         color: #aaa;
-        letter-spacing: 1px;
-      }
-      #myteam .mt-score {
-        font-family: "Arcade Gamer", sans-serif;
-        font-size: 0.95rem;
-        color: var(--retro-blue);
-        margin-top: 4px;
-      }
-      #myteam .mt-score-opp {
-        font-family: "Basis33", sans-serif;
-        font-size: 0.95rem;
-        color: var(--retro-red);
-        margin-top: 2px;
-      }
-      #myteam .mt-score-opp.winning {
-        color: var(--retro-green);
       }
 
+      /* ── RIGHT: three matchup cards ── */
+      #myteam .mt-hdr-matchups {
+        display: flex; gap: 6px; align-items: stretch; flex-shrink: 0;
+      }
+      #myteam .mt-mu-card {
+        display: flex; flex-direction: column; align-items: center;
+        gap: 3px; padding: 6px 8px; border-radius: 6px;
+        border: 1px solid #e8e8e8; background: #fafafa;
+        min-width: 80px; position: relative;
+      }
+      #myteam .mt-mu-card.mt-mu-cur {
+        border-color: #ccd5ff; background: #f4f6ff;
+      }
+      #myteam .mt-mu-card.mt-mu-next {
+        opacity: 0.75;
+      }
+      #myteam .mt-mu-wk-label {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.38rem; color: #bbb; letter-spacing: 1px;
+        text-transform: uppercase; margin-bottom: 1px;
+      }
+      #myteam .mt-mu-cur .mt-mu-wk-label { color: var(--retro-blue); }
+      #myteam .mt-mu-row {
+        display: flex; align-items: center; gap: 4px;
+        width: 100%; justify-content: space-between;
+      }
+      #myteam .mt-mu-identity {
+        display: flex; align-items: center; gap: 3px; min-width: 0;
+      }
+      #myteam .mt-mu-hat {
+        width: 16px; height: 16px; border-radius: 50%;
+        object-fit: cover; flex-shrink: 0;
+        border: 1px solid #ddd;
+      }
+      #myteam .mt-mu-mgr {
+        font-family: "Basis33", sans-serif;
+        font-size: 0.8rem; color: #444; white-space: nowrap;
+        overflow: hidden; text-overflow: ellipsis; max-width: 44px;
+      }
+      #myteam .mt-mu-score {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.42rem; white-space: nowrap; flex-shrink: 0;
+      }
+      #myteam .mt-mu-score.win  { color: var(--retro-green); }
+      #myteam .mt-mu-score.loss { color: var(--retro-red); }
+      #myteam .mt-mu-score.cur  { color: #333; }
+      #myteam .mt-mu-score.next { color: #888; }
+      #myteam .mt-mu-card.mt-mu-next .mt-mu-score { font-style: italic; }
+      #myteam .mt-mu-diamond { display: block; flex-shrink: 0; margin: 1px 0; }
+
       /* Period dropdown */
-      #myteam .mt-period-bar {
+      #myteam .mt-col-headers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 8px;
+      }
+      #myteam .mt-col-headers h3 {
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.7rem;
+        color: var(--retro-blue);
+        letter-spacing: 0.5px;
+        margin: 0;
         display: flex;
-        justify-content: flex-end;
-        margin-bottom: 10px;
+        align-items: center;
+        gap: 8px;
+        justify-content: space-between;
       }
       #myteam .mt-period-select {
         font-family: "Arcade Gamer", sans-serif;
-        font-size: 0.45rem;
+        font-size: 0.7rem;
         color: var(--retro-blue);
         background: rgba(0, 72, 186, 0.07);
         border: 1px solid rgba(0, 72, 186, 0.25);
         border-radius: 4px;
-        padding: 5px 8px;
+        padding: 3px 6px;
         cursor: pointer;
         letter-spacing: 0.5px;
       }
       #myteam .mt-period-select:hover {
         background: rgba(0, 72, 186, 0.14);
+      }
+      #myteam .mt-period-select option {
+        font-family: "Basis33", sans-serif;
+        font-size: 1.1rem;
       }
 
       /* Two-column lineup */
@@ -22940,6 +23918,11 @@
         color: #bbb;
         letter-spacing: 1px;
         text-transform: uppercase;
+      }
+      #myteam .mt-row-header span:nth-child(1),
+      #myteam .mt-row-header span:nth-child(4),
+      #myteam .mt-row-header span:nth-child(5) {
+        text-align: center;
       }
 
       /* Slot column badges */
@@ -23019,6 +24002,73 @@
       #myteam .mt-row.is-bench:hover {
         opacity: 1;
         background: #fafff5;
+      }
+
+      /* ── Lineup editing: clickable rows, selection, drop targets ── */
+      #myteam .mt-row { cursor: pointer; }
+      #myteam .mt-row.is-il,
+      #myteam .mt-row.is-na { cursor: default; }
+      #myteam .mt-row .mt-hs-wrap,
+      #myteam .mt-row .mt-info { cursor: default; }
+      #myteam .mt-row.is-selected {
+        background: rgba(0, 72, 186, 0.10) !important;
+        outline: 2px solid var(--retro-blue);
+        outline-offset: -2px;
+        z-index: 1;
+        position: relative;
+      }
+      #myteam .mt-panel.mt-selecting .mt-row.is-target-eligible {
+        background: rgba(46, 204, 113, 0.14) !important;
+        outline: 1px dashed rgba(46, 204, 113, 0.6);
+        outline-offset: -1px;
+      }
+      #myteam .mt-panel.mt-selecting .mt-row.is-target-eligible:hover {
+        background: rgba(46, 204, 113, 0.22) !important;
+      }
+      #myteam .mt-panel.mt-selecting .mt-row.is-target-faded {
+        opacity: 0.32;
+        cursor: not-allowed;
+      }
+
+      /* Empty starter slot row */
+      #myteam .mt-row.is-empty {
+        min-height: 36px;
+        padding: 4px 8px;
+        background: #fbfbfb;
+        opacity: 0.55;
+      }
+      #myteam .mt-row.is-empty:hover { opacity: 0.85; }
+      #myteam .mt-empty-cell {
+        grid-column: 2 / -1;
+        font-family: "Basis33", sans-serif;
+        font-size: 0.95rem;
+        color: #aaa;
+        font-style: italic;
+      }
+
+      /* Bench drop zone — visible only while a player is selected */
+      #myteam .mt-bench-drop {
+        display: none;
+        padding: 10px 12px;
+        margin: 8px;
+        border: 2px dashed #b8d4ff;
+        border-radius: 6px;
+        text-align: center;
+        font-family: "Arcade Gamer", sans-serif;
+        font-size: 0.5rem;
+        letter-spacing: 1px;
+        color: var(--retro-blue);
+        background: rgba(0, 72, 186, 0.04);
+        cursor: pointer;
+      }
+      #myteam .mt-panel.mt-selecting .mt-bench-drop { display: block; }
+      #myteam .mt-panel.mt-selecting .mt-bench-drop.is-target-eligible {
+        background: rgba(46, 204, 113, 0.10);
+        border-color: rgba(46, 204, 113, 0.6);
+        color: #1d8348;
+      }
+      #myteam .mt-panel.mt-selecting .mt-bench-drop.is-target-faded {
+        display: none;
       }
 
       /* Headshot wrapper holds the active-status dot */
@@ -24951,19 +26001,20 @@
         <div class="modal-content player-modal-content">
           <span class="modal-close" onclick="closePlayerModal()">&times;</span>
           <div class="player-modal-layout">
+            <div class="pcm-ribbon" id="pcm-ribbon" style="display:none;"></div>
             <div class="player-trans-panel" id="player-trans-panel"></div>
             <div id="player-modal-card-wrapper">
               <div id="player-modal-header"></div>
               <div class="modal-body-scroll" id="player-modal-body"></div>
             </div>
             <div class="player-charts-container" id="player-charts-container">
-              <div class="player-chart-box" id="player-history-chart-box">
+              <div class="player-chart-box pcm-chart-card" id="player-history-chart-box">
                 <div class="player-chart-title">Historical &amp; Projected Points</div>
                 <div class="player-chart-canvas-wrap">
                   <canvas id="player-history-canvas"></canvas>
                 </div>
               </div>
-              <div class="player-chart-box" id="player-percentile-chart-box">
+              <div class="player-chart-box pcm-chart-card" id="player-percentile-chart-box">
                 <div class="player-chart-title">Percentile Rank</div>
                 <div class="player-chart-canvas-wrap">
                   <canvas id="player-percentile-canvas"></canvas>
@@ -29142,32 +30193,43 @@
       function updateModalToggleButtons() {
         const modal = document.getElementById('player-modal');
         if (!modal) return;
-        const buttons = modal.querySelectorAll('.card-toggle-btn[data-modal-key]');
+        const buttons = modal.querySelectorAll(
+          '.card-toggle-btn[data-modal-key], .pcm-window-tabs button[data-modal-key]'
+        );
         buttons.forEach((btn) => {
           const key = btn.getAttribute('data-modal-key');
           if (!key) return;
-          // Active if key matches modal window or modal stat type
           const isActive =
             key === window.currentModalPlayerWindow || key === window.currentModalStatType;
           btn.classList.toggle('active', isActive);
         });
       }
 
+      function _isTwoWayPlayer(player) {
+        const eligs = player.eligible_positions || [];
+        const pitcherPos = ["SP","RP","P","CP"];
+        return eligs.some(p => pitcherPos.includes(p)) && eligs.some(p => !pitcherPos.includes(p) && p !== "IL" && p !== "BN");
+      }
+      function _resolveIsBatter(player) {
+        if (_isTwoWayPlayer(player)) {
+          const pitcherPos = ["SP","RP","P","CP"];
+          return !pitcherPos.includes(player.primary_position);
+        }
+        return player.position_type === "B";
+      }
+
       function updateModalStats(player) {
         const stats = getModalPlayerStats(player);
         const fantasyPts = getModalPlayerFantasyPoints(player);
-        const isBatter = player.position_type === "B";
+        const isBatter = _resolveIsBatter(player);
         const statsLabel = getModalPlayerWindowShortLabel();
         const statsHeaderLabel = getModalPlayerStatsHeaderLabel();
         const statsTitle = getModalPlayerStatsTitle();
 
-        // Update points display in the card
-        const ptsValueEl = document.querySelector(".card-points-value");
-        if (ptsValueEl) {
-          ptsValueEl.textContent = fantasyPts.toFixed(1);
-        }
+        const modalEl = document.getElementById('player-modal');
+        const isPcm = modalEl && modalEl.classList.contains('pcm-active');
 
-        // Update position rank
+        // Position rank
         const primaryPos = player.primary_position;
         const samePos = allPlayersData
           .filter(
@@ -29180,6 +30242,87 @@
         const posRank = samePos.findIndex((p) => p.name === player.name) + 1;
         const posRankDisplay =
           posRank > 0 ? `${primaryPos}${posRank}` : primaryPos;
+
+        if (isPcm) {
+          const ptsEl = document.querySelector('#player-modal .pcm-fp-strip .val');
+          if (ptsEl) ptsEl.textContent = fantasyPts.toFixed(1);
+          const rkEl = document.querySelector('#player-modal .pcm-fp-strip .rk');
+          if (rkEl) rkEl.textContent = posRankDisplay || '';
+          const npNumEl = document.querySelector('#player-modal .pcm-np-num');
+          if (npNumEl) npNumEl.textContent = posRankDisplay || (primaryPos || '—');
+
+          const selectedYear = getCurrentPlayerScoringYear();
+          const statsBlock = document.getElementById('modal-stats-content');
+          if (statsBlock) {
+            const labelUp = (statsLabel || '').toUpperCase();
+            statsBlock.innerHTML = isBatter
+              ? `
+                <div class="pcm-stat-row head">
+                  <div>${selectedYear}</div><div>G</div><div>PA</div><div>AB</div>
+                  <div>1B</div><div>2B</div><div>3B</div><div>HR</div>
+                </div>
+                <div class="pcm-stat-row body">
+                  <div>${labelUp}</div>
+                  <div>${stats.G || 0}</div>
+                  <div>${stats.PA || 0}</div>
+                  <div>${stats.AB || 0}</div>
+                  <div>${stats["1B"] || 0}</div>
+                  <div>${stats["2B"] || 0}</div>
+                  <div>${stats["3B"] || 0}</div>
+                  <div>${stats.HR || 0}</div>
+                </div>
+                <div class="pcm-stat-row head">
+                  <div>MORE</div><div>RBI</div><div>BB</div><div>SO</div>
+                  <div>SB</div><div>CS</div><div>HBP</div><div>OPS</div>
+                </div>
+                <div class="pcm-stat-row body">
+                  <div>${labelUp}</div>
+                  <div>${stats.RBI || 0}</div>
+                  <div>${stats.BB || 0}</div>
+                  <div>${stats.SO || 0}</div>
+                  <div>${stats.SB || 0}</div>
+                  <div>${stats.CS || 0}</div>
+                  <div>${stats.HBP || 0}</div>
+                  <div>${stats.OPS ? stats.OPS.toFixed(3) : ".000"}</div>
+                </div>`
+              : `
+                <div class="pcm-stat-row head">
+                  <div>${selectedYear}</div><div>G</div><div>GS</div><div>IP</div>
+                  <div>W</div><div>L</div><div>SV</div><div>HLD</div>
+                </div>
+                <div class="pcm-stat-row body">
+                  <div>${labelUp}</div>
+                  <div>${stats.G || 0}</div>
+                  <div>${stats.GS || 0}</div>
+                  <div>${stats.IP || 0}</div>
+                  <div>${stats.W || 0}</div>
+                  <div>${stats.L || 0}</div>
+                  <div>${stats.SV || 0}</div>
+                  <div>${stats.HLD || 0}</div>
+                </div>
+                <div class="pcm-stat-row head">
+                  <div>MORE</div><div>ERA</div><div>WHIP</div><div>K</div>
+                  <div>BB</div><div>K%</div><div>BB%</div><div>TBF</div>
+                </div>
+                <div class="pcm-stat-row body">
+                  <div>${labelUp}</div>
+                  <div>${stats.ERA ? stats.ERA.toFixed(2) : "0.00"}</div>
+                  <div>${stats.WHIP ? stats.WHIP.toFixed(2) : "0.00"}</div>
+                  <div>${stats.SO || 0}</div>
+                  <div>${stats.BB || 0}</div>
+                  <div>${stats["K%"] ? stats["K%"].toFixed(0) : "0"}%</div>
+                  <div>${stats["BB%"] ? stats["BB%"].toFixed(0) : "0"}%</div>
+                  <div>${stats.TBF || 0}</div>
+                </div>`;
+          }
+          return;
+        }
+
+        // Legacy card path
+        const ptsValueEl = document.querySelector(".card-points-value");
+        if (ptsValueEl) {
+          ptsValueEl.textContent = fantasyPts.toFixed(1);
+        }
 
         const rankEl = document.querySelector(".card-points-rank");
         if (rankEl) {
@@ -29636,7 +30779,7 @@
                             <div class="player-name-cell" onclick="showPlayerDetail('${player.name.replace(/'/g, "\\'")}')">
                                 <img src="${headshot}" alt="" class="player-headshot" onerror="this.src='${placeholderImg}'">
                                 <div>
-                                    <div class="player-name">${player.name}</div>
+                                    <div class="player-name">${player.name.replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '')}</div>
                                     <div class="player-mlb-team">${mlbLogoHtml}${mlbTeamText} ${posBadgesHtml}</div>
                                 </div>
                             </div>
@@ -29909,14 +31052,20 @@
       const playerTransactionCache = {};
 
       async function loadPlayerTransactions(playerName) {
-        const cacheKey = playerName.toLowerCase().trim();
+        // Normalize cache key so both "(Batter)" and "(Pitcher)" variants share the same result
+        const cacheKey = playerName.toLowerCase().trim().replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
         if (playerTransactionCache[cacheKey])
           return playerTransactionCache[cacheKey];
 
         const allTransactions = [];
         const draftByYear = {};
         const years = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
-        const nameLC = playerName.toLowerCase();
+        const nameLC = cacheKey; // use the stripped base name for all matching
+        // Two-way players like Ohtani are stored as "Name (Batter)" / "Name (Pitcher)" in historical data
+        const _txNameMatch = (n) => {
+          const normalized = (n || '').toLowerCase().replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim();
+          return normalized === nameLC || n.toLowerCase() === nameLC;
+        };
 
         // Load all years in parallel
         const fetches = years.map(async (year) => {
@@ -29953,8 +31102,7 @@
               if (draftResp.ok) {
                 const draftData = await draftResp.json();
                 const pick = draftData.find(
-                  (p) =>
-                    p.player_name && p.player_name.toLowerCase() === nameLC,
+                  (p) => p.player_name && _txNameMatch(p.player_name),
                 );
                 if (pick) {
                   draftByYear[year] = {
@@ -29981,8 +31129,7 @@
               (t) =>
                 t.players &&
                 t.players.some(
-                  (p) =>
-                    p.player_name && p.player_name.toLowerCase() === nameLC,
+                  (p) => p.player_name && _txNameMatch(p.player_name),
                 ),
             );
 
@@ -30085,6 +31232,298 @@
         const body = el.nextElementSibling;
         el.classList.toggle("collapsed");
         body.classList.toggle("collapsed");
+      }
+
+      // Render transactions for the redesigned (pcm) player card modal
+      // Module-level state for the pcm transactions panel: which type is filtered, which years are collapsed.
+      // Using window globals keeps state across re-renders without a class.
+      window._pcmTxState = window._pcmTxState || { filter: "all", collapsedYears: new Set(), data: null, playerName: "" };
+
+      // Helper: resolve a headshot URL for a tx player using whatever caches are loaded
+      function _pcmResolvePlayerHeadshot(p) {
+        const placeholder =
+          "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
+        if (p.headshot) return p.headshot;
+        const nameRaw = (p.player_name || "").toLowerCase().trim();
+        if (!nameRaw) return placeholder;
+        const nameNorm = nameRaw.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        // 1) allPlayersData
+        try {
+          const m = (typeof allPlayersData !== "undefined" ? allPlayersData : []).find(
+            (ap) => (ap.name || "").toLowerCase().trim() === nameRaw,
+          );
+          if (m && m.headshot_url) return m.headshot_url;
+        } catch (e) {}
+        // 2) averageProjectionsMap
+        try {
+          if (typeof averageProjectionsMap !== "undefined") {
+            const candidates = [
+              `${nameRaw}|batter`,
+              `${nameRaw}|pitcher`,
+              nameRaw,
+              `${nameNorm}|batter`,
+              `${nameNorm}|pitcher`,
+              nameNorm,
+            ];
+            for (const k of candidates) {
+              const hit = averageProjectionsMap[k];
+              if (hit && hit.headshot) return hit.headshot;
+            }
+          }
+        } catch (e) {}
+        // 3) player_stats_windows cache
+        try {
+          const cached = window._playerStatsWindowsCache?.windows?.ytd?.players;
+          if (cached) {
+            const m = cached.find((c) => (c.name || "").toLowerCase().trim() === nameRaw);
+            if (m && m.headshot_url) return m.headshot_url;
+          }
+        } catch (e) {}
+        return placeholder;
+      }
+
+      // Build a rich player tx-row (headshot, name, MLB logo, pos badge)
+      function _pcmPlayerRow(p, focusName) {
+        const isFocus = p.player_name && focusName && p.player_name.toLowerCase() === focusName.toLowerCase();
+        const headshot = _pcmResolvePlayerHeadshot(p);
+        const mlbAbbr = p.team_abbr || p.editorial_team_abbr || "";
+        const mlbLogo = mlbAbbr && typeof getMLBTeamLogo === "function" ? getMLBTeamLogo(mlbAbbr) : "";
+        const pos = p.position || p.display_position || "";
+        return `
+          <div class="pcm-tx-player${isFocus ? " focus" : ""}">
+            <span class="pcm-tx-headshot"><img src="${headshot}" alt="" onerror="this.style.display='none';"></span>
+            <span class="pcm-tx-name">${p.player_name || ""}</span>
+            ${mlbLogo ? `<span class="pcm-tx-mlb"><img src="${mlbLogo}" alt="${mlbAbbr}" onerror="this.style.display='none';"></span>` : ""}
+            ${mlbAbbr ? `<span class="pcm-tx-pick">${mlbAbbr}</span>` : ""}
+            ${pos ? `<span class="pcm-tx-pos">${pos}</span>` : ""}
+          </div>`;
+      }
+
+      // Filter dropdown handler
+      function setPcmTxFilter(value) {
+        window._pcmTxState.filter = value || "all";
+        if (window._pcmTxState.data) {
+          renderPcmTransactionPanel(
+            window._pcmTxState.data,
+            "player-trans-panel",
+            window._pcmTxState.playerName,
+          );
+        }
+      }
+
+      // Toggle collapse state for a season
+      function togglePcmTxYear(yr) {
+        const set = window._pcmTxState.collapsedYears;
+        const yrNum = parseInt(yr);
+        if (set.has(yrNum)) set.delete(yrNum);
+        else set.add(yrNum);
+        const groupEl = document.querySelector(`#player-trans-panel .pcm-tx-group[data-year="${yrNum}"]`);
+        if (groupEl) groupEl.classList.toggle("collapsed");
+      }
+
+      function renderPcmTransactionPanel(data, containerId, playerName) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        // Persist data so the filter dropdown can re-render
+        window._pcmTxState.data = data;
+        window._pcmTxState.playerName = playerName || "";
+
+        const transactions = (data.transactions || []).slice();
+        const drafts = data.drafts || {};
+        const nameLC = (playerName || "").toLowerCase();
+        const filter = window._pcmTxState.filter || "all";
+        const collapsed = window._pcmTxState.collapsedYears;
+
+        // Group by year
+        const byYear = new Map();
+        const ensure = (yr) => {
+          if (!byYear.has(yr)) byYear.set(yr, []);
+          return byYear.get(yr);
+        };
+        Object.keys(drafts).forEach((yr) => {
+          const d = drafts[yr];
+          ensure(parseInt(yr)).push({
+            kind: "draft",
+            year: parseInt(yr),
+            timestamp: 0,
+            round: d.round,
+            pick: d.pick,
+            teamName: d.teamName,
+            teamLogo: d.teamLogo,
+          });
+        });
+        transactions.forEach((t) => {
+          ensure(t.year).push({ kind: "txn", ...t });
+        });
+
+        const years = [...byYear.keys()].sort((a, b) => b - a);
+
+        // Determine the displayed type for each item
+        const itemMatchesFilter = (it) => {
+          if (filter === "all") return true;
+          if (it.kind === "draft") return filter === "draft";
+          if (it.type === "trade") return filter === "trade";
+          // add / drop / add+drop — find the focus player's transaction_type
+          const focus = (it.players || []).find(
+            (p) => p.player_name && p.player_name.toLowerCase() === nameLC,
+          );
+          const ttype = (focus && focus.transaction_type) || it.type || "";
+          return ttype === filter;
+        };
+
+        // Section header with type-filter dropdown
+        let html = `
+          <div class="pcm-sect-head">
+            <span class="pcm-swatch"></span>
+            <span>TRANSACTIONS</span>
+            <span class="pcm-rule"></span>
+            <select class="pcm-tx-filter" onchange="setPcmTxFilter(this.value)">
+              <option value="all"${filter === "all" ? " selected" : ""}>ALL</option>
+              <option value="draft"${filter === "draft" ? " selected" : ""}>DRAFT</option>
+              <option value="trade"${filter === "trade" ? " selected" : ""}>TRADE</option>
+              <option value="add"${filter === "add" ? " selected" : ""}>ADD</option>
+              <option value="drop"${filter === "drop" ? " selected" : ""}>DROP</option>
+            </select>
+          </div>`;
+
+        if (years.length === 0) {
+          html += '<div class="pcm-tx-empty">No transactions on record.</div>';
+          container.innerHTML = html;
+          return;
+        }
+
+        years.forEach((yr) => {
+          const allItems = byYear
+            .get(yr)
+            .slice()
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+          const items = allItems.filter(itemMatchesFilter);
+
+          // If filter hides everything in this season, skip entirely
+          if (items.length === 0) return;
+
+          const isCollapsed = collapsed.has(yr);
+          html += `
+            <div class="pcm-tx-group${isCollapsed ? " collapsed" : ""}" data-year="${yr}">
+              <div class="pcm-tx-year" onclick="togglePcmTxYear(${yr})">
+                <span class="pcm-tx-chev">▾</span>
+                <span class="pcm-tx-year-label">SEASON ${yr}</span>
+                <span class="ct">${items.length}</span>
+              </div>
+              <div class="pcm-tx-items">`;
+
+          items.forEach((it) => {
+            if (it.kind === "draft") {
+              const logoHtml = it.teamLogo
+                ? `<img src="${it.teamLogo}" alt="" onerror="this.style.display='none';">`
+                : "";
+              html += `
+                <div class="pcm-tx-item">
+                  <div class="pcm-tx-tag draft">DRAFT</div>
+                  <div class="pcm-tx-date">${yr}</div>
+                  <div class="pcm-tx-line">
+                    <span class="av">${logoHtml}</span>
+                    <span>${it.teamName || ""}</span>
+                  </div>
+                  <div style="margin-top:6px;">
+                    <span class="pcm-tx-pick">RD ${it.round}</span>
+                    <span class="pcm-tx-pick">#${it.pick}</span>
+                  </div>
+                </div>`;
+              return;
+            }
+
+            if (it.type === "trade") {
+              const traderPlayers = (it.players || []).filter(
+                (p) => p.source_team_key === it.traderTeamKey,
+              );
+              const tradeePlayers = (it.players || []).filter(
+                (p) => p.source_team_key === it.tradeeTeamKey,
+              );
+              const traderPicks = (it.draftPicks || []).filter(
+                (p) => p.source_team_key === it.traderTeamKey,
+              );
+              const tradeePicks = (it.draftPicks || []).filter(
+                (p) => p.source_team_key === it.tradeeTeamKey,
+              );
+              const renderSide = (mgrName, logo, players, picks) => {
+                const logoHtml = logo
+                  ? `<img src="${logo}" alt="" onerror="this.style.display='none';">`
+                  : "";
+                let s = `
+                  <div class="pcm-tx-line">
+                    <span class="av">${logoHtml}</span>
+                    <span>${mgrName || "—"}</span>
+                  </div>`;
+                players.forEach((p) => { s += _pcmPlayerRow(p, playerName); });
+                picks.forEach((pk) => {
+                  s += `
+                    <div class="pcm-tx-player">
+                      <span class="pcm-tx-pick">PICK</span>
+                      <span class="pcm-tx-name">${pk.display_name || `Round ${pk.round}`}</span>
+                    </div>`;
+                });
+                return s;
+              };
+              const traderLogo =
+                (it.players || []).find((p) => p.source_team_key === it.traderTeamKey)?.sourceLogo || "";
+              const tradeeLogo =
+                (it.players || []).find((p) => p.source_team_key === it.tradeeTeamKey)?.sourceLogo || "";
+              html += `
+                <div class="pcm-tx-item">
+                  <div class="pcm-tx-tag trade">TRADE</div>
+                  <div class="pcm-tx-date">${it.date || yr}</div>
+                  ${renderSide(it.traderTeamName, traderLogo, traderPlayers, traderPicks)}
+                  <div style="text-align:center;font-family:'Arcade Gamer',monospace;color:var(--pcm-pop);font-size:11px;margin:4px 0;">▼ FOR ▼</div>
+                  ${renderSide(it.tradeeTeamName, tradeeLogo, tradeePlayers, tradeePicks)}
+                </div>`;
+              return;
+            }
+
+            // add / drop / add+drop / commish
+            const focusPlayer = (it.players || []).find(
+              (p) => p.player_name && p.player_name.toLowerCase() === nameLC,
+            );
+            const txType = (focusPlayer && focusPlayer.transaction_type) || it.type || "move";
+            const tagClass =
+              txType === "add"
+                ? "add"
+                : txType === "drop"
+                  ? "drop"
+                  : txType === "draft"
+                    ? "draft"
+                    : "";
+            const tagLabel =
+              txType === "add"
+                ? "ADD"
+                : txType === "drop"
+                  ? "DROP"
+                  : (txType || "MOVE").toUpperCase();
+            const teamName =
+              (focusPlayer && (focusPlayer.destination_team_name || focusPlayer.source_team_name)) ||
+              "";
+            const teamLogo =
+              (focusPlayer && (focusPlayer.destLogo || focusPlayer.sourceLogo)) || "";
+            const logoHtml = teamLogo
+              ? `<img src="${teamLogo}" alt="" onerror="this.style.display='none';">`
+              : "";
+            html += `
+              <div class="pcm-tx-item">
+                <div class="pcm-tx-tag ${tagClass}">${tagLabel}</div>
+                <div class="pcm-tx-date">${it.date || yr}</div>
+                <div class="pcm-tx-line">
+                  <span class="av">${logoHtml}</span>
+                  <span>${teamName}</span>
+                </div>
+                ${focusPlayer ? _pcmPlayerRow(focusPlayer, playerName) : ""}
+              </div>`;
+          });
+
+          html += `</div></div>`; // /.pcm-tx-items, /.pcm-tx-group
+        });
+
+        container.innerHTML = html;
       }
 
       function renderTransactionPanel(data, containerId) {
@@ -30488,8 +31927,20 @@
         const headerEl = document.getElementById("player-modal-header");
         const bodyEl = document.getElementById("player-modal-body");
 
-        // Find player in current data
-        const player = allPlayersData.find((p) => p.name === playerName);
+        // Find player in current data. Two-way players (e.g. "Shohei Ohtani (Batter)")
+        // are stored with the suffix in allPlayersData so each side is distinct.
+        let player = allPlayersData.find((p) => p.name === playerName);
+        if (!player) {
+          // Strip Yahoo two-way suffix and match on position_type as fallback
+          const _twBase = playerName.replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '').trim();
+          const _twPt = /\(Pitcher\)/i.test(playerName) ? 'P' : /\(Batter\)/i.test(playerName) ? 'B' : null;
+          if (_twBase !== playerName) {
+            player = _twPt
+              ? allPlayersData.find((p) => p.name === _twBase && p.position_type === _twPt)
+              : null;
+            if (!player) player = allPlayersData.find((p) => p.name === _twBase);
+          }
+        }
         if (!player) return;
 
         // Store current player for modal stat toggle
@@ -30565,7 +32016,7 @@
           player.team_name !== "Previously Rostered";
 
         const stats = getModalPlayerStats(player);
-        const isBatter = player.position_type === "B";
+        const isBatter = _resolveIsBatter(player);
         const fantasyPts = getModalPlayerFantasyPoints(player).toFixed(1);
         const statsLabel = getModalPlayerWindowShortLabel();
         const statsHeaderLabel = getModalPlayerStatsHeaderLabel();
@@ -30767,18 +32218,18 @@
                         <!-- Player Name Banner -->
                         <div class="card-name-banner">
                             <span class="card-year-badge">${selectedYear}</span>
-                            <span class="card-player-name">${player.name}</span>
+                            <span class="card-player-name">${(player.name||'').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi,'')}</span>
                             <span class="card-position-badge">${player.primary_position}</span>
                         </div>
                     </div>
-                    
+
                     <!-- CARD BACK - Stats Section -->
                     <div class="card-back">
                         <!-- Header with headshot -->
                         <div class="card-back-header">
                             <div class="card-back-number">#${posRank || "??"}</div>
                             <div class="card-back-info">
-                                <div class="card-back-name">${player.name}</div>
+                                <div class="card-back-name">${(player.name||'').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi,'')}</div>
                                 <div class="card-back-team">${mlbTeamText} • ${hasFantasyTeam ? player.team_name : "Free Agent"}</div>
                             </div>
                             <img src="${headshot}" alt="" class="card-back-headshot" onerror="this.src='${placeholderHeadshot}';">
@@ -30935,14 +32386,19 @@
         }
 
         // Career history section
+        // Strip Yahoo two-way suffix so "Shohei Ohtani (Batter)" resolves to "shohei ohtani"
         const normalizedName = playerName
           .toLowerCase()
+          .replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '')
+          .trim()
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "");
         const playerHistory = playerHistoryData[normalizedName];
         const normalizeHistoryName = (name) =>
           (name || "")
             .toLowerCase()
+            .trim()
+            .replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "")
             .trim()
             .normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "");
@@ -30986,10 +32442,20 @@
           console.log("Could not merge current season player history");
         }
 
+        // For two-way players, keep only the seasons matching the current role
+        const _hasBothTypes = historySeasons.some(s => s.position_type === "B") && historySeasons.some(s => s.position_type === "P");
+        if (_hasBothTypes) {
+          const _wantType = isBatter ? "B" : "P";
+          const _filtered = historySeasons.filter(s => !s.position_type || s.position_type === _wantType);
+          historySeasons.length = 0;
+          _filtered.forEach(s => historySeasons.push(s));
+        }
+
+        let historyLogos = {};
+        let historyRanks = {};
         if (historySeasons.length > 0) {
-          const historyLogos = {};
-          const historyRanks = {};
           const primaryPos = player.primary_position;
+          const _resolvedPosType = isBatter ? "B" : "P";
 
           for (const season of historySeasons) {
             const teams = await getTeamData(season.year);
@@ -31014,7 +32480,7 @@
 
               // Type rank (batters or pitchers)
               const sameType = yearPlayers
-                .filter((p) => p.position_type === player.position_type)
+                .filter((p) => p.position_type === _resolvedPosType)
                 .sort(
                   (a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0),
                 );
@@ -31111,16 +32577,257 @@
             </div>`;
 
         bodyEl.innerHTML = cardHTML;
+
+        // ----- Redesigned player card modal (pcm) -----
+        // Override the legacy card with the new bright retro baseball-card aesthetic.
+        // The data above (player, stats, history, draft, etc.) is reused as-is.
+        try {
+          const pcmRibbon = document.getElementById("pcm-ribbon");
+          const pcmFantasyShortRaw =
+            (player.team_name || "").trim() ||
+            (player.manager || "").trim() ||
+            "FA";
+          const pcmFantasyShort =
+            pcmFantasyShortRaw === "Free Agent"
+              ? "FA"
+              : pcmFantasyShortRaw.length > 14
+                ? pcmFantasyShortRaw.slice(0, 14).toUpperCase()
+                : pcmFantasyShortRaw.toUpperCase();
+          const pcmMlbBadgeHtml = hasMlbLogo
+            ? `<img src="${mlbLogoUrl}" alt="${mlbTeamText}" onerror="this.style.display='none';">`
+            : `<div style="font-family:'Arcade Gamer',monospace;font-size:13px;color:var(--pcm-pop);">FA</div>`;
+          const pcmFantasyBadgeHtml = hasFantasyTeam
+            ? `<img src="${fixTeamLogo(player.team_logo)}" alt="" onerror="this.parentElement.classList.add('fa');this.outerHTML='FA';">`
+            : "FA";
+          const pcmHeroBg = actionShotUrl
+            ? `style="background-image:url('${actionShotUrl}'),repeating-linear-gradient(45deg,rgba(255,255,255,0.06) 0 14px,rgba(0,0,0,0.06) 14px 28px);"`
+            : "";
+          const pcmJerseyText = `${player.primary_position || ""}${
+            player.uniform_number ? " • #" + player.uniform_number : ""
+          }`.trim() || (player.primary_position || "—");
+          const pcmTapeText = (mlbTeamText || "FA").toUpperCase();
+
+          // Window tabs (only render for current season)
+          const pcmWindowTabsHtml =
+            selectedYear === 2026
+              ? `<div class="pcm-window-tabs">${availableWindowButtons
+                  .map(
+                    (b) =>
+                      `<button data-modal-key="${b.key}" class="${
+                        window.currentModalPlayerWindow === b.key ? "active" : ""
+                      }" onclick="setModalPlayerWindow('${b.key}')">${
+                        b.label.toUpperCase()
+                      }</button>`,
+                  )
+                  .join("")}</div>`
+              : `<div class="pcm-window-tabs">${HISTORICAL_PLAYER_STAT_BUTTONS.map(
+                  (b) =>
+                    `<button data-modal-key="${b.key}" class="${
+                      window.currentModalStatType === b.key ? "active" : ""
+                    }" onclick="setModalStatType('${b.key}')">${
+                      b.label.toUpperCase()
+                    }</button>`,
+                ).join("")}</div>`;
+
+          // Stat rows
+          const pcmStatRowsHtml = isBatter
+            ? `
+              <div class="pcm-stat-row head">
+                <div>${selectedYear}</div><div>G</div><div>PA</div><div>AB</div>
+                <div>1B</div><div>2B</div><div>3B</div><div>HR</div>
+              </div>
+              <div class="pcm-stat-row body">
+                <div>${(statsLabel || "").toUpperCase()}</div>
+                <div>${stats.G || 0}</div>
+                <div>${stats.PA || 0}</div>
+                <div>${stats.AB || 0}</div>
+                <div>${stats["1B"] || 0}</div>
+                <div>${stats["2B"] || 0}</div>
+                <div>${stats["3B"] || 0}</div>
+                <div>${stats.HR || 0}</div>
+              </div>
+              <div class="pcm-stat-row head">
+                <div>MORE</div><div>RBI</div><div>BB</div><div>SO</div>
+                <div>SB</div><div>CS</div><div>HBP</div><div>OPS</div>
+              </div>
+              <div class="pcm-stat-row body">
+                <div>${(statsLabel || "").toUpperCase()}</div>
+                <div>${stats.RBI || 0}</div>
+                <div>${stats.BB || 0}</div>
+                <div>${stats.SO || 0}</div>
+                <div>${stats.SB || 0}</div>
+                <div>${stats.CS || 0}</div>
+                <div>${stats.HBP || 0}</div>
+                <div>${stats.OPS ? stats.OPS.toFixed(3) : ".000"}</div>
+              </div>`
+            : `
+              <div class="pcm-stat-row head">
+                <div>${selectedYear}</div><div>G</div><div>GS</div><div>IP</div>
+                <div>W</div><div>L</div><div>SV</div><div>HLD</div>
+              </div>
+              <div class="pcm-stat-row body">
+                <div>${(statsLabel || "").toUpperCase()}</div>
+                <div>${stats.G || 0}</div>
+                <div>${stats.GS || 0}</div>
+                <div>${stats.IP || 0}</div>
+                <div>${stats.W || 0}</div>
+                <div>${stats.L || 0}</div>
+                <div>${stats.SV || 0}</div>
+                <div>${stats.HLD || 0}</div>
+              </div>
+              <div class="pcm-stat-row head">
+                <div>MORE</div><div>ERA</div><div>WHIP</div><div>K</div>
+                <div>BB</div><div>K%</div><div>BB%</div><div>TBF</div>
+              </div>
+              <div class="pcm-stat-row body">
+                <div>${(statsLabel || "").toUpperCase()}</div>
+                <div>${stats.ERA ? stats.ERA.toFixed(2) : "0.00"}</div>
+                <div>${stats.WHIP ? stats.WHIP.toFixed(2) : "0.00"}</div>
+                <div>${stats.SO || 0}</div>
+                <div>${stats.BB || 0}</div>
+                <div>${stats["K%"] ? stats["K%"].toFixed(0) : "0"}%</div>
+                <div>${stats["BB%"] ? stats["BB%"].toFixed(0) : "0"}%</div>
+                <div>${stats.TBF || 0}</div>
+              </div>`;
+
+          // Draft strip
+          const pcmDraftStrip = draftInfo
+            ? `${selectedYear} DRAFT &nbsp;·&nbsp; <b>ROUND ${draftInfo.round}, PICK #${draftInfo.pick}</b>`
+            : `${selectedYear} DRAFT &nbsp;·&nbsp; <b>UNDRAFTED</b>`;
+
+          // League history rows
+          let pcmHistoryHtml = "";
+          if (historySeasons.length > 0) {
+            const pcmHistTypeLabel = isBatter ? "BAT" : "PIT";
+            pcmHistoryHtml = `
+              <div class="pcm-league-history">
+                <div class="pcm-lh-head">
+                  <div>YR</div><div>MANAGER</div><div>OVR</div>
+                  <div>${pcmHistTypeLabel}</div><div>POS</div><div>PTS</div>
+                </div>
+                ${historySeasons
+                  .slice()
+                  .sort((a, b) => b.year - a.year)
+                  .slice(0, 6)
+                  .map((season) => {
+                    const logo =
+                      historyLogos[`${season.year}_${season.team_name}`] || "";
+                    const ranks = historyRanks[season.year] || {
+                      overall: "-",
+                      type: "-",
+                      position: "-",
+                      posRankNum: 0,
+                    };
+                    const isCurrent = Number(season.year) === selectedYear;
+                    const mgr = season.manager || "—";
+                    const initials = (mgr.match(/\b\w/g) || ["?"])
+                      .slice(0, 2)
+                      .join("")
+                      .toUpperCase();
+                    return `
+                      <div class="pcm-lh-row">
+                        <div class="yr">${season.year}</div>
+                        <div class="mgr">
+                          <span class="mgr-av">${
+                            logo
+                              ? `<img src="${logo}" alt="" onerror="this.parentElement.innerText='${initials}';">`
+                              : initials
+                          }</span>
+                          <span>${mgr}</span>
+                        </div>
+                        <div><span class="pill">${ranks.overall}</span></div>
+                        <div><span class="pill">${ranks.type}</span></div>
+                        <div><span class="pill ${isCurrent ? "gold" : ""}">${ranks.position}</span></div>
+                        <div class="pts">${(season.fantasy_points || 0).toFixed(0)}</div>
+                      </div>`;
+                  })
+                  .join("")}
+              </div>`;
+          }
+
+          // Build the pcm center card
+          const pcmCardHtml = `
+            <div class="pcm-card">
+              <div class="pcm-card-frame">
+                <div class="pcm-card-inner">
+                  <div class="pcm-hero">
+                    <div class="pcm-hero-img" ${pcmHeroBg}></div>
+                    <div class="pcm-hero-tape">★ ${pcmTapeText} ★</div>
+                    <div class="pcm-hero-pillar">${pcmMlbBadgeHtml}</div>
+                    <div class="pcm-hero-jersey">${pcmJerseyText.toUpperCase()}</div>
+                    <div class="pcm-hero-fantasy${hasFantasyTeam ? "" : " fa"}">${pcmFantasyBadgeHtml}</div>
+                  </div>
+                  <div class="pcm-nameplate">
+                    <div class="pcm-np-num">${posRankDisplay || (player.primary_position || "—")}</div>
+                    <div>
+                      <div class="pcm-np-name">${(player.name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '')}</div>
+                      <div class="pcm-np-sub">${mlbTeamText}${
+                        hasFantasyTeam
+                          ? ` · ${(player.team_name || "").toUpperCase()}`
+                          : ""
+                      }</div>
+                    </div>
+                    <div class="pcm-np-headshot">
+                      <img src="${headshot}" alt="${player.name}" onerror="this.src='${placeholderHeadshot}';">
+                    </div>
+                  </div>
+                  ${pcmWindowTabsHtml}
+                  <div class="pcm-stat-block" id="modal-stats-content">
+                    ${pcmStatRowsHtml}
+                  </div>
+                  <div class="pcm-fp-strip">
+                    <div class="lbl">FANTASY PTS</div>
+                    <div class="val">${fantasyPts}</div>
+                    <div class="rk">${posRankDisplay || ""}</div>
+                  </div>
+                  <div class="pcm-draft-strip">${pcmDraftStrip}</div>
+                  ${pcmHistoryHtml}
+                </div>
+              </div>
+            </div>`;
+
+          // Build ribbon
+          const pcmDisplayName = (player.name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '');
+          const pcmRibbonHtml = `
+            <div class="pcm-pos-badge">${player.primary_position || "—"}</div>
+            <div class="pcm-name-block">
+              <div class="pcm-name">${pcmDisplayName}</div>
+              <div class="pcm-meta">
+                <span>${mlbTeamText}</span>
+                ${
+                  hasFantasyTeam
+                    ? `<span class="dot">●</span><span class="ftc">${player.team_name}</span>`
+                    : `<span class="dot">●</span><span class="ftc">FREE AGENT</span>`
+                }
+              </div>
+            </div>
+            <div class="pcm-season-pill">${selectedYear} SEASON</div>
+            <button class="pcm-closer" aria-label="Close" onclick="closePlayerModal()">✕</button>`;
+
+          if (pcmRibbon) {
+            pcmRibbon.innerHTML = pcmRibbonHtml;
+            pcmRibbon.style.display = "";
+          }
+          bodyEl.innerHTML = pcmCardHtml;
+          modal.classList.add("pcm-active");
+        } catch (pcmErr) {
+          console.error("Failed to render pcm modal:", pcmErr);
+          modal.classList.remove("pcm-active");
+        }
+
         // Ensure modal toggle buttons reflect modal-local state
         updateModalToggleButtons();
         modal.classList.add("active");
         document.body.classList.add("modal-open");
-        requestAnimationFrame(syncPlayerTransactionPanelHeight);
 
-        // Load transaction history panel
+        // Load transaction history panel — render with pcm style if active
         loadPlayerTransactions(player.name).then((txns) => {
-          renderTransactionPanel(txns, "player-trans-panel");
-          requestAnimationFrame(syncPlayerTransactionPanelHeight);
+          if (modal.classList.contains("pcm-active")) {
+            renderPcmTransactionPanel(txns, "player-trans-panel", player.name);
+          } else {
+            renderTransactionPanel(txns, "player-trans-panel");
+            requestAnimationFrame(syncPlayerTransactionPanelHeight);
+          }
         });
 
         // Render charts (only for 2026 season view)
@@ -31130,14 +32837,229 @@
         if (chartsContainer) {
           if (chartYear === 2026) {
             chartsContainer.style.display = "";
-            const histCanvas = document.getElementById("player-history-canvas");
-            const pctCanvas = document.getElementById("player-percentile-canvas");
-            if (histCanvas) renderPlayerHistoryChart(player, histCanvas);
-            if (pctCanvas) renderPlayerPercentileChart(player, pctCanvas);
+            const isPcmMode = modal.classList.contains("pcm-active");
+            if (isPcmMode) {
+              renderPcmHistoryChart(player, "player-history-chart-box", _resolveIsBatter(player));
+              renderPcmPercentileChart(player, "player-percentile-chart-box");
+            } else {
+              const histCanvas = document.getElementById("player-history-canvas");
+              const pctCanvas = document.getElementById("player-percentile-canvas");
+              if (histCanvas) renderPlayerHistoryChart(player, histCanvas);
+              if (pctCanvas) renderPlayerPercentileChart(player, pctCanvas);
+            }
           } else {
             chartsContainer.style.display = "none";
           }
         }
+      }
+
+      // PCM-style historical & projected points chart (div-based pixel art)
+      async function renderPcmHistoryChart(player, containerId, isBatter) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        // Strip two-way suffix so "(Batter)"/"(Pitcher)" variants hit the same history entry
+        const playerKey = (player.name || "").toLowerCase().replace(/\s*\(batter\)|\s*\(pitcher\)/gi, '').trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const history = playerHistoryData[playerKey];
+        const pastSeasons = [];
+        if (history && Array.isArray(history.seasons)) {
+          const _histHasBoth = history.seasons.some(s => s.position_type === "B") && history.seasons.some(s => s.position_type === "P");
+          const _histWantType = isBatter ? "B" : "P";
+          history.seasons
+            .filter((s) => {
+              if (s.year >= 2026) return false;
+              if ((s.fantasy_points || 0) <= 0) return false;
+              if (_histHasBoth && s.position_type && s.position_type !== _histWantType) return false;
+              return true;
+            })
+            .sort((a, b) => a.year - b.year)
+            .forEach((s) => pastSeasons.push({ year: s.year, points: s.fantasy_points || 0 }));
+        }
+
+        // Current YTD points
+        let actualSeasonPts = 0;
+        try {
+          if (!window._playerStatsWindowsCache) {
+            const r = await fetch("data/current_season/player_stats_windows.json");
+            if (r.ok) window._playerStatsWindowsCache = await r.json();
+          }
+          const ytd = window._playerStatsWindowsCache?.windows?.ytd?.players || [];
+          const m = ytd.find((p) => p.name === player.name)
+            || ytd.find((p) => p.name === playerKey || (p.name||'').toLowerCase().replace(/\s*\(batter\)|\s*\(pitcher\)/gi,'').trim() === playerKey);
+          if (m) actualSeasonPts = m.fantasy_points || 0;
+        } catch (e) {}
+
+        // ROS projections — averaged across systems
+        let rosAvg = 0, rosMin = 0, rosMax = 0;
+        try {
+          const rosFiles = ['ros_steamer','ros_zipsdc','ros_atcdc','ros_thebat','ros_thebatx','ros_oopsydc','ros_fangraphsdc'];
+          const pts = [];
+          for (const fn of rosFiles) {
+            try {
+              const r = await fetch(`data/projections/ros/${fn}.json`);
+              if (!r.ok) continue;
+              const d = await r.json();
+              const all = [...(d.batters || []), ...(d.pitchers || [])];
+              const m = all.find((p) => (p.name || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === playerKey);
+              const v = m && (m.projected_points || m.fantasy_points);
+              if (v) pts.push(v);
+            } catch (e) {}
+          }
+          if (pts.length > 0) {
+            rosAvg = pts.reduce((a, b) => a + b, 0) / pts.length;
+            rosMin = Math.min(...pts);
+            rosMax = Math.max(...pts);
+          }
+        } catch (e) {}
+
+        // Future years from ZiPS
+        let pts2027 = 0, pts2028 = 0;
+        try {
+          const z27 = await _loadZiPSProjectionFile("zips2027");
+          const z28 = await _loadZiPSProjectionFile("zips2028");
+          pts2027 = z27[playerKey] || 0;
+          pts2028 = z28[playerKey] || 0;
+        } catch (e) {}
+
+        // Build bar entries
+        const bars = [];
+        pastSeasons.forEach((s) => bars.push({ kind: "past", year: s.year, val: s.points }));
+        const has2026 = actualSeasonPts > 0 || rosAvg > 0;
+        if (has2026) {
+          bars.push({
+            kind: "current",
+            year: 2026,
+            val: actualSeasonPts,
+            proj: actualSeasonPts + rosAvg,
+            low: rosMin > 0 ? actualSeasonPts + rosMin : null,
+            hi: rosMax > 0 ? actualSeasonPts + rosMax : null,
+          });
+        }
+        if (pts2027 > 0) bars.push({ kind: "proj", year: 2027, proj: pts2027 });
+        if (pts2028 > 0) bars.push({ kind: "proj", year: 2028, proj: pts2028 });
+
+        if (bars.length === 0) {
+          container.innerHTML = `
+            <div class="pcm-sect-head"><span class="pcm-swatch b"></span><span>HISTORICAL & PROJECTED</span><span class="pcm-tag">POINTS</span><span class="pcm-rule"></span></div>
+            <div style="font-family:'Arcade Gamer',monospace;font-size:10px;color:var(--pcm-ink);opacity:.6;text-align:center;padding:18px;">No historical data available</div>`;
+          return;
+        }
+
+        const maxVal = Math.max(...bars.map((b) => b.kind === "past" ? b.val : (b.hi || b.proj || b.val || 0)));
+        const yMax = Math.ceil((maxVal * 1.05) / 50) * 50 || 100;
+
+        const barsHtml = bars.map((b) => {
+          if (b.kind === "past") {
+            const h = (b.val / yMax) * 100;
+            return `
+              <div style="position:relative;display:flex;align-items:flex-end;height:100%;">
+                <div class="pcm-bar pcm-bar-actual" style="width:100%;height:${h}%;">
+                  <span class="pcm-bar-val">${Math.round(b.val)}</span>
+                </div>
+              </div>`;
+          }
+          if (b.kind === "current") {
+            const projTop = b.hi || b.proj;
+            const projH = (projTop / yMax) * 100;
+            const actualH = (b.val / yMax) * 100;
+            return `
+              <div style="position:relative;display:flex;align-items:flex-end;height:100%;">
+                <div class="pcm-bar pcm-bar-projband pcm-bar-current" style="width:100%;height:${projH}%;">
+                  <span class="pcm-bar-val">${Math.round(projTop)}</span>
+                </div>
+                <div class="pcm-bar pcm-bar-actual" style="position:absolute;left:0;right:0;bottom:0;height:${actualH}%;border-bottom:0;"></div>
+              </div>`;
+          }
+          // proj
+          const h = (b.proj / yMax) * 100;
+          return `
+            <div style="position:relative;display:flex;align-items:flex-end;height:100%;">
+              <div class="pcm-bar pcm-bar-projband" style="width:100%;height:${h}%;">
+                <span class="pcm-bar-val">${Math.round(b.proj)}</span>
+              </div>
+            </div>`;
+        }).join("");
+
+        const axisHtml = bars.map((b) => `<span class="${b.kind === "current" ? "cur" : (b.kind === "proj" ? "proj" : "")}">'${String(b.year).slice(-2)}</span>`).join("");
+
+        container.innerHTML = `
+          <div class="pcm-sect-head"><span class="pcm-swatch b"></span><span>HISTORICAL &amp; PROJECTED</span><span class="pcm-tag">POINTS</span><span class="pcm-rule"></span></div>
+          <div class="pcm-bars">${barsHtml}</div>
+          <div class="pcm-bar-axis">${axisHtml}</div>
+          <div class="pcm-legend">
+            <span><i class="sw actual"></i>ACTUAL</span>
+            <span><i class="sw proj"></i>PROJECTED</span>
+            <span><i class="sw curr"></i>CURRENT YR</span>
+          </div>`;
+      }
+
+      // PCM-style percentile rank chart (horizontal bars per window)
+      async function renderPcmPercentileChart(player, containerId) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (!window._playerStatsWindowsCache) {
+          try {
+            const r = await fetch("data/current_season/player_stats_windows.json");
+            if (r.ok) window._playerStatsWindowsCache = await r.json();
+          } catch (e) {}
+        }
+        const windowsData = window._playerStatsWindowsCache?.windows;
+        if (!windowsData) {
+          container.innerHTML = `
+            <div class="pcm-sect-head"><span class="pcm-swatch c"></span><span>PERCENTILE RANK</span><span class="pcm-tag">VS LEAGUE</span><span class="pcm-rule"></span></div>
+            <div style="font-family:'Arcade Gamer',monospace;font-size:10px;color:var(--pcm-ink);opacity:.6;text-align:center;padding:18px;">No ranking data available</div>`;
+          return;
+        }
+
+        const primaryPos = player.primary_position || "Util";
+        const windowKeys = ["ytd", "last7", "last14", "last30"];
+        const windowLabels = ["SEASON", "LAST 7", "LAST 14", "LAST 30"];
+
+        const calcPct = (rank, total) => {
+          if (rank <= 0 || total <= 0) return 0;
+          return Math.round((1 - (rank - 1) / total) * 100);
+        };
+
+        const rows = windowKeys.map((wk, i) => {
+          const players = (windowsData[wk]?.players || []).filter((p) => (p.fantasy_points || 0) !== 0);
+          const allSorted = [...players].sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+          const overallRank = allSorted.findIndex((p) => p.name === player.name) + 1;
+          const sameGroup = players.filter((p) => p.position_type === player.position_type)
+            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+          const groupRank = sameGroup.findIndex((p) => p.name === player.name) + 1;
+          const samePos = players.filter((p) => p.eligible_positions && p.eligible_positions.includes(primaryPos))
+            .sort((a, b) => (b.fantasy_points || 0) - (a.fantasy_points || 0));
+          const posRank = samePos.findIndex((p) => p.name === player.name) + 1;
+
+          return {
+            label: windowLabels[i],
+            pos: calcPct(posRank, samePos.length),
+            group: calcPct(groupRank, sameGroup.length),
+            overall: calcPct(overallRank, allSorted.length),
+          };
+        });
+
+        const groupLabel = player.position_type === "B" ? "BATTERS" : "PITCHERS";
+
+        const rowsHtml = rows.map((r) => `
+          <div class="pcm-pct-block">
+            <div class="pcm-pct-label">${r.label}</div>
+            <div class="pcm-pct-bars">
+              <div class="pcm-pct-bar"><div class="pcm-pct-fill" style="width:${r.pos}%"></div><span class="pcm-pct-num">${r.pos}</span></div>
+              <div class="pcm-pct-bar"><div class="pcm-pct-fill b" style="width:${r.group}%"></div><span class="pcm-pct-num">${r.group}</span></div>
+              <div class="pcm-pct-bar"><div class="pcm-pct-fill c" style="width:${r.overall}%"></div><span class="pcm-pct-num">${r.overall}</span></div>
+            </div>
+          </div>`).join("");
+
+        container.innerHTML = `
+          <div class="pcm-sect-head"><span class="pcm-swatch c"></span><span>PERCENTILE RANK</span><span class="pcm-tag">VS LEAGUE</span><span class="pcm-rule"></span></div>
+          ${rowsHtml}
+          <div class="pcm-pct-key">
+            <span><i style="background:var(--pcm-field);"></i>${primaryPos}</span>
+            <span><i style="background:var(--pcm-leaf);"></i>${groupLabel}</span>
+            <span><i style="background:var(--pcm-hi);"></i>OVERALL</span>
+          </div>`;
       }
 
       function syncPlayerTransactionPanelHeight() {
@@ -31757,7 +33679,11 @@
       }
 
       function closePlayerModal() {
-        document.getElementById("player-modal").classList.remove("active");
+        const modal = document.getElementById("player-modal");
+        modal.classList.remove("active");
+        modal.classList.remove("pcm-active");
+        const ribbon = document.getElementById("pcm-ribbon");
+        if (ribbon) ribbon.style.display = "none";
         document.body.classList.remove("modal-open");
       }
 
@@ -43479,6 +45405,138 @@
           .join("");
       }
 
+      // Count add/stream moves for a team in the current week.
+      // Uses daily_scores week date range; falls back to last 7 days.
+      function mtCountWeekAdds(teamKey, transactions, weekData) {
+        if (!transactions || !teamKey) return { streams: 0, adds: 0 };
+        let startMs = 0, endMs = Date.now();
+        if (weekData?.start_date && weekData?.end_date) {
+          startMs = new Date(weekData.start_date + "T00:00:00-04:00").getTime();
+          endMs   = new Date(weekData.end_date   + "T23:59:59-04:00").getTime();
+        } else {
+          startMs = endMs - 7 * 24 * 60 * 60 * 1000;
+        }
+        let streams = 0, adds = 0;
+        for (const tx of transactions) {
+          if (tx.type !== "add" && tx.type !== "add/drop") continue;
+          const ts = parseInt(tx.timestamp, 10) * 1000;
+          if (ts < startMs || ts > endMs) continue;
+          for (const p of tx.players || []) {
+            if (p.destination_team_key !== teamKey) continue;
+            if (p.transaction_type !== "add") continue;
+            const pos = (p.position || "").toUpperCase();
+            const isPitcher = pos === "P" || pos === "SP" || pos === "RP" || pos === "CP";
+            if (isPitcher) streams++; else adds++;
+          }
+        }
+        return { streams: Math.min(streams, 3), adds: Math.min(adds, 5) };
+      }
+
+      function mtAddTrackerHTML(streams, adds) {
+        const streamDots = Array.from({ length: 3 }, (_, i) =>
+          `<div class="add-dot stream ${i < streams ? "used" : ""}"></div>`).join("");
+        const addSlots = Math.max(2, adds);
+        const addDots = Array.from({ length: addSlots }, (_, i) =>
+          `<div class="add-dot regular ${i < adds ? "used" : ""}"></div>`).join("");
+        return `
+          <div class="mt-hdr-add-tracker">
+            <div class="add-tracker-group">
+              <span class="add-tracker-label">STR</span>${streamDots}
+            </div>
+            <div class="add-tracker-group">
+              <span class="add-tracker-label">ADD</span>${addDots}
+            </div>
+          </div>`;
+      }
+
+      // Builds one matchup card (prev / current / next).
+      // state: "prev" | "cur" | "next"
+      // topResult/botResult for prev: "win"/"loss"/"tie" from myManager's perspective
+      // For next: "lead"/"trail"/"tied" from myManager's H2H perspective
+      function mtBuildMuCard(opts) {
+        const {
+          state, weekLabel,
+          myMgr, myLogo, myScore,
+          oppMgr, oppLogo, oppScore,
+          result,   // prev: "win"/"loss"/"tie"  |  next: "lead"/"trail"/"tied"
+        } = opts;
+
+        // Diamond triangle colors
+        let topFill, botFill;
+        if (state === "prev") {
+          topFill = result === "win"  ? "#2ecc71" : result === "loss" ? "#e63946" : "#aaa";
+          botFill = result === "win"  ? "#e63946" : result === "loss" ? "#2ecc71" : "#aaa";
+        } else if (state === "cur") {
+          topFill = "#222"; botFill = "#222";
+        } else { // next
+          topFill = "#222"; botFill = "#222";
+        }
+
+        // Score color classes
+        const myScoreCls  = state === "prev" ? (result === "win" ? "win" : result === "loss" ? "loss" : "cur") : state === "cur" ? "cur" : "next";
+        const oppScoreCls = state === "prev" ? (result === "win" ? "loss" : result === "loss" ? "win" : "cur") : state === "cur" ? "cur" : "next";
+
+        const hatHTML = (src, mgr) => src
+          ? `<img class="mt-mu-hat" src="${mtEsc(src)}" alt="${mtEsc(mgr)}" onerror="this.style.display='none'">`
+          : `<span class="mt-mu-hat" style="background:#ddd;display:inline-block"></span>`;
+
+        return `
+          <div class="mt-mu-card mt-mu-${state}">
+            <div class="mt-mu-wk-label">${mtEsc(weekLabel)}</div>
+            <div class="mt-mu-row">
+              <div class="mt-mu-identity">${hatHTML(myLogo, myMgr)}<span class="mt-mu-mgr">${mtEsc(myMgr)}</span></div>
+              <span class="mt-mu-score ${myScoreCls}">${mtEsc(myScore)}</span>
+            </div>
+            <svg class="mt-mu-diamond" viewBox="0 0 30 38" width="28" height="34">
+              <polygon points="15,2 28,19 2,19" fill="${topFill}"/>
+              <polygon points="2,19 28,19 15,36" fill="${botFill}"/>
+            </svg>
+            <div class="mt-mu-row">
+              <div class="mt-mu-identity">${hatHTML(oppLogo, oppMgr)}<span class="mt-mu-mgr">${mtEsc(oppMgr)}</span></div>
+              <span class="mt-mu-score ${oppScoreCls}">${mtEsc(oppScore)}</span>
+            </div>
+          </div>`;
+      }
+
+      // Loads all-time H2H record + average points between two managers.
+      // Returns { myWins, myLosses, myAvgPts, oppAvgPts, games }
+      async function mtLoadH2HVsOpponent(myManagerName, oppManagerName) {
+        const seasons = [2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+        let myWins = 0, myLosses = 0, myPtsSum = 0, oppPtsSum = 0, games = 0;
+        await Promise.all(seasons.map(async (season) => {
+          try {
+            const sp = season === 2026 ? "data/current_season/all_scores.json"
+              : `data/historical/${season}/all_scores.json`;
+            const sdp = season === 2026 ? "data/current_season/standings.json"
+              : `data/historical/${season}/final_standings.json`;
+            const [sr, stdr] = await Promise.all([fetch(sp), fetch(sdp)]);
+            if (!sr.ok || !stdr.ok) return;
+            const scores = await sr.json();
+            let standings = await stdr.json();
+            standings = normalizeStandingsData(standings, season);
+            const teamMap = {};
+            standings.forEach(t => {
+              teamMap[t.team_key] = normalizeManagerName(t.manager, season, t.team_name, t.team_key);
+            });
+            const myTeam = standings.find(t =>
+              normalizeManagerName(t.manager, season, t.team_name, t.team_key) === myManagerName);
+            if (!myTeam) return;
+            for (const s of scores) {
+              if (season === 2026 && !isCompletedCurrentSeasonMatchup(s)) continue;
+              if (s.team_key !== myTeam.team_key) continue;
+              if (teamMap[s.opponent_key] !== oppManagerName) continue;
+              games++;
+              myPtsSum  += s.team_score;
+              oppPtsSum += s.opponent_score;
+              if (s.team_score > s.opponent_score) myWins++;
+              else if (s.team_score < s.opponent_score) myLosses++;
+            }
+          } catch (_) {}
+        }));
+        return { myWins, myLosses, myAvgPts: games ? myPtsSum / games : 0,
+          oppAvgPts: games ? oppPtsSum / games : 0, games };
+      }
+
       function mtTodayFantasyPoints(dailyEntry, posType) {
         if (!dailyEntry) return 0;
         if (posType === "B") {
@@ -43716,7 +45774,7 @@
           : "";
 
         return `
-          <div class="${rowCls}">
+          <div class="${rowCls}" data-player-id="${mtEsc(player.player_id)}" data-slot="${mtEsc(selectedPos)}" data-position-type="${mtEsc(player.position_type || '')}">
             ${mtSlotBadgeHTML(selectedPos, player.primary_position)}
             <div class="mt-hs-wrap">
               <img class="mt-hs" src="${mtEsc(mtPlayerHeadshot(player))}" alt="" loading="lazy">
@@ -43777,6 +45835,301 @@
         return n + (s[(v - 20) % 10] || s[v] || s[0]);
       }
 
+      // ── Lineup editing (in-memory; option-3 Yahoo write integration TBD) ──
+      let mtSelectedPlayerId = null;
+
+      function mtIsBenchOrILSlot(pos) {
+        return pos === "BN" || pos === "IL" || pos === "IL+" || pos === "NA";
+      }
+
+      function mtIsImmovable(player) {
+        const p = player?.selected_position;
+        return p === "IL" || p === "IL+" || p === "NA";
+      }
+
+      function mtCanFitSlot(player, slot) {
+        if (!player || !slot) return false;
+        if (slot === "BN") return true;
+        if (slot === "IL" || slot === "IL+" || slot === "NA") return false;
+        const isBatter = player.position_type === "B";
+        const isPitcher = player.position_type === "P";
+        if (slot === "Util") return isBatter;
+        if (slot === "P") return isPitcher;
+        if (!Array.isArray(player.eligible_positions)) return false;
+        return player.eligible_positions.includes(slot);
+      }
+
+      function mtFindPlayerById(playerId) {
+        const panel = document.getElementById("myteam-panel");
+        if (!panel || playerId == null) return null;
+        const all = [...(panel._mtBatPlayers || []), ...(panel._mtPitPlayers || [])];
+        return all.find((p) => String(p.player_id) === String(playerId)) || null;
+      }
+
+      function mtCanTarget(source, targetEl) {
+        if (!source || !targetEl) return false;
+        const isDropZone = targetEl.classList.contains("mt-bench-drop");
+        const sourceOnBench = mtIsBenchOrILSlot(source.selected_position);
+
+        if (isDropZone) {
+          if (sourceOnBench) return false;
+          const dropPosType = targetEl.dataset.positionType;
+          if (dropPosType && dropPosType !== source.position_type) return false;
+          return true;
+        }
+
+        const targetPlayerId = targetEl.dataset.playerId;
+        const targetSlot = targetEl.dataset.slot;
+
+        if (targetPlayerId) {
+          if (String(targetPlayerId) === String(source.player_id)) return false;
+          const target = mtFindPlayerById(targetPlayerId);
+          if (!target) return false;
+          if (mtIsImmovable(target)) return false;
+          if (source.position_type !== target.position_type) return false;
+          const targetCurrentSlot = target.selected_position;
+          const targetOnBench = mtIsBenchOrILSlot(targetCurrentSlot);
+          if (sourceOnBench && targetOnBench) return false;
+          if (sourceOnBench) return mtCanFitSlot(source, targetCurrentSlot);
+          if (targetOnBench) return true; // starter → bench player (always fine)
+          return mtCanFitSlot(source, targetCurrentSlot); // both starters
+        }
+
+        // Empty starter slot
+        if (targetSlot) {
+          if (mtIsBenchOrILSlot(targetSlot)) return false;
+          return mtCanFitSlot(source, targetSlot);
+        }
+
+        return false;
+      }
+
+      function mtExecuteMove(source, targetEl) {
+        if (!mtCanTarget(source, targetEl)) return false;
+        const isDropZone = targetEl.classList.contains("mt-bench-drop");
+
+        if (isDropZone) {
+          source.selected_position = "BN";
+          return true;
+        }
+
+        const targetPlayerId = targetEl.dataset.playerId;
+        const targetSlot = targetEl.dataset.slot;
+
+        if (targetPlayerId) {
+          const target = mtFindPlayerById(targetPlayerId);
+          if (!target) return false;
+          const sourceOldSlot = source.selected_position;
+          const targetCurrentSlot = target.selected_position;
+          const sourceOnBench = mtIsBenchOrILSlot(sourceOldSlot);
+          const targetOnBench = mtIsBenchOrILSlot(targetCurrentSlot);
+
+          if (sourceOnBench) {
+            // bench source → starter target: swap
+            source.selected_position = targetCurrentSlot;
+            target.selected_position = "BN";
+          } else if (targetOnBench) {
+            // starter source → bench target: source goes to BN; target takes source's old slot if eligible
+            source.selected_position = "BN";
+            if (mtCanFitSlot(target, sourceOldSlot)) {
+              target.selected_position = sourceOldSlot;
+            }
+          } else {
+            // both starters: swap if target fits source's slot, else target → BN, source's slot left empty
+            source.selected_position = targetCurrentSlot;
+            target.selected_position = mtCanFitSlot(target, sourceOldSlot) ? sourceOldSlot : "BN";
+          }
+          return true;
+        }
+
+        if (targetSlot) {
+          source.selected_position = targetSlot;
+          return true;
+        }
+
+        return false;
+      }
+
+      function mtApplySelectionState() {
+        const panel = document.getElementById("myteam-panel");
+        if (!panel) return;
+        panel.classList.remove("mt-selecting");
+        panel.querySelectorAll(".mt-row, .mt-bench-drop").forEach((el) => {
+          el.classList.remove("is-selected", "is-target-eligible", "is-target-faded");
+        });
+        if (mtSelectedPlayerId == null) return;
+        const source = mtFindPlayerById(mtSelectedPlayerId);
+        if (!source) {
+          mtSelectedPlayerId = null;
+          return;
+        }
+        panel.classList.add("mt-selecting");
+        panel.querySelectorAll(".mt-row, .mt-bench-drop").forEach((el) => {
+          const pid = el.dataset.playerId;
+          if (pid && String(pid) === String(mtSelectedPlayerId)) {
+            el.classList.add("is-selected");
+            return;
+          }
+          if (mtCanTarget(source, el)) {
+            el.classList.add("is-target-eligible");
+          } else {
+            el.classList.add("is-target-faded");
+          }
+        });
+      }
+
+      function mtEmptySlotRowHTML(slot) {
+        const badge = mtSlotBadgeHTML(slot, "");
+        return `<div class="mt-row is-empty" data-slot="${mtEsc(slot)}">${badge}<div class="mt-empty-cell">Empty</div></div>`;
+      }
+
+      function mtBenchDropZoneHTML(posType) {
+        return `<div class="mt-bench-drop" data-position-type="${mtEsc(posType)}">+ Move to Bench</div>`;
+      }
+
+      function mtRowsFromFilled(filled, playerPoints) {
+        return filled
+          .map((s) => {
+            if (s.player) {
+              const pts = playerPoints[s.player.player_id] || { last7: 0, current_week: 0, ytd: 0 };
+              return mtRowHTML(s.player, pts, s.slot, mtTodayMlbTeams);
+            }
+            return mtEmptySlotRowHTML(s.slot);
+          })
+          .join("");
+      }
+
+      function mtRowsFromPlayers(players, playerPoints) {
+        return players
+          .map((p) => {
+            const pts = playerPoints[p.player_id] || { last7: 0, current_week: 0, ytd: 0 };
+            return mtRowHTML(p, pts, null, mtTodayMlbTeams);
+          })
+          .join("");
+      }
+
+      function mtBuildColumnHTML(side) {
+        const panel = document.getElementById("myteam-panel");
+        if (!panel) return "";
+        const all = side === "B" ? (panel._mtBatPlayers || []) : (panel._mtPitPlayers || []);
+        const playerPoints = panel._mtPlayerPoints || {};
+        const slotOrder = side === "B" ? MT_BAT_SLOT_ORDER : MT_PIT_SLOT_ORDER;
+        const totalLabel = side === "B" ? "Batters Total" : "Pitchers Total";
+        const totalId = side === "B" ? "mt-bat-total" : "mt-pit-total";
+
+        const inactive = all.filter((p) => mtIsBenchOrILSlot(p.selected_position));
+        const active = all.filter((p) => !mtIsBenchOrILSlot(p.selected_position));
+        const filled = mtFillSlots(active, slotOrder);
+        const used = new Set(filled.filter((s) => s.player).map((s) => s.player));
+        const extras = active.filter((p) => !used.has(p));
+
+        return `
+          <div class="mt-row-header">
+            <span>Slot</span><span></span><span>Player</span>
+            <span>Game</span>
+            <span>Pts</span>
+          </div>
+          ${mtRowsFromFilled(filled, playerPoints)}
+          ${mtRowsFromPlayers(extras, playerPoints)}
+          ${inactive.length
+            ? `<div class="mt-bench-div"><span class="mt-bench-lbl">Bench</span><div class="mt-bench-line"></div></div>` +
+              mtRowsFromPlayers(inactive, playerPoints)
+            : ""}
+          ${mtBenchDropZoneHTML(side)}
+          <div class="mt-total-row">
+            <span class="mt-total-lbl">${totalLabel}</span>
+            <span class="mt-total-val" id="${totalId}"></span>
+          </div>
+        `;
+      }
+
+      function mtUpdateColumnCounts() {
+        const panel = document.getElementById("myteam-panel");
+        if (!panel) return;
+        const headers = panel.querySelectorAll(".mt-col-headers h3 .mt-col-count");
+        const summary = (all) => {
+          const active = all.filter((p) => !mtIsBenchOrILSlot(p.selected_position));
+          const bench = all.filter((p) => p.selected_position === "BN");
+          const il = all.filter((p) => p.selected_position === "IL" || p.selected_position === "IL+");
+          const na = all.filter((p) => p.selected_position === "NA");
+          const inactive = bench.length + il.length + na.length;
+          const parts = [
+            bench.length ? `${bench.length} bench` : "",
+            il.length ? `${il.length} IL` : "",
+            na.length ? `${na.length} NA` : "",
+          ].filter(Boolean);
+          return `${active.length} active${inactive ? " · " + parts.join(" · ") : ""}`;
+        };
+        if (headers[0]) headers[0].textContent = summary(panel._mtBatPlayers || []);
+        if (headers[1]) headers[1].textContent = summary(panel._mtPitPlayers || []);
+      }
+
+      function mtRerenderLineup() {
+        const panel = document.getElementById("myteam-panel");
+        if (!panel) return;
+        const cols = panel.querySelectorAll(".mt-grid .mt-col");
+        if (cols[0]) {
+          const box = cols[0].querySelector(".mt-box");
+          if (box) box.innerHTML = mtBuildColumnHTML("B");
+        }
+        if (cols[1]) {
+          const box = cols[1].querySelector(".mt-box");
+          if (box) box.innerHTML = mtBuildColumnHTML("P");
+        }
+        mtUpdateColumnCounts();
+        mtApplySelectionState();
+        mtApplyPeriod();
+      }
+
+      function mtHandleLineupClick(e) {
+        const target = e.target.closest(".mt-row, .mt-bench-drop");
+        if (!target) {
+          if (mtSelectedPlayerId !== null) {
+            mtSelectedPlayerId = null;
+            mtApplySelectionState();
+          }
+          return;
+        }
+        // Reserve player name + headshot for a future feature
+        if (target.classList.contains("mt-row") &&
+            (e.target.closest(".mt-hs-wrap") || e.target.closest(".mt-info"))) {
+          return;
+        }
+
+        const targetPlayerId = target.dataset.playerId;
+        const isDropZone = target.classList.contains("mt-bench-drop");
+
+        // No active selection — try to select the clicked player
+        if (mtSelectedPlayerId === null) {
+          if (!targetPlayerId) return;
+          const player = mtFindPlayerById(targetPlayerId);
+          if (!player || mtIsImmovable(player)) return;
+          mtSelectedPlayerId = String(targetPlayerId);
+          mtApplySelectionState();
+          return;
+        }
+
+        // Click on the source again → deselect
+        if (targetPlayerId && String(targetPlayerId) === String(mtSelectedPlayerId)) {
+          mtSelectedPlayerId = null;
+          mtApplySelectionState();
+          return;
+        }
+
+        // Attempt the move
+        const source = mtFindPlayerById(mtSelectedPlayerId);
+        if (!source) {
+          mtSelectedPlayerId = null;
+          mtApplySelectionState();
+          return;
+        }
+        if (!mtCanTarget(source, target)) return;
+        if (mtExecuteMove(source, target)) {
+          mtSelectedPlayerId = null;
+          mtRerenderLineup();
+        }
+      }
+
       async function loadMyTeam() {
         const panel = document.getElementById("myteam-panel");
         if (!panel) return;
@@ -43824,17 +46177,29 @@
         try {
           console.time("myteam-load");
           // Fetch all needed data in parallel
-          const [windowsResp, standingsResp, gamesResp, dailyStatsResp] = await Promise.all([
+          const [windowsResp, standingsResp, gamesResp, dailyStatsResp,
+                 allScoresResp, teamsResp, dailyScoresResp, transactionsResp] = await Promise.all([
             fetch("data/current_season/player_stats_windows.json"),
             fetch("data/current_season/standings.json"),
             fetch("data/current_season/daily_games.json").catch(() => null),
             fetch("data/current_season/player_daily_stats.json").catch(() => null),
+            fetch("data/current_season/all_scores.json").catch(() => null),
+            fetch("data/current_season/teams.json").catch(() => null),
+            fetch("data/current_season/daily_scores.json").catch(() => null),
+            fetch("data/current_season/transactions.json").catch(() => null),
           ]);
           console.timeLog("myteam-load", "fetches complete");
           const windowsData = await windowsResp.json();
           console.timeLog("myteam-load", "windows JSON parsed");
           const standings = await standingsResp.json();
           console.timeLog("myteam-load", "standings JSON parsed");
+
+          // Parse supplemental data (best-effort)
+          let allScores = [], teamsArr = [], dailyScoresData = null, transactionsArr = [];
+          try { if (allScoresResp?.ok)      allScores       = await allScoresResp.json(); } catch (_) {}
+          try { if (teamsResp?.ok)          teamsArr        = await teamsResp.json(); } catch (_) {}
+          try { if (dailyScoresResp?.ok)    dailyScoresData = await dailyScoresResp.json(); } catch (_) {}
+          try { if (transactionsResp?.ok)   transactionsArr = await transactionsResp.json(); } catch (_) {}
 
           // Build today's playing-teams set and per-game info map (best-effort; file may not exist yet)
           mtTodayMlbTeams = null;
@@ -43875,15 +46240,21 @@
 
           const currentWeek = windowsData.current_week || 1;
 
-          // Fetch this week's matchup
+          // Fetch this week's matchup + next week (sequential — need currentWeek first)
           let matchup = null;
+          let nextMatchup = null;
           try {
-            const scoresResp = await fetch(
-              `data/current_season/week_${currentWeek}_scores.json`,
-            );
-            if (scoresResp.ok) {
-              const scores = await scoresResp.json();
+            const [curResp, nxtResp] = await Promise.all([
+              fetch(`data/current_season/week_${currentWeek}_scores.json`),
+              fetch(`data/current_season/week_${currentWeek + 1}_scores.json`).catch(() => null),
+            ]);
+            if (curResp.ok) {
+              const scores = await curResp.json();
               matchup = scores.find((m) => m.team_key === teamKey);
+            }
+            if (nxtResp?.ok) {
+              const nxt = await nxtResp.json();
+              nextMatchup = nxt.find((m) => m.team_key === teamKey) || null;
             }
           } catch (_) {}
 
@@ -43957,13 +46328,26 @@
             (p) => p.position_type === "P",
           );
 
-          // Active vs bench/IL
-          const isBenchOrIL = (p) =>
-            ["BN", "IL", "IL+", "NA"].includes(p.selected_position);
-          const batActive = batters.filter((p) => !isBenchOrIL(p));
-          const batBench = batters.filter((p) => isBenchOrIL(p));
-          const pitActive = pitchers.filter((p) => !isBenchOrIL(p));
-          const pitBench = pitchers.filter((p) => isBenchOrIL(p));
+          // Active vs bench/IL/NA
+          const isBenchOrIL = (p) => ["BN", "IL", "IL+", "NA"].includes(p.selected_position);
+          const batActive   = batters.filter((p) => !isBenchOrIL(p));
+          const batBench    = batters.filter((p) => p.selected_position === "BN");
+          const batIL       = batters.filter((p) => p.selected_position === "IL" || p.selected_position === "IL+");
+          const batNA       = batters.filter((p) => p.selected_position === "NA");
+          const batInactive = batters.filter((p) => isBenchOrIL(p)); // all non-active for rendering
+          const pitActive   = pitchers.filter((p) => !isBenchOrIL(p));
+          const pitBench    = pitchers.filter((p) => p.selected_position === "BN");
+          const pitIL       = pitchers.filter((p) => p.selected_position === "IL" || p.selected_position === "IL+");
+          const pitNA       = pitchers.filter((p) => p.selected_position === "NA");
+          const pitInactive = pitchers.filter((p) => isBenchOrIL(p));
+
+          function rosterCountStr(bench, il, na) {
+            return [
+              bench.length ? `${bench.length} bench` : "",
+              il.length    ? `${il.length} IL`        : "",
+              na.length    ? `${na.length} NA`        : "",
+            ].filter(Boolean).join(" · ");
+          }
 
           // Fill slots so we render in canonical order
           const batFilled = mtFillSlots(batActive, MT_BAT_SLOT_ORDER);
@@ -44010,116 +46394,160 @@
 
           // Compute totals for each window
           function totalFor(list, key) {
-            return list.reduce(
-              (sum, p) =>
-                sum + (playerPoints[p.player_id]?.[key] || 0),
-              0,
-            );
+            return list.reduce((sum, p) => sum + (playerPoints[p.player_id]?.[key] || 0), 0);
           }
 
-          // Header data
+          // ── Build header data ──────────────────────────────────────────────
+
+          // Team logo lookup map from teams.json
+          const teamLogoMap = {};
+          for (const t of teamsArr) teamLogoMap[t.team_key] = fixTeamLogo(t.team_logo || "");
+
+          // Helper: get display manager name for a team_key from standingsArr
+          const mgrForKey = (key) => {
+            const s = standingsArr.find(x => x.team_key === key);
+            return s ? normalizeManagerName(s.manager, 2026, s.team_name, s.team_key) : "?";
+          };
+
           const place = myStanding ? mtOrdinal(myStanding.rank) : "";
           const record = mtFormatRecord(myStanding);
+          const seasonPts = myStanding?.points_for ? myStanding.points_for.toFixed(1) : "";
 
-          let scoreBlockHTML = "";
+          // Previous week matchup (from all_scores)
+          const prevMatchup = allScores.find(s => s.team_key === teamKey && s.week === currentWeek - 1) || null;
+
+          // Add/stream tracker for current week
+          const weekData = dailyScoresData?.weeks?.[String(currentWeek)] || null;
+          const { streams: streamCount, adds: addCount } = mtCountWeekAdds(teamKey, transactionsArr, weekData);
+          const addTrackerHTML = mtAddTrackerHTML(streamCount, addCount);
+
+          // ── Matchup cards ────────────────────────────────────────────────
+          let muCardsHTML = "";
+
+          // PREVIOUS week card
+          if (prevMatchup) {
+            const prevOppMgr = mgrForKey(prevMatchup.opponent_key);
+            const prevResult = prevMatchup.team_score > prevMatchup.opponent_score ? "win"
+              : prevMatchup.team_score < prevMatchup.opponent_score ? "loss" : "tie";
+            muCardsHTML += mtBuildMuCard({
+              state: "prev", weekLabel: `Week ${currentWeek - 1}`,
+              myMgr: managerName, myLogo: teamLogo,
+              myScore: prevMatchup.team_score.toFixed(1),
+              oppMgr: prevOppMgr, oppLogo: teamLogoMap[prevMatchup.opponent_key] || "",
+              oppScore: prevMatchup.opponent_score.toFixed(1),
+              result: prevResult,
+            });
+          }
+
+          // CURRENT week card
           if (matchup) {
-            const myScore = (matchup.team_score || 0).toFixed(2);
-            const oppScore = (matchup.opponent_score || 0).toFixed(2);
-            const winning = matchup.team_score > matchup.opponent_score;
-            const arrow = winning ? "↑" : "↓";
-            const oppLabel = oppManagerName
-              ? `vs ${mtEsc(oppManagerName)}`
-              : "vs ?";
-            scoreBlockHTML = `
-              <div class="mt-score-block">
-                <div class="mt-score-label">Week ${currentWeek} Pts</div>
-                <div class="mt-score">${myScore}</div>
-                <div class="mt-score-opp ${winning ? "winning" : ""}">${oppLabel} · ${oppScore} ${arrow}</div>
-              </div>`;
+            const curResult = matchup.team_score > matchup.opponent_score ? "win"
+              : matchup.team_score < matchup.opponent_score ? "loss" : "tie";
+            muCardsHTML += mtBuildMuCard({
+              state: "cur", weekLabel: `Week ${currentWeek}`,
+              myMgr: managerName, myLogo: teamLogo,
+              myScore: matchup.team_score.toFixed(1),
+              oppMgr: oppManagerName || "?", oppLogo: teamLogoMap[matchup.opponent_key] || "",
+              oppScore: matchup.opponent_score.toFixed(1),
+              result: curResult,
+            });
+          }
+
+          // NEXT week card — rendered with placeholder H2H, updated async below
+          let nextOppMgr = "";
+          let nextOppLogo = "";
+          if (nextMatchup) {
+            nextOppMgr  = mgrForKey(nextMatchup.opponent_key);
+            nextOppLogo = teamLogoMap[nextMatchup.opponent_key] || "";
+            muCardsHTML += mtBuildMuCard({
+              state: "next", weekLabel: `Week ${currentWeek + 1}`,
+              myMgr: managerName, myLogo: teamLogo,
+              myScore: "—", oppMgr: nextOppMgr, oppLogo: nextOppLogo,
+              oppScore: "—", result: "tied",
+            });
           }
 
           const periodOptionsHTML = MT_PERIODS.map(
-            (p, i) =>
-              `<option value="${i}"${
-                i === mtCurrentPeriodIdx ? " selected" : ""
-              }>${mtEsc(p.label)}</option>`,
+            (p, i) => `<option value="${i}"${i === mtCurrentPeriodIdx ? " selected" : ""}>${mtEsc(p.label)}</option>`,
           ).join("");
 
-          console.timeLog("myteam-load", `rendering ${batActive.length}B/${pitActive.length}P active, ${batBench.length + pitBench.length} bench`);
+          const FALLBACK_LOGO = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzAwNDhiYSIvPjwvc3ZnPg==";
+
+          // Wire lineup-edit state on the panel so column builder can read it
+          panel._mtBatPlayers = [...batActive, ...batInactive];
+          panel._mtPitPlayers = [...pitActive, ...pitInactive];
+          panel._mtPlayerPoints = playerPoints;
+          mtSelectedPlayerId = null;
+
+          console.timeLog("myteam-load", `rendering ${batActive.length}B/${pitActive.length}P active, ${batInactive.length + pitInactive.length} bench/IL`);
           panel.innerHTML = `
             <div class="mt-team-hdr">
-              <img class="mt-team-logo" src="${mtEsc(
-                teamLogo ||
-                  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iIzAwNDhiYSIvPjwvc3ZnPg==",
-              )}" alt="" onerror="this.style.background='#cce'">
-              <div class="mt-team-name-block">
-                <div class="mt-team-name">${mtEsc(teamName || "Team")}</div>
-                <div class="mt-team-meta">${mtEsc(managerName || "")}${
-                  record ? ` · ${record}` : ""
-                }${place ? ` · ${place} Place` : ""}</div>
+
+              <!-- LEFT: identity + stats -->
+              <div class="mt-hdr-left">
+                <div class="mt-hdr-identity">
+                  <img class="mt-team-logo" src="${mtEsc(teamLogo || FALLBACK_LOGO)}" alt="" onerror="this.style.background='#cce'">
+                  <div>
+                    <div class="mt-team-name">${mtEsc(teamName || "Team")}</div>
+                    <div class="mt-hdr-manager-sub">${mtEsc(managerName || "")}</div>
+                  </div>
+                </div>
+                <div class="mt-hdr-stats-row">
+                  ${record ? `<span class="mt-hdr-stat-item">${mtEsc(record)}</span><span class="mt-hdr-sep">·</span>` : ""}
+                  ${place  ? `<span class="mt-hdr-stat-item">${mtEsc(place)} Place</span><span class="mt-hdr-sep">·</span>` : ""}
+                  ${seasonPts ? `<span class="mt-hdr-stat-item">${mtEsc(seasonPts)} pts</span>` : ""}
+                </div>
               </div>
-              ${scoreBlockHTML}
+
+              <!-- CENTER: week label + add tracker -->
+              <div class="mt-hdr-center">
+                <div class="mt-hdr-week-label">WEEK ${currentWeek}</div>
+                ${oppManagerName ? `<div class="mt-hdr-vs-label">vs ${matchup && teamLogoMap[matchup.opponent_key] ? `<img class="mt-opp-hat" src="${mtEsc(teamLogoMap[matchup.opponent_key])}" alt="" onerror="this.style.display='none'">` : ""}${mtEsc(oppManagerName)}</div>` : ""}
+                ${addTrackerHTML}
+              </div>
+
+              <!-- RIGHT: matchup cards -->
+              <div class="mt-hdr-matchups" id="mt-hdr-matchups">
+                ${muCardsHTML}
+              </div>
             </div>
 
-            <div class="mt-period-bar">
-              <select class="mt-period-select" id="mt-period-select">${periodOptionsHTML}</select>
+            <div class="mt-col-headers">
+              <h3>Batters <span class="mt-col-count">${batCount} active${batInactive.length ? ` · ${rosterCountStr(batBench, batIL, batNA)}` : ""}</span></h3>
+              <h3>Pitchers <span class="mt-col-count">${pitCount} active${pitInactive.length ? ` · ${rosterCountStr(pitBench, pitIL, pitNA)}` : ""}</span><select class="mt-period-select" id="mt-period-select">${periodOptionsHTML}</select></h3>
             </div>
 
             <div class="mt-grid">
               <div class="mt-col">
-                <h3>Batters <span class="mt-col-count">${batCount} active · ${batBench.length} bench</span></h3>
-                <div class="mt-box">
-                  <div class="mt-row-header">
-                    <span>Slot</span><span></span><span>Player</span>
-                    <span>Game</span>
-                    <span>Pts</span>
-                  </div>
-                  ${rowsFromFilled(batFilled)}
-                  ${rowsFromPlayers(batExtras)}
-                  ${
-                    batBench.length
-                      ? `<div class="mt-bench-div"><span class="mt-bench-lbl">Bench</span><div class="mt-bench-line"></div></div>` +
-                        rowsFromPlayers(batBench)
-                      : ""
-                  }
-                  <div class="mt-total-row">
-                    <span class="mt-total-lbl">Batters Total</span>
-                    <span class="mt-total-val" id="mt-bat-total"></span>
-                  </div>
-                </div>
+                <div class="mt-box">${mtBuildColumnHTML("B")}</div>
               </div>
-
               <div class="mt-col">
-                <h3>Pitchers <span class="mt-col-count">${pitCount} active · ${pitBench.length} bench</span></h3>
-                <div class="mt-box">
-                  <div class="mt-row-header">
-                    <span>Slot</span><span></span><span>Player</span>
-                    <span>Game</span>
-                    <span>Pts</span>
-                  </div>
-                  ${rowsFromFilled(pitFilled)}
-                  ${rowsFromPlayers(pitExtras)}
-                  ${
-                    pitBench.length
-                      ? `<div class="mt-bench-div"><span class="mt-bench-lbl">Bench</span><div class="mt-bench-line"></div></div>` +
-                        rowsFromPlayers(pitBench)
-                      : ""
-                  }
-                  <div class="mt-total-row">
-                    <span class="mt-total-lbl">Pitchers Total</span>
-                    <span class="mt-total-val" id="mt-pit-total"></span>
-                  </div>
-                </div>
+                <div class="mt-box">${mtBuildColumnHTML("P")}</div>
               </div>
             </div>
           `;
 
-          // Save totals data on element so toggle can recompute
-          const allBat = [...batActive, ...batBench];
-          const allPit = [...pitActive, ...pitBench];
-          panel._mtBatPlayers = allBat;
-          panel._mtPitPlayers = allPit;
-          panel._mtPlayerPoints = playerPoints;
+          // ── Async: fill in all-time H2H on next-week card ─────────────────
+          if (nextMatchup && nextOppMgr && nextOppMgr !== "?") {
+            mtLoadH2HVsOpponent(managerName, nextOppMgr).then(h2h => {
+              const container = document.getElementById("mt-hdr-matchups");
+              if (!container) return;
+              const result = h2h.myWins > h2h.myLosses ? "lead"
+                : h2h.myWins < h2h.myLosses ? "trail" : "tied";
+              const myAvg  = h2h.games ? h2h.myAvgPts.toFixed(1)  : "—";
+              const oppAvg = h2h.games ? h2h.oppAvgPts.toFixed(1) : "—";
+              // Replace the last card (next week) only
+              const cards = container.querySelectorAll(".mt-mu-card");
+              const lastCard = cards[cards.length - 1];
+              if (!lastCard || !lastCard.classList.contains("mt-mu-next")) return;
+              lastCard.outerHTML = mtBuildMuCard({
+                state: "next", weekLabel: `Week ${currentWeek + 1}`,
+                myMgr: managerName, myLogo: teamLogo,
+                myScore: myAvg, oppMgr: nextOppMgr, oppLogo: nextOppLogo,
+                oppScore: oppAvg, result,
+              });
+            }).catch(() => {});
+          }
 
           // Period dropdown
           const periodSelect = document.getElementById("mt-period-select");
@@ -44129,6 +46557,13 @@
               mtApplyPeriod();
             });
           }
+
+          // Lineup-edit click delegation (re-bound on each load)
+          if (panel._mtLineupClickHandler) {
+            panel.removeEventListener("click", panel._mtLineupClickHandler);
+          }
+          panel._mtLineupClickHandler = mtHandleLineupClick;
+          panel.addEventListener("click", panel._mtLineupClickHandler);
 
           // Update totals + period display once
           mtApplyPeriod();
@@ -46662,9 +49097,14 @@
         }
 
         const prospectClass = player.isProspect ? "prospect-row" : "";
+        const lineupNameForClick = (player.player_name || "").replace(/'/g, "\\'");
+        const isClickable = lineupNameForClick && !player.isProspect;
+        const lineupClickAttr = isClickable
+          ? ` style="cursor:pointer;" onclick="showPlayerDetail('${lineupNameForClick}')"`
+          : "";
 
         return `
-                <div class="lineup-player-row ${prospectClass}">
+                <div class="lineup-player-row ${prospectClass}"${lineupClickAttr}>
                     <div class="lineup-pos-badge">${getPositionBadge(posDisplay, player.player_name)}</div>
                     <img src="${headshot}" class="lineup-player-headshot" alt="" onerror="this.src='${placeholderImg}'">
                     <div class="lineup-player-info">
@@ -58033,11 +60473,13 @@
         const buildPlayerList = (players) => players.slice(0, topN).map(p => {
           const mlbLogoHtml = p.mlb_team ? `<img src="${getMLBTeamLogo(p.mlb_team)}" style="width:18px;height:18px;vertical-align:middle;margin-right:3px;" onerror="this.style.display='none'" alt="">` : '';
           const posBadgeHtml = getPositionBadge(p.position, p.name);
+          const safeName = (p.name || '').replace(/'/g, "\\'");
+          const displayName = (p.name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '');
           return `
-          <div class="matchup-detail-player-row">
+          <div class="matchup-detail-player-row" style="cursor:pointer;" onclick="showPlayerDetail('${safeName}')">
             <img class="player-headshot" src="${p.headshot || placeholderImg}" onerror="this.src='${placeholderImg}'" alt="">
             <div style="flex:1;min-width:0;">
-              <div class="matchup-detail-player-name">${p.name}</div>
+              <div class="matchup-detail-player-name">${displayName}</div>
               <div style="display:flex;align-items:center;gap:4px;margin-top:2px;">
                 ${mlbLogoHtml}<span class="matchup-detail-player-mlb">${p.mlb_team || ''}</span>
                 ${posBadgeHtml}
@@ -61935,8 +64377,11 @@
         const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : "";
         const mlbTeamDisplay = mlbTeam ? formatMLBTeamDisplay(mlbTeam) : "";
 
+        const clickAttr = !player.isProspect
+          ? ` style="cursor:pointer;" onclick="showPlayerDetail('${(player.name || '').replace(/'/g, "\\'")}')"`
+          : '';
         return `
-                <div class="roster-player-row${player.isProspect ? " prospect" : ""}">
+                <div class="roster-player-row${player.isProspect ? " prospect" : ""}"${clickAttr}>
                     <span class="position-badge pos-${position}">${position}</span>
                     <img src="${headshot}" class="roster-player-headshot" alt="" onerror="this.src='${placeholderImg}'">
                     <div class="roster-player-info">
