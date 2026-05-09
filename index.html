@@ -10638,6 +10638,14 @@
          design. The classic .baseball-card layout below is preserved for
          projection-card-container and other re-uses.
          ================================================================== */
+      /* Player modal sits above the matchup-detail overlay (z-index 10000) so it
+         stacks correctly when launched from inside another modal. */
+      #player-modal.active { z-index: 10100; }
+
+      /* Click-to-open-player-modal hover affordance — applied to player cells on
+         Home / Seasons / Awards / matchup-detail / Player Scoring rows. */
+      .player-clickable { cursor: pointer; transition: background-color 0.12s; }
+      .player-clickable:hover { background-color: rgba(0, 72, 186, 0.08); }
       #player-modal.pcm-active {
         overflow: hidden;
         align-items: stretch;
@@ -32264,6 +32272,15 @@
         const headerEl = document.getElementById("player-modal-header");
         const bodyEl = document.getElementById("player-modal-body");
 
+        // Lazy-load current season player_stats so the modal works when triggered
+        // from pages that haven't visited Player Scoring yet (Home, Seasons, Awards).
+        if (!Array.isArray(allPlayersData) || allPlayersData.length === 0) {
+          try {
+            const r = await fetch("data/current_season/player_stats.json");
+            if (r.ok) allPlayersData = await r.json();
+          } catch (e) { /* fall through to lookup, will return early if still empty */ }
+        }
+
         // Find player in current data. Two-way players (e.g. "Shohei Ohtani (Batter)")
         // are stored with the suffix in allPlayersData so each side is distinct.
         let player = allPlayersData.find((p) => p.name === playerName);
@@ -38330,10 +38347,11 @@
             // Combined round.pick
             const pickNum = `${pick.round || "-"}.${pick.pick || "-"}`;
 
+            const safeDraftPlayerName = (pick.player_name || "").replace(/'/g, "\\'");
             row.innerHTML = `
                         <td><span class="draft-pick-num">${pickNum}</span></td>
                         <td>
-                            <div class="draft-player-cell">
+                            <div class="draft-player-cell player-clickable" onclick="showPlayerDetail('${safeDraftPlayerName}')">
                                 ${headshotImg}
                                 <div class="draft-player-info">
                                     <span class="draft-player-name">${displayName}${keeperBadge}</span>
@@ -43098,13 +43116,19 @@
           const placeholderImg =
             "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2UwZTBlMCIvPjxjaXJjbGUgY3g9IjUwIiBjeT0iMzUiIHI9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PGVsbGlwc2UgY3g9IjUwIiBjeT0iODUiIHJ4PSIzMCIgcnk9IjIwIiBmaWxsPSIjYmRiZGJkIi8+PC9zdmc+";
 
+          // Helper: render player cell with click-to-open-modal behavior
+          const playerAwardCell = (award) => {
+            const safe = (award.player_name || "").replace(/'/g, "\\'");
+            return `<div class="player-award-cell player-clickable" onclick="showPlayerDetail('${safe}')"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div>`;
+          };
+
           populateAwardTable(
             "trout-awards",
             troutAwards,
             (award) => `
                     <td>${award.year}</td>
                     <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ""}${award.manager}</div></td>
-                    <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
+                    <td>${playerAwardCell(award)}</td>
                     <td><span class="award-value">${award.value.toLocaleString()}</span></td>
                 `,
           );
@@ -43115,7 +43139,7 @@
             (award) => `
                     <td>${award.year}</td>
                     <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ""}${award.manager}</div></td>
-                    <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
+                    <td>${playerAwardCell(award)}</td>
                     <td><span class="award-value">${award.value.toLocaleString()}</span></td>
                 `,
           );
@@ -43126,7 +43150,7 @@
             (award) => `
                     <td>${award.year}</td>
                     <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ""}${award.manager}</div></td>
-                    <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
+                    <td>${playerAwardCell(award)}</td>
                     <td>Rd ${award.round}, #${award.pick}</td>
                     <td><span class="award-value" style="color: #28a745;">+${award.value.toLocaleString()}</span></td>
                 `,
@@ -43138,7 +43162,7 @@
             (award) => `
                     <td>${award.year}</td>
                     <td><div class="manager-cell">${award.team_logo ? `<img src="${award.team_logo}" class="team-logo">` : ""}${award.manager}</div></td>
-                    <td><div class="player-award-cell"><img src="${award.player_headshot || placeholderImg}" class="player-award-headshot" onerror="this.src='${placeholderImg}'">${award.player_name}</div></td>
+                    <td>${playerAwardCell(award)}</td>
                     <td>Rd ${award.round}, #${award.pick}</td>
                     <td><span class="award-value" style="color: #dc3545;">${award.value.toLocaleString()}</span></td>
                 `,
@@ -63864,10 +63888,11 @@
               const teamLogo = fixTeamLogo(teamInfo.team_logo || "");
               const teamName = teamInfo.team_name || player.team_name || "";
 
+              const safePlayerName = (player.name || "").replace(/'/g, "\\'");
               return `
                         <tr>
                             <td>
-                                <div class="top-players-player">
+                                <div class="top-players-player player-clickable" onclick="showPlayerDetail('${safePlayerName}')">
                                     <span class="position-badge pos-${pos}">${pos}</span>
                                     <img src="${headshot}" class="top-players-headshot" alt="" onerror="this.src='${placeholderImg}'">
                                     <div class="top-players-info">
@@ -63965,10 +63990,11 @@
                 ? formatMLBTeamDisplay(mlbTeam)
                 : "";
 
+              const safePlayerName = (player.name || "").replace(/'/g, "\\'");
               return `
                         <tr>
                             <td>
-                                <div class="top-players-player">
+                                <div class="top-players-player player-clickable" onclick="showPlayerDetail('${safePlayerName}')">
                                     <span class="position-badge pos-${pos}">${pos}</span>
                                     <img src="${headshot}" class="top-players-headshot" alt="" onerror="this.src='${placeholderImg}'">
                                     <div class="top-players-info">
