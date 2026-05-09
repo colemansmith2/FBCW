@@ -24616,6 +24616,69 @@
           height: 32px;
         }
       }
+
+      /* ── My Team header — mobile (≤768px): stack identity / center / matchups vertically ── */
+      @media (max-width: 768px) {
+        #myteam .mt-team-hdr {
+          grid-template-columns: 1fr;
+          gap: 12px;
+          padding-bottom: 12px;
+          margin-bottom: 12px;
+        }
+        #myteam .mt-hdr-left {
+          gap: 4px;
+        }
+        #myteam .mt-hdr-identity {
+          gap: 10px;
+          align-items: center;
+        }
+        #myteam .mt-team-logo {
+          width: 44px; height: 44px;
+        }
+        #myteam .mt-team-name {
+          font-size: 0.7rem;
+          line-height: 1.2;
+          word-break: break-word;
+        }
+        #myteam .mt-hdr-manager-sub {
+          font-size: 0.85rem;
+        }
+        #myteam .mt-hdr-stats-row {
+          font-size: 0.82rem;
+          gap: 6px;
+        }
+        /* Center column: stop centering — left-align with the identity row above it */
+        #myteam .mt-hdr-center {
+          align-items: flex-start;
+          text-align: left;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 8px 12px;
+        }
+        #myteam .mt-hdr-add-tracker {
+          margin-top: 0;
+        }
+        /* Matchup cards: horizontally scrollable so all three are reachable */
+        #myteam .mt-hdr-matchups {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+          padding-bottom: 4px;
+          scrollbar-width: thin;
+        }
+        #myteam .mt-hdr-matchups::-webkit-scrollbar { height: 4px; }
+        #myteam .mt-hdr-matchups::-webkit-scrollbar-thumb {
+          background: rgba(0, 72, 186, 0.3);
+          border-radius: 2px;
+        }
+        #myteam .mt-mu-card {
+          min-width: 110px;
+          flex-shrink: 0;
+        }
+        #myteam .mt-mu-mgr {
+          max-width: 60px;
+        }
+      }
     </style>
   </head>
 
