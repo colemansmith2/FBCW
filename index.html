@@ -24617,9 +24617,12 @@
         }
       }
 
-      /* Default: hide mobile-only elements */
+      /* Default: hide mobile-only elements.
+         Note: the selector includes ".mt-col h3" to win specificity against the
+         existing "#myteam .mt-col h3 { display: flex }" rule (which would otherwise
+         force the mobile h3 visible on desktop). */
       #myteam .mt-hdr-stats-inline { display: none; }
-      #myteam .mt-col-heading-mobile { display: none; }
+      #myteam .mt-col h3.mt-col-heading-mobile { display: none; }
 
       /* ── My Team — mobile (≤768px): compact, single-column layout ── */
       @media (max-width: 768px) {
@@ -24675,7 +24678,7 @@
         /* Hide top headers row & "12 active · 1 IL" subtext; show per-column heading */
         #myteam .mt-col-headers { display: none; }
         #myteam .mt-col-count { display: none; }
-        #myteam .mt-col-heading-mobile {
+        #myteam .mt-col h3.mt-col-heading-mobile {
           display: flex; align-items: center; justify-content: space-between;
           gap: 8px;
           font-family: "Arcade Gamer", sans-serif;
@@ -24683,8 +24686,8 @@
           margin: 0 0 6px;
           letter-spacing: 0.5px;
         }
-        #myteam .mt-col + .mt-col .mt-col-heading-mobile { margin-top: 14px; }
-        #myteam .mt-col-heading-mobile .mt-period-select {
+        #myteam .mt-col + .mt-col h3.mt-col-heading-mobile { margin-top: 14px; }
+        #myteam .mt-col h3.mt-col-heading-mobile .mt-period-select {
           font-family: "Arcade Gamer", sans-serif;
           font-size: 0.6rem;
           color: var(--retro-blue);
@@ -45960,7 +45963,10 @@
 
       // Count add/stream moves for a team in the current week.
       // Uses daily_scores week date range; falls back to last 7 days.
-      function mtCountWeekAdds(teamKey, transactions, weekData) {
+      // Match the Home page (matchup-detail) classification: a pitcher add only counts
+      // as a "stream" if they actually started or are projected to start in the week.
+      // Closers / RP adds (no actual or projected starts) count as regular adds.
+      function mtCountWeekAdds(teamKey, transactions, weekData, week, playerDailyStats, dailyData, benchPitcherData) {
         if (!transactions || !teamKey) return { streams: 0, adds: 0 };
         let startMs = 0, endMs = Date.now();
         if (weekData?.start_date && weekData?.end_date) {
@@ -45977,9 +45983,13 @@
           for (const p of tx.players || []) {
             if (p.destination_team_key !== teamKey) continue;
             if (p.transaction_type !== "add") continue;
-            const pos = (p.position || "").toUpperCase();
-            const isPitcher = pos === "P" || pos === "SP" || pos === "RP" || pos === "CP";
-            if (isPitcher) streams++; else adds++;
+            const pos = p.position || "";
+            const playerName = p.player_name || p.name || "";
+            // Use the same classifier the matchup-detail modal uses on the Home page
+            const isStream = (typeof isAddedPitcherStream === "function")
+              ? isAddedPitcherStream(pos, playerName, teamKey, week, playerDailyStats, dailyData, benchPitcherData)
+              : false;
+            if (isStream) streams++; else adds++;
           }
         }
         return { streams: Math.min(streams, 3), adds: Math.min(adds, 5) };
@@ -46203,11 +46213,59 @@
         return "h-active";
       }
 
+      // Headshot resolution mirrors the chain used by the Value Suite and Prospect
+      // Pavilion so prospects with scraped headshots show up here too:
+      //   1. p.headshot_url (Yahoo / roster)
+      //   2. averageProjectionsMap[name] (aggregated projection systems)
+      //   3. allProjectionBatters / allProjectionPitchers arrays
+      //   4. prospectsData (from data/prospects/prospects.json)
+      //   5. MLB photo CDN by player_id
+      //   6. SVG placeholder
       function mtPlayerHeadshot(p) {
-        if (p.headshot_url) return p.headshot_url;
-        if (p.player_id) {
+        if (p?.headshot_url) return p.headshot_url;
+
+        const rawName = p?.name || "";
+        const nameLower = rawName.toLowerCase().trim();
+        const nameNorm = nameLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+        // 2 — averageProjectionsMap (try plain, accent-stripped, and |type variants)
+        if (typeof averageProjectionsMap === "object" && averageProjectionsMap) {
+          const projData =
+            averageProjectionsMap[nameLower] ||
+            averageProjectionsMap[nameNorm] ||
+            averageProjectionsMap[nameNorm + "|batter"] ||
+            averageProjectionsMap[nameNorm + "|pitcher"];
+          if (projData?.headshot) return projData.headshot;
+        }
+
+        // 3 — projection arrays
+        const projCandidates = [];
+        if (Array.isArray(allProjectionBatters)) projCandidates.push(...allProjectionBatters);
+        if (Array.isArray(allProjectionPitchers)) projCandidates.push(...allProjectionPitchers);
+        if (projCandidates.length) {
+          const m = projCandidates.find((c) => {
+            const cName = (c?.name || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return cName === nameNorm;
+          });
+          if (m?.headshot_url) return m.headshot_url;
+          if (m?.headshot) return m.headshot;
+        }
+
+        // 4 — prospects (loaded by My Team init via data/prospects/prospects.json)
+        if (Array.isArray(prospectsData) && prospectsData.length) {
+          const m = prospectsData.find((pr) => {
+            const prName = (pr?.name || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return prName === nameNorm;
+          });
+          if (m?.headshot_url) return m.headshot_url;
+        }
+
+        // 5 — MLB CDN by player_id
+        if (p?.player_id) {
           return `https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_213,q_auto:best/v1/people/${p.player_id}/headshot/67/current`;
         }
+
+        // 6 — placeholder
         return "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2VlZSIvPjwvc3ZnPg==";
       }
 
@@ -46570,8 +46628,14 @@
         const totalLabel = side === "B" ? "Batters Total" : "Pitchers Total";
         const totalId = side === "B" ? "mt-bat-total" : "mt-pit-total";
 
-        const inactive = all.filter((p) => mtIsBenchOrILSlot(p.selected_position));
+        const inactiveRaw = all.filter((p) => mtIsBenchOrILSlot(p.selected_position));
         const active = all.filter((p) => !mtIsBenchOrILSlot(p.selected_position));
+        // Sort inactive list so the Bench section renders BN first, then IL, then NA
+        const slotPriority = { BN: 0, IL: 1, "IL+": 1, NA: 2 };
+        const inactive = [...inactiveRaw].sort((a, b) =>
+          (slotPriority[a.selected_position] ?? 99) -
+          (slotPriority[b.selected_position] ?? 99),
+        );
         const filled = mtFillSlots(active, slotOrder);
         const used = new Set(filled.filter((s) => s.player).map((s) => s.player));
         const extras = active.filter((p) => !used.has(p));
@@ -46731,7 +46795,8 @@
           console.time("myteam-load");
           // Fetch all needed data in parallel
           const [windowsResp, standingsResp, gamesResp, dailyStatsResp,
-                 allScoresResp, teamsResp, dailyScoresResp, transactionsResp] = await Promise.all([
+                 allScoresResp, teamsResp, dailyScoresResp, transactionsResp,
+                 benchPitcherResp, prospectsResp] = await Promise.all([
             fetch("data/current_season/player_stats_windows.json"),
             fetch("data/current_season/standings.json"),
             fetch("data/current_season/daily_games.json").catch(() => null),
@@ -46740,6 +46805,8 @@
             fetch("data/current_season/teams.json").catch(() => null),
             fetch("data/current_season/daily_scores.json").catch(() => null),
             fetch("data/current_season/transactions.json").catch(() => null),
+            fetch("data/current_season/bench_pitcher_projections.json").catch(() => null),
+            fetch("data/prospects/prospects.json").catch(() => null),
           ]);
           console.timeLog("myteam-load", "fetches complete");
           const windowsData = await windowsResp.json();
@@ -46749,10 +46816,20 @@
 
           // Parse supplemental data (best-effort)
           let allScores = [], teamsArr = [], dailyScoresData = null, transactionsArr = [];
+          let playerDailyStatsLocal = null, benchPitcherLocal = null;
           try { if (allScoresResp?.ok)      allScores       = await allScoresResp.json(); } catch (_) {}
           try { if (teamsResp?.ok)          teamsArr        = await teamsResp.json(); } catch (_) {}
           try { if (dailyScoresResp?.ok)    dailyScoresData = await dailyScoresResp.json(); } catch (_) {}
           try { if (transactionsResp?.ok)   transactionsArr = await transactionsResp.json(); } catch (_) {}
+          try { if (dailyStatsResp?.ok)     playerDailyStatsLocal = await dailyStatsResp.json(); } catch (_) {}
+          try { if (benchPitcherResp?.ok)   benchPitcherLocal     = await benchPitcherResp.json(); } catch (_) {}
+          // Populate the global prospectsData so mtPlayerHeadshot's fallback can find prospect headshots
+          try {
+            if (prospectsResp?.ok && (!Array.isArray(prospectsData) || prospectsData.length === 0)) {
+              const prospData = await prospectsResp.json();
+              prospectsData = prospData.prospects || [];
+            }
+          } catch (_) {}
 
           // Build today's playing-teams set and per-game info map (best-effort; file may not exist yet)
           mtTodayMlbTeams = null;
@@ -46836,13 +46913,12 @@
             (p) => p.team_key === teamKey,
           );
 
-          // Load today's per-player stats from player_daily_stats.json
+          // Load today's per-player stats from player_daily_stats.json (parsed earlier)
           mtTodayPlayerStats = {};
-          if (dailyStatsResp && dailyStatsResp.ok) {
+          if (playerDailyStatsLocal) {
             try {
-              const dailyData = await dailyStatsResp.json();
               const todayET = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
-              const todayEntry = dailyData.dates?.[todayET];
+              const todayEntry = playerDailyStatsLocal.dates?.[todayET];
               if (todayEntry?.players) mtTodayPlayerStats = todayEntry.players;
             } catch (_) {}
           }
@@ -46969,9 +47045,13 @@
           // Previous week matchup (from all_scores)
           const prevMatchup = allScores.find(s => s.team_key === teamKey && s.week === currentWeek - 1) || null;
 
-          // Add/stream tracker for current week
+          // Add/stream tracker for current week — uses the same classifier as the
+          // Current Matchups modal on the Home page (isAddedPitcherStream).
           const weekData = dailyScoresData?.weeks?.[String(currentWeek)] || null;
-          const { streams: streamCount, adds: addCount } = mtCountWeekAdds(teamKey, transactionsArr, weekData);
+          const { streams: streamCount, adds: addCount } = mtCountWeekAdds(
+            teamKey, transactionsArr, weekData, currentWeek,
+            playerDailyStatsLocal, dailyScoresData, benchPitcherLocal,
+          );
           const addTrackerHTML = mtAddTrackerHTML(streamCount, addCount);
 
           // ── Matchup cards ────────────────────────────────────────────────
@@ -47073,8 +47153,8 @@
             </div>
 
             <div class="mt-col-headers">
-              <h3>Batters <span class="mt-col-count">${batCount} active${batInactive.length ? ` · ${rosterCountStr(batBench, batIL, batNA)}` : ""}</span><select class="mt-period-select" data-mt-period>${periodOptionsHTML}</select></h3>
-              <h3>Pitchers <span class="mt-col-count">${pitCount} active${pitInactive.length ? ` · ${rosterCountStr(pitBench, pitIL, pitNA)}` : ""}</span></h3>
+              <h3>Batters <span class="mt-col-count">${batCount} active${batInactive.length ? ` · ${rosterCountStr(batBench, batIL, batNA)}` : ""}</span></h3>
+              <h3>Pitchers <span class="mt-col-count">${pitCount} active${pitInactive.length ? ` · ${rosterCountStr(pitBench, pitIL, pitNA)}` : ""}</span><select class="mt-period-select" data-mt-period>${periodOptionsHTML}</select></h3>
             </div>
 
             <div class="mt-grid">
