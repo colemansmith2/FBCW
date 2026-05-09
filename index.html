@@ -11001,7 +11001,7 @@
         color: var(--pcm-hi);
         padding: 12px 16px;
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: auto 1fr auto;
         align-items: center;
         gap: 14px;
         border-bottom: 4px solid var(--pcm-line);
@@ -11123,9 +11123,8 @@
       /* fantasy points strip */
       #player-modal.pcm-active .pcm-fp-strip {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: 1fr auto 1fr;
         align-items: center;
-        gap: 12px;
         background: var(--pcm-field-deep);
         color: #fff;
         padding: 12px 18px;
@@ -11140,8 +11139,12 @@
         font-size: 22px;
         border: 3px solid var(--pcm-line);
         box-shadow: 3px 3px 0 0 var(--pcm-line);
-        justify-self: end;
       }
+      #player-modal.pcm-active .pcm-fp-strip .rk { text-align: right; font-size: 13px; color: var(--pcm-hi); }
+
+      /* Default: show full stat label, hide micro */
+      #player-modal.pcm-active .pcm-stat-lbl-full  { display: inline; }
+      #player-modal.pcm-active .pcm-stat-lbl-micro { display: none; }
 
       #player-modal.pcm-active .pcm-draft-strip {
         background: var(--pcm-paper);
@@ -11206,6 +11209,15 @@
         display: grid; place-items: center;
         font-family: 'Arcade Gamer', monospace;
         font-size: 8px;
+      }
+      #player-modal.pcm-active .pcm-lh-row .mgr-av.fa {
+        background: var(--pcm-paper-dim);
+        color: var(--pcm-pop);
+        font-size: 7px;
+      }
+      #player-modal.pcm-active .pcm-lh-row.fa .mgr {
+        color: var(--pcm-pop);
+        font-style: italic;
         color: var(--pcm-ink);
       }
       #player-modal.pcm-active .pcm-lh-row .mgr-av img {
@@ -11744,6 +11756,24 @@
           grid-template-columns: 55px repeat(7, 1fr);
         }
         #player-modal.pcm-active .pcm-stat-row > div { font-size: 14px; padding: 6px 2px; }
+
+        /* Stat-row leftmost label: swap full → micro on mobile */
+        #player-modal.pcm-active .pcm-stat-lbl-full  { display: none; }
+        #player-modal.pcm-active .pcm-stat-lbl-micro { display: inline; }
+
+        /* Nameplate: hide position-rank box on mobile */
+        #player-modal.pcm-active .pcm-nameplate {
+          grid-template-columns: 1fr auto;
+        }
+        #player-modal.pcm-active .pcm-np-num { display: none; }
+
+        /* FP strip: hide position rank; right-align points box */
+        #player-modal.pcm-active .pcm-fp-strip {
+          grid-template-columns: 1fr auto;
+          gap: 12px;
+        }
+        #player-modal.pcm-active .pcm-fp-strip .val { justify-self: end; }
+        #player-modal.pcm-active .pcm-fp-strip .rk  { display: none; }
         /* Mobile league history: drop OVR and BAT/PIT columns; show YR / MGR / POS / PTS */
         #player-modal.pcm-active .pcm-lh-head,
         #player-modal.pcm-active .pcm-lh-row {
@@ -30513,7 +30543,7 @@
           const selectedYear = getCurrentPlayerScoringYear();
           const statsBlock = document.getElementById('modal-stats-content');
           if (statsBlock) {
-            const labelUp = getModalPlayerWindowMicroLabel();
+            const labelUp = `<span class="pcm-stat-lbl-full">${(statsLabel || '').toUpperCase()}</span><span class="pcm-stat-lbl-micro">${getModalPlayerWindowMicroLabel()}</span>`;
             statsBlock.innerHTML = isBatter
               ? `
                 <div class="pcm-stat-row head">
@@ -32944,7 +32974,7 @@
                 <div>1B</div><div>2B</div><div>3B</div><div>HR</div>
               </div>
               <div class="pcm-stat-row body">
-                <div>${getModalPlayerWindowMicroLabel()}</div>
+                <div><span class="pcm-stat-lbl-full">${(statsLabel || "").toUpperCase()}</span><span class="pcm-stat-lbl-micro">${getModalPlayerWindowMicroLabel()}</span></div>
                 <div>${stats.G || 0}</div>
                 <div>${stats.PA || 0}</div>
                 <div>${stats.AB || 0}</div>
@@ -32958,7 +32988,7 @@
                 <div>SB</div><div>CS</div><div>HBP</div><div>OPS</div>
               </div>
               <div class="pcm-stat-row body">
-                <div>${getModalPlayerWindowMicroLabel()}</div>
+                <div><span class="pcm-stat-lbl-full">${(statsLabel || "").toUpperCase()}</span><span class="pcm-stat-lbl-micro">${getModalPlayerWindowMicroLabel()}</span></div>
                 <div>${stats.RBI || 0}</div>
                 <div>${stats.BB || 0}</div>
                 <div>${stats.SO || 0}</div>
@@ -32973,7 +33003,7 @@
                 <div>W</div><div>L</div><div>SV</div><div>HLD</div>
               </div>
               <div class="pcm-stat-row body">
-                <div>${getModalPlayerWindowMicroLabel()}</div>
+                <div><span class="pcm-stat-lbl-full">${(statsLabel || "").toUpperCase()}</span><span class="pcm-stat-lbl-micro">${getModalPlayerWindowMicroLabel()}</span></div>
                 <div>${stats.G || 0}</div>
                 <div>${stats.GS || 0}</div>
                 <div>${stats.IP || 0}</div>
@@ -32987,7 +33017,7 @@
                 <div>BB</div><div>K%</div><div>BB%</div><div>TBF</div>
               </div>
               <div class="pcm-stat-row body">
-                <div>${getModalPlayerWindowMicroLabel()}</div>
+                <div><span class="pcm-stat-lbl-full">${(statsLabel || "").toUpperCase()}</span><span class="pcm-stat-lbl-micro">${getModalPlayerWindowMicroLabel()}</span></div>
                 <div>${stats.ERA ? stats.ERA.toFixed(2) : "0.00"}</div>
                 <div>${stats.WHIP ? stats.WHIP.toFixed(2) : "0.00"}</div>
                 <div>${stats.SO || 0}</div>
@@ -33026,19 +33056,28 @@
                       posRankNum: 0,
                     };
                     const isCurrent = Number(season.year) === selectedYear;
-                    const mgr = season.manager || "—";
-                    const initials = (mgr.match(/\b\w/g) || ["?"])
-                      .slice(0, 2)
-                      .join("")
-                      .toUpperCase();
+                    const teamNm = (season.team_name || "").trim();
+                    const isFA = !season.manager
+                      || teamNm === "Free Agent"
+                      || teamNm === ""
+                      || teamNm === "—";
+                    const mgr = isFA ? "Free Agent" : (season.manager || "—");
+                    const initials = isFA
+                      ? "FA"
+                      : (mgr.match(/\b\w/g) || ["?"])
+                          .slice(0, 2)
+                          .join("")
+                          .toUpperCase();
                     return `
-                      <div class="pcm-lh-row">
+                      <div class="pcm-lh-row${isFA ? " fa" : ""}">
                         <div class="yr">${season.year}</div>
                         <div class="mgr">
-                          <span class="mgr-av">${
-                            logo
-                              ? `<img src="${logo}" alt="" onerror="this.parentElement.innerText='${initials}';">`
-                              : initials
+                          <span class="mgr-av${isFA ? " fa" : ""}">${
+                            isFA
+                              ? "FA"
+                              : (logo
+                                  ? `<img src="${logo}" alt="" onerror="this.parentElement.innerText='${initials}';">`
+                                  : initials)
                           }</span>
                           <span>${mgr}</span>
                         </div>
@@ -33065,6 +33104,7 @@
                     <div class="pcm-hero-fantasy${hasFantasyTeam ? "" : " fa"}">${pcmFantasyBadgeHtml}</div>
                   </div>
                   <div class="pcm-nameplate">
+                    <div class="pcm-np-num">${posRankDisplay || (player.primary_position || "—")}</div>
                     <div class="pcm-np-text">
                       <div class="pcm-np-name">${(player.name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '')}</div>
                       <div class="pcm-np-sub">${mlbTeamText}${
@@ -33084,6 +33124,7 @@
                   <div class="pcm-fp-strip">
                     <div class="lbl">FANTASY PTS</div>
                     <div class="val">${fantasyPts}</div>
+                    <div class="rk">${posRankDisplay || ""}</div>
                   </div>
                   <div class="pcm-draft-strip">${pcmDraftStrip}</div>
                   ${pcmHistoryHtml}
@@ -33142,25 +33183,30 @@
           }
         });
 
-        // Render charts (only for 2026 season view)
+        // Render charts.
+        // Historical & projected: always shown — covers the player's full career.
+        // Percentile rank: only meaningful for the current season (ranks vs current league),
+        // so hide it for prior-season views.
         const seasonSelect2 = document.getElementById("scoring-season");
         const chartYear = parseInt(seasonSelect2?.value || 2026);
         const chartsContainer = document.getElementById("player-charts-container");
+        const histBox = document.getElementById("player-history-chart-box");
+        const pctBox = document.getElementById("player-percentile-chart-box");
         if (chartsContainer) {
-          if (chartYear === 2026) {
-            chartsContainer.style.display = "";
-            const isPcmMode = modal.classList.contains("pcm-active");
-            if (isPcmMode) {
-              renderPcmHistoryChart(player, "player-history-chart-box", _resolveIsBatter(player));
+          chartsContainer.style.display = "";
+          const isPcmMode = modal.classList.contains("pcm-active");
+          if (histBox) histBox.style.display = "";
+          if (pctBox) pctBox.style.display = chartYear === 2026 ? "" : "none";
+          if (isPcmMode) {
+            renderPcmHistoryChart(player, "player-history-chart-box", _resolveIsBatter(player));
+            if (chartYear === 2026) {
               renderPcmPercentileChart(player, "player-percentile-chart-box");
-            } else {
-              const histCanvas = document.getElementById("player-history-canvas");
-              const pctCanvas = document.getElementById("player-percentile-canvas");
-              if (histCanvas) renderPlayerHistoryChart(player, histCanvas);
-              if (pctCanvas) renderPlayerPercentileChart(player, pctCanvas);
             }
           } else {
-            chartsContainer.style.display = "none";
+            const histCanvas = document.getElementById("player-history-canvas");
+            const pctCanvas = document.getElementById("player-percentile-canvas");
+            if (histCanvas) renderPlayerHistoryChart(player, histCanvas);
+            if (chartYear === 2026 && pctCanvas) renderPlayerPercentileChart(player, pctCanvas);
           }
         }
       }
