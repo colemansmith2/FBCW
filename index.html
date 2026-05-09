@@ -33319,10 +33319,11 @@
           return;
         }
 
-        // Y-axis range: 175–600 by default; ceiling extends in 100s if any value > 600.
-        // Bars below Y_MIN render at a fixed BASELINE_HEIGHT_PX so they're visible
-        // without distorting the axis.
-        const Y_MIN = 175;
+        // Y-axis range: 100–600 by default; ceiling extends in 100s if any value > 600.
+        // LOW_THRESHOLD (175) is independent of the axis floor — bars below it render at
+        // a fixed BASELINE_HEIGHT_PX and stay flagged as call-up / injured / COVID.
+        const Y_MIN = 100;
+        const LOW_THRESHOLD = 175;
         const BASELINE_HEIGHT_PX = 16;
         const maxValBars = Math.max(...bars.map((b) => b.kind === "past" ? b.val : (b.hi || b.proj || b.val || 0)));
         const yMax = Math.max(600, Math.ceil(maxValBars / 100) * 100) || 600;
@@ -33339,10 +33340,10 @@
           : null;
 
         // Helpers
-        const barHeightPx = (v) => v < Y_MIN
+        const barHeightPx = (v) => v < LOW_THRESHOLD
           ? BASELINE_HEIGHT_PX
           : ((v - Y_MIN) / yRange) * innerH;
-        const heightCssOf = (v) => v < Y_MIN
+        const heightCssOf = (v) => v < LOW_THRESHOLD
           ? `height:${BASELINE_HEIGHT_PX}px;`
           : `height:${(((v - Y_MIN) / yRange) * 100).toFixed(2)}%;`;
         const barTopOf = (b) => {
@@ -33375,7 +33376,7 @@
 
         const barsHtml = bars.map((b) => {
           if (b.kind === "past") {
-            const isLow = b.val < Y_MIN;
+            const isLow = b.val < LOW_THRESHOLD;
             const isCovid = b.year === 2020;
             const isCallup = isLow && !isCovid && b.year === minPastYear;
             const isInjured = isLow && !isCovid && !isCallup;
@@ -33417,7 +33418,7 @@
           // proj
           const heightCss = heightCssOf(b.proj);
           const cls = ["pcm-bar", "pcm-bar-projband"];
-          if (b.proj < Y_MIN) cls.push("pcm-bar-baseline");
+          if (b.proj < LOW_THRESHOLD) cls.push("pcm-bar-baseline");
           return `
             <div style="position:relative;display:flex;align-items:flex-end;height:100%;">
               <div class="${cls.join(" ")}" style="width:100%;${heightCss}">
