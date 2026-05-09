@@ -24617,66 +24617,81 @@
         }
       }
 
-      /* ── My Team header — mobile (≤768px): stack identity / center / matchups vertically ── */
+      /* Default: hide mobile-only elements */
+      #myteam .mt-hdr-stats-inline { display: none; }
+      #myteam .mt-col-heading-mobile { display: none; }
+
+      /* ── My Team — mobile (≤768px): compact, single-column layout ── */
       @media (max-width: 768px) {
         #myteam .mt-team-hdr {
           grid-template-columns: 1fr;
-          gap: 12px;
+          gap: 10px;
           padding-bottom: 12px;
           margin-bottom: 12px;
         }
-        #myteam .mt-hdr-left {
-          gap: 4px;
-        }
-        #myteam .mt-hdr-identity {
-          gap: 10px;
-          align-items: center;
-        }
-        #myteam .mt-team-logo {
-          width: 44px; height: 44px;
-        }
+        #myteam .mt-hdr-left { gap: 4px; }
+        #myteam .mt-hdr-identity { gap: 10px; align-items: center; }
+        #myteam .mt-team-logo { width: 44px; height: 44px; }
         #myteam .mt-team-name {
-          font-size: 0.7rem;
-          line-height: 1.2;
-          word-break: break-word;
+          font-size: 0.7rem; line-height: 1.2; word-break: break-word;
         }
+        /* Manager + stats inline; hide standalone stats row */
+        #myteam .mt-hdr-stats-row { display: none; }
         #myteam .mt-hdr-manager-sub {
-          font-size: 0.85rem;
+          display: flex; flex-wrap: wrap; align-items: center;
+          gap: 4px; font-size: 0.85rem; color: #555;
+          row-gap: 2px;
         }
-        #myteam .mt-hdr-stats-row {
-          font-size: 0.82rem;
-          gap: 6px;
+        #myteam .mt-hdr-stats-inline {
+          display: inline-flex; flex-wrap: wrap; align-items: center;
+          gap: 4px; font-size: 0.85rem; color: #555;
         }
-        /* Center column: stop centering — left-align with the identity row above it */
+        /* Center: hide WEEK label (redundant with cards), inline vs + add tracker */
+        #myteam .mt-hdr-week-label { display: none; }
         #myteam .mt-hdr-center {
-          align-items: flex-start;
-          text-align: left;
-          flex-direction: row;
-          flex-wrap: wrap;
-          gap: 8px 12px;
+          flex-direction: row; flex-wrap: wrap;
+          align-items: center; gap: 6px 12px;
         }
-        #myteam .mt-hdr-add-tracker {
-          margin-top: 0;
-        }
-        /* Matchup cards: horizontally scrollable so all three are reachable */
+        #myteam .mt-hdr-add-tracker { margin-top: 0; }
+        /* Matchup cards: shrink to fit without horizontal scroll */
         #myteam .mt-hdr-matchups {
           width: 100%;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-          padding-bottom: 4px;
-          scrollbar-width: thin;
-        }
-        #myteam .mt-hdr-matchups::-webkit-scrollbar { height: 4px; }
-        #myteam .mt-hdr-matchups::-webkit-scrollbar-thumb {
-          background: rgba(0, 72, 186, 0.3);
-          border-radius: 2px;
+          overflow-x: visible;
+          gap: 4px;
         }
         #myteam .mt-mu-card {
-          min-width: 110px;
-          flex-shrink: 0;
+          flex: 1 1 0;
+          min-width: 0;
+          padding: 5px 4px;
+          gap: 2px;
         }
         #myteam .mt-mu-mgr {
-          max-width: 60px;
+          font-size: 0.7rem; max-width: none;
+          overflow: hidden; text-overflow: ellipsis;
+        }
+        #myteam .mt-mu-hat { width: 14px; height: 14px; }
+        #myteam .mt-mu-row { gap: 2px; }
+        #myteam .mt-mu-identity { gap: 2px; }
+        /* Hide top headers row & "12 active · 1 IL" subtext; show per-column heading */
+        #myteam .mt-col-headers { display: none; }
+        #myteam .mt-col-count { display: none; }
+        #myteam .mt-col-heading-mobile {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 8px;
+          font-family: "Arcade Gamer", sans-serif;
+          font-size: 0.7rem; color: var(--retro-blue);
+          margin: 0 0 6px;
+          letter-spacing: 0.5px;
+        }
+        #myteam .mt-col + .mt-col .mt-col-heading-mobile { margin-top: 14px; }
+        #myteam .mt-col-heading-mobile .mt-period-select {
+          font-family: "Arcade Gamer", sans-serif;
+          font-size: 0.6rem;
+          color: var(--retro-blue);
+          background: rgba(0, 72, 186, 0.07);
+          border: 1px solid rgba(0, 72, 186, 0.25);
+          border-radius: 4px;
+          padding: 2px 4px;
         }
       }
     </style>
@@ -47027,7 +47042,14 @@
                   <img class="mt-team-logo" src="${mtEsc(teamLogo || FALLBACK_LOGO)}" alt="" onerror="this.style.background='#cce'">
                   <div>
                     <div class="mt-team-name">${mtEsc(teamName || "Team")}</div>
-                    <div class="mt-hdr-manager-sub">${mtEsc(managerName || "")}</div>
+                    <div class="mt-hdr-manager-sub">
+                      ${mtEsc(managerName || "")}
+                      <span class="mt-hdr-stats-inline">
+                        ${record ? `<span class="mt-hdr-sep">·</span><span>${mtEsc(record)}</span>` : ""}
+                        ${place ? `<span class="mt-hdr-sep">·</span><span>${mtEsc(place)} Place</span>` : ""}
+                        ${seasonPts ? `<span class="mt-hdr-sep">·</span><span>${mtEsc(seasonPts)} pts</span>` : ""}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div class="mt-hdr-stats-row">
@@ -47051,15 +47073,17 @@
             </div>
 
             <div class="mt-col-headers">
-              <h3>Batters <span class="mt-col-count">${batCount} active${batInactive.length ? ` · ${rosterCountStr(batBench, batIL, batNA)}` : ""}</span></h3>
-              <h3>Pitchers <span class="mt-col-count">${pitCount} active${pitInactive.length ? ` · ${rosterCountStr(pitBench, pitIL, pitNA)}` : ""}</span><select class="mt-period-select" id="mt-period-select">${periodOptionsHTML}</select></h3>
+              <h3>Batters <span class="mt-col-count">${batCount} active${batInactive.length ? ` · ${rosterCountStr(batBench, batIL, batNA)}` : ""}</span><select class="mt-period-select" data-mt-period>${periodOptionsHTML}</select></h3>
+              <h3>Pitchers <span class="mt-col-count">${pitCount} active${pitInactive.length ? ` · ${rosterCountStr(pitBench, pitIL, pitNA)}` : ""}</span></h3>
             </div>
 
             <div class="mt-grid">
               <div class="mt-col">
+                <h3 class="mt-col-heading-mobile">Batters<select class="mt-period-select" data-mt-period>${periodOptionsHTML}</select></h3>
                 <div class="mt-box">${mtBuildColumnHTML("B")}</div>
               </div>
               <div class="mt-col">
+                <h3 class="mt-col-heading-mobile">Pitchers</h3>
                 <div class="mt-box">${mtBuildColumnHTML("P")}</div>
               </div>
             </div>
@@ -47087,14 +47111,16 @@
             }).catch(() => {});
           }
 
-          // Period dropdown
-          const periodSelect = document.getElementById("mt-period-select");
-          if (periodSelect) {
-            periodSelect.addEventListener("change", (e) => {
+          // Period dropdown — two instances (desktop in mt-col-headers, mobile in mt-col).
+          // Wire both and keep their values in sync.
+          const periodSelects = panel.querySelectorAll('[data-mt-period]');
+          periodSelects.forEach((sel) => {
+            sel.addEventListener("change", (e) => {
               mtCurrentPeriodIdx = parseInt(e.target.value, 10) || 0;
+              periodSelects.forEach((s) => { if (s !== e.target) s.value = e.target.value; });
               mtApplyPeriod();
             });
-          }
+          });
 
           // Lineup-edit click delegation (re-bound on each load)
           if (panel._mtLineupClickHandler) {
