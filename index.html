@@ -10778,13 +10778,31 @@
       #player-modal.pcm-active .pcm-pos-badge {
         font-family: 'Arcade Gamer', monospace;
         font-size: 16px;
-        background: var(--pcm-hi);
-        color: var(--pcm-ink);
+        background: var(--pcm-ink);
+        color: #fff;
         border: 3px solid var(--pcm-line);
         padding: 10px 14px;
         line-height: 1;
         box-shadow: 4px 4px 0 0 var(--pcm-line);
+        letter-spacing: 1px;
       }
+      /* Position-specific colors (matches site-wide .position-badge.pos-*) */
+      #player-modal.pcm-active .pcm-pos-badge.pos-C   { background: #4a148c; }
+      #player-modal.pcm-active .pcm-pos-badge.pos-1B  { background: #1565c0; }
+      #player-modal.pcm-active .pcm-pos-badge.pos-2B  { background: #e65100; }
+      #player-modal.pcm-active .pcm-pos-badge.pos-3B  { background: #b71c1c; }
+      #player-modal.pcm-active .pcm-pos-badge.pos-SS  { background: #9c7c00; }
+      #player-modal.pcm-active .pcm-pos-badge.pos-OF,
+      #player-modal.pcm-active .pcm-pos-badge.pos-LF,
+      #player-modal.pcm-active .pcm-pos-badge.pos-CF,
+      #player-modal.pcm-active .pcm-pos-badge.pos-RF  { background: #2e7d32; }
+      #player-modal.pcm-active .pcm-pos-badge.pos-DH,
+      #player-modal.pcm-active .pcm-pos-badge.pos-Util { background: #546e7a; }
+      #player-modal.pcm-active .pcm-pos-badge.pos-SP,
+      #player-modal.pcm-active .pcm-pos-badge.pos-RHP,
+      #player-modal.pcm-active .pcm-pos-badge.pos-P    { background: #7e57c2; }
+      #player-modal.pcm-active .pcm-pos-badge.pos-RP,
+      #player-modal.pcm-active .pcm-pos-badge.pos-LHP  { background: #00838f; }
       #player-modal.pcm-active .pcm-name-block {
         font-family: 'Basis33', monospace;
         line-height: .85;
@@ -10808,8 +10826,16 @@
         letter-spacing: 1.5px;
         text-transform: uppercase;
       }
+      #player-modal.pcm-active .pcm-meta {
+        display: flex; align-items: center;
+      }
       #player-modal.pcm-active .pcm-meta .dot { color: #fff; opacity: .7; margin: 0 8px; }
       #player-modal.pcm-active .pcm-meta .ftc { color: #fff; }
+      #player-modal.pcm-active .pcm-meta .pcm-meta-mlb-logo {
+        height: 22px; width: auto;
+        object-fit: contain;
+        vertical-align: middle;
+      }
       #player-modal.pcm-active .pcm-season-pill {
         font-family: 'Arcade Gamer', monospace;
         background: var(--pcm-pop);
@@ -10975,11 +11001,12 @@
         color: var(--pcm-hi);
         padding: 12px 16px;
         display: grid;
-        grid-template-columns: auto 1fr auto;
+        grid-template-columns: 1fr auto;
         align-items: center;
         gap: 14px;
         border-bottom: 4px solid var(--pcm-line);
       }
+      #player-modal.pcm-active .pcm-np-text { min-width: 0; }
       #player-modal.pcm-active .pcm-np-num {
         font-family: 'Arcade Gamer', monospace;
         font-size: 22px;
@@ -11096,8 +11123,9 @@
       /* fantasy points strip */
       #player-modal.pcm-active .pcm-fp-strip {
         display: grid;
-        grid-template-columns: 1fr auto 1fr;
+        grid-template-columns: 1fr auto;
         align-items: center;
+        gap: 12px;
         background: var(--pcm-field-deep);
         color: #fff;
         padding: 12px 18px;
@@ -11112,8 +11140,8 @@
         font-size: 22px;
         border: 3px solid var(--pcm-line);
         box-shadow: 3px 3px 0 0 var(--pcm-line);
+        justify-self: end;
       }
-      #player-modal.pcm-active .pcm-fp-strip .rk { text-align: right; font-size: 13px; color: var(--pcm-hi); }
 
       #player-modal.pcm-active .pcm-draft-strip {
         background: var(--pcm-paper);
@@ -11241,7 +11269,10 @@
 
       /* Player rows inside tx items */
       #player-modal.pcm-active .pcm-tx-player {
-        display: flex; align-items: center; gap: 6px;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 8px;
         padding: 4px 0;
         margin-left: 18px;
         font-family: 'Basis33', monospace;
@@ -11250,35 +11281,70 @@
       }
       #player-modal.pcm-active .pcm-tx-player.focus { font-weight: bold; }
       #player-modal.pcm-active .pcm-tx-player .pcm-tx-headshot {
-        width: 24px; height: 24px;
+        width: 28px; height: 28px;
         background: var(--pcm-paper-dim);
         border: 2px solid var(--pcm-line);
         border-radius: 50%;
         overflow: hidden;
         flex: 0 0 auto;
+        align-self: center;
       }
       #player-modal.pcm-active .pcm-tx-player .pcm-tx-headshot img {
         width: 100%; height: 100%; object-fit: cover; object-position: center 18%;
       }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-info {
+        display: flex; flex-direction: column;
+        min-width: 0; line-height: 1.15; gap: 2px;
+      }
       #player-modal.pcm-active .pcm-tx-player .pcm-tx-name {
-        flex: 1 1 auto; min-width: 0;
+        min-width: 0;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
       }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-sub {
+        display: flex; align-items: center; gap: 4px;
+        flex-wrap: wrap;
+      }
       #player-modal.pcm-active .pcm-tx-player .pcm-tx-mlb {
-        width: 16px; height: 16px;
+        width: 14px; height: 14px;
         flex: 0 0 auto;
       }
       #player-modal.pcm-active .pcm-tx-player .pcm-tx-mlb img { width: 100%; height: 100%; object-fit: contain; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-mlb-abbr {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 8px;
+        color: var(--pcm-ink);
+        opacity: .8;
+        letter-spacing: .5px;
+        flex: 0 0 auto;
+      }
       #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos {
         font-family: 'Arcade Gamer', monospace;
         font-size: 8px;
-        background: var(--pcm-field);
+        background: var(--pcm-ink);
         color: #fff;
         border: 1px solid var(--pcm-line);
         padding: 2px 4px;
         flex: 0 0 auto;
         line-height: 1;
+        letter-spacing: .5px;
       }
+      /* Position-specific colors (matches site-wide .position-badge.pos-*) */
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-C   { background: #4a148c; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-1B  { background: #1565c0; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-2B  { background: #e65100; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-3B  { background: #b71c1c; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-SS  { background: #9c7c00; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-OF,
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-LF,
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-CF,
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-RF  { background: #2e7d32; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-DH,
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-Util { background: #546e7a; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-SP,
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-RHP,
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-P    { background: #7e57c2; }
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-RP,
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-LHP  { background: #00838f; }
       #player-modal.pcm-active .pcm-tx-item {
         background: var(--pcm-paper);
         border: 2px solid var(--pcm-line);
@@ -11301,6 +11367,37 @@
       #player-modal.pcm-active .pcm-tx-tag.trade { background: var(--pcm-plum); }
       #player-modal.pcm-active .pcm-tx-tag.add   { background: var(--pcm-teal); }
       #player-modal.pcm-active .pcm-tx-tag.drop  { background: var(--pcm-pop-deep); }
+
+      /* Keeper draft accents */
+      #player-modal.pcm-active .pcm-tx-item.keeper {
+        background: linear-gradient(180deg, var(--pcm-paper) 0%, #fff8d6 100%);
+        border-color: var(--pcm-hi-deep);
+      }
+      #player-modal.pcm-active .pcm-tx-keeper {
+        display: inline-block;
+        background: var(--pcm-hi);
+        color: var(--pcm-ink);
+        border: 2px solid var(--pcm-line);
+        padding: 2px 6px;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        letter-spacing: .5px;
+        box-shadow: 1px 1px 0 0 var(--pcm-line);
+      }
+
+      /* Add/drop sub-tags inside a single transaction */
+      #player-modal.pcm-active .pcm-tx-subtag {
+        display: inline-block;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 8px;
+        letter-spacing: 1px;
+        color: #fff;
+        padding: 2px 6px;
+        border: 1.5px solid var(--pcm-line);
+        margin: 8px 0 2px 0;
+      }
+      #player-modal.pcm-active .pcm-tx-subtag.add  { background: var(--pcm-teal); }
+      #player-modal.pcm-active .pcm-tx-subtag.drop { background: var(--pcm-pop-deep); }
       #player-modal.pcm-active .pcm-tx-date {
         font-family: 'Arcade Gamer', monospace;
         font-size: 9px;
@@ -11382,17 +11479,36 @@
         gap: 6px;
         height: 170px;
         padding: 14px 4px 4px;
-        background:
-          linear-gradient(to top, var(--pcm-line) 0 2px, transparent 2px 100%),
-          repeating-linear-gradient(to top,
-            transparent 0 33px, rgba(20,33,61,0.15) 33px 34px);
+        background: linear-gradient(to top, var(--pcm-line) 0 2px, transparent 2px 100%);
         border-bottom: 3px solid var(--pcm-line);
+        position: relative;
+      }
+      /* Value-based grid lines + left-aligned labels */
+      #player-modal.pcm-active .pcm-grid-line {
+        position: absolute;
+        left: 4px; right: 4px;
+        height: 1px;
+        background: rgba(20, 33, 61, 0.18);
+        pointer-events: none;
+        z-index: 0;
+      }
+      #player-modal.pcm-active .pcm-grid-label {
+        position: absolute;
+        left: 4px;
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 7px;
+        color: rgba(20, 33, 61, 0.4);
+        line-height: 1;
+        pointer-events: none;
+        z-index: 0;
+        letter-spacing: 0;
       }
       #player-modal.pcm-active .pcm-bar {
         background: var(--pcm-leaf);
         border: 2px solid var(--pcm-line);
         position: relative;
         min-height: 6px;
+        z-index: 1;
       }
       #player-modal.pcm-active .pcm-bar.pcm-bar-actual { background: var(--pcm-leaf); }
       #player-modal.pcm-active .pcm-bar.pcm-bar-projband {
@@ -11405,6 +11521,18 @@
         position: absolute; inset: -4px;
         border: 3px solid var(--pcm-pop);
         pointer-events: none;
+      }
+      /* 2020 COVID-shortened season — solid yellow-green */
+      #player-modal.pcm-active .pcm-bar.pcm-bar-actual.pcm-bar-covid {
+        background: #cddc39;
+      }
+      /* Call-up season — first season of career w/ low score, light blue */
+      #player-modal.pcm-active .pcm-bar.pcm-bar-actual.pcm-bar-callup {
+        background: #81d4fa;
+      }
+      /* Injured / partial season — solid red */
+      #player-modal.pcm-active .pcm-bar.pcm-bar-actual.pcm-bar-injured {
+        background: var(--pcm-pop);
       }
       #player-modal.pcm-active .pcm-bar .pcm-bar-val {
         position: absolute; top: -16px; left: 50%; transform: translateX(-50%);
@@ -11435,18 +11563,25 @@
       #player-modal.pcm-active .pcm-bar-axis span.cur  { color: var(--pcm-pop); }
 
       #player-modal.pcm-active .pcm-legend {
-        display: flex; flex-wrap: wrap; gap: 12px;
-        margin-top: 10px;
+        display: flex; flex-wrap: nowrap; gap: 8px;
+        margin-top: 8px;
         font-family: 'Arcade Gamer', monospace;
         font-size: 9px;
         color: var(--pcm-ink);
-        letter-spacing: 1px;
+        letter-spacing: 0;
+        word-spacing: -2px;
+      }
+      #player-modal.pcm-active .pcm-legend > span {
+        display: inline-flex; align-items: center;
+        white-space: nowrap;
+        flex: 0 1 auto; min-width: 0;
       }
       #player-modal.pcm-active .pcm-legend .sw {
-        display: inline-block; width: 14px; height: 10px;
+        display: inline-block; width: 12px; height: 10px;
         border: 2px solid var(--pcm-line);
         margin-right: 4px;
         vertical-align: middle;
+        flex: 0 0 auto;
       }
       #player-modal.pcm-active .pcm-legend .sw.actual { background: var(--pcm-leaf); }
       #player-modal.pcm-active .pcm-legend .sw.proj   { background: var(--pcm-hi); }
@@ -11609,9 +11744,16 @@
           grid-template-columns: 55px repeat(7, 1fr);
         }
         #player-modal.pcm-active .pcm-stat-row > div { font-size: 14px; padding: 6px 2px; }
+        /* Mobile league history: drop OVR and BAT/PIT columns; show YR / MGR / POS / PTS */
         #player-modal.pcm-active .pcm-lh-head,
         #player-modal.pcm-active .pcm-lh-row {
-          grid-template-columns: 50px 1fr 40px 40px 50px 50px;
+          grid-template-columns: 48px 1fr 56px 56px;
+        }
+        #player-modal.pcm-active .pcm-lh-head > div:nth-child(3),
+        #player-modal.pcm-active .pcm-lh-head > div:nth-child(4),
+        #player-modal.pcm-active .pcm-lh-row > div:nth-child(3),
+        #player-modal.pcm-active .pcm-lh-row > div:nth-child(4) {
+          display: none;
         }
         #player-modal.pcm-active .pcm-lh-row > div,
         #player-modal.pcm-active .pcm-lh-head > div { font-size: 12px; }
@@ -30265,6 +30407,25 @@
         return getPlayerWindowButtonLabel(window.currentModalPlayerWindow || currentSeasonPlayerWindows?.default_window || 'ytd');
       }
 
+      // Ultra-short window label for the stat-row leftmost cell — fits SZN/L7/L14/L30
+      function getModalPlayerWindowMicroLabel() {
+        const selectedYear = getCurrentPlayerScoringYear();
+        if (selectedYear !== 2026) {
+          return window.currentModalStatType === 'full' ? 'FULL' : 'FANT';
+        }
+        const wk = window.currentModalPlayerWindow
+          || currentSeasonPlayerWindows?.default_window
+          || 'ytd';
+        const map = {
+          ytd: 'SZN',
+          last7: 'L7',
+          last14: 'L14',
+          last30: 'L30',
+          current_week: 'WK',
+        };
+        return map[wk] || String(wk).toUpperCase();
+      }
+
       function getModalPlayerStatsTitle() {
         const selectedYear = getCurrentPlayerScoringYear();
         if (selectedYear !== 2026) {
@@ -30352,7 +30513,7 @@
           const selectedYear = getCurrentPlayerScoringYear();
           const statsBlock = document.getElementById('modal-stats-content');
           if (statsBlock) {
-            const labelUp = (statsLabel || '').toUpperCase();
+            const labelUp = getModalPlayerWindowMicroLabel();
             statsBlock.innerHTML = isBatter
               ? `
                 <div class="pcm-stat-row head">
@@ -31203,12 +31364,16 @@
                   (p) => p.player_name && _txNameMatch(p.player_name),
                 );
                 if (pick) {
+                  const _kCost = pick.cost;
+                  const _isKeeper = pick.is_keeper === true || (typeof _kCost === "string" && _kCost.trim() !== "") || (typeof _kCost === "number" && _kCost > 0);
                   draftByYear[year] = {
                     round: pick.round,
                     pick: pick.pick,
                     teamName:
                       teamNameMap[pick.team_key] || pick.team_name || "",
                     teamLogo: teamLogoMap[pick.team_key] || "",
+                    isKeeper: _isKeeper,
+                    keeperCost: _isKeeper ? _kCost : null,
                   };
                 }
               }
@@ -31386,14 +31551,23 @@
         const headshot = _pcmResolvePlayerHeadshot(p);
         const mlbAbbr = p.team_abbr || p.editorial_team_abbr || "";
         const mlbLogo = mlbAbbr && typeof getMLBTeamLogo === "function" ? getMLBTeamLogo(mlbAbbr) : "";
-        const pos = p.position || p.display_position || "";
+        const posRaw = p.position || p.display_position || "";
+        const posList = posRaw ? posRaw.split(/[,\/]/).map(s => s.trim()).filter(Boolean) : [];
+        const posBadgesHtml = posList.map(pos => `<span class="pcm-tx-pos pos-${pos}">${pos}</span>`).join("");
+        const subHtml = (mlbLogo || mlbAbbr || posBadgesHtml)
+          ? `<div class="pcm-tx-sub">
+              ${mlbLogo ? `<span class="pcm-tx-mlb"><img src="${mlbLogo}" alt="${mlbAbbr}" onerror="this.style.display='none';"></span>` : ""}
+              ${mlbAbbr ? `<span class="pcm-tx-mlb-abbr">${mlbAbbr}</span>` : ""}
+              ${posBadgesHtml}
+             </div>`
+          : "";
         return `
           <div class="pcm-tx-player${isFocus ? " focus" : ""}">
             <span class="pcm-tx-headshot"><img src="${headshot}" alt="" onerror="this.style.display='none';"></span>
-            <span class="pcm-tx-name">${p.player_name || ""}</span>
-            ${mlbLogo ? `<span class="pcm-tx-mlb"><img src="${mlbLogo}" alt="${mlbAbbr}" onerror="this.style.display='none';"></span>` : ""}
-            ${mlbAbbr ? `<span class="pcm-tx-pick">${mlbAbbr}</span>` : ""}
-            ${pos ? `<span class="pcm-tx-pos">${pos}</span>` : ""}
+            <div class="pcm-tx-info">
+              <span class="pcm-tx-name">${p.player_name || ""}</span>
+              ${subHtml}
+            </div>
           </div>`;
       }
 
@@ -31449,6 +31623,8 @@
             pick: d.pick,
             teamName: d.teamName,
             teamLogo: d.teamLogo,
+            isKeeper: !!d.isKeeper,
+            keeperCost: d.keeperCost,
           });
         });
         transactions.forEach((t) => {
@@ -31516,34 +31692,39 @@
               const logoHtml = it.teamLogo
                 ? `<img src="${it.teamLogo}" alt="" onerror="this.style.display='none';">`
                 : "";
+              const keeperBadge = it.isKeeper
+                ? `<span class="pcm-tx-keeper" title="${it.keeperCost ? `Keeper cost: ${it.keeperCost}` : "Keeper"}">★ KEEPER</span>`
+                : "";
               html += `
-                <div class="pcm-tx-item">
-                  <div class="pcm-tx-tag draft">DRAFT</div>
+                <div class="pcm-tx-item${it.isKeeper ? " keeper" : ""}">
+                  <div class="pcm-tx-tag draft">DRAFT${it.isKeeper ? " · KEEPER" : ""}</div>
                   <div class="pcm-tx-date">${yr}</div>
                   <div class="pcm-tx-line">
                     <span class="av">${logoHtml}</span>
                     <span>${it.teamName || ""}</span>
                   </div>
-                  <div style="margin-top:6px;">
+                  <div style="margin-top:6px;display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
                     <span class="pcm-tx-pick">RD ${it.round}</span>
                     <span class="pcm-tx-pick">#${it.pick}</span>
+                    ${keeperBadge}
                   </div>
                 </div>`;
               return;
             }
 
             if (it.type === "trade") {
-              const traderPlayers = (it.players || []).filter(
-                (p) => p.source_team_key === it.traderTeamKey,
+              // Show each side with what they RECEIVED (destination = that team)
+              const traderReceivedPlayers = (it.players || []).filter(
+                (p) => p.destination_team_key === it.traderTeamKey,
               );
-              const tradeePlayers = (it.players || []).filter(
-                (p) => p.source_team_key === it.tradeeTeamKey,
+              const tradeeReceivedPlayers = (it.players || []).filter(
+                (p) => p.destination_team_key === it.tradeeTeamKey,
               );
-              const traderPicks = (it.draftPicks || []).filter(
-                (p) => p.source_team_key === it.traderTeamKey,
+              const traderReceivedPicks = (it.draftPicks || []).filter(
+                (p) => p.destination_team_key === it.traderTeamKey,
               );
-              const tradeePicks = (it.draftPicks || []).filter(
-                (p) => p.source_team_key === it.tradeeTeamKey,
+              const tradeeReceivedPicks = (it.draftPicks || []).filter(
+                (p) => p.destination_team_key === it.tradeeTeamKey,
               );
               const renderSide = (mgrName, logo, players, picks) => {
                 const logoHtml = logo
@@ -31564,17 +31745,22 @@
                 });
                 return s;
               };
+              // Trader's logo is on outgoing rows (source_team_key === traderTeamKey)
               const traderLogo =
-                (it.players || []).find((p) => p.source_team_key === it.traderTeamKey)?.sourceLogo || "";
+                (it.players || []).find((p) => p.source_team_key === it.traderTeamKey)?.sourceLogo
+                || (it.players || []).find((p) => p.destination_team_key === it.traderTeamKey)?.destLogo
+                || "";
               const tradeeLogo =
-                (it.players || []).find((p) => p.source_team_key === it.tradeeTeamKey)?.sourceLogo || "";
+                (it.players || []).find((p) => p.source_team_key === it.tradeeTeamKey)?.sourceLogo
+                || (it.players || []).find((p) => p.destination_team_key === it.tradeeTeamKey)?.destLogo
+                || "";
               html += `
                 <div class="pcm-tx-item">
                   <div class="pcm-tx-tag trade">TRADE</div>
                   <div class="pcm-tx-date">${it.date || yr}</div>
-                  ${renderSide(it.traderTeamName, traderLogo, traderPlayers, traderPicks)}
+                  ${renderSide(it.traderTeamName, traderLogo, traderReceivedPlayers, traderReceivedPicks)}
                   <div style="text-align:center;font-family:'Arcade Gamer',monospace;color:var(--pcm-pop);font-size:11px;margin:4px 0;">▼ FOR ▼</div>
-                  ${renderSide(it.tradeeTeamName, tradeeLogo, tradeePlayers, tradeePicks)}
+                  ${renderSide(it.tradeeTeamName, tradeeLogo, tradeeReceivedPlayers, tradeeReceivedPicks)}
                 </div>`;
               return;
             }
@@ -31584,16 +31770,19 @@
               (p) => p.player_name && p.player_name.toLowerCase() === nameLC,
             );
             const txType = (focusPlayer && focusPlayer.transaction_type) || it.type || "move";
-            const tagClass =
-              txType === "add"
+            const isAddDrop = (it.type === "add/drop") || ((it.players || []).some(p => p.transaction_type === "add") && (it.players || []).some(p => p.transaction_type === "drop"));
+            const tagClass = isAddDrop
+              ? "trade"
+              : txType === "add"
                 ? "add"
                 : txType === "drop"
                   ? "drop"
                   : txType === "draft"
                     ? "draft"
                     : "";
-            const tagLabel =
-              txType === "add"
+            const tagLabel = isAddDrop
+              ? "ADD / DROP"
+              : txType === "add"
                 ? "ADD"
                 : txType === "drop"
                   ? "DROP"
@@ -31606,6 +31795,24 @@
             const logoHtml = teamLogo
               ? `<img src="${teamLogo}" alt="" onerror="this.style.display='none';">`
               : "";
+
+            // For add/drop: show both add and drop player; otherwise just the focus player
+            let playersHtml = "";
+            if (isAddDrop) {
+              const addedPlayers = (it.players || []).filter(p => p.transaction_type === "add");
+              const droppedPlayers = (it.players || []).filter(p => p.transaction_type === "drop");
+              if (addedPlayers.length) {
+                playersHtml += `<div class="pcm-tx-subtag add">+ ADDED</div>`;
+                addedPlayers.forEach(p => { playersHtml += _pcmPlayerRow(p, playerName); });
+              }
+              if (droppedPlayers.length) {
+                playersHtml += `<div class="pcm-tx-subtag drop">− DROPPED</div>`;
+                droppedPlayers.forEach(p => { playersHtml += _pcmPlayerRow(p, playerName); });
+              }
+            } else if (focusPlayer) {
+              playersHtml = _pcmPlayerRow(focusPlayer, playerName);
+            }
+
             html += `
               <div class="pcm-tx-item">
                 <div class="pcm-tx-tag ${tagClass}">${tagLabel}</div>
@@ -31614,7 +31821,7 @@
                   <span class="av">${logoHtml}</span>
                   <span>${teamName}</span>
                 </div>
-                ${focusPlayer ? _pcmPlayerRow(focusPlayer, playerName) : ""}
+                ${playersHtml}
               </div>`;
           });
 
@@ -32737,7 +32944,7 @@
                 <div>1B</div><div>2B</div><div>3B</div><div>HR</div>
               </div>
               <div class="pcm-stat-row body">
-                <div>${(statsLabel || "").toUpperCase()}</div>
+                <div>${getModalPlayerWindowMicroLabel()}</div>
                 <div>${stats.G || 0}</div>
                 <div>${stats.PA || 0}</div>
                 <div>${stats.AB || 0}</div>
@@ -32751,7 +32958,7 @@
                 <div>SB</div><div>CS</div><div>HBP</div><div>OPS</div>
               </div>
               <div class="pcm-stat-row body">
-                <div>${(statsLabel || "").toUpperCase()}</div>
+                <div>${getModalPlayerWindowMicroLabel()}</div>
                 <div>${stats.RBI || 0}</div>
                 <div>${stats.BB || 0}</div>
                 <div>${stats.SO || 0}</div>
@@ -32766,7 +32973,7 @@
                 <div>W</div><div>L</div><div>SV</div><div>HLD</div>
               </div>
               <div class="pcm-stat-row body">
-                <div>${(statsLabel || "").toUpperCase()}</div>
+                <div>${getModalPlayerWindowMicroLabel()}</div>
                 <div>${stats.G || 0}</div>
                 <div>${stats.GS || 0}</div>
                 <div>${stats.IP || 0}</div>
@@ -32780,7 +32987,7 @@
                 <div>BB</div><div>K%</div><div>BB%</div><div>TBF</div>
               </div>
               <div class="pcm-stat-row body">
-                <div>${(statsLabel || "").toUpperCase()}</div>
+                <div>${getModalPlayerWindowMicroLabel()}</div>
                 <div>${stats.ERA ? stats.ERA.toFixed(2) : "0.00"}</div>
                 <div>${stats.WHIP ? stats.WHIP.toFixed(2) : "0.00"}</div>
                 <div>${stats.SO || 0}</div>
@@ -32858,8 +33065,7 @@
                     <div class="pcm-hero-fantasy${hasFantasyTeam ? "" : " fa"}">${pcmFantasyBadgeHtml}</div>
                   </div>
                   <div class="pcm-nameplate">
-                    <div class="pcm-np-num">${posRankDisplay || (player.primary_position || "—")}</div>
-                    <div>
+                    <div class="pcm-np-text">
                       <div class="pcm-np-name">${(player.name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '')}</div>
                       <div class="pcm-np-sub">${mlbTeamText}${
                         hasFantasyTeam
@@ -32878,7 +33084,6 @@
                   <div class="pcm-fp-strip">
                     <div class="lbl">FANTASY PTS</div>
                     <div class="val">${fantasyPts}</div>
-                    <div class="rk">${posRankDisplay || ""}</div>
                   </div>
                   <div class="pcm-draft-strip">${pcmDraftStrip}</div>
                   ${pcmHistoryHtml}
@@ -32888,12 +33093,16 @@
 
           // Build ribbon
           const pcmDisplayName = (player.name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '');
+          const pcmPrimaryPos = player.primary_position || "";
+          const pcmRibbonMlbHtml = hasMlbLogo
+            ? `<img class="pcm-meta-mlb-logo" src="${mlbLogoUrl}" alt="${mlbTeamText}" onerror="this.outerHTML='<span>'+this.alt+'</span>';">`
+            : `<span>${mlbTeamText || "FA"}</span>`;
           const pcmRibbonHtml = `
-            <div class="pcm-pos-badge">${player.primary_position || "—"}</div>
+            <div class="pcm-pos-badge pos-${pcmPrimaryPos}">${pcmPrimaryPos || "—"}</div>
             <div class="pcm-name-block">
               <div class="pcm-name">${pcmDisplayName}</div>
               <div class="pcm-meta">
-                <span>${mlbTeamText}</span>
+                ${pcmRibbonMlbHtml}
                 ${
                   hasFantasyTeam
                     ? `<span class="dot">●</span><span class="ftc">${player.team_name}</span>`
@@ -33059,41 +33268,113 @@
 
         if (bars.length === 0) {
           container.innerHTML = `
-            <div class="pcm-sect-head"><span class="pcm-swatch b"></span><span>HISTORICAL & PROJECTED</span><span class="pcm-tag">POINTS</span><span class="pcm-rule"></span></div>
+            <div class="pcm-sect-head"><span class="pcm-swatch b"></span><span>HISTORICAL & PROJECTED</span><span class="pcm-rule"></span></div>
             <div style="font-family:'Arcade Gamer',monospace;font-size:10px;color:var(--pcm-ink);opacity:.6;text-align:center;padding:18px;">No historical data available</div>`;
           return;
         }
 
-        const maxVal = Math.max(...bars.map((b) => b.kind === "past" ? b.val : (b.hi || b.proj || b.val || 0)));
-        const yMax = Math.ceil((maxVal * 1.05) / 50) * 50 || 100;
+        // Y-axis range: 175–600 by default; ceiling extends in 100s if any value > 600.
+        // Bars below Y_MIN render at a fixed BASELINE_HEIGHT_PX so they're visible
+        // without distorting the axis.
+        const Y_MIN = 175;
+        const BASELINE_HEIGHT_PX = 16;
+        const maxValBars = Math.max(...bars.map((b) => b.kind === "past" ? b.val : (b.hi || b.proj || b.val || 0)));
+        const yMax = Math.max(600, Math.ceil(maxValBars / 100) * 100) || 600;
+        const yRange = yMax - Y_MIN;
+
+        // Layout constants must match .pcm-bars CSS
+        const containerH = 170, padTop = 14, padBottom = 4;
+        const innerH = containerH - padTop - padBottom; // 152
+
+        // Earliest recorded past season — used to distinguish "call-up" (first season)
+        // from "injured" (low season in the middle of a career)
+        const minPastYear = pastSeasons.length
+          ? Math.min(...pastSeasons.map((s) => s.year))
+          : null;
+
+        // Helpers
+        const barHeightPx = (v) => v < Y_MIN
+          ? BASELINE_HEIGHT_PX
+          : ((v - Y_MIN) / yRange) * innerH;
+        const heightCssOf = (v) => v < Y_MIN
+          ? `height:${BASELINE_HEIGHT_PX}px;`
+          : `height:${(((v - Y_MIN) / yRange) * 100).toFixed(2)}%;`;
+        const barTopOf = (b) => {
+          let v;
+          if (b.kind === "past") v = b.val;
+          else if (b.kind === "current") v = b.hi || b.proj;
+          else v = b.proj;
+          return padBottom + barHeightPx(v);
+        };
+        const firstBarTopY = bars.length ? barTopOf(bars[0]) : 0;
+        const firstBarLabelY = bars.length ? firstBarTopY + 8 : null;
+
+        // Grid labels at every 100 mark inside the visible range (starting above Y_MIN).
+        // Skip if hidden behind the leftmost bar OR too close to that bar's value label.
+        const PROXIMITY_PX = 12;
+        const firstGrid = Math.ceil((Y_MIN + 1) / 100) * 100; // first 100-mark above Y_MIN
+        const gridLinesHtml = [];
+        const gridLabelsHtml = [];
+        for (let g = firstGrid; g < yMax; g += 100) {
+          const lineY = padBottom + ((g - Y_MIN) / yRange) * innerH;
+          const lineYPct = (lineY / containerH) * 100;
+          gridLinesHtml.push(`<div class="pcm-grid-line" style="bottom:${lineYPct.toFixed(2)}%;"></div>`);
+          const behindBar = lineY <= firstBarTopY;
+          const tooClose = firstBarLabelY != null && Math.abs(firstBarLabelY - lineY) < PROXIMITY_PX;
+          if (!behindBar && !tooClose) {
+            const labelYPct = ((lineY + 1) / containerH) * 100;
+            gridLabelsHtml.push(`<div class="pcm-grid-label" style="bottom:${labelYPct.toFixed(2)}%;">${g}</div>`);
+          }
+        }
 
         const barsHtml = bars.map((b) => {
           if (b.kind === "past") {
-            const h = (b.val / yMax) * 100;
+            const isLow = b.val < Y_MIN;
+            const isCovid = b.year === 2020;
+            const isCallup = isLow && !isCovid && b.year === minPastYear;
+            const isInjured = isLow && !isCovid && !isCallup;
+            const cls = ["pcm-bar", "pcm-bar-actual"];
+            if (isLow) cls.push("pcm-bar-baseline");
+            if (isCovid) cls.push("pcm-bar-covid");
+            else if (isCallup) cls.push("pcm-bar-callup");
+            else if (isInjured) cls.push("pcm-bar-injured");
+            const heightCss = heightCssOf(b.val);
+            const titleAttr = isCovid
+              ? ' title="2020 — shortened COVID season"'
+              : isCallup
+                ? ' title="Call-up season"'
+                : isInjured
+                  ? ' title="Injured / partial season"'
+                  : "";
             return `
               <div style="position:relative;display:flex;align-items:flex-end;height:100%;">
-                <div class="pcm-bar pcm-bar-actual" style="width:100%;height:${h}%;">
+                <div class="${cls.join(" ")}" style="width:100%;${heightCss}"${titleAttr}>
                   <span class="pcm-bar-val">${Math.round(b.val)}</span>
                 </div>
               </div>`;
           }
           if (b.kind === "current") {
             const projTop = b.hi || b.proj;
-            const projH = (projTop / yMax) * 100;
-            const actualH = (b.val / yMax) * 100;
+            const projHeightCss = heightCssOf(projTop);
+            // Actual overlay only renders meaningfully once accumulated >= Y_MIN
+            const actualPct = b.val >= Y_MIN
+              ? (((b.val - Y_MIN) / yRange) * 100).toFixed(2)
+              : "0";
             return `
               <div style="position:relative;display:flex;align-items:flex-end;height:100%;">
-                <div class="pcm-bar pcm-bar-projband pcm-bar-current" style="width:100%;height:${projH}%;">
+                <div class="pcm-bar pcm-bar-projband pcm-bar-current" style="width:100%;${projHeightCss}">
                   <span class="pcm-bar-val">${Math.round(projTop)}</span>
                 </div>
-                <div class="pcm-bar pcm-bar-actual" style="position:absolute;left:0;right:0;bottom:0;height:${actualH}%;border-bottom:0;"></div>
+                <div class="pcm-bar pcm-bar-actual" style="position:absolute;left:0;right:0;bottom:0;height:${actualPct}%;border-bottom:0;"></div>
               </div>`;
           }
           // proj
-          const h = (b.proj / yMax) * 100;
+          const heightCss = heightCssOf(b.proj);
+          const cls = ["pcm-bar", "pcm-bar-projband"];
+          if (b.proj < Y_MIN) cls.push("pcm-bar-baseline");
           return `
             <div style="position:relative;display:flex;align-items:flex-end;height:100%;">
-              <div class="pcm-bar pcm-bar-projband" style="width:100%;height:${h}%;">
+              <div class="${cls.join(" ")}" style="width:100%;${heightCss}">
                 <span class="pcm-bar-val">${Math.round(b.proj)}</span>
               </div>
             </div>`;
@@ -33102,8 +33383,12 @@
         const axisHtml = bars.map((b) => `<span class="${b.kind === "current" ? "cur" : (b.kind === "proj" ? "proj" : "")}">'${String(b.year).slice(-2)}</span>`).join("");
 
         container.innerHTML = `
-          <div class="pcm-sect-head"><span class="pcm-swatch b"></span><span>HISTORICAL &amp; PROJECTED</span><span class="pcm-tag">POINTS</span><span class="pcm-rule"></span></div>
-          <div class="pcm-bars">${barsHtml}</div>
+          <div class="pcm-sect-head"><span class="pcm-swatch b"></span><span>HISTORICAL &amp; PROJECTED</span><span class="pcm-rule"></span></div>
+          <div class="pcm-bars">
+            ${gridLinesHtml.join("")}
+            ${gridLabelsHtml.join("")}
+            ${barsHtml}
+          </div>
           <div class="pcm-bar-axis">${axisHtml}</div>
           <div class="pcm-legend">
             <span><i class="sw actual"></i>ACTUAL</span>
@@ -33126,7 +33411,7 @@
         const windowsData = window._playerStatsWindowsCache?.windows;
         if (!windowsData) {
           container.innerHTML = `
-            <div class="pcm-sect-head"><span class="pcm-swatch c"></span><span>PERCENTILE RANK</span><span class="pcm-tag">VS LEAGUE</span><span class="pcm-rule"></span></div>
+            <div class="pcm-sect-head"><span class="pcm-swatch c"></span><span>PERCENTILE RANK</span><span class="pcm-rule"></span></div>
             <div style="font-family:'Arcade Gamer',monospace;font-size:10px;color:var(--pcm-ink);opacity:.6;text-align:center;padding:18px;">No ranking data available</div>`;
           return;
         }
@@ -33172,7 +33457,7 @@
           </div>`).join("");
 
         container.innerHTML = `
-          <div class="pcm-sect-head"><span class="pcm-swatch c"></span><span>PERCENTILE RANK</span><span class="pcm-tag">VS LEAGUE</span><span class="pcm-rule"></span></div>
+          <div class="pcm-sect-head"><span class="pcm-swatch c"></span><span>PERCENTILE RANK</span><span class="pcm-rule"></span></div>
           ${rowsHtml}
           <div class="pcm-pct-key">
             <span><i style="background:var(--pcm-field);"></i>${primaryPos}</span>
