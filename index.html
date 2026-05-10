@@ -23995,7 +23995,7 @@
       /* Team header */
       #myteam .mt-team-hdr {
         display: grid;
-        grid-template-columns: auto 1fr auto;
+        grid-template-columns: 1fr auto 1fr;
         gap: 16px;
         align-items: center;
         padding-bottom: 14px;
@@ -24005,10 +24005,14 @@
 
       /* ── LEFT: identity + stats ── */
       #myteam .mt-hdr-left { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-      #myteam .mt-hdr-identity { display: flex; align-items: center; gap: 10px; }
+      #myteam .mt-hdr-identity { display: flex; align-items: stretch; gap: 12px; }
+      #myteam .mt-hdr-text-stack {
+        display: flex; flex-direction: column; justify-content: center;
+        gap: 2px; min-width: 0;
+      }
       #myteam .mt-team-logo {
-        width: 52px; height: 52px; border-radius: 50%;
-        object-fit: cover; border: 2px solid #ddd;
+        width: 80px; height: 80px;
+        border-radius: 50%; object-fit: cover; border: 2px solid #ddd;
         background: #eee; flex-shrink: 0;
       }
       #myteam .mt-team-name {
@@ -24059,6 +24063,7 @@
       /* ── RIGHT: three matchup cards ── */
       #myteam .mt-hdr-matchups {
         display: flex; gap: 6px; align-items: stretch; flex-shrink: 0;
+        justify-self: end;
       }
       #myteam .mt-mu-card {
         display: flex; flex-direction: column; align-items: center;
@@ -24123,7 +24128,10 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        justify-content: space-between;
+        justify-content: flex-start;
+      }
+      #myteam .mt-col-headers h3 .mt-period-select {
+        margin-left: auto;
       }
       #myteam .mt-period-select {
         font-family: "Arcade Gamer", sans-serif;
@@ -29763,6 +29771,7 @@
 
       // Player scoring state
       let allPlayersData = [];
+      let playerScoringInitialized = false;
       let filteredPlayersData = [];
       let playerHistoryData = {};
       let currentPlayerSort = { column: "fantasy_points", direction: "desc" };
@@ -30280,6 +30289,7 @@
 
           loadingEl.style.display = "none";
           containerEl.style.display = "block";
+          playerScoringInitialized = true;
         } catch (error) {
           console.error("Error loading player data:", error);
           loadingEl.style.display = "none";
@@ -42136,8 +42146,10 @@
         } else if (sectionId === "champions") {
           loadChampionData();
         } else if (sectionId === "scoring") {
-          // Load player scoring if not already loaded
-          if (allPlayersData.length === 0) {
+          // Load player scoring if the page itself hasn't initialized yet.
+          // Don't gate on allPlayersData.length — showPlayerDetail() lazy-loads
+          // it from other pages, which would otherwise skip this init.
+          if (!playerScoringInitialized) {
             loadPlayerScoring();
           }
         } else if (sectionId === "preseason") {
@@ -46222,7 +46234,11 @@
       //   5. MLB photo CDN by player_id
       //   6. SVG placeholder
       function mtPlayerHeadshot(p) {
-        if (p?.headshot_url) return p.headshot_url;
+        // Skip Yahoo's silhouette placeholder so we fall through to better sources.
+        const isYahooSilhouette = (url) =>
+          typeof url === "string" &&
+          (url.includes("silhouette") || url.includes("/dh/ap/default/"));
+        if (p?.headshot_url && !isYahooSilhouette(p.headshot_url)) return p.headshot_url;
 
         const rawName = p?.name || "";
         const nameLower = rawName.toLowerCase().trim();
@@ -47120,7 +47136,7 @@
               <div class="mt-hdr-left">
                 <div class="mt-hdr-identity">
                   <img class="mt-team-logo" src="${mtEsc(teamLogo || FALLBACK_LOGO)}" alt="" onerror="this.style.background='#cce'">
-                  <div>
+                  <div class="mt-hdr-text-stack">
                     <div class="mt-team-name">${mtEsc(teamName || "Team")}</div>
                     <div class="mt-hdr-manager-sub">
                       ${mtEsc(managerName || "")}
@@ -47130,12 +47146,12 @@
                         ${seasonPts ? `<span class="mt-hdr-sep">·</span><span>${mtEsc(seasonPts)} pts</span>` : ""}
                       </span>
                     </div>
+                    <div class="mt-hdr-stats-row">
+                      ${record ? `<span class="mt-hdr-stat-item">${mtEsc(record)}</span><span class="mt-hdr-sep">·</span>` : ""}
+                      ${place  ? `<span class="mt-hdr-stat-item">${mtEsc(place)} Place</span><span class="mt-hdr-sep">·</span>` : ""}
+                      ${seasonPts ? `<span class="mt-hdr-stat-item">${mtEsc(seasonPts)} pts</span>` : ""}
+                    </div>
                   </div>
-                </div>
-                <div class="mt-hdr-stats-row">
-                  ${record ? `<span class="mt-hdr-stat-item">${mtEsc(record)}</span><span class="mt-hdr-sep">·</span>` : ""}
-                  ${place  ? `<span class="mt-hdr-stat-item">${mtEsc(place)} Place</span><span class="mt-hdr-sep">·</span>` : ""}
-                  ${seasonPts ? `<span class="mt-hdr-stat-item">${mtEsc(seasonPts)} pts</span>` : ""}
                 </div>
               </div>
 
