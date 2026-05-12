@@ -11370,7 +11370,7 @@
         font-family: 'Arcade Gamer', monospace;
         font-size: 8px;
         background: #81d4fa;
-        color: var(--pcm-ink);
+        color: #fff;
         border: 1px solid var(--pcm-line);
         padding: 2px 4px;
         flex: 0 0 auto;
@@ -11484,6 +11484,57 @@
         box-shadow: 4px 4px 0 0 var(--pcm-line);
         padding: 14px 14px 16px;
         margin-bottom: 18px;
+      }
+
+      /* Thin keeper-cost strip — '26 / '27 / '28 round + dollar cost. */
+      #player-modal.pcm-active .pcm-keeper-strip {
+        background: var(--pcm-paper);
+        border: 3px solid var(--pcm-line);
+        box-shadow: 4px 4px 0 0 var(--pcm-line);
+        padding: 6px 8px;
+        margin-bottom: 18px;
+        overflow: hidden;
+      }
+      #player-modal.pcm-active .pcm-keeper-strip:empty {
+        display: none;
+      }
+      #player-modal.pcm-active .pcm-keeper-strip-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 4px;
+        min-width: 0;
+      }
+      #player-modal.pcm-active .pcm-keeper-strip-cell {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 4px 2px;
+        border: 1px solid var(--pcm-line);
+        background: var(--pcm-paper-dim, #f4ead8);
+        min-width: 0;
+      }
+      #player-modal.pcm-active .pcm-keeper-strip-yr {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-pop);
+        letter-spacing: 0.5px;
+      }
+      #player-modal.pcm-active .pcm-keeper-strip-rd {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: var(--pcm-ink);
+        letter-spacing: 0.5px;
+      }
+      #player-modal.pcm-active .pcm-keeper-strip-cost {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 9px;
+        color: #1e7e34;
+        letter-spacing: 0.5px;
+      }
+      /* Hide the strip outside pcm-active mode (e.g. when the non-PCM modal renders) */
+      #player-modal:not(.pcm-active) .pcm-keeper-strip {
+        display: none;
       }
       #player-modal.pcm-active .pcm-chart-card .player-chart-title { display: none; }
       #player-modal.pcm-active .pcm-chart-card .player-chart-canvas-wrap { display: none; }
@@ -26393,6 +26444,7 @@
                   <canvas id="player-history-canvas"></canvas>
                 </div>
               </div>
+              <div class="pcm-keeper-strip" id="player-keeper-strip"></div>
               <div class="player-chart-box pcm-chart-card" id="player-percentile-chart-box">
                 <div class="player-chart-title">Percentile Rank</div>
                 <div class="player-chart-canvas-wrap">
@@ -33339,6 +33391,7 @@
             if (histCanvas) renderPlayerHistoryChart(player, histCanvas);
             if (chartYear === 2026 && pctCanvas) renderPlayerPercentileChart(player, pctCanvas);
           }
+          renderPlayerKeeperStrip(player, chartYear);
         }
       }
 
@@ -33575,6 +33628,74 @@
             <span><i class="sw proj"></i>PROJECTED</span>
             <span><i class="sw curr"></i>CURRENT YR</span>
           </div>`;
+      }
+
+      // Thin keeper-cost strip: shows draft round + dollar cost for '26/'27/'28
+      // so users can see the next three years of keeper progression at a glance.
+      // Lives between the Historical and Percentile charts in the modal right column.
+      let _pcmDraft2026Cache = null;
+      async function renderPlayerKeeperStrip(player, chartYear) {
+        const container = document.getElementById("player-keeper-strip");
+        if (!container) return;
+        container.innerHTML = "";
+        // Only meaningful for the current/upcoming season's keeper outlook.
+        if (chartYear !== 2026) return;
+
+        // Load the 2026 draft data once and cache it.
+        if (!_pcmDraft2026Cache) {
+          try {
+            const r = await fetch("data/current_season/draft.json");
+            if (r.ok) _pcmDraft2026Cache = await r.json();
+          } catch (e) {}
+        }
+        const draft = Array.isArray(_pcmDraft2026Cache) ? _pcmDraft2026Cache : [];
+
+        const nameLower = (player.name || "").toLowerCase().trim();
+        const pick = draft.find(d => (d.player_name || "").toLowerCase() === nameLower);
+        const isProspect = player.selected_position === "NA";
+
+        // Determine the 2026 starting round.
+        // - Prospects: free (round 0) in 2026
+        // - Drafted: the round they were drafted in
+        // - Otherwise (waiver pickup): R22
+        let round2026;
+        if (isProspect) round2026 = 0;
+        else if (pick && pick.round) round2026 = pick.round;
+        else round2026 = 22;
+
+        // Project 2027/2028 using the same rules the Value Suite uses.
+        let round2027, round2028;
+        if (isProspect) {
+          // Conservative assumption: still NA next year → R22 the year after.
+          round2027 = 0;
+          round2028 = 22;
+        } else {
+          round2027 = getKeeperRoundCost(round2026, 22);
+          round2028 = getKeeperRoundCost(round2027, 22);
+        }
+
+        const fmtRound = (r) => r === 0 ? "FREE" : `R${r}`;
+        const fmtCost = (r) => r === 0 ? "—" : `$${getKeeperDollarCost(r)}`;
+
+        container.innerHTML = `
+          <div class="pcm-keeper-strip-grid">
+            <div class="pcm-keeper-strip-cell">
+              <span class="pcm-keeper-strip-yr">'26</span>
+              <span class="pcm-keeper-strip-rd">${fmtRound(round2026)}</span>
+              <span class="pcm-keeper-strip-cost">${fmtCost(round2026)}</span>
+            </div>
+            <div class="pcm-keeper-strip-cell">
+              <span class="pcm-keeper-strip-yr">'27</span>
+              <span class="pcm-keeper-strip-rd">${fmtRound(round2027)}</span>
+              <span class="pcm-keeper-strip-cost">${fmtCost(round2027)}</span>
+            </div>
+            <div class="pcm-keeper-strip-cell">
+              <span class="pcm-keeper-strip-yr">'28</span>
+              <span class="pcm-keeper-strip-rd">${fmtRound(round2028)}</span>
+              <span class="pcm-keeper-strip-cost">${fmtCost(round2028)}</span>
+            </div>
+          </div>
+        `;
       }
 
       // PCM-style percentile rank chart (horizontal bars per window)
