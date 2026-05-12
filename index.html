@@ -33575,9 +33575,13 @@
         const windowKeys = ["ytd", "last7", "last14", "last30"];
         const windowLabels = ["SEASON", "LAST 7", "LAST 14", "LAST 30"];
 
+        // Percentile is computed against the top 60% of the relevant pool —
+        // this prunes the long tail of one-week call-ups and waiver flotsam.
+        // Players outside the top 60% floor at 0.
         const calcPct = (rank, total) => {
           if (rank <= 0 || total <= 0) return 0;
-          return Math.round((1 - (rank - 1) / total) * 100);
+          const denom = Math.max(1, Math.round(total * 0.6));
+          return Math.max(0, Math.round((1 - (rank - 1) / denom) * 100));
         };
 
         const rows = windowKeys.map((wk, i) => {
@@ -34123,9 +34127,14 @@
           const posRank = samePos.findIndex(p => p.name === player.name) + 1;
           const posTotal = samePos.length;
 
+          // Percentile is computed against the top 60% of the relevant pool —
+          // this prunes the long tail of one-week call-ups and waiver flotsam
+          // that bloats Yahoo's raw player list. Players outside the top 60%
+          // floor at 0.
           const calcPct = (rank, total) => {
             if (rank <= 0 || total <= 0) return 0;
-            return ((1 - (rank - 1) / total) * 100);
+            const denom = Math.max(1, Math.round(total * 0.6));
+            return Math.max(0, (1 - (rank - 1) / denom) * 100);
           };
 
           posPercentiles.push(calcPct(posRank, posTotal));

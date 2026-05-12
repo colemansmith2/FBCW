@@ -2810,14 +2810,19 @@ def build_current_season_player_stats_windows_from_mlb(oauth, year: int) -> Dict
                 'end_date': week_end,
             })
 
+    # Rolling "Last N days" windows cover N completed calendar days ending
+    # yesterday — today is excluded because its games may not be finished yet.
+    # Using yesterday as the end means "Last 7" on May 11 spans May 4–10
+    # (7 days), which correctly includes a starter who pitched on May 4.
+    rolling_end_dt = effective_end_dt - timedelta(days=1)
     for days, definition in zip(
         [7, 14, 30],
         [PLAYER_STATS_WINDOW_DEFINITIONS[2], PLAYER_STATS_WINDOW_DEFINITIONS[3], PLAYER_STATS_WINDOW_DEFINITIONS[4]],
     ):
-        window_start = effective_end_dt - timedelta(days=days - 1)
+        window_start = rolling_end_dt - timedelta(days=days - 1)
         clamped_start, clamped_end = clamp_date_range_to_season(
             window_start,
-            effective_end_dt,
+            rolling_end_dt,
             season_start_dt,
             effective_end_dt,
         )
@@ -3382,14 +3387,17 @@ def build_player_stats_windows(oauth, year: int) -> Dict[str, Any]:
             })
 
     if effective_end_dt:
+        # Rolling "Last N days" windows cover N completed days ending yesterday;
+        # today is excluded because its games may not be finished yet.
+        rolling_end_dt = effective_end_dt - timedelta(days=1)
         for days, definition in zip(
             [7, 14, 30],
             [PLAYER_STATS_WINDOW_DEFINITIONS[2], PLAYER_STATS_WINDOW_DEFINITIONS[3], PLAYER_STATS_WINDOW_DEFINITIONS[4]],
         ):
-            window_start = effective_end_dt - timedelta(days=days - 1)
+            window_start = rolling_end_dt - timedelta(days=days - 1)
             clamped_start, clamped_end = clamp_date_range_to_season(
                 window_start,
-                effective_end_dt,
+                rolling_end_dt,
                 season_start_dt,
                 effective_end_dt,
             )
