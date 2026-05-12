@@ -11365,6 +11365,18 @@
       #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-P    { background: #7e57c2; }
       #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-RP,
       #player-modal.pcm-active .pcm-tx-player .pcm-tx-pos.pos-LHP  { background: #00838f; }
+      /* Prospect rank badge — top-100 prospects in trades; light blue matches the call-up bar. */
+      #player-modal.pcm-active .pcm-tx-player .pcm-tx-prospect-rank {
+        font-family: 'Arcade Gamer', monospace;
+        font-size: 8px;
+        background: #81d4fa;
+        color: var(--pcm-ink);
+        border: 1px solid var(--pcm-line);
+        padding: 2px 4px;
+        flex: 0 0 auto;
+        line-height: 1;
+        letter-spacing: .5px;
+      }
       #player-modal.pcm-active .pcm-tx-item {
         background: var(--pcm-paper);
         border: 2px solid var(--pcm-line);
@@ -31683,11 +31695,22 @@
         const posRaw = p.position || p.display_position || "";
         const posList = posRaw ? posRaw.split(/[,\/]/).map(s => s.trim()).filter(Boolean) : [];
         const posBadgesHtml = posList.map(pos => `<span class="pcm-tx-pos pos-${pos}">${pos}</span>`).join("");
-        const subHtml = (mlbLogo || mlbAbbr || posBadgesHtml)
+
+        // Prospect rank badge — show "#N" for top-100 prospects.
+        let prospectBadgeHtml = "";
+        if (p.player_name && typeof getProspectInfo === "function") {
+          const prospect = getProspectInfo(p.player_name);
+          if (prospect && prospect.rank && prospect.rank <= 100) {
+            prospectBadgeHtml = `<span class="pcm-tx-prospect-rank" title="Top-100 prospect (rank #${prospect.rank})">#${prospect.rank}</span>`;
+          }
+        }
+
+        const subHtml = (mlbLogo || mlbAbbr || posBadgesHtml || prospectBadgeHtml)
           ? `<div class="pcm-tx-sub">
               ${mlbLogo ? `<span class="pcm-tx-mlb"><img src="${mlbLogo}" alt="${mlbAbbr}" onerror="this.style.display='none';"></span>` : ""}
               ${mlbAbbr ? `<span class="pcm-tx-mlb-abbr">${mlbAbbr}</span>` : ""}
               ${posBadgesHtml}
+              ${prospectBadgeHtml}
              </div>`
           : "";
         return `
@@ -33429,10 +33452,11 @@
 
         // Y-axis range: 100–600 by default; ceiling extends in 100s if any value > 600.
         // LOW_THRESHOLD (175) is independent of the axis floor — bars below it render at
-        // a fixed BASELINE_HEIGHT_PX and stay flagged as call-up / injured / COVID.
+        // a fixed baseline height (sized to the y=130 mark) and stay flagged as call-up
+        // / injured / COVID.
         const Y_MIN = 100;
         const LOW_THRESHOLD = 175;
-        const BASELINE_HEIGHT_PX = 16;
+        const BASELINE_VAL = 130;
         const maxValBars = Math.max(...bars.map((b) => b.kind === "past" ? b.val : (b.hi || b.proj || b.val || 0)));
         const yMax = Math.max(600, Math.ceil(maxValBars / 100) * 100) || 600;
         const yRange = yMax - Y_MIN;
@@ -33440,6 +33464,7 @@
         // Layout constants must match .pcm-bars CSS
         const containerH = 170, padTop = 14, padBottom = 4;
         const innerH = containerH - padTop - padBottom; // 152
+        const BASELINE_HEIGHT_PX = ((BASELINE_VAL - Y_MIN) / yRange) * innerH;
 
         // Earliest recorded past season — used to distinguish "call-up" (first season)
         // from "injured" (low season in the middle of a career)
