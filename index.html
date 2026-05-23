@@ -8496,25 +8496,51 @@
         /* Header: hat beside name, joined/seasons under name, X in top-right corner. */
         .mp2-mh {
           position: relative;
-          padding: 12px 52px 14px 14px;
-          gap: 12px;
+          /* extra right padding for the absolute X, extra bottom padding for the absolute ACTIVE */
+          padding: 12px 52px 42px 14px;
+          gap: 10px;
           align-items: flex-start;
+          flex-wrap: nowrap;
         }
-        .mp2-mh-center { gap: 8px; }
+        /* Hat shouldn't get squished and shouldn't force the name onto its own row. */
+        .mp2-mh-badge {
+          height: 56px;
+          min-width: 56px;
+          flex-shrink: 0;
+        }
+        .mp2-mh-badge img { width: 42px; height: 42px; }
+        /* Allow the name column to shrink so it stays beside the hat instead of wrapping below it. */
+        .mp2-mh-center {
+          flex: 1 1 0;
+          min-width: 0;
+          gap: 8px;
+        }
         .mp2-mh-name-row {
           flex-direction: column;
           align-items: flex-start;
-          gap: 4px;
+          gap: 3px;
         }
         .mp2-mh-name { font-size: 17px; text-shadow: 2px 2px 0 var(--mp2-navy-deep); }
         .mp2-mh-meta { font-size: 8px; gap: 5px; flex-wrap: wrap; }
-        /* Lift the X out of the flex row and pin it to the top-right corner.
-           Push the ACTIVE badge down so it doesn't collide with the X. */
+        /* Size the 9 trophies so they all fit in a single row in the column next to the hat. */
+        .mp2-trophy-row { gap: 3px; flex-wrap: nowrap; }
+        .mp2-mh .mp2-trophy {
+          width: 24px;
+          height: 24px;
+          flex-shrink: 0;
+        }
+        .mp2-mh .mp2-trophy img { width: 16px; height: 16px; }
+        .mp2-mh .mp2-trophy-count {
+          font-size: 6px;
+          padding: 1px 3px;
+          bottom: -5px;
+          right: -5px;
+        }
+        /* Lift the X + ACTIVE out of the flex row entirely so .mp2-mh-center can
+           use the full remaining width beside the hat. */
         .mp2-mh-right {
           position: static;
-          padding-top: 0;
-          align-self: flex-start;
-          margin-top: 42px;
+          display: contents;
         }
         .mp2-mh-close {
           position: absolute;
@@ -8525,6 +8551,9 @@
           font-size: 11px;
         }
         .mp2-mh-active {
+          position: absolute;
+          bottom: 12px;
+          left: 14px;
           font-size: 8px;
           padding: 5px 7px;
         }
