@@ -6916,6 +6916,1584 @@
         text-align: center;
       }
 
+      /* ============================================================
+         MANAGER PROFILES V2 — retro pixel/arcade card + modal
+         Scoped to .mp2 (cards) and #manager-modal.mp2-modal (modal)
+         ============================================================ */
+
+      .mp2 {
+        --mp2-navy: #0e1b3a;
+        --mp2-navy-deep: #0a1530;
+        --mp2-navy-soft: #1a2a52;
+        --mp2-cream: #f5e6c8;
+        --mp2-cream-deep: #e8d4a0;
+        --mp2-cream-light: #fbf3dd;
+        --mp2-gold-deep: #e6b800;
+        --mp2-gold-dark: #c89c00;
+        --mp2-red-deep: #b3192a;
+        --mp2-green-deep: #1e9c54;
+        --mp2-purple: #a855f7;
+      }
+
+      /* ---- Manager grid v2 (card-stack) ---- */
+      .mp2-manager-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+      }
+      @media (max-width: 768px) {
+        .mp2-manager-grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+        }
+      }
+
+      .mp2-card {
+        background: var(--mp2-cream-light);
+        border: 3px solid var(--mp2-navy);
+        border-radius: 4px;
+        position: relative;
+        cursor: pointer;
+        transition: transform 0.15s, box-shadow 0.15s;
+        box-shadow: 0 4px 0 var(--mp2-navy-deep),
+          0 8px 18px rgba(10, 21, 48, 0.18);
+        /* No overflow:hidden so the trophy hover popup can render below the card. */
+      }
+      .mp2-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 0 var(--mp2-navy-deep),
+          0 12px 24px rgba(10, 21, 48, 0.25);
+      }
+      .mp2-card.inactive {
+        opacity: 0.85;
+      }
+      .mp2-card.inactive .mp2-card-head {
+        background: #5a6479;
+      }
+
+      /* (Corner rivets removed by request — keep .mp2-rivets-b nodes harmless) */
+      .mp2-card .mp2-rivets-b,
+      .mp2-panel .mp2-rivets-b,
+      .mp2-mh-modal .mp2-rivets-b,
+      .mp2-modal-rivets { display: none; }
+
+      /* Header band */
+      .mp2-card-head {
+        background: var(--retro-blue);
+        color: #fff;
+        padding: 12px 14px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        /* keep clean rounded corners now that the parent no longer clips overflow */
+        border-radius: 1px 1px 0 0;
+      }
+      .mp2-card-badge {
+        background: var(--retro-gold);
+        border: 3px solid var(--mp2-navy);
+        border-radius: 4px;
+        padding: 4px 5px;
+        min-width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        box-shadow: 0 2px 0 var(--mp2-navy-deep);
+        position: relative;
+      }
+      .mp2-card-badge img {
+        width: 40px;
+        height: 40px;
+        object-fit: contain;
+      }
+      .mp2-card-badge .mp2-fallback {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 16px;
+        color: var(--mp2-navy);
+      }
+      .mp2-card-name {
+        flex: 1;
+        min-width: 0;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 15px;
+        letter-spacing: 0.04em;
+        line-height: 1.15;
+        text-shadow: 2px 2px 0 var(--mp2-navy-deep);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .mp2-card-status {
+        flex-shrink: 0;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 8px;
+        letter-spacing: 0.06em;
+        padding: 5px 7px;
+        border-radius: 3px;
+        border: 2px solid var(--mp2-navy-deep);
+      }
+      .mp2-card-status.active {
+        background: var(--retro-red);
+        color: #fff;
+      }
+      .mp2-card-status.inactive {
+        background: var(--mp2-cream);
+        color: var(--mp2-navy);
+      }
+
+      /* Hazard tape */
+      .mp2-hazard {
+        height: 8px;
+        background: repeating-linear-gradient(
+          -45deg,
+          var(--retro-gold) 0 8px,
+          var(--retro-red) 8px 16px
+        );
+      }
+      .mp2-yellow-band {
+        height: 6px;
+        background: var(--retro-gold);
+        border-bottom: 2px solid var(--mp2-navy);
+        position: relative;
+      }
+      .mp2-yellow-band::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: repeating-linear-gradient(
+          -45deg,
+          transparent 0 8px,
+          rgba(14, 27, 58, 0.15) 8px 10px
+        );
+      }
+
+      .mp2-card-body {
+        padding: 14px;
+      }
+
+      .mp2-trophy-tiles {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .mp2-trophy {
+        width: 36px;
+        height: 36px;
+        background: var(--mp2-cream-light);
+        border: 2px solid var(--mp2-navy);
+        border-radius: 4px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      /* (trophy corner dots removed) */
+      .mp2-trophy img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+      }
+      .mp2-trophy-count {
+        position: absolute;
+        bottom: -6px;
+        right: -6px;
+        background: var(--mp2-navy);
+        color: var(--retro-gold);
+        font-family: "Arcade Gamer", monospace;
+        font-size: 7px;
+        padding: 2px 4px;
+        border-radius: 3px;
+        border: 1.5px solid var(--retro-gold);
+        line-height: 1;
+      }
+
+      .mp2-stat-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .mp2-stat {
+        background: var(--mp2-cream);
+        border: 2px solid var(--mp2-navy);
+        border-radius: 3px;
+        padding: 7px 9px;
+        position: relative;
+      }
+      /* (stat corner dots removed) */
+      .mp2-stat-label {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 7px;
+        color: var(--mp2-navy);
+        opacity: 0.7;
+        letter-spacing: 0.06em;
+        margin-bottom: 4px;
+      }
+      .mp2-stat-value {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 14px;
+        color: var(--mp2-navy);
+        line-height: 1;
+      }
+      .mp2-stat-value.gold { color: var(--mp2-gold-dark); }
+      .mp2-stat-value.blue { color: var(--retro-blue); }
+      .mp2-stat-value.red { color: var(--mp2-red-deep); }
+      .mp2-stat-value.green { color: var(--mp2-green-deep); }
+      .mp2-stat-sub {
+        font-size: 10px;
+        color: var(--mp2-navy);
+        opacity: 0.55;
+        margin-top: 3px;
+        font-family: "Basis33", "Courier New", monospace;
+      }
+      .mp2-stat-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .mp2-stat-years {
+        font-family: "Basis33", "Courier New", monospace;
+        font-size: 12px;
+        color: var(--mp2-navy);
+        opacity: 0.7;
+        text-align: right;
+        white-space: nowrap;
+        letter-spacing: 0.02em;
+      }
+
+      .mp2-card-foot {
+        background: var(--mp2-cream);
+        border-top: 2px dashed rgba(14, 27, 58, 0.2);
+        padding: 8px 14px;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 8px;
+        color: var(--mp2-navy);
+        opacity: 0.8;
+        letter-spacing: 0.06em;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      /* ============================================================
+         MANAGER MODAL V2
+         ============================================================ */
+
+      #manager-modal.mp2-modal {
+        --mp2-navy: #0e1b3a;
+        --mp2-navy-deep: #0a1530;
+        --mp2-navy-soft: #1a2a52;
+        --mp2-cream: #f5e6c8;
+        --mp2-cream-deep: #e8d4a0;
+        --mp2-cream-light: #fbf3dd;
+        --mp2-gold-deep: #e6b800;
+        --mp2-gold-dark: #c89c00;
+        --mp2-red-deep: #b3192a;
+        --mp2-green-deep: #1e9c54;
+        --mp2-purple: #a855f7;
+        background-color: rgba(10, 21, 48, 0.7);
+        backdrop-filter: blur(2px);
+      }
+      #manager-modal.mp2-modal { padding: 0; }
+      #manager-modal.mp2-modal .modal-content {
+        background: var(--mp2-cream);
+        max-width: 1440px;
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        border: 0;
+        padding: 0;
+        position: relative;
+        box-shadow: 0 0 0 4px var(--mp2-navy), 0 0 60px rgba(0, 0, 0, 0.4);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+      #manager-modal.mp2-modal .modal-body-scroll {
+        flex: 1;
+        overflow: hidden;
+        padding: 0;
+        background: var(--mp2-cream);
+      }
+      /* Inner app grid: side nav (96px) + main column */
+      .mp2-app {
+        display: grid;
+        grid-template-columns: 96px 1fr;
+        height: 100%;
+        min-height: 0;
+      }
+      .mp2-sidenav {
+        background: var(--mp2-navy);
+        display: flex;
+        flex-direction: column;
+        padding: 14px 8px;
+        gap: 6px;
+        border-right: 3px solid var(--mp2-navy-deep);
+        overflow-y: auto;
+      }
+      .mp2-sidenav-brand {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        color: var(--retro-gold);
+        text-align: center;
+        padding: 8px 0 14px;
+        border-bottom: 2px dashed rgba(255, 204, 0, 0.25);
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
+      .mp2-sidenav-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        padding: 12px 4px 10px;
+        border-radius: 6px;
+        background: transparent;
+        border: 2px solid transparent;
+        color: rgba(245, 230, 200, 0.7);
+        cursor: pointer;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 8px;
+        letter-spacing: 0.04em;
+        text-align: center;
+        transition: color 0.12s, background 0.12s;
+        line-height: 1.3;
+      }
+      .mp2-sidenav-btn:hover {
+        color: var(--retro-gold);
+        background: rgba(255, 204, 0, 0.06);
+      }
+      .mp2-sidenav-btn.active {
+        background: var(--retro-gold);
+        color: var(--mp2-navy);
+        border-color: var(--mp2-gold-deep);
+        box-shadow: inset 0 -2px 0 var(--mp2-gold-dark);
+      }
+      .mp2-sidenav-btn svg {
+        width: 22px;
+        height: 22px;
+        stroke: currentColor;
+        fill: none;
+      }
+      .mp2-main {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        min-height: 0;
+        /* visible so trophy popups can render above the header without being clipped.
+           The internal .mp2-main-scroll has its own overflow:auto for body scrolling. */
+        overflow: visible;
+      }
+      .mp2-main-scroll {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
+      }
+      .mp2-bottomnav {
+        display: none;
+      }
+      /* (modal corner rivets removed) */
+
+      /* Hide the legacy close X (we render one inside the new header) */
+      #manager-modal.mp2-modal > .modal-content > .modal-close {
+        display: none;
+      }
+      /* Hide legacy header/body wrappers; v2 builds its own */
+      #manager-modal.mp2-modal #modal-header-section {
+        display: none;
+      }
+      #manager-modal.mp2-modal .modal-body-scroll {
+        padding: 0;
+        overflow-y: auto;
+        flex: 1;
+        background: var(--mp2-cream);
+      }
+
+      /* Header band */
+      .mp2-mh {
+        background: var(--retro-blue);
+        color: #fff;
+        padding: 14px 20px 16px;
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        border-bottom: 4px solid var(--mp2-navy);
+        flex-wrap: wrap;
+      }
+      .mp2-mh-badge {
+        background: var(--retro-gold);
+        border: 3px solid var(--mp2-navy);
+        border-radius: 4px;
+        padding: 6px 7px;
+        height: 60px;
+        min-width: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 0 var(--mp2-navy-deep);
+        flex-shrink: 0;
+        position: relative;
+      }
+      .mp2-mh-badge img { width: 46px; height: 46px; object-fit: contain; }
+      .mp2-mh-badge .mp2-fallback {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 20px;
+        color: var(--mp2-navy);
+      }
+      .mp2-mh-center {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .mp2-mh-name-row {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .mp2-mh-name {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 22px;
+        letter-spacing: 0.04em;
+        line-height: 1;
+        text-shadow: 3px 3px 0 var(--mp2-navy-deep);
+      }
+      .mp2-mh-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        letter-spacing: 0.06em;
+        color: rgba(255, 255, 255, 0.9);
+        flex-wrap: wrap;
+      }
+      .mp2-mh-dot { opacity: 0.5; }
+      .mp2-mh-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-shrink: 0;
+        padding-top: 2px;
+      }
+      .mp2-mh-active {
+        background: var(--retro-red);
+        color: #fff;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        padding: 7px 10px;
+        border-radius: 4px;
+        border: 2px solid var(--mp2-navy);
+        box-shadow: 0 2px 0 var(--mp2-navy-deep);
+        letter-spacing: 0.04em;
+      }
+      .mp2-mh-close {
+        background: var(--mp2-navy);
+        color: #fff;
+        width: 34px;
+        height: 34px;
+        border-radius: 4px;
+        border: 2px solid var(--mp2-navy-deep);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 13px;
+        cursor: pointer;
+        box-shadow: 0 2px 0 #000;
+      }
+      .mp2-mh-close:hover { background: var(--mp2-navy-soft); }
+
+      .mp2-trophy-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .mp2-mh .mp2-trophy {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: var(--mp2-navy);
+      }
+      .mp2-mh .mp2-trophy.locked {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: rgba(255, 204, 0, 0.4);
+      }
+      .mp2-mh .mp2-trophy.locked img {
+        filter: grayscale(1) brightness(1.4) opacity(0.4);
+      }
+
+      /* (Horizontal tab bar removed — replaced by .mp2-sidenav / .mp2-bottomnav) */
+
+      .mp2-content {
+        padding: 18px;
+        background: var(--mp2-cream);
+      }
+      .mp2-content h3.mp2-section-title {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 14px;
+        color: var(--mp2-navy);
+        margin: 0 0 14px;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .mp2-content h3.mp2-section-title::before {
+        content: "";
+        width: 12px;
+        height: 12px;
+        background: var(--retro-gold);
+        border: 2px solid var(--mp2-navy);
+        display: inline-block;
+      }
+
+      /* Panel */
+      .mp2-panel {
+        background: var(--mp2-cream-light);
+        border: 3px solid var(--mp2-navy);
+        border-radius: 4px;
+        position: relative;
+        box-shadow: 0 4px 0 var(--mp2-navy-deep);
+        margin-bottom: 14px;
+      }
+      /* (panel corner rivets removed) */
+      .mp2-panel-head {
+        background: var(--mp2-navy);
+        color: var(--retro-gold);
+        padding: 9px 14px 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid var(--mp2-navy-deep);
+      }
+      .mp2-panel-head .mp2-icon-box {
+        width: 12px;
+        height: 12px;
+        background: var(--retro-gold);
+        border: 1px solid var(--mp2-gold-deep);
+        flex-shrink: 0;
+      }
+      .mp2-panel-head .mp2-count {
+        margin-left: auto;
+        background: var(--retro-gold);
+        color: var(--mp2-navy);
+        font-size: 10px;
+        padding: 3px 6px;
+        border-radius: 2px;
+        line-height: 1;
+        border: 1px solid var(--mp2-gold-deep);
+      }
+      .mp2-panel-body { padding: 14px; }
+
+      /* Career stat grids */
+      .mp2-career-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      @media (max-width: 768px) {
+        .mp2-career-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+      }
+
+      .mp2-draft-grade {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 18px;
+        align-items: center;
+      }
+      .mp2-grade-circle {
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 34px;
+        border: 4px solid;
+        box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.12),
+          0 4px 0 var(--mp2-navy-deep);
+      }
+      .mp2-grade-rank {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 13px;
+        color: var(--mp2-navy);
+        letter-spacing: 0.04em;
+        margin-bottom: 6px;
+      }
+      .mp2-grade-sub {
+        font-size: 12px;
+        color: var(--mp2-navy);
+        opacity: 0.7;
+        margin-bottom: 10px;
+      }
+      .mp2-grade-chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .mp2-grade-chip {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        padding: 4px 7px;
+        border-radius: 3px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border: 2px solid;
+      }
+      .mp2-grade-chip .mp2-yr { opacity: 0.7; }
+
+      /* Seasons timeline */
+      .mp2-timeline {
+        position: relative;
+        padding: 10px 0 30px;
+      }
+      .mp2-timeline-spine {
+        position: absolute;
+        left: 36px;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: repeating-linear-gradient(
+          180deg,
+          var(--mp2-navy) 0 6px,
+          transparent 6px 10px
+        );
+        z-index: 0;
+      }
+      @media (max-width: 768px) {
+        .mp2-timeline-spine { left: 22px; }
+      }
+      .mp2-season-row {
+        position: relative;
+        padding-left: 86px;
+        margin-bottom: 18px;
+      }
+      @media (max-width: 768px) {
+        .mp2-season-row { padding-left: 60px; }
+      }
+      .mp2-season-node {
+        position: absolute;
+        left: 12px;
+        top: 14px;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        border: 4px solid;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+        box-shadow: 0 3px 0 var(--mp2-navy-deep);
+        font-family: "Arcade Gamer", monospace;
+        font-size: 15px;
+        line-height: 1;
+      }
+      .mp2-season-node .mp2-yr-apos {
+        margin-right: -0.35em;
+        position: relative;
+        top: -0.05em;
+      }
+      @media (max-width: 768px) {
+        .mp2-season-node {
+          left: 2px;
+          top: 10px;
+          width: 42px;
+          height: 42px;
+          border-width: 3px;
+          font-size: 12px;
+        }
+      }
+      .mp2-season-card {
+        background: var(--mp2-cream-light);
+        border: 3px solid var(--mp2-navy);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .mp2-season-banner {
+        padding: 6px 14px;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 10px;
+        letter-spacing: 0.06em;
+        border-bottom: 2px solid var(--mp2-navy);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .mp2-season-head {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 14px;
+        align-items: center;
+        padding: 14px 16px;
+        border-bottom: 2px dashed rgba(14, 27, 58, 0.15);
+      }
+      @media (max-width: 768px) {
+        .mp2-season-head {
+          grid-template-columns: 1fr;
+          gap: 10px;
+          padding: 12px;
+        }
+      }
+      .mp2-season-team {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        min-width: 0;
+        flex-wrap: wrap;
+      }
+      .mp2-season-placement {
+        position: relative;
+        background: var(--mp2-cream);
+        border: 2px solid var(--mp2-navy);
+        border-radius: 3px;
+        padding: 6px 8px;
+        min-width: 46px;
+        text-align: center;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 13px;
+        color: var(--mp2-navy);
+        line-height: 1;
+        flex-shrink: 0;
+        box-shadow: 0 2px 0 var(--mp2-navy-deep);
+      }
+      .mp2-season-placement.champion { background: var(--retro-gold); border-color: var(--mp2-gold-dark); }
+      .mp2-season-placement.silver { background: #e3e3e3; border-color: #8c8c8c; }
+      .mp2-season-placement.bronze { background: #cd7f32; border-color: #8a531e; color: #fff; }
+      .mp2-season-placement.live { background: var(--retro-blue); border-color: var(--retro-gold); color: #fff; }
+      .mp2-season-placement-ring {
+        position: absolute;
+        top: -16px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 28px;
+        height: 28px;
+        object-fit: contain;
+        filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.4));
+        pointer-events: none;
+      }
+      .mp2-season-logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        border: 2px solid var(--mp2-navy);
+        background: var(--mp2-cream);
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+      .mp2-season-team-name {
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--mp2-navy);
+        line-height: 1.15;
+      }
+      .mp2-season-stats { display: flex; gap: 8px; }
+      .mp2-season-stat {
+        background: var(--mp2-cream);
+        border: 2px solid var(--mp2-navy);
+        padding: 6px 10px;
+        border-radius: 3px;
+        min-width: 78px;
+        text-align: center;
+      }
+      .mp2-season-stat-label {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 8px;
+        color: var(--mp2-navy);
+        opacity: 0.6;
+        letter-spacing: 0.06em;
+      }
+      .mp2-season-stat-value {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 13px;
+        color: var(--mp2-navy);
+        margin-top: 4px;
+      }
+      .mp2-season-body {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        padding: 12px 16px 14px;
+      }
+      @media (max-width: 768px) {
+        .mp2-season-body { grid-template-columns: 1fr; padding: 10px 12px 12px; gap: 8px; }
+      }
+      .mp2-season-subhead {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 8px;
+        color: var(--mp2-navy);
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+        opacity: 0.85;
+      }
+      .mp2-icon-box-s {
+        width: 10px;
+        height: 10px;
+        background: var(--retro-gold);
+        border: 1px solid var(--mp2-gold-deep);
+        display: inline-block;
+      }
+
+      /* Player row inside seasons / transactions */
+      .mp2-player-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--mp2-cream);
+        border: 2px solid var(--mp2-navy);
+        border-radius: 3px;
+        padding: 6px 9px;
+        position: relative;
+      }
+      .mp2-player-headshot {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        border: 2px solid var(--mp2-navy);
+        background: #fff;
+        object-fit: cover;
+        flex-shrink: 0;
+      }
+      .mp2-player-info { flex: 1; min-width: 0; }
+      .mp2-player-label {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 7px;
+        color: var(--mp2-navy);
+        opacity: 0.65;
+        letter-spacing: 0.06em;
+        margin-bottom: 2px;
+      }
+      .mp2-player-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--mp2-navy);
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .mp2-player-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 4px;
+      }
+      .mp2-player-meta img {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+      }
+      .mp2-team-abbr {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 8px;
+        color: var(--mp2-navy);
+        opacity: 0.7;
+        letter-spacing: 0.04em;
+      }
+      .mp2-pos-chip {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 8px;
+        font-weight: 700;
+        padding: 4px 5px;
+        border-radius: 3px;
+        border: 1.5px solid var(--mp2-navy);
+        line-height: 1;
+        min-width: 22px;
+        text-align: center;
+        margin-right: 2px;
+      }
+      .mp2-pos-chip.pos-C { color: var(--pos-c-dark); background: var(--pos-c-light); border-color: var(--pos-c-dark); }
+      .mp2-pos-chip.pos-1B { color: var(--pos-1b-dark); background: var(--pos-1b-light); border-color: var(--pos-1b-dark); }
+      .mp2-pos-chip.pos-2B { color: var(--pos-2b-dark); background: var(--pos-2b-light); border-color: var(--pos-2b-dark); }
+      .mp2-pos-chip.pos-3B { color: var(--pos-3b-dark); background: var(--pos-3b-light); border-color: var(--pos-3b-dark); }
+      .mp2-pos-chip.pos-SS { color: var(--pos-ss-dark); background: var(--pos-ss-light); border-color: var(--pos-ss-dark); }
+      .mp2-pos-chip.pos-OF,
+      .mp2-pos-chip.pos-LF,
+      .mp2-pos-chip.pos-CF,
+      .mp2-pos-chip.pos-RF { color: var(--pos-of-dark); background: var(--pos-of-light); border-color: var(--pos-of-dark); }
+      .mp2-pos-chip.pos-DH,
+      .mp2-pos-chip.pos-Util { color: var(--pos-dh-dark); background: var(--pos-dh-light); border-color: var(--pos-dh-dark); }
+      .mp2-pos-chip.pos-SP { color: var(--pos-sp-dark); background: var(--pos-sp-light); border-color: var(--pos-sp-dark); }
+      .mp2-pos-chip.pos-RP { color: var(--pos-rp-dark); background: var(--pos-rp-light); border-color: var(--pos-rp-dark); }
+      .mp2-pos-chip.pos-P { color: var(--pos-p-dark); background: var(--pos-p-light); border-color: var(--pos-p-dark); }
+      .mp2-player-pts {
+        text-align: right;
+        flex-shrink: 0;
+      }
+      .mp2-player-pts-num {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 16px;
+        color: var(--mp2-gold-dark);
+        line-height: 1;
+      }
+      .mp2-player-pts-sub {
+        font-size: 10px;
+        color: var(--mp2-navy);
+        opacity: 0.6;
+        margin-top: 3px;
+        font-family: "Basis33", "Courier New", monospace;
+      }
+
+      /* Add/drop +/- badge to the left of the headshot in the Moves transactions list */
+      .mp2-tx-kind-badge {
+        flex-shrink: 0;
+        box-sizing: border-box;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 2px solid var(--mp2-navy);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1;
+        box-shadow: 2px 2px 0 0 var(--mp2-navy);
+      }
+      .mp2-tx-kind-added { background: var(--retro-green); }
+      .mp2-tx-kind-dropped {
+        background: var(--retro-red);
+        /* the "−" glyph sits low on its baseline in Arcade Gamer; nudge it up */
+        padding-bottom: 4px;
+      }
+
+      /* Moves section: use the chunky Arcade font for player names, solid position badges */
+      .mp2-tx-card .mp2-player-row .mp2-player-name,
+      .mp2-player-row-tx .mp2-player-name {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 11px;
+        font-weight: 400;
+        line-height: 1.25;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+      /* Solid position badges — used in Moves cards and in Seasons best batter/pitcher rows */
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip,
+      .mp2-player-row-tx .mp2-pos-chip,
+      .mp2-season-batter .mp2-pos-chip,
+      .mp2-season-pitcher .mp2-pos-chip {
+        color: #fff;
+        background: var(--mp2-navy);
+        border-color: var(--mp2-navy);
+      }
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-C,
+      .mp2-player-row-tx .mp2-pos-chip.pos-C,
+      .mp2-season-batter .mp2-pos-chip.pos-C,
+      .mp2-season-pitcher .mp2-pos-chip.pos-C   { background: #4a148c; border-color: var(--mp2-navy); }
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-1B,
+      .mp2-player-row-tx .mp2-pos-chip.pos-1B,
+      .mp2-season-batter .mp2-pos-chip.pos-1B,
+      .mp2-season-pitcher .mp2-pos-chip.pos-1B  { background: #1565c0; border-color: var(--mp2-navy); }
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-2B,
+      .mp2-player-row-tx .mp2-pos-chip.pos-2B,
+      .mp2-season-batter .mp2-pos-chip.pos-2B,
+      .mp2-season-pitcher .mp2-pos-chip.pos-2B  { background: #e65100; border-color: var(--mp2-navy); }
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-3B,
+      .mp2-player-row-tx .mp2-pos-chip.pos-3B,
+      .mp2-season-batter .mp2-pos-chip.pos-3B,
+      .mp2-season-pitcher .mp2-pos-chip.pos-3B  { background: #b71c1c; border-color: var(--mp2-navy); }
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-SS,
+      .mp2-player-row-tx .mp2-pos-chip.pos-SS,
+      .mp2-season-batter .mp2-pos-chip.pos-SS,
+      .mp2-season-pitcher .mp2-pos-chip.pos-SS  { background: #9c7c00; border-color: var(--mp2-navy); }
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-OF,
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-LF,
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-CF,
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-RF,
+      .mp2-player-row-tx .mp2-pos-chip.pos-OF,
+      .mp2-player-row-tx .mp2-pos-chip.pos-LF,
+      .mp2-player-row-tx .mp2-pos-chip.pos-CF,
+      .mp2-player-row-tx .mp2-pos-chip.pos-RF,
+      .mp2-season-batter .mp2-pos-chip.pos-OF,
+      .mp2-season-batter .mp2-pos-chip.pos-LF,
+      .mp2-season-batter .mp2-pos-chip.pos-CF,
+      .mp2-season-batter .mp2-pos-chip.pos-RF,
+      .mp2-season-pitcher .mp2-pos-chip.pos-OF  { background: #2e7d32; border-color: var(--mp2-navy); }
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-DH,
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-Util,
+      .mp2-player-row-tx .mp2-pos-chip.pos-DH,
+      .mp2-player-row-tx .mp2-pos-chip.pos-Util,
+      .mp2-season-batter .mp2-pos-chip.pos-DH,
+      .mp2-season-batter .mp2-pos-chip.pos-Util,
+      .mp2-season-pitcher .mp2-pos-chip.pos-DH,
+      .mp2-season-pitcher .mp2-pos-chip.pos-Util { background: #546e7a; border-color: var(--mp2-navy); }
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-SP,
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-P,
+      .mp2-player-row-tx .mp2-pos-chip.pos-SP,
+      .mp2-player-row-tx .mp2-pos-chip.pos-P,
+      .mp2-season-batter .mp2-pos-chip.pos-SP,
+      .mp2-season-batter .mp2-pos-chip.pos-P,
+      .mp2-season-pitcher .mp2-pos-chip.pos-SP,
+      .mp2-season-pitcher .mp2-pos-chip.pos-P   { background: #7e57c2; border-color: var(--mp2-navy); }
+      .mp2-tx-card .mp2-player-row .mp2-pos-chip.pos-RP,
+      .mp2-player-row-tx .mp2-pos-chip.pos-RP,
+      .mp2-season-batter .mp2-pos-chip.pos-RP,
+      .mp2-season-pitcher .mp2-pos-chip.pos-RP  { background: #00838f; border-color: var(--mp2-navy); }
+
+      /* H2H */
+      .mp2-content h3.mp2-section-title.mp2-section-title-h2h {
+        flex-wrap: wrap;
+        row-gap: 4px;
+      }
+      .mp2-section-title-h2h .mp2-section-title-text {
+        white-space: nowrap;
+      }
+      .mp2-h2h-hint {
+        margin: 0 0 0 auto;
+        padding: 0;
+        font-size: 10px;
+        color: var(--mp2-navy);
+        opacity: 0.65;
+        font-family: "Basis33", "Courier New", monospace;
+        letter-spacing: 0.02em;
+        text-align: right;
+        font-weight: 400;
+        text-transform: none;
+      }
+      .mp2-h2h-table-wrap {
+        overflow-x: auto;
+        padding: 0;
+        border: 3px solid var(--mp2-navy);
+        border-radius: 4px;
+        background: var(--mp2-cream-light);
+      }
+      .mp2-h2h-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "Basis33", "Courier New", monospace;
+        background: var(--mp2-cream-light);
+        table-layout: auto;
+      }
+      .mp2-h2h-table th.mp2-col-record,
+      .mp2-h2h-table td.mp2-col-record { width: 110px; }
+      .mp2-h2h-table th.mp2-col-pf,
+      .mp2-h2h-table th.mp2-col-pa,
+      .mp2-h2h-table td.mp2-col-pf,
+      .mp2-h2h-table td.mp2-col-pa { width: 90px; }
+      .mp2-h2h-table th.mp2-col-arrow,
+      .mp2-h2h-table td.mp2-col-arrow { width: 28px; }
+      .mp2-h2h-table th {
+        background: var(--mp2-navy);
+        color: var(--retro-gold);
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        letter-spacing: 0.06em;
+        padding: 9px 10px;
+        text-align: left;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+        border-bottom: 3px solid var(--mp2-navy-deep);
+      }
+      .mp2-h2h-table th.num { text-align: right; }
+      .mp2-h2h-table th .mp2-sort-arrow {
+        opacity: 1;
+        margin-left: 4px;
+        font-size: 8px;
+        display: inline-block;
+      }
+      .mp2-h2h-table td {
+        padding: 9px 10px;
+        border-bottom: 1px dashed rgba(14, 27, 58, 0.15);
+        font-size: 13px;
+        color: var(--mp2-navy);
+      }
+      .mp2-h2h-table tbody tr {
+        cursor: pointer;
+        transition: background 0.1s;
+      }
+      .mp2-h2h-table tbody tr:hover { background: var(--mp2-cream); }
+      .mp2-h2h-table tbody tr:last-child td { border-bottom: none; }
+      .mp2-h2h-table td.num {
+        text-align: right;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 11px;
+      }
+      .mp2-h2h-opp {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .mp2-h2h-opp img {
+        width: 26px;
+        height: 26px;
+        object-fit: cover;
+        border-radius: 50%;
+        border: 2px solid var(--mp2-navy);
+        background: #fff;
+        flex-shrink: 0;
+      }
+      /* Fix WIN % column so 100.0% doesn't squeeze neighbors */
+      .mp2-h2h-table th.mp2-col-winpct,
+      .mp2-h2h-table td.mp2-col-winpct { width: 180px; }
+      .mp2-h2h-winbar-wrap {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        justify-content: flex-end;
+        width: 100%;
+      }
+      .mp2-h2h-winbar-pct {
+        min-width: 58px;
+        text-align: right;
+        flex-shrink: 0;
+      }
+      .mp2-h2h-winbar {
+        width: 60px;
+        height: 8px;
+        background: var(--mp2-cream-deep);
+        border: 1.5px solid var(--mp2-navy);
+        border-radius: 2px;
+        overflow: hidden;
+        position: relative;
+        flex-shrink: 0;
+      }
+      .mp2-h2h-winbar-fill {
+        position: absolute;
+        inset: 0;
+      }
+      .mp2-h2h-arrow {
+        width: 24px;
+        text-align: center;
+        color: var(--retro-blue);
+        opacity: 0.5;
+        font-size: 16px;
+      }
+
+      /* Nested matchup modal — opaque overlay so parent doesn't bleed through */
+      .mp2-mh-modal-overlay {
+        /* Define mp2 vars locally — overlay is a direct child of body */
+        --mp2-navy: #0e1b3a;
+        --mp2-navy-deep: #0a1530;
+        --mp2-cream: #f5e6c8;
+        --mp2-cream-deep: #e8d4a0;
+        --mp2-cream-light: #fbf3dd;
+        --mp2-gold-deep: #e6b800;
+        --mp2-gold-dark: #c89c00;
+        --mp2-red-deep: #b3192a;
+        --mp2-green-deep: #1e9c54;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 21, 48, 0.92);
+        backdrop-filter: blur(8px);
+        z-index: 1200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+      }
+      .mp2-mh-modal {
+        background: var(--mp2-cream-light);
+        border: 4px solid var(--mp2-navy);
+        border-radius: 6px;
+        max-width: 760px;
+        width: 100%;
+        max-height: 88vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 6px 0 var(--mp2-navy-deep),
+          0 12px 36px rgba(0, 0, 0, 0.6);
+        position: relative;
+        overflow: hidden;
+      }
+      /* (mh-modal corner rivets removed) */
+      .mp2-mh-modal-head {
+        background: var(--mp2-navy);
+        color: var(--retro-gold);
+        padding: 10px 14px;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .mp2-mh-modal-head img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+      }
+      .mp2-mh-modal-close {
+        margin-left: auto;
+        background: var(--retro-red);
+        color: #fff;
+        border: 2px solid var(--retro-gold);
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        padding: 4px 8px;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      .mp2-mh-modal-body {
+        padding: 14px;
+        overflow-y: auto;
+      }
+      .mp2-mh-summary {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
+        margin-bottom: 14px;
+      }
+      @media (max-width: 600px) {
+        .mp2-mh-summary { grid-template-columns: repeat(2, 1fr); }
+      }
+      .mp2-mh-list {
+        border: 2px solid var(--mp2-navy);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .mp2-mh-list-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: "Basis33", "Courier New", monospace;
+      }
+      .mp2-mh-list-table th {
+        background: var(--mp2-navy);
+        color: var(--retro-gold);
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        padding: 8px 10px;
+        text-align: left;
+        letter-spacing: 0.06em;
+      }
+      .mp2-mh-list-table td {
+        padding: 8px 10px;
+        font-size: 13px;
+        color: var(--mp2-navy);
+        border-bottom: 1px dashed rgba(14, 27, 58, 0.15);
+      }
+      .mp2-mh-list-table tbody tr:last-child td { border-bottom: none; }
+      .mp2-mh-list-table td.yr,
+      .mp2-mh-list-table td.wk {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 11px;
+      }
+      .mp2-mh-list-table td.wk { opacity: 0.7; width: 36px; }
+      .mp2-mh-list-table td.score {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 12px;
+        text-align: right;
+      }
+      .mp2-mh-list-table td.score.win { color: var(--mp2-green-deep); }
+      .mp2-mh-list-table td.result { text-align: center; width: 48px; }
+      .mp2-result-badge {
+        display: inline-block;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        padding: 4px 6px;
+        border-radius: 2px;
+        border: 2px solid var(--mp2-navy);
+        color: #fff;
+        line-height: 1;
+      }
+      .mp2-result-badge.w { background: var(--retro-green); }
+      .mp2-result-badge.l { background: var(--retro-red); }
+      .mp2-result-badge.t { background: var(--retro-orange); }
+
+      /* Moves tab */
+      .mp2-tx-filters {
+        display: grid;
+        gap: 12px;
+      }
+      .mp2-tx-filter-label {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        color: var(--mp2-navy);
+        opacity: 0.65;
+        letter-spacing: 0.06em;
+        margin-bottom: 6px;
+      }
+      .mp2-tx-filter-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .mp2-tx-chip {
+        background: var(--mp2-cream);
+        color: var(--mp2-navy);
+        border: 2px solid var(--mp2-navy);
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        padding: 5px 8px;
+        border-radius: 3px;
+        cursor: pointer;
+        letter-spacing: 0.06em;
+      }
+      .mp2-tx-chip.active {
+        color: #fff;
+        background: var(--mp2-navy);
+        box-shadow: 0 2px 0 var(--mp2-navy-deep);
+      }
+      .mp2-tx-chip.active.trade { background: var(--mp2-purple); }
+      .mp2-tx-chip.active.add { background: var(--retro-blue); }
+      .mp2-tx-chip.active.drop { background: var(--retro-red); }
+      .mp2-tx-chip.active.add_drop { background: var(--retro-orange); }
+
+      .mp2-tx-card {
+        background: var(--mp2-cream-light);
+        border: 2px solid var(--mp2-navy);
+        border-radius: 3px;
+        overflow: hidden;
+        position: relative;
+      }
+      /* (tx-card corner dots removed) */
+      .mp2-tx-card-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 12px;
+        background: var(--mp2-cream);
+        border-bottom: 2px dashed rgba(14, 27, 58, 0.15);
+        flex-wrap: wrap;
+      }
+      .mp2-tx-typechip {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        padding: 4px 7px;
+        border-radius: 2px;
+        border: 2px solid var(--mp2-navy);
+        color: #fff;
+        line-height: 1;
+      }
+      .mp2-tx-typechip.trade { background: var(--mp2-purple); }
+      .mp2-tx-typechip.add { background: var(--retro-blue); }
+      .mp2-tx-typechip.drop { background: var(--retro-red); }
+      .mp2-tx-typechip.add_drop { background: var(--retro-orange); }
+      .mp2-tx-date {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        color: var(--mp2-navy);
+        opacity: 0.7;
+      }
+      .mp2-tx-counterparty { margin-left: auto; }
+      .mp2-tx-mgr-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--mp2-navy);
+      }
+      .mp2-tx-mgr-pill img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+      }
+      .mp2-tx-body { padding: 10px 12px; }
+      .mp2-tx-trade-grid {
+        display: grid;
+        grid-template-columns: 1fr 80px 1fr;
+        gap: 10px;
+        align-items: start;
+      }
+      @media (max-width: 600px) {
+        .mp2-tx-trade-grid { grid-template-columns: 1fr; gap: 6px; }
+      }
+      .mp2-tx-trade-header {
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        letter-spacing: 0.06em;
+        margin-bottom: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        min-height: 24px;
+      }
+      .mp2-tx-trade-header-label { flex-shrink: 0; }
+      .mp2-tx-trade-mgr {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-left: auto;
+        min-width: 0;
+        color: var(--mp2-navy);
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        letter-spacing: 0.04em;
+      }
+      .mp2-tx-trade-mgr img {
+        width: 24px;
+        height: 24px;
+        object-fit: contain;
+        flex-shrink: 0;
+      }
+      .mp2-tx-trade-mgr-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .mp2-tx-trade-arrow {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 10px;
+        color: var(--retro-red);
+        letter-spacing: 0.1em;
+        white-space: nowrap;
+        /* aligns vertically with the first player row, accounting for the taller
+           manager-pill header (24px hat + 7px margin-bottom) */
+        padding-top: 35px;
+      }
+      .mp2-tx-pickrow {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        background: var(--mp2-cream);
+        border: 2px solid var(--mp2-navy);
+        border-radius: 3px;
+        padding: 6px 9px;
+      }
+      .mp2-tx-pickbadge {
+        background: var(--retro-blue);
+        color: #fff;
+        border: 2px solid var(--mp2-navy);
+        font-family: "Arcade Gamer", monospace;
+        font-size: 8px;
+        padding: 3px 5px;
+        border-radius: 2px;
+      }
+      .mp2-tx-pick-label {
+        font-family: "Arcade Gamer", monospace;
+        font-weight: 400;
+        font-size: 11px;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--mp2-navy);
+      }
+
+      .mp2-tx-empty {
+        padding: 30px 16px;
+        text-align: center;
+        font-family: "Arcade Gamer", monospace;
+        font-size: 11px;
+        color: var(--mp2-navy);
+        opacity: 0.4;
+        border: 2px dashed var(--mp2-navy);
+        border-radius: 4px;
+        background: var(--mp2-cream-light);
+      }
+
+      /* Award hover popover (cards + modal) — popover BELOW the trophy.
+         Parents (.mp2-card, .mp2-main) drop overflow:hidden so the popup is not clipped. */
+      .mp2-trophy { cursor: default; }
+      .mp2-trophy-tip {
+        display: none;
+        position: absolute;
+        top: calc(100% + 10px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--mp2-navy);
+        color: var(--mp2-cream);
+        border: 2px solid var(--retro-gold);
+        font-family: "Arcade Gamer", monospace;
+        font-size: 9px;
+        padding: 6px 9px;
+        border-radius: 3px;
+        white-space: nowrap;
+        z-index: 200;
+        letter-spacing: 0.04em;
+        pointer-events: none;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+        text-align: center;
+        line-height: 1.4;
+      }
+      .mp2-trophy-tip::after {
+        content: "";
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(50%) rotate(45deg);
+        width: 8px;
+        height: 8px;
+        background: var(--mp2-navy);
+        border-left: 2px solid var(--retro-gold);
+        border-top: 2px solid var(--retro-gold);
+      }
+      .mp2-trophy-tip-years {
+        margin-top: 4px;
+        font-size: 8px;
+        color: var(--retro-gold-light, #ffe066);
+        opacity: 0.95;
+      }
+      .mp2-trophy:hover .mp2-trophy-tip { display: block; }
+
+      /* Mobile tweaks — hide side nav, show bottom nav */
+      @media (max-width: 768px) {
+        .mp2-app {
+          grid-template-columns: 1fr;
+        }
+        .mp2-sidenav { display: none; }
+        .mp2-bottomnav {
+          display: flex;
+          position: sticky;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          background: var(--mp2-navy);
+          border-top: 3px solid var(--mp2-navy-deep);
+          padding: 6px 4px 8px;
+          gap: 2px;
+          z-index: 50;
+          box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.3);
+        }
+        .mp2-bottomnav-btn {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 3px;
+          padding: 8px 2px 6px;
+          background: transparent;
+          border: none;
+          color: rgba(245, 230, 200, 0.7);
+          font-family: "Arcade Gamer", monospace;
+          font-size: 7.5px;
+          letter-spacing: 0.04em;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+        .mp2-bottomnav-btn.active {
+          color: var(--retro-gold);
+          background: rgba(255, 204, 0, 0.1);
+        }
+        .mp2-bottomnav-btn svg {
+          width: 20px;
+          height: 20px;
+          stroke: currentColor;
+          fill: none;
+        }
+        .mp2-main { overflow: visible; }
+        .mp2-main-scroll { padding-bottom: 80px; }
+        .mp2-mh-name { font-size: 17px; text-shadow: 2px 2px 0 var(--mp2-navy-deep); }
+        .mp2-mh-meta { font-size: 8px; gap: 5px; }
+        .mp2-content { padding: 12px; }
+        .mp2-career-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .mp2-grade-circle { width: 76px; height: 76px; font-size: 26px; }
+        .mp2-stat-value { font-size: 12px; }
+        .mp2-draft-grade { gap: 12px; }
+        .mp2-h2h-table th.mp2-col-winpct,
+        .mp2-h2h-table td.mp2-col-winpct { width: 140px; }
+      }
+
       /* Global award badge styles (for modal and other uses) */
       .awards-row {
         display: flex;
@@ -26541,7 +28119,7 @@
         </div>
         <div id="managers-error" class="error" style="display: none"></div>
 
-        <div class="manager-grid" id="manager-grid"></div>
+        <div class="mp2 mp2-manager-grid" id="manager-grid"></div>
 
         <!-- Win Percentage Over Time Chart -->
         <div
@@ -40460,127 +42038,97 @@
           allManagersData.forEach((manager) => {
             const isActive = currentManagers.includes(manager.manager_name);
             const card = document.createElement("div");
-            card.className = isActive
-              ? "manager-card"
-              : "manager-card inactive";
+            card.className = isActive ? "mp2-card" : "mp2-card inactive";
             card.onclick = () => showManagerDetail(manager.manager_name);
 
-            // Get last season played
             const lastSeason = Math.max(
               ...manager.season_history.map((s) => s.year),
             );
 
-            // Get logo if available, add ring badge if most recent champion
-            const isCurrentChampion =
-              manager.manager_name === mostRecentChampion;
-            let logo = "";
-            if (managerLogos[manager.manager_name]) {
-              logo = `<div class="manager-logo-wrapper">
-                            <img src="${managerLogos[manager.manager_name]}" class="manager-logo" alt="${manager.manager_name}">
-                            ${isCurrentChampion ? '<img src="champion_ring.png" class="manager-ring-badge" alt="Current Champion">' : ""}
-                        </div>`;
-            }
+            // Badge image — hat with team-logo fallback; hide entirely if neither loads.
+            const hatUrl = `data/hats/${getManagerHatFilename(manager.manager_name)}`;
+            const teamLogoUrl = managerLogos[manager.manager_name] || "";
+            const badgeImgHTML = `<img src="${hatUrl}" alt=""
+              onerror="${teamLogoUrl ? `this.onerror=null; this.src='${teamLogoUrl}'; this.style.borderRadius='50%';` : `this.style.display='none';`}">`;
 
-            // Build awards display
+            // Build trophy tiles from awards data
             const awards = managerAwards[manager.manager_name] || {};
-            let awardsHTML = "";
-
-            const awardsList = [];
-            if (awards.championships)
-              awardsList.push({
-                type: "image",
-                src: "champion_ring.png",
-                count: awards.championships,
-                alt: "Championship",
+            const trophyDefs = [
+              { key: "championships", src: "champion_ring.png", alt: "FBCW Champion", yearsKey: "championshipYears" },
+              { key: "regularSeason", src: "data/awards/reg_season_champion.png", alt: "Regular Season Champion", yearsKey: "regularSeasonYears" },
+              { key: "scoringChamp", src: "data/awards/scoring_champion.png", alt: "Scoring Champion", yearsKey: "scoringChampYears" },
+              { key: "troutAward", src: "data/awards/hitter.png", alt: "Trout Award", yearsKey: "troutAwardYears" },
+              { key: "degromAward", src: "data/awards/pitcher.png", alt: "deGrom Award", yearsKey: "degromAwardYears" },
+              { key: "diamondAward", src: "data/awards/diamond.png", alt: "Diamond", yearsKey: "diamondAwardYears" },
+              { key: "garbage", src: "data/awards/garbage.png", alt: "Garbage Award", yearsKey: "garbageYears" },
+              { key: "clown", src: "data/awards/clown.png", alt: "Clown Award", yearsKey: "clownYears" },
+              { key: "bustAward", src: "data/awards/bust.png", alt: "Bust Award", yearsKey: "bustAwardYears" },
+            ];
+            let trophiesHTML = "";
+            const earned = trophyDefs.filter((d) => awards[d.key]);
+            if (earned.length > 0) {
+              trophiesHTML = '<div class="mp2-trophy-tiles">';
+              earned.forEach((d) => {
+                const yrs = (awards[d.yearsKey] || []).sort().join(", ");
+                trophiesHTML += `<div class="mp2-trophy">
+                  <img src="${d.src}" alt="${d.alt}">
+                  ${awards[d.key] > 1 ? `<span class="mp2-trophy-count">×${awards[d.key]}</span>` : ""}
+                  <div class="mp2-trophy-tip">
+                    <div class="mp2-trophy-tip-title">${d.alt}</div>
+                    ${yrs ? `<div class="mp2-trophy-tip-years">${yrs}</div>` : ""}
+                  </div>
+                </div>`;
               });
-            if (awards.regularSeason)
-              awardsList.push({
-                type: "image",
-                src: "data/awards/reg_season_champion.png",
-                count: awards.regularSeason,
-                alt: "Regular Season Champion",
-              });
-            if (awards.scoringChamp)
-              awardsList.push({
-                type: "image",
-                src: "data/awards/scoring_champion.png",
-                count: awards.scoringChamp,
-                alt: "Scoring Champion",
-              });
-            if (awards.troutAward)
-              awardsList.push({
-                type: "image",
-                src: "data/awards/hitter.png",
-                count: awards.troutAward,
-                alt: "Mike Trout Award",
-              });
-            if (awards.degromAward)
-              awardsList.push({
-                type: "image",
-                src: "data/awards/pitcher.png",
-                count: awards.degromAward,
-                alt: "Jacob deGrom Award",
-              });
-            if (awards.diamondAward)
-              awardsList.push({
-                type: "image",
-                src: "data/awards/diamond.png",
-                count: awards.diamondAward,
-                alt: "Diamond in the Rough",
-              });
-            if (awards.garbage)
-              awardsList.push({
-                type: "image",
-                src: "data/awards/garbage.png",
-                count: awards.garbage,
-                alt: "Garbage Award",
-              });
-            if (awards.clown)
-              awardsList.push({
-                type: "image",
-                src: "data/awards/clown.png",
-                count: awards.clown,
-                alt: "Clown Award",
-              });
-            if (awards.bustAward)
-              awardsList.push({
-                type: "image",
-                src: "data/awards/bust.png",
-                count: awards.bustAward,
-                alt: "Bust of the Year",
-              });
-
-            if (awardsList.length > 0) {
-              awardsHTML = '<div class="awards-row">';
-              awardsList.forEach((award) => {
-                awardsHTML += '<div class="award-badge">';
-                if (award.type === "image") {
-                  awardsHTML += `<img src="${award.src}" alt="${award.alt}" class="award-image">`;
-                } else {
-                  awardsHTML += award.emoji;
-                }
-                if (award.count > 1) {
-                  awardsHTML += `<span class="award-count">x${award.count}</span>`;
-                }
-                awardsHTML += "</div>";
-              });
-              awardsHTML += "</div>";
+              trophiesHTML += "</div>";
             }
+
+            const winPct = (manager.win_pct * 100).toFixed(1);
+            const career = Math.round(manager.total_points_for).toLocaleString();
+            const champCount = manager.championships || 0;
 
             card.innerHTML = `
-                        <h3>${logo}${manager.manager_name}</h3>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
-                            ${!isActive ? '<div class="badge">Inactive</div>' : '<div class="badge">Active</div>'}
-                            ${awardsHTML}
+                        <div class="mp2-rivets-b"></div>
+                        <div class="mp2-card-head">
+                          <div class="mp2-card-badge">${badgeImgHTML}</div>
+                          <div class="mp2-card-name">${manager.manager_name.toUpperCase()}</div>
+                          <span class="mp2-card-status ${isActive ? "active" : "inactive"}">${isActive ? "● ACTIVE" : "INACTIVE"}</span>
                         </div>
-                        <div class="stat"><strong>Year Joined:</strong> ${manager.first_season}</div>
-                        <div class="stat"><strong>Years in League:</strong> ${manager.seasons_played}</div>
-                        ${!isActive ? `<div class="stat"><strong>Last Season:</strong> ${lastSeason}</div>` : ""}
-                        <div class="stat"><strong>All-Time Record:</strong> ${manager.total_wins}-${manager.total_losses}-${manager.total_ties} (${(manager.win_pct * 100).toFixed(1)}%)</div>
-                        <div class="stat"><strong>Championships:</strong> ${manager.championships}</div>
-                        <div class="stat"><strong>Runner-ups:</strong> ${manager.runner_ups}</div>
-                        <div class="stat"><strong>Playoff Apps:</strong> ${manager.playoff_appearances}</div>
-                        <div class="stat"><strong>Avg Finish:</strong> ${manager.avg_finish.toFixed(1)}</div>
+                        <div class="mp2-hazard"></div>
+                        <div class="mp2-yellow-band"></div>
+                        <div class="mp2-card-body">
+                          ${trophiesHTML}
+                          <div class="mp2-stat-grid">
+                            <div class="mp2-stat">
+                              <div class="mp2-stat-label">RECORD</div>
+                              <div class="mp2-stat-value">${manager.total_wins}-${manager.total_losses}${manager.total_ties ? "-" + manager.total_ties : ""}</div>
+                            </div>
+                            <div class="mp2-stat">
+                              <div class="mp2-stat-label">WIN %</div>
+                              <div class="mp2-stat-value gold">${winPct}%</div>
+                            </div>
+                            <div class="mp2-stat">
+                              <div class="mp2-stat-label">CHAMPIONSHIPS</div>
+                              <div class="mp2-stat-value ${champCount ? "gold" : ""}">${champCount}</div>
+                            </div>
+                            <div class="mp2-stat">
+                              <div class="mp2-stat-label">AVG FINISH</div>
+                              <div class="mp2-stat-value">${manager.avg_finish.toFixed(1)}</div>
+                            </div>
+                            <div class="mp2-stat">
+                              <div class="mp2-stat-label">PLAYOFF APPS</div>
+                              <div class="mp2-stat-value">${manager.playoff_appearances}</div>
+                            </div>
+                            <div class="mp2-stat">
+                              <div class="mp2-stat-label">CAREER PTS</div>
+                              <div class="mp2-stat-value blue">${career}</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="mp2-card-foot">
+                          <span>JOINED ${manager.first_season}</span>
+                          <span>· ${manager.seasons_played} SEASONS</span>
+                          ${!isActive ? `<span>· LAST '${String(lastSeason).slice(2)}</span>` : ""}
+                        </div>
                     `;
             gridEl.appendChild(card);
           });
@@ -41290,6 +42838,1226 @@
         return `hat_${normalized}.png`;
       }
 
+      // ===== V2 helpers + state =====
+      const mp2BestPlayersCache = {}; // { managerName: { year: { batter, pitcher } } }
+      const mp2TxCache = {}; // { managerName: [tx,...] }
+      const mp2H2HCache = {}; // { managerName: { records, matchupsByOpp } }
+      const mp2HeadshotCache = {}; // { lowercaseName: headshot_url }
+      const mp2HeadshotSeasonsFetched = new Set();
+      window.mp2 = window.mp2 || { ctx: null };
+
+      async function mp2PrimeHeadshots(seasons) {
+        for (const season of seasons) {
+          if (mp2HeadshotSeasonsFetched.has(season)) continue;
+          mp2HeadshotSeasonsFetched.add(season);
+          try {
+            const url = season === 2026
+              ? "data/current_season/player_stats.json"
+              : `data/historical/${season}/player_stats.json`;
+            const resp = await fetch(url);
+            if (!resp.ok) continue;
+            const players = await resp.json();
+            players.forEach((p) => {
+              if (p.headshot_url && p.name) {
+                const key = stripAccents(p.name).toLowerCase();
+                if (!mp2HeadshotCache[key]) mp2HeadshotCache[key] = p.headshot_url;
+              }
+            });
+          } catch (e) {}
+        }
+      }
+
+      function mp2LookupHeadshot(name) {
+        if (!name) return "";
+        const key = stripAccents(name).toLowerCase();
+        return mp2HeadshotCache[key] || "";
+      }
+
+      function mp2NormalizePos(pos) {
+        if (!pos) return "";
+        const p = String(pos).toUpperCase();
+        if (["C", "1B", "2B", "3B", "SS", "OF", "LF", "CF", "RF", "DH", "SP", "RP", "P"].includes(p))
+          return p;
+        if (p === "UTIL") return "DH";
+        return "P";
+      }
+
+      function mp2GetMLBTeamLogo(abbr) {
+        if (typeof getMLBTeamLogo === "function") {
+          return getMLBTeamLogo(abbr) || "";
+        }
+        return abbr
+          ? `https://a.espncdn.com/i/teamlogos/mlb/500/${String(abbr).toLowerCase()}.png`
+          : "";
+      }
+
+      function mp2PlayerHeadshot(p) {
+        // Only return an authoritative URL; otherwise return "" so the
+        // name-based mp2LookupHeadshot fallback can run. Yahoo player_ids are
+        // NOT MLB IDs, so we don't construct mlbstatic URLs from them.
+        if (!p) return "";
+        if (p.headshot_url) return p.headshot_url;
+        return "";
+      }
+
+      function mp2PlayerRowHTML({ name, team, pos, headshot, pts, label, kind }) {
+        // Split multi-position strings like "SP,RP" or "SP, RP" into individual chips.
+        const positions = pos
+          ? String(pos).split(/[,\/]/).map((p) => p.trim()).filter(Boolean)
+          : [];
+        const teamAbbr = mp2ResolveTeamAbbr(team);
+        const teamLogo = team ? mp2GetMLBTeamLogo(team) : "";
+        const placeholder = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0MCA0MCI+PHJlY3Qgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjZTBkNGE2Ii8+PC9zdmc+";
+        const resolvedHeadshot = headshot || mp2LookupHeadshot(name) || placeholder;
+        const kindBadge = kind === "added"
+          ? `<div class="mp2-tx-kind-badge mp2-tx-kind-added" aria-label="Added">+</div>`
+          : kind === "dropped"
+          ? `<div class="mp2-tx-kind-badge mp2-tx-kind-dropped" aria-label="Dropped">−</div>`
+          : "";
+        return `
+          <div class="mp2-player-row${kind ? " mp2-player-row-tx" : ""}">
+            ${kindBadge}
+            <img class="mp2-player-headshot" src="${resolvedHeadshot}"
+                 alt="${name || ""}"
+                 onerror="this.onerror=null; this.src='${placeholder}';">
+            <div class="mp2-player-info">
+              ${label && !kind ? `<div class="mp2-player-label">${label}</div>` : ""}
+              <div class="mp2-player-name">${name || ""}</div>
+              <div class="mp2-player-meta">
+                ${teamLogo ? `<img src="${teamLogo}" alt="" onerror="this.style.display='none';">` : ""}
+                ${teamAbbr ? `<span class="mp2-team-abbr">${teamAbbr}</span>` : ""}
+                ${positions
+                  .map((p) => {
+                    const cls = mp2NormalizePos(p);
+                    return `<span class="mp2-pos-chip pos-${cls}">${p}</span>`;
+                  })
+                  .join("")}
+              </div>
+            </div>
+            ${pts != null ? `
+              <div class="mp2-player-pts">
+                <div class="mp2-player-pts-num">${Number(pts).toFixed(1)}</div>
+                <div class="mp2-player-pts-sub">pts</div>
+              </div>` : ""}
+          </div>`;
+      }
+
+      // Convert any mlb_team value (abbrev like "NYY" or full city like "New York")
+      // into a short display abbreviation. Returns "" if it can't be resolved.
+      function mp2ResolveTeamAbbr(team) {
+        if (!team) return "";
+        const t = String(team).trim();
+        if (!t) return "";
+        if (t.length <= 4) return t.toUpperCase();
+        const logo = (typeof mp2GetMLBTeamLogo === "function") ? mp2GetMLBTeamLogo(t) : null;
+        if (logo) {
+          const m = logo.match(/\/mlb\/\d+\/([a-z]+)\.png$/i);
+          if (m) return m[1].toUpperCase();
+        }
+        return "";
+      }
+
+      function mp2EscapeAttr(s) {
+        return String(s || "").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+      }
+
+      // "3" → "3rd Round Pick", "12" → "12th Round Pick", etc.
+      // Falls back to the raw display_name when round isn't available.
+      function mp2FormatPickLabel(round, fallback) {
+        const n = Number(round);
+        if (!n) {
+          // Try to pull a number out of a string like "Round 12 Pick"
+          const m = String(fallback || "").match(/(\d+)/);
+          if (m) return mp2FormatPickLabel(m[1]);
+          return fallback || "Pick";
+        }
+        const mod100 = n % 100;
+        let suffix = "th";
+        if (mod100 < 11 || mod100 > 13) {
+          const mod10 = n % 10;
+          if (mod10 === 1) suffix = "st";
+          else if (mod10 === 2) suffix = "nd";
+          else if (mod10 === 3) suffix = "rd";
+        }
+        return `${n}${suffix} Round Pick`;
+      }
+
+      async function mp2GetBestPlayersForSeason(managerName, year) {
+        mp2BestPlayersCache[managerName] = mp2BestPlayersCache[managerName] || {};
+        if (mp2BestPlayersCache[managerName][year] !== undefined) {
+          return mp2BestPlayersCache[managerName][year];
+        }
+        try {
+          const url = year === 2026
+            ? "data/current_season/player_stats.json"
+            : `data/historical/${year}/player_stats.json`;
+          const resp = await fetch(url);
+          if (!resp.ok) {
+            mp2BestPlayersCache[managerName][year] = null;
+            return null;
+          }
+          const players = await resp.json();
+          const myPlayers = players.filter((p) => {
+            const mgr = normalizeManagerName(
+              p.manager,
+              year,
+              p.team_name,
+              p.team_key,
+            );
+            return mgr === managerName;
+          });
+          let bestBatter = null;
+          let bestPitcher = null;
+          myPlayers.forEach((p) => {
+            const fp = Number(p.fantasy_points || 0);
+            if (p.position_type === "B") {
+              if (!bestBatter || fp > bestBatter.fantasy_points) bestBatter = p;
+            } else if (p.position_type === "P") {
+              if (!bestPitcher || fp > bestPitcher.fantasy_points) bestPitcher = p;
+            }
+          });
+          const result = { batter: bestBatter, pitcher: bestPitcher };
+          mp2BestPlayersCache[managerName][year] = result;
+          return result;
+        } catch (e) {
+          mp2BestPlayersCache[managerName][year] = null;
+          return null;
+        }
+      }
+
+      async function mp2LoadH2H(managerName) {
+        if (mp2H2HCache[managerName]) return mp2H2HCache[managerName];
+        const manager = allManagersData.find((m) => m.manager_name === managerName);
+        if (!manager) return { records: [], matchupsByOpp: {} };
+        const h2hMap = {};
+        const matchupsByOpp = {};
+        for (const season of manager.season_history.map((h) => h.year)) {
+          try {
+            const scoresUrl = season === 2026
+              ? "data/current_season/all_scores.json"
+              : `data/historical/${season}/all_scores.json`;
+            const scoresResp = await fetch(scoresUrl);
+            if (!scoresResp.ok) continue;
+            const scores = await scoresResp.json();
+
+            const standingsUrl = season === 2026
+              ? "data/current_season/standings.json"
+              : `data/historical/${season}/final_standings.json`;
+            const standingsResp = await fetch(standingsUrl);
+            if (!standingsResp.ok) continue;
+            let standings = await standingsResp.json();
+            standings = normalizeStandingsData(standings, season);
+
+            const teamToManager = {};
+            const teamToName = {};
+            standings.forEach((team) => {
+              teamToManager[team.team_key] = team.manager;
+              teamToName[team.team_key] = team.team_name;
+            });
+            const myTeam = standings.find((t) => t.manager === managerName);
+            if (!myTeam) continue;
+
+            scores.forEach((m) => {
+              if (season === 2026 && !isCompletedCurrentSeasonMatchup(m)) return;
+              if (m.team_key !== myTeam.team_key) return;
+              const oppMgr = teamToManager[m.opponent_key];
+              if (!oppMgr) return;
+              if (!h2hMap[oppMgr]) {
+                h2hMap[oppMgr] = {
+                  opponent: oppMgr,
+                  wins: 0,
+                  losses: 0,
+                  ties: 0,
+                  total_points_for: 0,
+                  total_points_against: 0,
+                  games: 0,
+                };
+                matchupsByOpp[oppMgr] = [];
+              }
+              h2hMap[oppMgr].games++;
+              h2hMap[oppMgr].total_points_for += m.team_score;
+              h2hMap[oppMgr].total_points_against += m.opponent_score;
+              let result = "T";
+              if (m.team_score > m.opponent_score) {
+                h2hMap[oppMgr].wins++;
+                result = "W";
+              } else if (m.team_score < m.opponent_score) {
+                h2hMap[oppMgr].losses++;
+                result = "L";
+              } else {
+                h2hMap[oppMgr].ties++;
+              }
+              matchupsByOpp[oppMgr].push({
+                year: season,
+                week: m.week,
+                myTeam: teamToName[m.team_key] || myTeam.team_name,
+                oppTeam: teamToName[m.opponent_key] || oppMgr,
+                pf: m.team_score,
+                pa: m.opponent_score,
+                result,
+              });
+            });
+          } catch (e) {
+            // skip silently
+          }
+        }
+        const records = Object.values(h2hMap).map((r) => ({
+          ...r,
+          win_pct: r.wins / Math.max(1, r.wins + r.losses),
+          avg_points_for: r.total_points_for / Math.max(1, r.games),
+          avg_points_against: r.total_points_against / Math.max(1, r.games),
+        }));
+        records.sort((a, b) => b.win_pct - a.win_pct);
+        mp2H2HCache[managerName] = { records, matchupsByOpp };
+        return mp2H2HCache[managerName];
+      }
+
+      async function mp2LoadTransactions(managerName) {
+        if (mp2TxCache[managerName]) return mp2TxCache[managerName];
+        const manager = allManagersData.find((m) => m.manager_name === managerName);
+        if (!manager) return [];
+        const seasons = manager.season_history.map((h) => h.year);
+        const allTx = [];
+
+        // Prime the player-name → headshot cache from the season's player_stats files
+        await mp2PrimeHeadshots(seasons);
+
+        // Pre-build map of team_key -> manager per season via teams.json (cached)
+        for (const season of seasons) {
+          try {
+            const teams = await getTeamData(season);
+            if (!teams) continue;
+            const keyToMgr = {};
+            teams.forEach((t) => {
+              keyToMgr[t.team_key] = normalizeManagerName(
+                t.manager,
+                season,
+                t.team_name,
+                t.team_key,
+              );
+            });
+
+            // Find my team_key(s) for this season
+            const myKeys = new Set(
+              Object.entries(keyToMgr)
+                .filter(([k, mgr]) => mgr === managerName)
+                .map(([k]) => k),
+            );
+            if (myKeys.size === 0) continue;
+
+            const txUrl = season === 2026
+              ? "data/current_season/transactions.json"
+              : `data/historical/${season}/transactions.json`;
+            const resp = await fetch(txUrl);
+            if (!resp.ok) continue;
+            let txs = await resp.json();
+            if (!Array.isArray(txs)) continue;
+            // Historical files contain duplicate entries with identical transaction_ids
+            // (Yahoo scraper quirk). De-dupe before processing.
+            const seenIds = new Set();
+            txs = txs.filter((t) => {
+              const id = t.transaction_id || t.transaction_key;
+              if (!id) return true;
+              if (seenIds.has(id)) return false;
+              seenIds.add(id);
+              return true;
+            });
+
+            // Draft picks: load draft.json and convert to virtual "draft" tx (one per pick)
+            // (Skipped from tx feed because Seasons tab summarizes draft grade)
+
+            txs.forEach((t) => {
+              if (t.status && t.status !== "successful") return;
+              const date = t.timestamp
+                ? new Date(Number(t.timestamp) * 1000)
+                : null;
+              const type = t.type === "add/drop" ? "add_drop" : t.type;
+              const players = t.players || [];
+
+              if (type === "trade") {
+                // Is this manager involved?
+                const trader = t.trader_team_key;
+                const tradee = t.tradee_team_key;
+                if (!myKeys.has(trader) && !myKeys.has(tradee)) return;
+                const otherKey = myKeys.has(trader) ? tradee : trader;
+                const otherMgr = keyToMgr[otherKey] || "Unknown";
+
+                const youGet = [];
+                const youGave = [];
+                players.forEach((p) => {
+                  const entry = {
+                    name: p.player_name,
+                    team: p.team_abbr,
+                    pos: p.primary_position || p.position,
+                    player_id: p.player_id,
+                  };
+                  if (myKeys.has(p.destination_team_key)) youGet.push(entry);
+                  else if (myKeys.has(p.source_team_key)) youGave.push(entry);
+                });
+                (t.draft_picks || []).forEach((dp) => {
+                  const item = { kind: "pick", label: mp2FormatPickLabel(dp.round, dp.display_name) };
+                  if (myKeys.has(dp.destination_team_key)) youGet.push(item);
+                  else if (myKeys.has(dp.source_team_key)) youGave.push(item);
+                });
+                allTx.push({
+                  type: "trade",
+                  season,
+                  date,
+                  withManager: otherMgr,
+                  youGet,
+                  youGave,
+                });
+                return;
+              }
+
+              if (type === "add_drop") {
+                let added = null;
+                let dropped = null;
+                players.forEach((p) => {
+                  const entry = {
+                    name: p.player_name,
+                    team: p.team_abbr,
+                    pos: p.primary_position || p.position,
+                    player_id: p.player_id,
+                  };
+                  if (p.transaction_type === "add" && myKeys.has(p.destination_team_key)) {
+                    added = entry;
+                  } else if (p.transaction_type === "drop" && myKeys.has(p.source_team_key)) {
+                    dropped = entry;
+                  }
+                });
+                if (added || dropped) {
+                  allTx.push({ type: "add_drop", season, date, added, dropped });
+                }
+                return;
+              }
+
+              if (type === "add") {
+                const me = players.find(
+                  (p) =>
+                    p.transaction_type === "add" &&
+                    myKeys.has(p.destination_team_key),
+                );
+                if (me) {
+                  allTx.push({
+                    type: "add",
+                    season,
+                    date,
+                    added: {
+                      name: me.player_name,
+                      team: me.team_abbr,
+                      pos: me.primary_position || me.position,
+                      player_id: me.player_id,
+                    },
+                  });
+                }
+                return;
+              }
+
+              if (type === "drop") {
+                const me = players.find(
+                  (p) =>
+                    p.transaction_type === "drop" &&
+                    myKeys.has(p.source_team_key),
+                );
+                if (me) {
+                  allTx.push({
+                    type: "drop",
+                    season,
+                    date,
+                    dropped: {
+                      name: me.player_name,
+                      team: me.team_abbr,
+                      pos: me.primary_position || me.position,
+                      player_id: me.player_id,
+                    },
+                  });
+                }
+                return;
+              }
+            });
+          } catch (e) {
+            // skip silently
+          }
+        }
+        // Sort newest first
+        allTx.sort((a, b) => {
+          if (b.season !== a.season) return b.season - a.season;
+          const ad = a.date ? a.date.getTime() : 0;
+          const bd = b.date ? b.date.getTime() : 0;
+          return bd - ad;
+        });
+        mp2TxCache[managerName] = allTx;
+        return allTx;
+      }
+
+      function mp2BuildTrophyTiles(managerName, opts = {}) {
+        const awards = managerAwardsData[managerName] || {};
+        const allTrophies = [
+          { key: "championships", src: "champion_ring.png", alt: "FBCW Champion", yearsKey: "championshipYears" },
+          { key: "regularSeason", src: "data/awards/reg_season_champion.png", alt: "Regular Season Champion", yearsKey: "regularSeasonYears" },
+          { key: "scoringChamp", src: "data/awards/scoring_champion.png", alt: "Scoring Champion", yearsKey: "scoringChampYears" },
+          { key: "troutAward", src: "data/awards/hitter.png", alt: "Trout Award", yearsKey: "troutAwardYears" },
+          { key: "degromAward", src: "data/awards/pitcher.png", alt: "deGrom Award", yearsKey: "degromAwardYears" },
+          { key: "diamondAward", src: "data/awards/diamond.png", alt: "Diamond in the Rough", yearsKey: "diamondAwardYears" },
+          { key: "garbage", src: "data/awards/garbage.png", alt: "Garbage Award", yearsKey: "garbageYears" },
+          { key: "clown", src: "data/awards/clown.png", alt: "Clown Award", yearsKey: "clownYears" },
+          { key: "bustAward", src: "data/awards/bust.png", alt: "Bust Award", yearsKey: "bustAwardYears" },
+        ];
+        // Sort: earned first (by count desc), then locked
+        const sorted = [...allTrophies].sort((a, b) => {
+          const ac = awards[a.key] || 0;
+          const bc = awards[b.key] || 0;
+          if (ac > 0 && !bc) return -1;
+          if (!ac && bc > 0) return 1;
+          return bc - ac;
+        });
+        return sorted
+          .map((t) => {
+            const count = awards[t.key] || 0;
+            const yrs = (awards[t.yearsKey] || []).sort().join(", ");
+            const locked = !count;
+            if (opts.skipLocked && locked) return "";
+            const tipTitle = mp2EscapeAttr(t.alt);
+            const tipYears = count
+              ? (yrs ? mp2EscapeAttr(yrs) : "")
+              : "Not yet earned";
+            return `<div class="mp2-trophy${locked ? " locked" : ""}">
+              <img src="${t.src}" alt="${t.alt}">
+              ${count > 1 ? `<span class="mp2-trophy-count">×${count}</span>` : ""}
+              <div class="mp2-trophy-tip">
+                <div class="mp2-trophy-tip-title">${tipTitle}</div>
+                ${tipYears ? `<div class="mp2-trophy-tip-years">${tipYears}</div>` : ""}
+              </div>
+            </div>`;
+          })
+          .filter(Boolean)
+          .join("");
+      }
+
+      const MP2_NAV_ITEMS = [
+        { id: "career", label: "CAREER", icon: '<svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="square"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>' },
+        { id: "seasons", label: "SEASONS", icon: '<svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="square"><rect x="3" y="4" width="18" height="16"/><path d="M3 9h18M8 4v3M16 4v3"/></svg>' },
+        { id: "h2h", label: "H2H", icon: '<svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="square"><circle cx="7" cy="8" r="3"/><circle cx="17" cy="8" r="3"/><path d="M2 20c0-3 2-5 5-5s5 2 5 5M12 20c0-3 2-5 5-5s5 2 5 5"/></svg>' },
+        { id: "moves", label: "MOVES", icon: '<svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="square"><path d="M7 7h13M7 7l3-3M7 7l3 3M17 17H4M17 17l-3-3M17 17l-3 3"/></svg>' },
+      ];
+
+      function mp2GradeChipColors(grade) {
+        if (!grade) return { fg: "#6c757d", bg: "#e9ecef" };
+        const ch = grade.charAt(0);
+        if (ch === "A") return { fg: "#218838", bg: "#d4edda" };
+        if (ch === "B") return { fg: "#1e7e34", bg: "#d4edda" };
+        if (ch === "C") return { fg: "#c89000", bg: "#fff3cd" };
+        if (ch === "D") return { fg: "#dc3545", bg: "#f8d7da" };
+        if (ch === "F") return { fg: "#dc3545", bg: "#f8d7da" };
+        return { fg: "#6c757d", bg: "#e9ecef" };
+      }
+
+      // ===== V2 TAB RENDERERS =====
+      function mp2RenderCareer() {
+        const { manager } = window.mp2.ctx;
+        const winPct = (manager.win_pct * 100).toFixed(1);
+        const totalGames = manager.total_wins + manager.total_losses + (manager.total_ties || 0);
+        const avgPtsSeason = manager.seasons_played
+          ? manager.total_points_for / manager.seasons_played
+          : 0;
+        const avgPtsGame = totalGames
+          ? manager.total_points_for / totalGames
+          : 0;
+        const careerPts = Math.round(manager.total_points_for).toLocaleString();
+
+        // Hardware counts
+        const awards = managerAwardsData[manager.manager_name] || {};
+        const champ = manager.championships || 0;
+        const runnerUps = manager.runner_ups || 0;
+        const podiums = manager.season_history.filter(
+          (s) => s.rank >= 1 && s.rank <= 3,
+        ).length;
+        const playoffApps = manager.playoff_appearances || 0;
+        const regChamps = awards.regularSeason || 0;
+
+        // Draft grade panel
+        const mg = managerDraftGrades[manager.manager_name];
+        let draftGradeHTML = "";
+        if (mg && mg.adjustedDraftPoints !== undefined && mg.grades.length) {
+          const all = Object.entries(managerDraftGrades)
+            .filter(([n, d]) => d.adjustedDraftPoints !== undefined && d.grades.length > 0)
+            .map(([n, d]) => ({ name: n, adj: d.adjustedDraftPoints }))
+            .sort((a, b) => b.adj - a.adj);
+          const rank = all.findIndex((x) => x.name === manager.manager_name) + 1;
+          const total = all.length;
+          const overall = pointsToGrade(mg.adjustedDraftPoints);
+          const c = mp2GradeChipColors(overall);
+          const sign = mg.avgScore >= 0 ? "+" : "";
+          const chipsHTML = mg.grades
+            .slice()
+            .sort((a, b) => a.year - b.year)
+            .map((g) => {
+              const cc = mp2GradeChipColors(g.grade);
+              return `<span class="mp2-grade-chip" style="background:${cc.bg};color:${cc.fg};border-color:${cc.fg};">
+                <span class="mp2-yr">'${String(g.year).slice(2)}</span><strong>${g.grade}</strong>
+              </span>`;
+            })
+            .join("");
+          draftGradeHTML = `
+            <div class="mp2-panel">
+              <div class="mp2-panel-head">
+                <span class="mp2-icon-box"></span>
+                <span>DRAFT GRADE</span>
+              </div>
+              <div class="mp2-panel-body">
+                <div class="mp2-draft-grade">
+                  <div class="mp2-grade-circle" style="background:${c.bg};color:${c.fg};border-color:${c.fg};">
+                    ${overall}
+                  </div>
+                  <div>
+                    <div class="mp2-grade-rank">RANK #${rank} OF ${total} MANAGERS</div>
+                    <div class="mp2-grade-sub">${sign}${(mg.avgScore || 0).toFixed(1)}% vs expected · across ${mg.grades.length} drafts</div>
+                    <div class="mp2-grade-chips">${chipsHTML}</div>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+        }
+
+        const champYears = (awards.championshipYears || []).sort().join(", ");
+
+        const el = document.getElementById("mp2-tab-content");
+        el.innerHTML = `
+          <h3 class="mp2-section-title">Career Stats</h3>
+          <div class="mp2-panel">
+            <div class="mp2-panel-head">
+              <span class="mp2-icon-box"></span>
+              <span>CAREER LEDGER</span>
+              <span class="mp2-count">LV.${manager.seasons_played}</span>
+            </div>
+            <div class="mp2-panel-body">
+              <div class="mp2-career-grid">
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">ALL-TIME RECORD</div>
+                  <div class="mp2-stat-value">${manager.total_wins}-${manager.total_losses}${manager.total_ties ? "-" + manager.total_ties : ""}</div>
+                </div>
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">WIN %</div>
+                  <div class="mp2-stat-value gold">${winPct}%</div>
+                </div>
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">AVG FINISH</div>
+                  <div class="mp2-stat-value">${manager.avg_finish.toFixed(1)}</div>
+                </div>
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">CAREER POINTS</div>
+                  <div class="mp2-stat-value blue">${careerPts}</div>
+                </div>
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">AVG PTS / SEASON</div>
+                  <div class="mp2-stat-value">${avgPtsSeason.toFixed(0)}</div>
+                </div>
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">AVG PTS / GAME</div>
+                  <div class="mp2-stat-value">${avgPtsGame.toFixed(1)}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mp2-panel">
+            <div class="mp2-panel-head">
+              <span class="mp2-icon-box"></span>
+              <span>HARDWARE</span>
+            </div>
+            <div class="mp2-panel-body">
+              <div class="mp2-career-grid">
+                <div class="mp2-stat mp2-stat-with-years">
+                  <div class="mp2-stat-label">CHAMPIONSHIPS</div>
+                  <div class="mp2-stat-row">
+                    <div class="mp2-stat-value ${champ ? "gold" : ""}">${champ}</div>
+                    ${champYears ? `<div class="mp2-stat-years">${champYears}</div>` : ""}
+                  </div>
+                </div>
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">RUNNER-UPS</div>
+                  <div class="mp2-stat-value ${runnerUps ? "red" : ""}">${runnerUps}</div>
+                </div>
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">PODIUMS</div>
+                  <div class="mp2-stat-value">${podiums}</div>
+                </div>
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">PLAYOFF APPS</div>
+                  <div class="mp2-stat-value">${playoffApps}</div>
+                </div>
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">REG SEASON CHAMPION</div>
+                  <div class="mp2-stat-value">${regChamps}</div>
+                </div>
+                <div class="mp2-stat">
+                  <div class="mp2-stat-label">SCORING TITLES</div>
+                  <div class="mp2-stat-value">${awards.scoringChamp || 0}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          ${draftGradeHTML}
+        `;
+      }
+
+      async function mp2RenderSeasons() {
+        const { manager, seasonLogos } = window.mp2.ctx;
+        const el = document.getElementById("mp2-tab-content");
+        const history = [...manager.season_history].sort((a, b) => a.year - b.year);
+        const mg = managerDraftGrades[manager.manager_name] || { grades: [] };
+
+        // Render skeleton first
+        const rowsHTML = history
+          .map((s) => {
+            const champ = s.rank === 1;
+            const runner = s.rank === 2;
+            const third = s.rank === 3;
+            const inProgress = s.year === 2026;
+            const madePlayoffs = !champ && !runner && !third && s.rank >= 4 && s.rank <= 6;
+            let nodeColor = "var(--mp2-cream)";
+            let nodeBorder = "var(--mp2-navy)";
+            let nodeText = "var(--mp2-navy)";
+            if (champ) { nodeColor = "var(--retro-gold)"; nodeBorder = "var(--mp2-gold-dark)"; }
+            else if (runner) { nodeColor = "#d4d4d4"; nodeBorder = "#8c8c8c"; }
+            else if (third) { nodeColor = "#cd7f32"; nodeBorder = "#8a531e"; nodeText = "#fff"; }
+            else if (inProgress) { nodeColor = "var(--retro-blue)"; nodeBorder = "var(--retro-gold)"; nodeText = "#fff"; }
+
+            const yearDigits = String(s.year).slice(2);
+
+            let bannerHTML = "";
+            if (champ) {
+              bannerHTML = `<div class="mp2-season-banner" style="background:var(--retro-gold);color:var(--mp2-navy);">
+                <img src="champion_ring.png" alt="" style="width:14px;height:14px;object-fit:contain;"> CHAMPION
+              </div>`;
+            } else if (runner) {
+              bannerHTML = `<div class="mp2-season-banner" style="background:linear-gradient(90deg,#d0d0d0,#a8a8a8);color:var(--mp2-navy);">★ RUNNER-UP</div>`;
+            } else if (third) {
+              bannerHTML = `<div class="mp2-season-banner" style="background:linear-gradient(90deg,#cd7f32,#a8662a);color:#fff;">★ 3RD PLACE PODIUM</div>`;
+            } else if (madePlayoffs) {
+              bannerHTML = `<div class="mp2-season-banner" style="background:var(--retro-blue-light);color:#fff;">▶ MADE PLAYOFFS</div>`;
+            }
+            if (inProgress) {
+              bannerHTML = `<div class="mp2-season-banner" style="background:var(--retro-orange);color:#fff;">● ${s.year} IN PROGRESS</div>`;
+            }
+
+            const placeClass = champ ? "champion" : runner ? "silver" : third ? "bronze" : inProgress ? "live" : "";
+            const placementHTML = `
+              <div class="mp2-season-placement ${placeClass}">
+                #${s.rank || "—"}
+              </div>`;
+
+            const logoSrc = seasonLogos[s.year] || "";
+            const logoHTML = logoSrc
+              ? `<img class="mp2-season-logo" src="${logoSrc}" alt="" onerror="this.style.display='none';">`
+              : "";
+
+            const gradeRec = mg.grades.find((g) => g.year === s.year);
+            const gradeHTML = gradeRec
+              ? `<div class="mp2-season-stat">
+                  <div class="mp2-season-stat-label">DRAFT</div>
+                  <div class="mp2-season-stat-value" style="color:${mp2GradeChipColors(gradeRec.grade).fg}">${gradeRec.grade}</div>
+                </div>`
+              : "";
+
+            return `
+              <div class="mp2-season-row">
+                <div class="mp2-season-node" style="background:${nodeColor};border-color:${nodeBorder};color:${nodeText};"><span class="mp2-yr-apos">'</span>${yearDigits}</div>
+                <div class="mp2-season-card">
+                  ${bannerHTML}
+                  <div class="mp2-season-head">
+                    <div class="mp2-season-team">
+                      ${placementHTML}
+                      ${logoHTML}
+                      <div>
+                        <div class="mp2-season-team-name">${s.team_name || ""}</div>
+                      </div>
+                    </div>
+                    <div class="mp2-season-stats">
+                      <div class="mp2-season-stat">
+                        <div class="mp2-season-stat-label">RECORD</div>
+                        <div class="mp2-season-stat-value">${s.wins}-${s.losses}${s.ties ? "-" + s.ties : ""}</div>
+                      </div>
+                      <div class="mp2-season-stat">
+                        <div class="mp2-season-stat-label">PTS</div>
+                        <div class="mp2-season-stat-value">${Math.round(s.points_for).toLocaleString()}</div>
+                      </div>
+                      ${gradeHTML}
+                    </div>
+                  </div>
+                  <div class="mp2-season-body" data-season-body="${s.year}">
+                    <div>
+                      <div class="mp2-season-subhead"><span class="mp2-icon-box-s"></span><span>BEST BATTER</span></div>
+                      <div class="mp2-season-batter" data-batter-year="${s.year}">
+                        <div class="mp2-player-row" style="opacity:0.45;">
+                          <div class="mp2-player-headshot" style="background:var(--mp2-cream-deep);"></div>
+                          <div class="mp2-player-info"><div class="mp2-player-name">Loading…</div></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="mp2-season-subhead"><span class="mp2-icon-box-s" style="background:var(--retro-red);border-color:var(--mp2-red-deep);"></span><span>BEST PITCHER</span></div>
+                      <div class="mp2-season-pitcher" data-pitcher-year="${s.year}">
+                        <div class="mp2-player-row" style="opacity:0.45;">
+                          <div class="mp2-player-headshot" style="background:var(--mp2-cream-deep);"></div>
+                          <div class="mp2-player-info"><div class="mp2-player-name">Loading…</div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>`;
+          })
+          .join("");
+
+        el.innerHTML = `
+          <h3 class="mp2-section-title">Season-by-Season Timeline</h3>
+          <div class="mp2-timeline">
+            <div class="mp2-timeline-spine"></div>
+            ${rowsHTML}
+          </div>`;
+
+        // Lazy-load best batter/pitcher
+        for (const s of history) {
+          mp2GetBestPlayersForSeason(manager.manager_name, s.year).then((res) => {
+            const batterEl = el.querySelector(`[data-batter-year="${s.year}"]`);
+            const pitcherEl = el.querySelector(`[data-pitcher-year="${s.year}"]`);
+            const emptyHTML = `<div class="mp2-player-row" style="opacity:0.5;"><div class="mp2-player-info"><div class="mp2-player-name" style="font-style:italic;font-weight:400;">No data</div></div></div>`;
+            // mlb_team is sometimes an abbrev ("NYY") and sometimes a full city ("New York");
+            // pass the raw value through — mp2PlayerRowHTML resolves it to an abbreviation for display.
+            if (batterEl) {
+              const b = res && res.batter;
+              batterEl.innerHTML = b
+                ? mp2PlayerRowHTML({
+                    name: b.name,
+                    team: b.mlb_team_abbr || b.mlb_team,
+                    pos: b.primary_position || (b.eligible_positions || [])[0],
+                    headshot: b.headshot_url,
+                    pts: b.fantasy_points,
+                  })
+                : emptyHTML;
+            }
+            if (pitcherEl) {
+              const p = res && res.pitcher;
+              pitcherEl.innerHTML = p
+                ? mp2PlayerRowHTML({
+                    name: p.name,
+                    team: p.mlb_team_abbr || p.mlb_team,
+                    pos: p.primary_position || (p.eligible_positions || [])[0],
+                    headshot: p.headshot_url,
+                    pts: p.fantasy_points,
+                  })
+                : emptyHTML;
+            }
+          });
+        }
+      }
+
+      async function mp2RenderH2H() {
+        const { manager, allManagerLogos } = window.mp2.ctx;
+        const el = document.getElementById("mp2-tab-content");
+        el.innerHTML = `
+          <h3 class="mp2-section-title mp2-section-title-h2h">
+            <span class="mp2-section-title-text">Head-to-Head Records</span>
+            <span class="mp2-h2h-hint">Click any column to sort · click any row for matchup history.</span>
+          </h3>
+          <div class="mp2-h2h-table-wrap" id="mp2-h2h-tablewrap">
+            <div style="padding: 24px; text-align: center; font-family: 'Arcade Gamer', monospace; font-size: 10px; color: var(--mp2-navy); opacity: 0.5;">LOADING…</div>
+          </div>`;
+
+        const { records, matchupsByOpp } = await mp2LoadH2H(manager.manager_name);
+        window.mp2.ctx.h2hRecords = records;
+        window.mp2.ctx.h2hMatchups = matchupsByOpp;
+        window.mp2.ctx.h2hSort = { col: "win_pct", dir: "desc" };
+        mp2DrawH2HTable();
+      }
+
+      function mp2DrawH2HTable() {
+        const ctx = window.mp2.ctx;
+        const sort = ctx.h2hSort;
+        const records = [...ctx.h2hRecords];
+        records.sort((a, b) => {
+          let av = a[sort.col];
+          let bv = b[sort.col];
+          if (sort.col === "opp") {
+            av = a.opponent;
+            bv = b.opponent;
+          }
+          if (typeof av === "string") {
+            return sort.dir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+          }
+          return sort.dir === "asc" ? av - bv : bv - av;
+        });
+
+        const arrow = (col) => {
+          const active = sort.col === col;
+          if (!active) return "";
+          const a = sort.dir === "desc" ? "▼" : "▲";
+          return `<span class="mp2-sort-arrow">${a}</span>`;
+        };
+        const thClass = (col) => `${sort.col === col ? "active" : ""}`;
+
+        const wrap = document.getElementById("mp2-h2h-tablewrap");
+        wrap.innerHTML = `
+          <table class="mp2-h2h-table">
+            <thead>
+              <tr>
+                <th class="${thClass("opp")}" onclick="mp2SortH2H('opp')">OPPONENT ${arrow("opp")}</th>
+                <th class="num mp2-col-record ${thClass("wins")}" onclick="mp2SortH2H('wins')">RECORD ${arrow("wins")}</th>
+                <th class="num mp2-col-winpct ${thClass("win_pct")}" onclick="mp2SortH2H('win_pct')">WIN % ${arrow("win_pct")}</th>
+                <th class="num mp2-col-pf ${thClass("avg_points_for")}" onclick="mp2SortH2H('avg_points_for')">AVG PF ${arrow("avg_points_for")}</th>
+                <th class="num mp2-col-pa ${thClass("avg_points_against")}" onclick="mp2SortH2H('avg_points_against')">AVG PA ${arrow("avg_points_against")}</th>
+                <th class="mp2-col-arrow"></th>
+              </tr>
+            </thead>
+            <tbody>
+              ${records
+                .map((r) => {
+                  const oppLogo = (ctx.allManagerLogos || {})[r.opponent] || "";
+                  const pct = (r.win_pct * 100);
+                  const barColor = pct >= 75 ? "var(--mp2-green-deep)"
+                    : pct >= 50 ? "var(--retro-blue)"
+                    : pct >= 25 ? "var(--retro-orange)"
+                    : "var(--retro-red)";
+                  return `<tr onclick="mp2OpenMatchupHistory('${mp2EscapeAttr(r.opponent)}')">
+                    <td><span class="mp2-h2h-opp">${oppLogo ? `<img src="${oppLogo}" alt="" onerror="this.style.display='none';">` : ""}${r.opponent}</span></td>
+                    <td class="num mp2-col-record">${r.wins}-${r.losses}${r.ties ? "-" + r.ties : ""}</td>
+                    <td class="num mp2-col-winpct">
+                      <span class="mp2-h2h-winbar-wrap">
+                        <span class="mp2-h2h-winbar"><span class="mp2-h2h-winbar-fill" style="width:${Math.max(0, Math.min(100, pct))}%;background:${barColor};"></span></span>
+                        <span class="mp2-h2h-winbar-pct" style="color:${barColor};">${pct.toFixed(1)}%</span>
+                      </span>
+                    </td>
+                    <td class="num mp2-col-pf">${r.avg_points_for.toFixed(1)}</td>
+                    <td class="num mp2-col-pa">${r.avg_points_against.toFixed(1)}</td>
+                    <td class="mp2-h2h-arrow mp2-col-arrow">›</td>
+                  </tr>`;
+                })
+                .join("")}
+            </tbody>
+          </table>`;
+      }
+
+      function mp2SortH2H(col) {
+        const s = window.mp2.ctx.h2hSort;
+        if (s.col === col) {
+          s.dir = s.dir === "desc" ? "asc" : "desc";
+        } else {
+          s.col = col;
+          s.dir = "desc";
+        }
+        mp2DrawH2HTable();
+      }
+
+      function mp2OpenMatchupHistory(oppName) {
+        const ctx = window.mp2.ctx;
+        const matchups = (ctx.h2hMatchups || {})[oppName] || [];
+        const record = (ctx.h2hRecords || []).find((r) => r.opponent === oppName);
+        if (!record) return;
+        const sorted = [...matchups].sort(
+          (a, b) => b.year - a.year || b.week - a.week,
+        );
+
+        const overlay = document.createElement("div");
+        overlay.className = "mp2-mh-modal-overlay";
+        overlay.onclick = (e) => {
+          if (e.target === overlay) overlay.remove();
+        };
+
+        const myHat = `data/hats/${getManagerHatFilename(ctx.manager.manager_name)}`;
+        const oppHat = `data/hats/${getManagerHatFilename(oppName)}`;
+        const pct = (record.win_pct * 100).toFixed(1);
+
+        const rowsHTML = sorted
+          .map((m) => {
+            const win = m.result === "W";
+            return `<tr>
+              <td class="yr">${m.year}</td>
+              <td class="wk">W${m.week}</td>
+              <td>
+                <div style="font-weight:700;font-size:12px;">${m.myTeam}</div>
+                <div class="score ${win ? "win" : ""}" style="font-family:'Arcade Gamer',monospace;font-size:12px;margin-top:3px;">${m.pf.toFixed(1)}</div>
+              </td>
+              <td>
+                <div style="font-weight:700;font-size:12px;">${m.oppTeam}</div>
+                <div class="score ${m.result === "L" ? "win" : ""}" style="font-family:'Arcade Gamer',monospace;font-size:12px;margin-top:3px;">${m.pa.toFixed(1)}</div>
+              </td>
+              <td class="result"><span class="mp2-result-badge ${m.result.toLowerCase()}">${m.result}</span></td>
+            </tr>`;
+          })
+          .join("");
+
+        overlay.innerHTML = `
+          <div class="mp2-mh-modal">
+            <div class="mp2-rivets-b"></div>
+            <div class="mp2-mh-modal-head">
+              <span class="mp2-icon-box"></span>
+              <img src="${myHat}" onerror="this.style.display='none';"> ${ctx.manager.manager_name.toUpperCase()}
+              <span style="opacity:0.6;">VS</span>
+              ${oppName.toUpperCase()} <img src="${oppHat}" onerror="this.style.display='none';">
+              <button class="mp2-mh-modal-close">✕ CLOSE</button>
+            </div>
+            <div class="mp2-mh-modal-body">
+              <div class="mp2-mh-summary">
+                <div class="mp2-stat"><div class="mp2-stat-label">W-L</div><div class="mp2-stat-value blue">${record.wins}-${record.losses}${record.ties ? "-" + record.ties : ""}</div></div>
+                <div class="mp2-stat"><div class="mp2-stat-label">WIN %</div><div class="mp2-stat-value gold">${pct}%</div></div>
+                <div class="mp2-stat"><div class="mp2-stat-label">AVG PF</div><div class="mp2-stat-value">${record.avg_points_for.toFixed(1)}</div></div>
+                <div class="mp2-stat"><div class="mp2-stat-label">AVG PA</div><div class="mp2-stat-value">${record.avg_points_against.toFixed(1)}</div></div>
+              </div>
+              ${sorted.length === 0 ? `
+                <div class="mp2-tx-empty">NO MATCHUP HISTORY ON RECORD</div>
+              ` : `
+              <div class="mp2-mh-list">
+                <table class="mp2-mh-list-table">
+                  <thead>
+                    <tr>
+                      <th>YEAR</th><th>WK</th>
+                      <th>${ctx.manager.manager_name.toUpperCase()}</th>
+                      <th>${oppName.toUpperCase()}</th>
+                      <th style="text-align:center;">W/L</th>
+                    </tr>
+                  </thead>
+                  <tbody>${rowsHTML}</tbody>
+                </table>
+              </div>`}
+            </div>
+          </div>`;
+        overlay.querySelector(".mp2-mh-modal-close").onclick = () => overlay.remove();
+        document.body.appendChild(overlay);
+      }
+
+      async function mp2RenderMoves() {
+        const { manager } = window.mp2.ctx;
+        const el = document.getElementById("mp2-tab-content");
+        el.innerHTML = `
+          <h3 class="mp2-section-title">Transactions</h3>
+          <div style="text-align:center; padding:24px; font-family:'Arcade Gamer',monospace;font-size:10px;color:var(--mp2-navy);opacity:0.5;">LOADING TRANSACTIONS…</div>`;
+
+        const txs = await mp2LoadTransactions(manager.manager_name);
+        const seasons = Array.from(new Set(txs.map((t) => t.season))).sort((a, b) => b - a);
+        window.mp2.ctx.txs = txs;
+        window.mp2.ctx.txFilters = { season: null, type: null };
+
+        const typeOptions = [
+          { id: "trade", label: "TRADE" },
+          { id: "add", label: "ADD" },
+          { id: "drop", label: "DROP" },
+          { id: "add_drop", label: "ADD/DROP" },
+        ];
+
+        el.innerHTML = `
+          <h3 class="mp2-section-title">Transactions</h3>
+          <div class="mp2-panel">
+            <div class="mp2-panel-head">
+              <span class="mp2-icon-box"></span>
+              <span>FILTERS</span>
+            </div>
+            <div class="mp2-panel-body">
+              <div class="mp2-tx-filters">
+                <div>
+                  <div class="mp2-tx-filter-label">SEASON</div>
+                  <div class="mp2-tx-filter-row" id="mp2-tx-season-row">
+                    <button class="mp2-tx-chip" data-season="all">ALL</button>
+                    ${seasons.map((y) => `<button class="mp2-tx-chip" data-season="${y}">'${String(y).slice(2)}</button>`).join("")}
+                  </div>
+                </div>
+                <div>
+                  <div class="mp2-tx-filter-label">TYPE</div>
+                  <div class="mp2-tx-filter-row" id="mp2-tx-type-row">
+                    <button class="mp2-tx-chip" data-type="all">ALL</button>
+                    ${typeOptions.map((t) => `<button class="mp2-tx-chip" data-type="${t.id}">${t.label}</button>`).join("")}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="mp2-tx-count" style="margin-bottom:10px; font-size:12px; color:var(--mp2-navy); opacity:0.65;"></div>
+          <div id="mp2-tx-list" style="display:grid; gap:14px;"></div>`;
+
+        // Wire filter chips
+        const seasonRow = document.getElementById("mp2-tx-season-row");
+        const typeRow = document.getElementById("mp2-tx-type-row");
+        seasonRow.addEventListener("click", (e) => {
+          const btn = e.target.closest(".mp2-tx-chip");
+          if (!btn) return;
+          window.mp2.ctx.txFilters.season = btn.dataset.season === "all" ? null : Number(btn.dataset.season);
+          mp2RefreshFilterChips();
+          mp2DrawTxList();
+        });
+        typeRow.addEventListener("click", (e) => {
+          const btn = e.target.closest(".mp2-tx-chip");
+          if (!btn) return;
+          const t = btn.dataset.type;
+          window.mp2.ctx.txFilters.type = t === "all" ? null : t;
+          mp2RefreshFilterChips();
+          mp2DrawTxList();
+        });
+
+        mp2RefreshFilterChips();
+        mp2DrawTxList();
+      }
+
+      function mp2RefreshFilterChips() {
+        const f = window.mp2.ctx.txFilters;
+        // Seasons: highlight the selected one, or all when ALL is active
+        const seasonRow = document.getElementById("mp2-tx-season-row");
+        if (seasonRow) {
+          seasonRow.querySelectorAll(".mp2-tx-chip").forEach((b) => {
+            b.classList.remove("active");
+            const dv = b.dataset.season;
+            if (f.season == null) {
+              b.classList.add("active");
+            } else if (
+              (dv === "all" && false) ||
+              (dv !== "all" && Number(dv) === f.season)
+            ) {
+              b.classList.add("active");
+            }
+          });
+        }
+        // Types: highlight selected (with type-specific bg), or all when ALL
+        const typeRow = document.getElementById("mp2-tx-type-row");
+        if (typeRow) {
+          typeRow.querySelectorAll(".mp2-tx-chip").forEach((b) => {
+            b.classList.remove("active", "trade", "add", "drop", "add_drop");
+            const dv = b.dataset.type;
+            if (f.type == null) {
+              b.classList.add("active");
+              if (dv !== "all") b.classList.add(dv);
+            } else if (dv === f.type) {
+              b.classList.add("active");
+              if (dv !== "all") b.classList.add(dv);
+            }
+          });
+        }
+      }
+
+      function mp2DrawTxList() {
+        const ctx = window.mp2.ctx;
+        const f = ctx.txFilters;
+        const txs = (ctx.txs || []).filter(
+          (t) =>
+            (f.season == null || t.season === f.season) &&
+            (f.type == null || t.type === f.type),
+        );
+        document.getElementById("mp2-tx-count").textContent =
+          `Showing ${txs.length} of ${(ctx.txs || []).length} transactions`;
+        const list = document.getElementById("mp2-tx-list");
+        if (txs.length === 0) {
+          list.innerHTML = `<div class="mp2-tx-empty">NO TRANSACTIONS MATCH YOUR FILTERS</div>`;
+          return;
+        }
+        // Group by season
+        const groups = new Map();
+        txs.forEach((t) => {
+          if (!groups.has(t.season)) groups.set(t.season, []);
+          groups.get(t.season).push(t);
+        });
+        const sortedGroups = Array.from(groups.entries()).sort((a, b) => b[0] - a[0]);
+
+        list.innerHTML = sortedGroups
+          .map(([season, items]) => `
+            <div class="mp2-panel">
+              <div class="mp2-rivets-b"></div>
+              <div class="mp2-panel-head">
+                <span class="mp2-icon-box"></span>
+                <span>SEASON ${season}</span>
+                <span class="mp2-count">${items.length}</span>
+              </div>
+              <div class="mp2-panel-body">
+                <div style="display:grid; gap:10px;">
+                  ${items.map(mp2TxCardHTML).join("")}
+                </div>
+              </div>
+            </div>
+          `)
+          .join("");
+      }
+
+      function mp2TxCardHTML(t) {
+        const dateStr = t.date
+          ? t.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+          : "";
+        const labelMap = { trade: "TRADE", add: "ADD", drop: "DROP", add_drop: "ADD/DROP" };
+        let bodyHTML = "";
+        if (t.type === "trade") {
+          const youGet = (t.youGet || []).map((it) => it.kind === "pick"
+            ? `<div class="mp2-tx-pickrow"><span class="mp2-tx-pickbadge">PICK</span><span class="mp2-tx-pick-label">${it.label}</span></div>`
+            : mp2PlayerRowHTML({ name: it.name, team: it.team, pos: it.pos, headshot: mp2PlayerHeadshot(it) })).join("");
+          const youGave = (t.youGave || []).map((it) => it.kind === "pick"
+            ? `<div class="mp2-tx-pickrow"><span class="mp2-tx-pickbadge">PICK</span><span class="mp2-tx-pick-label">${it.label}</span></div>`
+            : mp2PlayerRowHTML({ name: it.name, team: it.team, pos: it.pos, headshot: mp2PlayerHeadshot(it) })).join("");
+          // Manager pills for each side of the trade. The current manager is on the RECEIVED side,
+          // the counterparty (t.withManager) is on the SENT side.
+          const currentMgr = (window.mp2 && window.mp2.ctx && window.mp2.ctx.manager) ? window.mp2.ctx.manager.manager_name : "";
+          const buildTradeMgrPill = (mgr) => {
+            if (!mgr) return "";
+            const hatUrl = `data/hats/${getManagerHatFilename(mgr)}`;
+            return `<span class="mp2-tx-trade-mgr">
+              <img src="${hatUrl}" alt="" onerror="this.style.display='none';">
+              <span class="mp2-tx-trade-mgr-name">${mgr}</span>
+            </span>`;
+          };
+          bodyHTML = `
+            <div class="mp2-tx-trade-grid">
+              <div>
+                <div class="mp2-tx-trade-header" style="color:var(--mp2-green-deep);">
+                  <span class="mp2-tx-trade-header-label">▼ RECEIVED</span>
+                  ${buildTradeMgrPill(currentMgr)}
+                </div>
+                <div style="display:grid; gap:6px;">${youGet || '<div class="mp2-tx-empty" style="padding:14px;">—</div>'}</div>
+              </div>
+              <div class="mp2-tx-trade-arrow">⇄ FOR ⇄</div>
+              <div>
+                <div class="mp2-tx-trade-header" style="color:var(--mp2-red-deep);">
+                  <span class="mp2-tx-trade-header-label">▲ SENT</span>
+                  ${buildTradeMgrPill(t.withManager)}
+                </div>
+                <div style="display:grid; gap:6px;">${youGave || '<div class="mp2-tx-empty" style="padding:14px;">—</div>'}</div>
+              </div>
+            </div>`;
+        } else if (t.type === "add") {
+          bodyHTML = mp2PlayerRowHTML({ name: t.added.name, team: t.added.team, pos: t.added.pos, headshot: mp2PlayerHeadshot(t.added), kind: "added" });
+        } else if (t.type === "drop") {
+          bodyHTML = mp2PlayerRowHTML({ name: t.dropped.name, team: t.dropped.team, pos: t.dropped.pos, headshot: mp2PlayerHeadshot(t.dropped), kind: "dropped" });
+        } else if (t.type === "add_drop") {
+          bodyHTML = `<div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;" class="mp2-adddrop-grid">
+            ${t.added ? mp2PlayerRowHTML({ name: t.added.name, team: t.added.team, pos: t.added.pos, headshot: mp2PlayerHeadshot(t.added), kind: "added" }) : ""}
+            ${t.dropped ? mp2PlayerRowHTML({ name: t.dropped.name, team: t.dropped.team, pos: t.dropped.pos, headshot: mp2PlayerHeadshot(t.dropped), kind: "dropped" }) : ""}
+          </div>`;
+        }
+
+        // For non-trade rows we still show the counterparty pill in the card head when relevant.
+        // Trades show the manager pill inside each side's RECEIVED/SENT header instead.
+        let counterparty = "";
+        if (t.type !== "trade" && t.withManager) {
+          const oppHat = `data/hats/${getManagerHatFilename(t.withManager)}`;
+          counterparty = `<span class="mp2-tx-counterparty">
+            <span class="mp2-tx-mgr-pill">
+              <img src="${oppHat}" alt="" onerror="this.style.display='none';">${t.withManager}
+            </span>
+          </span>`;
+        }
+
+        return `
+          <div class="mp2-tx-card">
+            <div class="mp2-tx-card-head">
+              <span class="mp2-tx-typechip ${t.type}">${labelMap[t.type] || t.type.toUpperCase()}</span>
+              <span class="mp2-tx-date">${dateStr}</span>
+              ${counterparty}
+            </div>
+            <div class="mp2-tx-body">${bodyHTML}</div>
+          </div>`;
+      }
+
+      function mp2RenderTab(tab) {
+        if (tab === "career") mp2RenderCareer();
+        else if (tab === "seasons") mp2RenderSeasons();
+        else if (tab === "h2h") mp2RenderH2H();
+        else if (tab === "moves") mp2RenderMoves();
+      }
+
+      // ===== V2 showManagerDetail =====
       async function showManagerDetail(managerName) {
         const manager = allManagersData.find(
           (m) => m.manager_name === managerName,
@@ -41298,10 +44066,22 @@
 
         const modal = document.getElementById("manager-modal");
         const modalBody = document.getElementById("modal-body");
+        modal.classList.add("mp2-modal");
 
-        // Load team logos for each season using cached data
+        // Ensure bottom rivets exist on modal-content
+        const mc = modal.querySelector(".modal-content");
+        if (mc && !mc.querySelector(".mp2-modal-rivets")) {
+          const r = document.createElement("div");
+          r.className = "mp2-modal-rivets";
+          mc.appendChild(r);
+        }
+
+        // Show loading placeholder
+        modalBody.innerHTML = `<div style="padding:60px 20px;text-align:center;font-family:'Arcade Gamer',monospace;font-size:12px;color:var(--mp2-navy);opacity:0.6;">LOADING PROFILE…</div>`;
+        modal.classList.add("active");
+
+        // Load team logos for each season
         const seasonLogos = {};
-        let currentManagerLogo = "";
         for (const season of manager.season_history) {
           const teams = await getTeamData(season.year);
           if (teams) {
@@ -41313,12 +44093,6 @@
             }
           }
         }
-        // Get most recent logo as current manager logo
-        const mostRecentSeason = Math.max(
-          ...Object.keys(seasonLogos).map(Number),
-        );
-        currentManagerLogo = seasonLogos[mostRecentSeason] || "";
-
         // Build a map of all manager logos for h2h display
         const allManagerLogos = {};
         for (const mgr of allManagersData) {
@@ -41342,322 +44116,99 @@
             }
           }
         }
-        // Store globally for sort function
         window.currentManagerLogos = allManagerLogos;
 
-        // Build season timeline with draft grades
-        const seasonHistory = manager.season_history.sort(
-          (a, b) => b.year - a.year,
+        // Determine active status
+        let isActive = false;
+        try {
+          const currentStandingsResponse = await fetch(
+            "data/current_season/standings.json",
+          );
+          if (currentStandingsResponse.ok) {
+            const currentStandings = await currentStandingsResponse.json();
+            const normalized = normalizeStandingsData(currentStandings, 2026);
+            isActive = normalized.some((t) => t.manager === managerName);
+          }
+        } catch (e) {}
+
+        // Build header
+        const hatUrl = `data/hats/${getManagerHatFilename(manager.manager_name)}`;
+        const mostRecentSeason = Math.max(
+          ...Object.keys(seasonLogos).map(Number),
         );
-        const managerGrades = managerDraftGrades[manager.manager_name] || {
-          grades: [],
+        const currentManagerLogo = seasonLogos[mostRecentSeason] || "";
+
+        // Badge: hat with team-logo fallback; if neither loads, hide the image (no initials).
+        const badgeHTML = `<img src="${hatUrl}" alt=""
+          onerror="${currentManagerLogo ? `this.onerror=null; this.src='${currentManagerLogo}'; this.style.borderRadius='50%';` : `this.style.display='none';`}">`;
+
+        const trophiesHTML = mp2BuildTrophyTiles(manager.manager_name);
+
+        // Stash context for tab renderers
+        window.mp2.ctx = {
+          manager,
+          managerName,
+          seasonLogos,
+          allManagerLogos,
+          isActive,
         };
 
-        let timelineHTML = seasonHistory
-          .map((season) => {
-            let rankClass = "";
-            let rankText = `#${season.rank}`;
-
-            if (season.rank === 1) {
-              rankClass = "champion";
-              rankText =
-                '<img src="champion_ring.png" alt="Champion" style="width: 20px; height: 20px; vertical-align: middle; margin-right: 4px;">Champion';
-            } else if (season.rank === 2) {
-              rankClass = "runner-up";
-              rankText = "Runner-up";
-            }
-
-            const logo = seasonLogos[season.year]
-              ? `<img src="${seasonLogos[season.year]}" class="timeline-logo" alt="${season.team_name}">`
-              : "";
-
-            // Get draft grade for this season
-            const seasonGrade = managerGrades.grades.find(
-              (g) => g.year === season.year,
-            );
-            let draftGradeHTML = "";
-            if (seasonGrade) {
-              const gradeColor = getGradeColor(seasonGrade.grade);
-              const bgColor = getGradeBackgroundColor(seasonGrade.grade);
-              const scoreSign = seasonGrade.score >= 0 ? "+" : "";
-              draftGradeHTML = `
-                        <span class="draft-grade-badge" style="background: ${bgColor}; color: ${gradeColor}; border: 1px solid ${gradeColor};" 
-                              title="Draft: ${seasonGrade.actual.toFixed(0)} pts vs ${seasonGrade.expected.toFixed(0)} expected (${scoreSign}${seasonGrade.score.toFixed(1)}%)">
-                            Draft: ${seasonGrade.grade}
-                        </span>
-                    `;
-            }
-
-            return `
-                    <div class="timeline-item">
-                        <div class="year">${season.year}</div>
-                        <div class="details">
-                            <span class="rank ${rankClass}">${rankText}</span>
-                            ${draftGradeHTML}
-                            <span>${season.wins}-${season.losses} | ${season.points_for.toLocaleString()} pts</span>
-                            <div style="margin-top: 0.25rem; color: #666; font-size: 0.9rem;">
-                                Team: ${season.team_name}
-                            </div>
-                        </div>
-                        ${logo}
-                    </div>
-                `;
-          })
-          .join("");
-
-        // Calculate head-to-head records
-        const h2hRecords = await calculateHeadToHeadRecords(managerName);
-        let h2hHTML = "";
-
-        if (h2hRecords.length > 0) {
-          h2hHTML = `
-                    <div class="timeline">
-                        <h3>Head-to-Head Records</h3>
-                        <table class="matchup-table" id="h2h-table">
-                            <thead>
-                                <tr>
-                                    <th class="sortable" onclick="sortH2HTable(0, 'string')">Opponent</th>
-                                    <th class="sortable" onclick="sortH2HTable(1, 'record')">Record</th>
-                                    <th class="sortable" onclick="sortH2HTable(2, 'number')">Win %</th>
-                                    <th class="sortable" onclick="sortH2HTable(3, 'number')">Avg Points For</th>
-                                    <th class="sortable" onclick="sortH2HTable(4, 'number')">Avg Points Against</th>
-                                </tr>
-                            </thead>
-                            <tbody id="h2h-body">
-                                ${h2hRecords
-                                  .map((record) => {
-                                    const oppLogo =
-                                      allManagerLogos[record.opponent] || "";
-                                    const logoHtml = oppLogo
-                                      ? `<img src="${oppLogo}" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px; vertical-align: middle; object-fit: cover;">`
-                                      : "";
-                                    return `
-                                    <tr>
-                                        <td>${logoHtml}${record.opponent}</td>
-                                        <td>${record.wins}-${record.losses}</td>
-                                        <td>${(record.win_pct * 100).toFixed(1)}%</td>
-                                        <td>${record.avg_points_for.toFixed(1)}</td>
-                                        <td>${record.avg_points_against.toFixed(1)}</td>
-                                    </tr>
-                                `;
-                                  })
-                                  .join("")}
-                            </tbody>
-                        </table>
-                    </div>
-                `;
-        }
-
-        // Build draft grade section - compare to other managers using draft points
-        let draftGradeSectionHTML = "";
-        if (managerGrades.adjustedDraftPoints !== undefined) {
-          // Get all managers' adjusted draft points and rank them
-          const allManagerScores = Object.entries(managerDraftGrades)
-            .filter(
-              ([name, data]) =>
-                data.adjustedDraftPoints !== undefined &&
-                data.grades.length > 0,
-            )
-            .map(([name, data]) => ({
-              name,
-              adjustedPoints: data.adjustedDraftPoints,
-              avgPoints: data.avgDraftPoints,
-              seasons: data.seasons,
-            }))
-            .sort((a, b) => b.adjustedPoints - a.adjustedPoints);
-
-          // Find this manager's rank
-          const managerRank =
-            allManagerScores.findIndex((m) => m.name === manager.manager_name) +
-            1;
-          const totalManagers = allManagerScores.length;
-
-          // Convert adjusted points back to a grade
-          const overallGrade = pointsToGrade(managerGrades.adjustedDraftPoints);
-
-          const avgGradeColor = getGradeColor(overallGrade);
-          const avgBgColor = getGradeBackgroundColor(overallGrade);
-          draftGradeSectionHTML = `
-                    <div class="draft-grade-section">
-                        <div class="draft-grade-overall" style="background: ${avgBgColor}; border-color: ${avgGradeColor};">
-                            <div class="draft-grade-letter" style="color: ${avgGradeColor};">${overallGrade}</div>
-                            <div class="draft-grade-label">Draft Grade</div>
-                            <div class="draft-grade-score" style="color: ${avgGradeColor};">Rank #${managerRank} of ${totalManagers}</div>
-                        </div>
-                    </div>
-                `;
-        }
+        const sideNavHTML = MP2_NAV_ITEMS.map(
+          (n, i) => `<button class="mp2-sidenav-btn${i === 0 ? " active" : ""}" data-tab="${n.id}">${n.icon}<span>${n.label}</span></button>`,
+        ).join("");
+        const bottomNavHTML = MP2_NAV_ITEMS.map(
+          (n, i) => `<button class="mp2-bottomnav-btn${i === 0 ? " active" : ""}" data-tab="${n.id}">${n.icon}<span>${n.label}</span></button>`,
+        ).join("");
 
         modalBody.innerHTML = `
-                <div class="modal-stats">
-                    <div class="stat-box">
-                        <div class="value">${manager.total_wins}-${manager.total_losses}-${manager.total_ties}</div>
-                        <div class="label">All-Time Record</div>
+          <div class="mp2-app">
+            <nav class="mp2-sidenav" aria-label="Sections">
+              <div class="mp2-sidenav-brand">FBCW<br>MGR</div>
+              ${sideNavHTML}
+            </nav>
+            <div class="mp2-main">
+              <div class="mp2-mh">
+                <div class="mp2-mh-badge">${badgeHTML}</div>
+                <div class="mp2-mh-center">
+                  <div class="mp2-mh-name-row">
+                    <div class="mp2-mh-name">${manager.manager_name.toUpperCase()}</div>
+                    <div class="mp2-mh-meta">
+                      <span>JOINED ${manager.first_season}</span>
+                      <span class="mp2-mh-dot">·</span>
+                      <span>${manager.seasons_played} SEASONS</span>
                     </div>
-                    <div class="stat-box">
-                        <div class="value">${(manager.win_pct * 100).toFixed(1)}%</div>
-                        <div class="label">Win Percentage</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value">${manager.championships}</div>
-                        <div class="label">Championships</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value">${manager.avg_finish.toFixed(1)}</div>
-                        <div class="label">Avg Finish</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value">${manager.playoff_appearances}</div>
-                        <div class="label">Playoff Apps</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="value">${manager.total_points_for.toLocaleString()}</div>
-                        <div class="label">Career Points</div>
-                    </div>
+                  </div>
+                  <div class="mp2-trophy-row">${trophiesHTML}</div>
                 </div>
-                
-                ${draftGradeSectionHTML}
-                
-                <div class="timeline">
-                    <h3>Season-by-Season Timeline</h3>
-                    ${timelineHTML}
+                <div class="mp2-mh-right">
+                  ${isActive ? '<span class="mp2-mh-active">● ACTIVE</span>' : ""}
+                  <button class="mp2-mh-close" onclick="closeManagerModal()" title="Close profile">✕</button>
                 </div>
-                
-                ${h2hHTML}
-            `;
+              </div>
+              <div class="mp2-hazard"></div>
+              <div class="mp2-yellow-band"></div>
+              <div class="mp2-main-scroll">
+                <div class="mp2-content" id="mp2-tab-content"></div>
+                <nav class="mp2-bottomnav" aria-label="Sections">${bottomNavHTML}</nav>
+              </div>
+            </div>
+          </div>`;
 
-        // Set the header separately with awards emojis
-        const modalHeaderSection = document.getElementById(
-          "modal-header-section",
-        );
+        const onNavClick = (e) => {
+          const btn = e.target.closest("[data-tab]");
+          if (!btn) return;
+          document
+            .querySelectorAll(".mp2-sidenav-btn,.mp2-bottomnav-btn")
+            .forEach((b) => {
+              if (b.dataset.tab === btn.dataset.tab) b.classList.add("active");
+              else b.classList.remove("active");
+            });
+          mp2RenderTab(btn.dataset.tab);
+        };
+        modalBody.querySelector(".mp2-sidenav").addEventListener("click", onNavClick);
+        modalBody.querySelector(".mp2-bottomnav").addEventListener("click", onNavClick);
 
-        // Build awards display for modal header (same format as cards)
-        const awards = managerAwardsData[manager.manager_name] || {};
-        let modalAwardsHTML = "";
-
-        const awardsList = [];
-        if (awards.championships)
-          awardsList.push({
-            type: "image",
-            src: "champion_ring.png",
-            count: awards.championships,
-            alt: "Championship",
-            years: awards.championshipYears || [],
-          });
-        if (awards.regularSeason)
-          awardsList.push({
-            type: "image",
-            src: "data/awards/reg_season_champion.png",
-            count: awards.regularSeason,
-            alt: "Regular Season Champion",
-            years: awards.regularSeasonYears || [],
-          });
-        if (awards.scoringChamp)
-          awardsList.push({
-            type: "image",
-            src: "data/awards/scoring_champion.png",
-            count: awards.scoringChamp,
-            alt: "Scoring Champion",
-            years: awards.scoringChampYears || [],
-          });
-        if (awards.troutAward)
-          awardsList.push({
-            type: "image",
-            src: "data/awards/hitter.png",
-            count: awards.troutAward,
-            alt: "Mike Trout Award",
-            years: awards.troutAwardYears || [],
-          });
-        if (awards.degromAward)
-          awardsList.push({
-            type: "image",
-            src: "data/awards/pitcher.png",
-            count: awards.degromAward,
-            alt: "Jacob deGrom Award",
-            years: awards.degromAwardYears || [],
-          });
-        if (awards.diamondAward)
-          awardsList.push({
-            type: "image",
-            src: "data/awards/diamond.png",
-            count: awards.diamondAward,
-            alt: "Diamond in the Rough",
-            years: awards.diamondAwardYears || [],
-          });
-        if (awards.garbage)
-          awardsList.push({
-            type: "image",
-            src: "data/awards/garbage.png",
-            count: awards.garbage,
-            alt: "Garbage Award",
-            years: awards.garbageYears || [],
-          });
-        if (awards.clown)
-          awardsList.push({
-            type: "image",
-            src: "data/awards/clown.png",
-            count: awards.clown,
-            alt: "Clown Award",
-            years: awards.clownYears || [],
-          });
-        if (awards.bustAward)
-          awardsList.push({
-            type: "image",
-            src: "data/awards/bust.png",
-            count: awards.bustAward,
-            alt: "Bust of the Year",
-            years: awards.bustAwardYears || [],
-          });
-
-        if (awardsList.length > 0) {
-          modalAwardsHTML = '<div class="awards-row">';
-          awardsList.forEach((award) => {
-            const yearsText =
-              award.years.length > 0 ? award.years.sort().join(", ") : "";
-            const tooltipText = `${award.alt}${yearsText ? ": " + yearsText : ""}`;
-            modalAwardsHTML += `<div class="award-badge" data-tooltip="${tooltipText}">`;
-            if (award.type === "image") {
-              modalAwardsHTML += `<img src="${award.src}" alt="${award.alt}" class="award-image">`;
-            } else {
-              modalAwardsHTML += award.emoji;
-            }
-            if (award.count > 1) {
-              modalAwardsHTML += `<span class="award-count">x${award.count}</span>`;
-            }
-            modalAwardsHTML += "</div>";
-          });
-          modalAwardsHTML += "</div>";
-        }
-
-        // Determine hat image path (dynamically generated from manager name)
-        const hatFilename = getManagerHatFilename(manager.manager_name);
-        const hatUrl = `data/hats/${hatFilename}`;
-
-        // Always try hat first, fall back to team logo if hat doesn't exist
-        let profileImageHTML = "";
-        if (currentManagerLogo) {
-          profileImageHTML = `<img src="${hatUrl}" style="width: 80px; height: 80px; object-fit: contain;" onerror="this.src='${currentManagerLogo}'; this.style.borderRadius='50%'; this.style.width='50px'; this.style.height='50px'; this.style.border='3px solid #1e3c72'; this.style.objectFit='cover';">`;
-        } else {
-          profileImageHTML = `<img src="${hatUrl}" style="width: 80px; height: 80px; object-fit: contain;" onerror="this.style.display='none';">`;
-        }
-
-        modalHeaderSection.innerHTML = `
-                <div class="modal-header">
-                    <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-                        ${profileImageHTML}
-                        <h2 style="margin: 0;">${manager.manager_name}</h2>
-                        ${modalAwardsHTML}
-                    </div>
-                    <p style="color: #666; margin-top: 0.5rem;">Joined ${manager.first_season} | ${manager.seasons_played} seasons</p>
-                </div>
-            `;
-
-        // Store h2h data for sorting
-        window.currentH2HData = h2hRecords;
-        window.currentSortColumn = null;
-        window.currentSortDirection = "desc";
-
-        modal.classList.add("active");
+        mp2RenderTab("career");
       }
 
       // ===== SORT HEAD-TO-HEAD TABLE =====
@@ -41855,6 +44406,10 @@
       function closeManagerModal() {
         const modal = document.getElementById("manager-modal");
         modal.classList.remove("active");
+        // Close any nested matchup-history overlay
+        document
+          .querySelectorAll(".mp2-mh-modal-overlay")
+          .forEach((o) => o.remove());
       }
 
       // Close modal when clicking outside
