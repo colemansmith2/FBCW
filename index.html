@@ -12037,10 +12037,11 @@
       flex-direction: column;
       gap: 8px;
     }
-    #scoring.ps-modern .ps-filters .qualifier-row {
-      display: flex;
-      gap: 8px;
-      align-items: stretch;
+    /* Desktop: align custom inputs vertically with the dropdown by giving it
+       the same column-with-label structure so the inputs sit at the same
+       baseline as the manager/qualifier buttons. */
+    #scoring.ps-modern .ps-filters .qualifier-custom {
+      align-self: flex-end;
     }
     #scoring.ps-modern .ps-filters .qualifier-dropdown {
       position: relative;
@@ -12686,26 +12687,49 @@
       }
       #scoring.ps-modern .ps-ribbon-stitch { bottom: -8px; height: 5px; }
 
-      /* Filters: tighter overall, smaller controls so more fits per screen */
+      /* ============ Filters: 2-column grid ============
+         Layout (top → bottom):
+           [ Season           ] full width
+           [ Stats tabs       ] full width
+           [ Manager ] [ Qualifier ]   side by side
+           [ Custom inputs (full width, only when Custom is selected) ]
+           [ Position pills   ] full width
+      */
       #scoring.ps-modern .ps-filters {
         padding: 14px 12px 12px;
       }
       #scoring.ps-modern .ps-filters .player-control-row-1 {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
         gap: 10px;
         margin-bottom: 10px;
-      }
-      #scoring.ps-modern .ps-filters label {
-        font-size: 9px;
-        letter-spacing: 1px;
+        align-items: start;
       }
       #scoring.ps-modern .ps-filters .season-selector,
       #scoring.ps-modern .ps-filters .stat-type-toggle,
-      #scoring.ps-modern .ps-filters .position-filter,
-      #scoring.ps-modern .ps-filters .manager-filter,
-      #scoring.ps-modern .ps-filters .qualifier-filter {
+      #scoring.ps-modern .ps-filters .position-filter {
+        grid-column: 1 / -1;
         width: 100%;
         gap: 5px;
+      }
+      #scoring.ps-modern .ps-filters .manager-filter {
+        grid-column: 1;
+        min-width: 0;
+        gap: 5px;
+      }
+      #scoring.ps-modern .ps-filters .qualifier-filter {
+        grid-column: 2;
+        min-width: 0;
+        gap: 5px;
+      }
+      #scoring.ps-modern .ps-filters .qualifier-custom {
+        grid-column: 1 / -1;       /* full width row below manager + qualifier */
+        align-self: stretch;
+      }
+
+      #scoring.ps-modern .ps-filters label {
+        font-size: 9px;
+        letter-spacing: 1px;
       }
 
       /* Slimmer button height + lighter offset shadow */
@@ -12725,7 +12749,7 @@
         padding: 0 4px;
       }
 
-      /* Position pills wrap into a compact grid */
+      /* Position pills as a compact grid */
       #scoring.ps-modern .ps-filters .position-pills {
         display: grid;
         grid-template-columns: repeat(6, 1fr);
@@ -12738,10 +12762,8 @@
         box-shadow: 2px 2px 0 0 var(--ps-line);
       }
 
-      /* Qualifier custom row wraps if needed; inputs share the width evenly */
-      #scoring.ps-modern .ps-filters .qualifier-row { flex-wrap: wrap; gap: 6px; }
+      /* Qualifier custom inputs share the row evenly */
       #scoring.ps-modern .ps-filters .qualifier-custom {
-        width: 100%;
         gap: 4px;
       }
       #scoring.ps-modern .ps-filters .qualifier-custom select,
@@ -12768,11 +12790,74 @@
         letter-spacing: 1px;
       }
 
-      /* ===== Table — much tighter so more columns fit between scrolls ===== */
+      /* =========================================================
+         Table on mobile
+         - Cap height to ~15 rows so the page doesn't endlessly scroll;
+           vertical scroll happens inside the wrapper.
+         - Sticky thead so the column names stay visible while scrolling.
+         - Sticky Player column so the player's name stays visible while
+           the stat columns scroll horizontally behind it.
+         - Hide the "#" column to claw back space for the actual stats.
+         ========================================================= */
+
+      /* Allow sticky positioning to work — contain: paint can still establish
+         a containing block in some browsers, so be conservative. */
+      #scoring.ps-modern .ps-table-wrap {
+        contain: none;
+      }
+
+      /* Vertical-scroll container, capped at ~15 rows (rows ≈ 36px) */
+      #scoring.ps-modern .ps-table-wrap .player-table-wrapper {
+        max-height: min(580px, 70vh);
+        overflow-y: auto;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
       #scoring.ps-modern .player-table {
         font-size: 0.75rem;
-        min-width: 0;                  /* let the wrapper scroll naturally */
+        min-width: 0;
+        border-collapse: separate;     /* needed so sticky cells render their own bg */
+        border-spacing: 0;
       }
+
+      /* Hide the # / index column */
+      #scoring.ps-modern .player-table thead th:first-child,
+      #scoring.ps-modern .player-table tbody td:first-child {
+        display: none;
+      }
+
+      /* Sticky thead — column names always visible while scrolling vertically */
+      #scoring.ps-modern .player-table thead th {
+        position: sticky;
+        top: 0;
+        z-index: 3;
+      }
+
+      /* Sticky Player column — stays visible while scrolling horizontally */
+      #scoring.ps-modern .player-table tbody td:nth-child(2),
+      #scoring.ps-modern .player-table thead th:nth-child(2) {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        /* visual edge between sticky col and the scrolling stats */
+        border-right: 3px solid var(--ps-line);
+      }
+      /* Header corner needs to beat both axes */
+      #scoring.ps-modern .player-table thead th:nth-child(2) { z-index: 4; }
+
+      /* Sticky body cells need their own background — masks the stat columns
+         scrolling behind them. Match the alternating row stripes + hover. */
+      #scoring.ps-modern .player-table tbody tr td:nth-child(2) {
+        background: var(--ps-paper);
+      }
+      #scoring.ps-modern .player-table tbody tr:nth-child(even) td:nth-child(2) {
+        background: var(--ps-paper-row);
+      }
+      #scoring.ps-modern .player-table tbody tr:hover td:nth-child(2) {
+        background: var(--ps-hi);
+      }
+
       #scoring.ps-modern .player-table th {
         font-size: 9px;
         padding: 6px 4px;
@@ -12783,7 +12868,7 @@
         font-size: 0.85rem;
       }
       #scoring.ps-modern .player-table tbody td.stat-col {
-        font-size: 0.95rem;            /* slightly larger than non-stat cells, was 1.2rem on desktop */
+        font-size: 0.95rem;
         letter-spacing: 0;
       }
       #scoring.ps-modern .player-name-cell { gap: 6px; }
@@ -12799,7 +12884,6 @@
         font-size: 9px;
         gap: 3px;
       }
-      /* Make the MLB / position chips under the name shrink so they don't push columns wider */
       #scoring.ps-modern .player-table .ps-mlb-badge,
       #scoring.ps-modern .player-table .position-badge {
         font-size: 8px !important;
@@ -30637,43 +30721,42 @@
 
               <div class="qualifier-filter">
                 <label>Qualifier:</label>
-                <div class="qualifier-row">
-                  <div class="qualifier-dropdown">
-                    <button class="qualifier-btn" id="qualifier-btn-display" type="button">All</button>
-                    <div class="qualifier-dropdown-menu" id="qualifier-dropdown-menu">
-                      <div class="qualifier-menu-item active" data-value="all">All</div>
-                      <div class="qualifier-menu-item" data-value="qualified">Qualified</div>
-                      <div class="qualifier-menu-item" data-value="custom">Custom&hellip;</div>
-                    </div>
-                  </div>
-                  <div class="qualifier-custom" id="qualifier-custom">
-                    <select id="qualifier-stat" onchange="filterPlayers()">
-                      <option value="fantasy_points">Pts</option>
-                      <option value="PPG">PPG</option>
-                      <option value="G">G</option>
-                      <option value="GS">GS</option>
-                      <option value="PA">PA</option>
-                      <option value="H">H</option>
-                      <option value="HR">HR</option>
-                      <option value="SB">SB</option>
-                      <option value="AVG">AVG</option>
-                      <option value="OPS">OPS</option>
-                      <option value="IP">IP</option>
-                      <option value="W">W</option>
-                      <option value="L">L</option>
-                      <option value="SV">SV</option>
-                      <option value="SO">K</option>
-                      <option value="BB">BB</option>
-                      <option value="WHIP">WHIP</option>
-                      <option value="ERA">ERA</option>
-                    </select>
-                    <select id="qualifier-op" onchange="filterPlayers()">
-                      <option value=">">&gt;</option>
-                      <option value="<">&lt;</option>
-                    </select>
-                    <input id="qualifier-value" type="number" step="any" placeholder="0" oninput="filterPlayers()" />
+                <div class="qualifier-dropdown">
+                  <button class="qualifier-btn" id="qualifier-btn-display" type="button">All</button>
+                  <div class="qualifier-dropdown-menu" id="qualifier-dropdown-menu">
+                    <div class="qualifier-menu-item active" data-value="all">All</div>
+                    <div class="qualifier-menu-item" data-value="qualified">Qualified</div>
+                    <div class="qualifier-menu-item" data-value="custom">Custom&hellip;</div>
                   </div>
                 </div>
+              </div>
+
+              <div class="qualifier-custom" id="qualifier-custom">
+                <select id="qualifier-stat" onchange="filterPlayers()">
+                  <option value="fantasy_points">Pts</option>
+                  <option value="PPG">PPG</option>
+                  <option value="G">G</option>
+                  <option value="GS">GS</option>
+                  <option value="PA">PA</option>
+                  <option value="H">H</option>
+                  <option value="HR">HR</option>
+                  <option value="SB">SB</option>
+                  <option value="AVG">AVG</option>
+                  <option value="OPS">OPS</option>
+                  <option value="IP">IP</option>
+                  <option value="W">W</option>
+                  <option value="L">L</option>
+                  <option value="SV">SV</option>
+                  <option value="SO">K</option>
+                  <option value="BB">BB</option>
+                  <option value="WHIP">WHIP</option>
+                  <option value="ERA">ERA</option>
+                </select>
+                <select id="qualifier-op" onchange="filterPlayers()">
+                  <option value=">">&gt;</option>
+                  <option value="<">&lt;</option>
+                </select>
+                <input id="qualifier-value" type="number" step="any" placeholder="0" oninput="filterPlayers()" />
               </div>
 
               <div class="position-filter">
