@@ -12031,6 +12031,104 @@
       border-radius: 0;
     }
 
+    /* Qualifier filter (All / Qualified / Custom) */
+    #scoring.ps-modern .ps-filters .qualifier-filter {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    #scoring.ps-modern .ps-filters .qualifier-row {
+      display: flex;
+      gap: 8px;
+      align-items: stretch;
+    }
+    #scoring.ps-modern .ps-filters .qualifier-dropdown {
+      position: relative;
+    }
+    #scoring.ps-modern .ps-filters .qualifier-btn {
+      height: 44px;
+      padding: 0 14px;
+      font-family: 'Basis33', monospace;
+      font-size: 18px;
+      background: var(--ps-paper);
+      color: var(--ps-ink);
+      border: 3px solid var(--ps-line);
+      box-shadow: 4px 4px 0 0 var(--ps-line);
+      border-radius: 0;
+      cursor: pointer;
+      min-width: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      transition: transform .08s ease;
+    }
+    #scoring.ps-modern .ps-filters .qualifier-btn:hover {
+      transform: translate(-1px,-1px);
+      box-shadow: 5px 5px 0 0 var(--ps-line);
+    }
+    #scoring.ps-modern .ps-filters .qualifier-btn::after {
+      content: '▼';
+      font-family: 'Arcade Gamer', monospace;
+      font-size: 10px;
+      color: var(--ps-ink);
+    }
+    #scoring.ps-modern .ps-filters .qualifier-dropdown-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      min-width: 100%;
+      background: var(--ps-paper);
+      border: 3px solid var(--ps-line);
+      box-shadow: 4px 4px 0 0 var(--ps-line);
+      border-radius: 0;
+      z-index: 10;
+      display: none;
+    }
+    #scoring.ps-modern .ps-filters .qualifier-dropdown-menu.active { display: block; }
+    #scoring.ps-modern .ps-filters .qualifier-menu-item {
+      font-family: 'Basis33', monospace;
+      font-size: 18px;
+      color: var(--ps-ink);
+      padding: 8px 12px;
+      cursor: pointer;
+      border-bottom: 2px dashed var(--ps-line);
+      white-space: nowrap;
+    }
+    #scoring.ps-modern .ps-filters .qualifier-menu-item:last-child { border-bottom: 0; }
+    #scoring.ps-modern .ps-filters .qualifier-menu-item:hover { background: var(--ps-paper-dim); }
+    #scoring.ps-modern .ps-filters .qualifier-menu-item.active { background: var(--ps-hi); }
+
+    /* Custom-rule inputs (visible when Custom… is selected) */
+    #scoring.ps-modern .ps-filters .qualifier-custom {
+      display: none;
+      gap: 6px;
+      align-items: stretch;
+    }
+    #scoring.ps-modern .ps-filters .qualifier-custom.visible {
+      display: flex;
+    }
+    #scoring.ps-modern .ps-filters .qualifier-custom select,
+    #scoring.ps-modern .ps-filters .qualifier-custom input {
+      height: 44px;
+      font-family: 'Basis33', monospace;
+      font-size: 16px;
+      background: var(--ps-paper);
+      color: var(--ps-ink);
+      border: 3px solid var(--ps-line);
+      box-shadow: 4px 4px 0 0 var(--ps-line);
+      border-radius: 0;
+      padding: 0 8px;
+      box-sizing: border-box;
+    }
+    #scoring.ps-modern .ps-filters .qualifier-custom select { min-width: 84px; }
+    #scoring.ps-modern .ps-filters .qualifier-custom input  { min-width: 88px; }
+    #scoring.ps-modern .ps-filters .qualifier-custom input:focus,
+    #scoring.ps-modern .ps-filters .qualifier-custom select:focus {
+      outline: none;
+      border-color: var(--ps-field);
+    }
+
     /* Position pills → chunky position chips */
     #scoring.ps-modern .ps-filters .position-pills {
       gap: 10px;
@@ -12547,98 +12645,194 @@
       top: 0;
     }
 
-    /* Mobile tuning */
+    /* ============================ Mobile tuning ============================ */
     @media (max-width: 768px) {
+      /* Smaller page-card shadow so it doesn't get clipped by viewport edges */
       #scoring.ps-modern .ps-page-card {
         box-shadow:
           0 0 0 2px var(--ps-paper),
-          0 0 0 4px var(--ps-line),
-          6px 6px 0 0 rgba(20, 33, 61, 0.55);
+          0 0 0 3px var(--ps-line),
+          4px 4px 0 0 rgba(20, 33, 61, 0.55);
       }
+      /* Halftone corner dots are pure decoration & overlap the title — drop them */
+      #scoring.ps-modern .ps-page-card::before,
+      #scoring.ps-modern .ps-page-card::after { display: none; }
 
+      /* Ribbon: title on its own line, logo on the right, no badge */
       #scoring.ps-modern .ps-ribbon {
         grid-template-columns: 1fr auto;
-        gap: 12px;
-        padding: 12px 14px;
+        gap: 10px;
+        padding: 10px 12px;
       }
-
-      #scoring.ps-modern .ps-badge-score {
-        display: none;
-      }
-
+      #scoring.ps-modern .ps-badge-score { display: none; }
+      #scoring.ps-modern .ps-title-block { line-height: 1.05; }   /* was .85 — fixes the stacked-line overlap */
       #scoring.ps-modern .ps-page-title {
-        font-size: 24px;
-        text-shadow: 3px 3px 0 var(--ps-line);
+        font-size: 22px;
+        letter-spacing: 0;
+        text-shadow: 2px 2px 0 var(--ps-line);  /* lighter shadow so wraps don't smear */
+        white-space: nowrap;                     /* single line; the 22px size always fits */
       }
-
       #scoring.ps-modern .ps-page-meta {
-        font-size: 13px;
-        margin-top: 8px;
-        letter-spacing: 1.5px;
+        font-size: 11px;
+        margin-top: 6px;
+        letter-spacing: 1px;
+        gap: 6px;
       }
-
       #scoring.ps-modern .ps-ribbon-logo-wrap {
-        width: 48px;
-        height: 48px;
+        width: 44px; height: 44px;
+        padding: 4px;
+        border-width: 2px;
+        box-shadow: 3px 3px 0 0 var(--ps-line);
       }
+      #scoring.ps-modern .ps-ribbon-stitch { bottom: -8px; height: 5px; }
 
+      /* Filters: tighter overall, smaller controls so more fits per screen */
       #scoring.ps-modern .ps-filters {
-        padding: 16px 14px 14px;
+        padding: 14px 12px 12px;
       }
-
       #scoring.ps-modern .ps-filters .player-control-row-1 {
         flex-direction: column;
-        gap: 14px;
+        gap: 10px;
+        margin-bottom: 10px;
       }
-
+      #scoring.ps-modern .ps-filters label {
+        font-size: 9px;
+        letter-spacing: 1px;
+      }
       #scoring.ps-modern .ps-filters .season-selector,
       #scoring.ps-modern .ps-filters .stat-type-toggle,
       #scoring.ps-modern .ps-filters .position-filter,
-      #scoring.ps-modern .ps-filters .manager-filter {
+      #scoring.ps-modern .ps-filters .manager-filter,
+      #scoring.ps-modern .ps-filters .qualifier-filter {
         width: 100%;
+        gap: 5px;
       }
 
+      /* Slimmer button height + lighter offset shadow */
       #scoring.ps-modern .ps-filters .season-btn,
       #scoring.ps-modern .ps-filters .manager-btn,
+      #scoring.ps-modern .ps-filters .qualifier-btn,
       #scoring.ps-modern .ps-filters .stat-type-toggle .toggle-buttons {
         width: 100%;
         min-width: 0;
+        height: 38px;
+        box-shadow: 3px 3px 0 0 var(--ps-line);
+        font-size: 14px;
       }
-
       #scoring.ps-modern .ps-filters .toggle-btn {
         flex: 1;
-        font-size: 10px;
+        font-size: 9px;
+        padding: 0 4px;
+      }
+
+      /* Position pills wrap into a compact grid */
+      #scoring.ps-modern .ps-filters .position-pills {
+        display: grid;
+        grid-template-columns: repeat(6, 1fr);
+        gap: 4px;
+      }
+      #scoring.ps-modern .ps-filters .position-pill {
+        font-size: 9px;
+        padding: 6px 2px;
+        min-width: 0;
+        box-shadow: 2px 2px 0 0 var(--ps-line);
+      }
+
+      /* Qualifier custom row wraps if needed; inputs share the width evenly */
+      #scoring.ps-modern .ps-filters .qualifier-row { flex-wrap: wrap; gap: 6px; }
+      #scoring.ps-modern .ps-filters .qualifier-custom {
+        width: 100%;
+        gap: 4px;
+      }
+      #scoring.ps-modern .ps-filters .qualifier-custom select,
+      #scoring.ps-modern .ps-filters .qualifier-custom input {
+        height: 38px;
+        font-size: 13px;
+        min-width: 0;
+        flex: 1;
+        box-shadow: 3px 3px 0 0 var(--ps-line);
         padding: 0 6px;
       }
 
-      #scoring.ps-modern .ps-filters .position-pill {
-        font-size: 10px;
-        padding: 7px 10px;
+      /* Search bar */
+      #scoring.ps-modern .ps-filters .player-search input {
+        height: 38px;
+        font-size: 15px;
+        box-shadow: 3px 3px 0 0 var(--ps-line);
       }
 
+      /* Result strip */
+      #scoring.ps-modern .ps-result-strip {
+        padding: 8px 12px;
+        font-size: 10px;
+        letter-spacing: 1px;
+      }
+
+      /* ===== Table — much tighter so more columns fit between scrolls ===== */
       #scoring.ps-modern .player-table {
-        font-size: 0.85rem;
-        min-width: 700px;
+        font-size: 0.75rem;
+        min-width: 0;                  /* let the wrapper scroll naturally */
       }
-
       #scoring.ps-modern .player-table th {
-        font-size: 10px;
-        padding: 8px 6px;
+        font-size: 9px;
+        padding: 6px 4px;
+        letter-spacing: 0.5px;
       }
-
       #scoring.ps-modern .player-table td {
-        padding: 6px;
+        padding: 3px 6px;
+        font-size: 0.85rem;
       }
-
+      #scoring.ps-modern .player-table tbody td.stat-col {
+        font-size: 0.95rem;            /* slightly larger than non-stat cells, was 1.2rem on desktop */
+        letter-spacing: 0;
+      }
+      #scoring.ps-modern .player-name-cell { gap: 6px; }
       #scoring.ps-modern .player-table .player-headshot {
-        width: 32px;
-        height: 32px;
+        width: 28px; height: 28px;
         border-width: 2px;
       }
-
       #scoring.ps-modern .player-table .player-name {
-        font-size: 14px;
+        font-size: 13px;
+        line-height: 1;
       }
+      #scoring.ps-modern .player-table .player-mlb-team {
+        font-size: 9px;
+        gap: 3px;
+      }
+      /* Make the MLB / position chips under the name shrink so they don't push columns wider */
+      #scoring.ps-modern .player-table .ps-mlb-badge,
+      #scoring.ps-modern .player-table .position-badge {
+        font-size: 8px !important;
+        padding: 2px 3px !important;
+        letter-spacing: 0.5px;
+      }
+      #scoring.ps-modern .player-table .draft-rank {
+        font-size: 9px;
+        padding: 4px 5px;
+        min-width: 38px;
+        box-shadow: 2px 2px 0 0 var(--ps-line);
+      }
+      #scoring.ps-modern .player-team-cell { gap: 4px; }
+      #scoring.ps-modern .player-table .player-team-logo {
+        width: 20px; height: 20px;
+        border-width: 1px;
+      }
+      #scoring.ps-modern .player-table .player-fantasy-team {
+        font-size: 12px;
+        max-width: 70px;
+      }
+
+      /* Pill labels: full text reads as ALL / BAT / PIT etc. via pill-label-short */
+      #scoring.ps-modern .ps-filters .pill-label-full { display: none; }
+      #scoring.ps-modern .ps-filters .pill-label-short { display: inline; }
+    }
+
+    /* Extra-small phones (iPhone SE etc.) */
+    @media (max-width: 400px) {
+      #scoring.ps-modern .ps-page-title { font-size: 18px; }
+      #scoring.ps-modern .ps-page-meta { font-size: 10px; }
+      #scoring.ps-modern .ps-ribbon-logo-wrap { width: 36px; height: 36px; }
+      #scoring.ps-modern .ps-filters .position-pills { grid-template-columns: repeat(4, 1fr); }
     }
 
     /* =========================================
@@ -30441,6 +30635,47 @@
                 </select>
               </div>
 
+              <div class="qualifier-filter">
+                <label>Qualifier:</label>
+                <div class="qualifier-row">
+                  <div class="qualifier-dropdown">
+                    <button class="qualifier-btn" id="qualifier-btn-display" type="button">All</button>
+                    <div class="qualifier-dropdown-menu" id="qualifier-dropdown-menu">
+                      <div class="qualifier-menu-item active" data-value="all">All</div>
+                      <div class="qualifier-menu-item" data-value="qualified">Qualified</div>
+                      <div class="qualifier-menu-item" data-value="custom">Custom&hellip;</div>
+                    </div>
+                  </div>
+                  <div class="qualifier-custom" id="qualifier-custom">
+                    <select id="qualifier-stat" onchange="filterPlayers()">
+                      <option value="fantasy_points">Pts</option>
+                      <option value="PPG">PPG</option>
+                      <option value="G">G</option>
+                      <option value="GS">GS</option>
+                      <option value="PA">PA</option>
+                      <option value="H">H</option>
+                      <option value="HR">HR</option>
+                      <option value="SB">SB</option>
+                      <option value="AVG">AVG</option>
+                      <option value="OPS">OPS</option>
+                      <option value="IP">IP</option>
+                      <option value="W">W</option>
+                      <option value="L">L</option>
+                      <option value="SV">SV</option>
+                      <option value="SO">K</option>
+                      <option value="BB">BB</option>
+                      <option value="WHIP">WHIP</option>
+                      <option value="ERA">ERA</option>
+                    </select>
+                    <select id="qualifier-op" onchange="filterPlayers()">
+                      <option value=">">&gt;</option>
+                      <option value="<">&lt;</option>
+                    </select>
+                    <input id="qualifier-value" type="number" step="any" placeholder="0" oninput="filterPlayers()" />
+                  </div>
+                </div>
+              </div>
+
               <div class="position-filter">
                 <label>Position:</label>
                 <div class="position-pills" id="position-pills">
@@ -33150,6 +33385,7 @@
     let managerHistoryData = [];
     let managerAwardsData = {}; // Store manager awards globally
     let currentTableMode = "all"; // 'all', 'batters', or 'pitchers'
+    let currentQualifier = "all"; // 'all' | 'qualified' | 'custom'
     const PROSPECT_RANKINGS_URL =
       "data/prospects/2026_top_100_updated.json";
 
@@ -33520,10 +33756,38 @@
         });
       });
 
+      // Qualifier dropdown (All / Qualified / Custom…)
+      const qualifierBtn = document.getElementById('qualifier-btn-display');
+      const qualifierMenu = document.getElementById('qualifier-dropdown-menu');
+      const qualifierCustom = document.getElementById('qualifier-custom');
+
+      if (qualifierBtn && qualifierMenu && qualifierCustom) {
+        qualifierBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          qualifierMenu.classList.toggle('active');
+        });
+        qualifierMenu.addEventListener('click', (e) => e.stopPropagation());
+        qualifierMenu.querySelectorAll('.qualifier-menu-item').forEach((item) => {
+          item.addEventListener('click', () => {
+            const value = item.dataset.value;
+            currentQualifier = value;
+            qualifierMenu.querySelectorAll('.qualifier-menu-item').forEach((i) => i.classList.remove('active'));
+            item.classList.add('active');
+            qualifierMenu.classList.remove('active');
+            // Update button label + show/hide custom inputs
+            qualifierBtn.firstChild.nodeValue = (value === 'all') ? 'All'
+              : (value === 'qualified') ? 'Qualified' : 'Custom';
+            qualifierCustom.classList.toggle('visible', value === 'custom');
+            filterPlayers();
+          });
+        });
+      }
+
       // Close dropdowns on outside click
       document.addEventListener('click', () => {
         if (seasonMenu) seasonMenu.classList.remove('active');
         if (managerMenu) managerMenu.classList.remove('active');
+        if (qualifierMenu) qualifierMenu.classList.remove('active');
       });
     }
 
@@ -34265,6 +34529,41 @@
         currentTableMode = "all";
       }
 
+      // 1b. QUALIFIER PRECOMPUTE
+      // 'qualified' needs league leaders for PA / Pts (batters) and IP / Pts (pitchers).
+      // 'custom' just reads the three inputs (stat, op, value).
+      let leaderBatPA = 0, leaderBatPts = 0, leaderPitIP = 0, leaderPitPts = 0;
+      let customStat = null, customOp = null, customVal = null;
+      if (currentQualifier === "qualified") {
+        for (const p of allPlayersData) {
+          const s = getPlayerStats(p);
+          const pts = getPlayerFantasyPoints(p);
+          if (p.position_type === "B") {
+            if ((s.PA || 0) > leaderBatPA) leaderBatPA = s.PA || 0;
+            if (pts > leaderBatPts) leaderBatPts = pts;
+          } else if (p.position_type === "P") {
+            if ((s.IP || 0) > leaderPitIP) leaderPitIP = s.IP || 0;
+            if (pts > leaderPitPts) leaderPitPts = pts;
+          }
+        }
+      } else if (currentQualifier === "custom") {
+        customStat = document.getElementById("qualifier-stat").value;
+        customOp = document.getElementById("qualifier-op").value;
+        const raw = document.getElementById("qualifier-value").value;
+        const parsed = parseFloat(raw);
+        customVal = isNaN(parsed) ? null : parsed;
+      }
+
+      const customStatValue = (player) => {
+        if (customStat === "fantasy_points") return getPlayerFantasyPoints(player);
+        if (customStat === "PPG") {
+          const s = getPlayerStats(player);
+          const g = s.G || 0;
+          return g > 0 ? getPlayerFantasyPoints(player) / g : 0;
+        }
+        return getPlayerStats(player)[customStat] || 0;
+      };
+
       filteredPlayersData = allPlayersData.filter((player) => {
         // Position filter
         if (positionFilter !== "all") {
@@ -34289,6 +34588,25 @@
           if (!isFA) return false;
         } else if (managerFilter !== "all" && player.manager !== managerFilter) {
           return false;
+        }
+
+        // Qualifier filter
+        if (currentQualifier === "qualified") {
+          const s = getPlayerStats(player);
+          const pts = getPlayerFantasyPoints(player);
+          if (player.position_type === "B") {
+            const qPA  = leaderBatPA  > 0 && (s.PA || 0) >= 0.6 * leaderBatPA;
+            const qPts = leaderBatPts > 0 && pts         >= 0.6 * leaderBatPts;
+            if (!qPA && !qPts) return false;
+          } else if (player.position_type === "P") {
+            const qIP  = leaderPitIP  > 0 && (s.IP || 0) >= 0.6 * leaderPitIP;
+            const qPts = leaderPitPts > 0 && pts         >= 0.5 * leaderPitPts;
+            if (!qIP && !qPts) return false;
+          }
+        } else if (currentQualifier === "custom" && customStat && customOp && customVal !== null) {
+          const v = Number(customStatValue(player)) || 0;
+          if (customOp === ">" && !(v > customVal)) return false;
+          if (customOp === "<" && !(v < customVal)) return false;
         }
 
         // Search filter
