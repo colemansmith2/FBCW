@@ -29141,7 +29141,7 @@
                 <th class="prospect-col-player">Player</th>
                 <th class="prospect-col-pos">Pos</th>
                 <th class="prospect-col-details">Details</th>
-                <th class="prospect-col-avgrank">Avg Rank</th>
+                <th class="prospect-col-avgrank">Score</th>
                 <th class="prospect-col-owner">Owner</th>
               </tr>
             </thead>
@@ -31483,6 +31483,8 @@
       let managerHistoryData = [];
       let managerAwardsData = {}; // Store manager awards globally
       let currentTableMode = "all"; // 'all', 'batters', or 'pitchers'
+      const PROSPECT_RANKINGS_URL =
+        "data/prospects/2026_top_100_updated.json";
 
       // Player scoring state
       let allPlayersData = [];
@@ -49013,7 +49015,7 @@
       //   1. p.headshot_url (Yahoo / roster)
       //   2. averageProjectionsMap[name] (aggregated projection systems)
       //   3. allProjectionBatters / allProjectionPitchers arrays
-      //   4. prospectsData (from data/prospects/prospects.json)
+      //   4. prospectsData (from data/prospects/2026_top_100_updated.json)
       //   5. MLB photo CDN by player_id
       //   6. SVG placeholder
       function mtPlayerHeadshot(p) {
@@ -49050,7 +49052,7 @@
           if (m?.headshot) return m.headshot;
         }
 
-        // 4 — prospects (loaded by My Team init via data/prospects/prospects.json)
+        // 4 — prospects (loaded by My Team init via data/prospects/2026_top_100_updated.json)
         if (Array.isArray(prospectsData) && prospectsData.length) {
           const m = prospectsData.find((pr) => {
             const prName = (pr?.name || "").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -49605,7 +49607,7 @@
             fetch("data/current_season/daily_scores.json").catch(() => null),
             fetch("data/current_season/transactions.json").catch(() => null),
             fetch("data/current_season/bench_pitcher_projections.json").catch(() => null),
-            fetch("data/prospects/prospects.json").catch(() => null),
+            fetch(PROSPECT_RANKINGS_URL).catch(() => null),
           ]);
           console.timeLog("myteam-load", "fetches complete");
           const windowsData = await windowsResp.json();
@@ -50871,7 +50873,7 @@
           try {
             const [naResponse, prospectsResponse] = await Promise.all([
               fetch("data/historical/2025/na_draft.json"),
-              fetch("data/prospects/prospects.json"),
+              fetch(PROSPECT_RANKINGS_URL),
             ]);
 
             if (naResponse.ok) {
@@ -53865,7 +53867,7 @@
         // Ensure prospects data is loaded (needed for age fallback)
         if (prospectsData.length === 0) {
           try {
-            const prospResp = await fetch("data/prospects/prospects.json");
+            const prospResp = await fetch(PROSPECT_RANKINGS_URL);
             if (prospResp.ok) {
               const prospData = await prospResp.json();
               prospectsData = prospData.prospects || [];
@@ -67140,7 +67142,7 @@
         // Load prospects for additional headshot/mlb_team fallback
         if (!prospectsData || prospectsData.length === 0) {
           try {
-            const resp = await fetch("data/prospects/prospects.json");
+            const resp = await fetch(PROSPECT_RANKINGS_URL);
             if (resp.ok) {
               const data = await resp.json();
               prospectsData = data.prospects || [];
@@ -67312,7 +67314,7 @@
         // Load prospects for additional headshot/mlb_team fallback
         if (!prospectsData || prospectsData.length === 0) {
           try {
-            const resp = await fetch("data/prospects/prospects.json");
+            const resp = await fetch(PROSPECT_RANKINGS_URL);
             if (resp.ok) {
               const data = await resp.json();
               prospectsData = data.prospects || [];
@@ -67888,10 +67890,11 @@
       let prospectsData = [];
       let showFullProspectList = false;
       let prospectOwnershipData = {};
+
       async function loadProspects() {
         try {
           // Load prospect rankings
-          const response = await fetch("data/prospects/prospects.json");
+          const response = await fetch(PROSPECT_RANKINGS_URL);
           if (!response.ok) throw new Error("Could not load prospects data");
 
           const data = await response.json();
@@ -67905,7 +67908,7 @@
         } catch (e) {
           console.log("Error loading prospects:", e);
           document.getElementById("prospect-table-body").innerHTML =
-            '<tr><td colspan="5" class="prospect-loading">Could not load prospect data.</td></tr>';
+            '<tr><td colspan="6" class="prospect-loading">Could not load prospect data.</td></tr>';
         }
       }
 
@@ -68248,10 +68251,15 @@
                     `;
             }
 
-            // Format avg rank
-            const avgRank = prospect.avg_rank
-              ? prospect.avg_rank.toFixed(1)
+            const rankingScore = Number(prospect.ranking_score);
+            const scoreDisplay = Number.isFinite(rankingScore)
+              ? rankingScore.toFixed(1)
               : "-";
+            const avgRank = Number(prospect.avg_rank);
+            const avgRankDisplay = Number.isFinite(avgRank)
+              ? avgRank.toFixed(1)
+              : "-";
+            const scoreTitle = `Composite score: ${scoreDisplay}. Listed average: ${avgRankDisplay}. Sources: ${prospect.source_count || 0}/5.`;
 
             return `
                     <tr class="${isOwned ? "owned" : ""}" data-prospect-index="${originalIndex}">
@@ -68309,7 +68317,7 @@
                             </div>
                         </td>
                         <td class="prospect-col-avgrank">
-                            <span class="prospect-avgrank">${avgRank}</span>
+                            <span class="prospect-avgrank" title="${scoreTitle}">${scoreDisplay}</span>
                         </td>
                         <td class="prospect-col-owner">
                             ${ownerHtml}
@@ -68369,8 +68377,14 @@
         if (prospect.rank <= 10) rankClass = "top-10";
         else if (prospect.rank <= 25) rankClass = "top-25";
 
-        // Avg rank
-        const avgRank = prospect.avg_rank ? prospect.avg_rank.toFixed(1) : "-";
+        const rankingScore = Number(prospect.ranking_score);
+        const scoreDisplay = Number.isFinite(rankingScore)
+          ? rankingScore.toFixed(1)
+          : "-";
+        const avgRank = Number(prospect.avg_rank);
+        const avgRankDisplay = Number.isFinite(avgRank)
+          ? avgRank.toFixed(1)
+          : "-";
 
         // Draft/Acquired logic - check if international free agent
         const draftValue = prospect.draft || "-";
@@ -68447,8 +68461,12 @@
                             <div class="prospect-detail-stat-value">${weight}</div>
                         </div>
                         <div class="prospect-detail-stat full-width">
+                            <div class="prospect-detail-stat-label">Score</div>
+                            <div class="prospect-detail-stat-value">${scoreDisplay}</div>
+                        </div>
+                        <div class="prospect-detail-stat full-width">
                             <div class="prospect-detail-stat-label">Avg Rank</div>
-                            <div class="prospect-detail-stat-value">${avgRank}</div>
+                            <div class="prospect-detail-stat-value">${avgRankDisplay}</div>
                         </div>
                     </div>
                 </div>
@@ -68674,6 +68692,12 @@
             const parsedAvgRank = Number.isFinite(avgRankValue)
               ? avgRankValue
               : null;
+            const scoreValue = Number(
+              canonicalProspect?.ranking_score ?? listedProspect?.ranking_score,
+            );
+            const parsedScore = Number.isFinite(scoreValue)
+              ? scoreValue
+              : null;
 
             if (!claimsByProspect.has(normalizedName)) {
               claimsByProspect.set(normalizedName, {
@@ -68685,6 +68709,7 @@
                 mlbTeam:
                   canonicalProspect?.mlb_team || listedProspect?.mlb_team || "",
                 avgRank: parsedAvgRank,
+                rankingScore: parsedScore,
                 headshot: canonicalProspect?.headshot_url || "",
                 bids: [],
               });
@@ -68774,6 +68799,9 @@
             const avgRankDisplay = Number.isFinite(row.avgRank)
               ? row.avgRank.toFixed(1)
               : "-";
+            const scoreDisplay = Number.isFinite(row.rankingScore)
+              ? row.rankingScore.toFixed(1)
+              : avgRankDisplay;
             // Derive display position (RHP/LHP) if we can find the prospect
             let resultDisplayPos = row.position || "";
             if (resultDisplayPos === "P") {
@@ -68825,7 +68853,7 @@
                                         ${opcompEscapeHtml(row.mlbTeam || "FA")}
                                     </span>
                                     ${resultDisplayPos ? `<span class="position-badge pos-${posClass}">${opcompEscapeHtml(resultDisplayPos)}</span>` : ""}
-                                    <span>Avg: ${avgRankDisplay}</span>
+                                    <span>Score: ${scoreDisplay}</span>
                                 </div>
                             </div>
                         </div>
@@ -69078,16 +69106,21 @@
                 return !isOwned && existsInData;
               })
               .map((p) => {
-                // Enrich with latest avg_rank from prospectsData if not saved
-                if (!p.avg_rank) {
-                  const match = prospectsData.find(
-                    (pd) =>
-                      normalizeProspectName(pd.name) ===
-                      normalizeProspectName(p.name),
-                  );
-                  if (match) p.avg_rank = match.avg_rank || null;
-                }
-                return p;
+                const match = prospectsData.find(
+                  (pd) =>
+                    normalizeProspectName(pd.name) ===
+                    normalizeProspectName(p.name),
+                );
+                if (!match) return p;
+                return {
+                  ...p,
+                  rank: match.rank,
+                  position: match.position,
+                  mlb_team: match.mlb_team || p.mlb_team || "",
+                  avg_rank: match.avg_rank || p.avg_rank || null,
+                  ranking_score:
+                    match.ranking_score || p.ranking_score || null,
+                };
               })
               .slice(0, OPCOMP_MAX_SLOTS);
           }
@@ -69168,8 +69201,9 @@
             const headshot = prospect.headshot_url || placeholderImg;
             const mlbTeam = prospect.mlb_team || "";
             const mlbLogoUrl = mlbTeam ? getMLBTeamLogo(mlbTeam) : "";
-            const avgRank = prospect.avg_rank
-              ? prospect.avg_rank.toFixed(1)
+            const rankingScore = Number(prospect.ranking_score);
+            const scoreDisplay = Number.isFinite(rankingScore)
+              ? rankingScore.toFixed(1)
               : "-";
             const escapedName = prospect.name.replace(/'/g, "\\'");
             const hw = prospect.height_weight || "";
@@ -69192,7 +69226,7 @@
                                     getProspectDisplayPosition(prospect);
                                   return `<span class="position-badge pos-${dp}">${dp}</span>`;
                                 })()}
-                                <span>Avg: <span class="opcomp-prospect-avgrank">${avgRank}</span></span>
+                                <span>Score: <span class="opcomp-prospect-avgrank">${scoreDisplay}</span></span>
                             </div>
                             <div class="opcomp-prospect-details">
                                 <span class="opcomp-detail-item">Age: ${prospect.age || "-"}</span>
@@ -69226,8 +69260,9 @@
             const mlbLogoUrl = prospect.mlb_team
               ? getMLBTeamLogo(prospect.mlb_team)
               : "";
-            const avgRank = prospect.avg_rank
-              ? prospect.avg_rank.toFixed(1)
+            const rankingScore = Number(prospect.ranking_score);
+            const scoreDisplay = Number.isFinite(rankingScore)
+              ? rankingScore.toFixed(1)
               : "-";
             // Look up full prospect data for display position
             const fullProspect =
@@ -69248,7 +69283,7 @@
                                 <div class="opcomp-slot-detail">
                                     <span class="position-badge pos-${slotDisplayPos}">${slotDisplayPos}</span>
                                     <span class="opcomp-slot-team">${mlbLogoUrl ? `<img src="${mlbLogoUrl}" class="opcomp-slot-mlb-logo" alt="${prospect.mlb_team}" onerror="this.style.display='none'">` : ""}${prospect.mlb_team}</span>
-                                    <span>Avg: ${avgRank}</span>
+                                    <span>Score: ${scoreDisplay}</span>
                                 </div>
                             </div>
                             <div class="opcomp-slot-actions">
@@ -69296,6 +69331,7 @@
           position: prospect.position,
           mlb_team: prospect.mlb_team || "",
           avg_rank: prospect.avg_rank || null,
+          ranking_score: prospect.ranking_score || null,
         });
 
         renderOpcompPriorityList();
@@ -69434,6 +69470,7 @@
               position: p.position,
               mlb_team: p.mlb_team,
               avg_rank: p.avg_rank || null,
+              ranking_score: p.ranking_score || null,
             })),
             updated_at: new Date().toISOString(),
           };
