@@ -12962,24 +12962,21 @@
         display: inline;
       }
 
-      /* When the table is scrolled horizontally, secondary position badges
-         (everything after the first one) collapse so multi-position players
-         (STL 1B OF) don't eat half the viewport.
+      /* Scroll-driven Player column collapse.
+         At rest the column is wide enough for the largest content
+         (headshot + full name + MLB badge + up to 4 position badges, e.g.
+         KC 2B 3B SS OF). As the user scrolls horizontally, the column
+         condenses to headshot + "F. Lastname" + MLB badge + primary
+         position badge so more stat columns are visible.
 
-         Scroll-driven collapse:
          JS sets --ps-col on the wrapper as the user scrolls (0 → 1 over the
-         first ~90px of horizontal scroll). CSS interpolates max-width,
-         opacity, and player-name max-width against that variable so the
-         column shrinks gradually with the scroll motion. Padding / margin /
-         border-width still snap via the .scrolled binary state because they
-         can't cleanly interpolate to 0 without thrashing.
-
-         Selector keeps the first TWO position badges visible — long player
-         names give us room to keep a second badge without crowding. Only
-         badges 3+ (multi-position players like KC 2B 3B SS OF) collapse. */
+         first ~90px). CSS interpolates the cell width / badge opacity
+         against that variable. The full/short name swap and the snap of
+         padding/margin/border on hidden badges fire via the .scrolled
+         binary class once the collapse completes. */
       #scoring.ps-modern .player-table-wrapper
         .player-mlb-team
-        .position-badge ~ .position-badge ~ .position-badge {
+        .position-badge ~ .position-badge {
         display: inline-block;
         overflow: hidden;
         vertical-align: middle;
@@ -12989,7 +12986,7 @@
       }
       #scoring.ps-modern .player-table-wrapper.scrolled
         .player-mlb-team
-        .position-badge ~ .position-badge ~ .position-badge {
+        .position-badge ~ .position-badge {
         padding-left: 0 !important;
         padding-right: 0 !important;
         margin-left: 0 !important;
@@ -12998,22 +12995,31 @@
         border-right-width: 0 !important;
       }
 
-      /* Player cell — fixed width that fits headshot + most names + up to
-         two position badges. No scroll-driven interpolation — only the
-         badges 3+ above fade out. */
+      /* Sticky Player cell: interpolated width from 270px (full) → 140px
+         (scrolled). Wide default fits the largest 4-badge layouts; scrolled
+         width fits the abbreviated name + one position badge. */
       #scoring.ps-modern .player-table-wrapper
         .player-table tbody td:nth-child(2),
       #scoring.ps-modern .player-table-wrapper
         .player-table thead th:nth-child(2) {
-        max-width: 200px;
+        width: calc(270px - 130px * var(--ps-col, 0));
+        min-width: calc(270px - 130px * var(--ps-col, 0));
+        max-width: calc(270px - 130px * var(--ps-col, 0));
       }
       #scoring.ps-modern .player-table-wrapper
         .player-table .player-name {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 150px;
       }
+
+      /* Full/short name swap — driven by the binary .scrolled class so the
+         text doesn't flicker mid-interpolation. */
+      #scoring.ps-modern .player-table .ps-name-short { display: none; }
+      #scoring.ps-modern .player-table-wrapper.scrolled
+        .player-table .ps-name-full { display: none; }
+      #scoring.ps-modern .player-table-wrapper.scrolled
+        .player-table .ps-name-short { display: inline; }
     }
 
     /* Extra-small phones (iPhone SE etc.) */
@@ -35550,6 +35556,11 @@
             : `<span class="draft-rank">${posRankInfo.position}</span>`;
 
           // Common cells (Rank, Name, Team, Rank badge)
+          const cleanName = player.name.replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '');
+          const nameParts = cleanName.trim().split(/\s+/);
+          const shortName = nameParts.length > 1
+            ? `${nameParts[0][0]}. ${nameParts.slice(1).join(' ')}`
+            : cleanName;
           let rowHTML = `
                     <tr>
                         <td>${index + 1}</td>
@@ -35557,7 +35568,7 @@
                             <div class="player-name-cell" onclick="showPlayerDetail('${player.name.replace(/'/g, "\\'")}')">
                                 <img src="${headshot}" alt="" class="player-headshot" onerror="this.src='${placeholderImg}'">
                                 <div>
-                                    <div class="player-name">${player.name.replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '')}</div>
+                                    <div class="player-name"><span class="ps-name-full">${cleanName}</span><span class="ps-name-short">${shortName}</span></div>
                                     <div class="player-mlb-team">${mlbTeamBadgeHtml} ${posBadgesHtml}</div>
                                 </div>
                             </div>
