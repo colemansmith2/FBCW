@@ -12807,14 +12807,15 @@
         border-spacing: 0;
       }
 
-      /* # column — fixed narrow width, sticky to the left edge */
+      /* # column — as narrow as possible, sticky to the left edge */
       #scoring.ps-modern .player-table thead th:first-child,
       #scoring.ps-modern .player-table tbody td:first-child {
-        width: 38px;
-        min-width: 38px;
-        max-width: 38px;
-        padding: 3px 4px;
+        width: 26px;
+        min-width: 26px;
+        max-width: 26px;
+        padding: 3px 2px;
         text-align: center;
+        font-size: 9px;        /* tiny arcade-style index, fits up to 4-digit ranks */
         position: sticky;
         left: 0;
         z-index: 2;
@@ -12832,7 +12833,7 @@
       #scoring.ps-modern .player-table tbody td:nth-child(2),
       #scoring.ps-modern .player-table thead th:nth-child(2) {
         position: sticky;
-        left: 38px;                  /* matches # column width above */
+        left: 26px;                  /* matches # column width above */
         z-index: 2;
         /* visual edge between sticky cols and the scrolling stats */
         border-right: 3px solid var(--ps-line);
@@ -12936,23 +12937,21 @@
       }
 
       /* When the table is scrolled horizontally, secondary position badges
-         (everything after the first one) animate to a collapsed state so
-         multi-position players (STL 1B OF) don't eat half the viewport.
-         Animating max-width / padding / margin / border-width / opacity in
-         lockstep keeps the column reflow smooth rather than snapping. */
+         (everything after the first one) collapse so multi-position players
+         (STL 1B OF) don't eat half the viewport.
+
+         Layout properties (max-width / padding / margin / border-width) SNAP
+         to zero — animating them is too expensive on mobile (constant
+         relayout = jank). Only opacity is transitioned, which is composited
+         on the GPU and stays at 60fps. The brief layout snap is masked by
+         the simultaneous opacity fade so it reads as a single smooth motion. */
       #scoring.ps-modern .player-table-wrapper
         .player-mlb-team .position-badge ~ .position-badge {
         display: inline-block;
         overflow: hidden;
         vertical-align: middle;
         box-sizing: border-box;
-        max-width: 60px;
-        transition:
-          max-width    260ms ease,
-          opacity      220ms ease,
-          padding      260ms ease,
-          margin       260ms ease,
-          border-width 260ms ease;
+        transition: opacity 160ms ease-out;
       }
       #scoring.ps-modern .player-table-wrapper.scrolled
         .player-mlb-team .position-badge ~ .position-badge {
@@ -12966,16 +12965,8 @@
         border-right-width: 0 !important;
       }
 
-      /* Cap the sticky Player cell width when scrolled so the table can
-         actually reflow narrower. Width transition matches the badge
-         transition so the column edge slides instead of jumping. */
-      #scoring.ps-modern .player-table-wrapper
-        .player-table tbody td:nth-child(2),
-      #scoring.ps-modern .player-table-wrapper
-        .player-table thead th:nth-child(2) {
-        max-width: 280px;
-        transition: max-width 260ms ease;
-      }
+      /* Player cell + name caps for the scrolled state — also snap (no
+         transition) for the same GPU-friendliness reason. */
       #scoring.ps-modern .player-table-wrapper.scrolled
         .player-table tbody td:nth-child(2),
       #scoring.ps-modern .player-table-wrapper.scrolled
@@ -12988,7 +12979,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 200px;
-        transition: max-width 260ms ease;
       }
       #scoring.ps-modern .player-table-wrapper.scrolled
         .player-table .player-name {
