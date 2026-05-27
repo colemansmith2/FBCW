@@ -12998,25 +12998,25 @@
       }
 
       /* Sticky Player cell — interpolates from 280px (room for full name +
-         all badges) → 145px (just enough for headshot + ellipsised name +
+         all badges) → 160px (just enough for headshot + ellipsised name +
          a tight 2-badge row) as the user scrolls. */
       #scoring.ps-modern .player-table-wrapper
         .player-table tbody td:nth-child(2),
       #scoring.ps-modern .player-table-wrapper
         .player-table thead th:nth-child(2) {
-        max-width: calc(280px - 135px * var(--ps-col, 0));
+        max-width: calc(280px - 120px * var(--ps-col, 0));
         padding-right: calc(6px - 4px * var(--ps-col, 0));   /* trim trailing space too */
       }
 
       /* Player name follows the same scroll-progress curve.
-         At full scroll (100px) most names like "Kevin Gausman" fit cleanly;
-         only very long names ("Yoshinobu Yamamoto") get ellipsised. */
+         At full scroll most names fit cleanly; only very long names
+         ("Yoshinobu Yamamoto") get ellipsised. */
       #scoring.ps-modern .player-table-wrapper
         .player-table .player-name {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: calc(200px - 100px * var(--ps-col, 0));
+        max-width: calc(200px - 95px * var(--ps-col, 0));
       }
     }
 
@@ -34072,24 +34072,36 @@
       // We expose the horizontal-scroll progress as a CSS variable on the
       // wrapper (0 at the leftmost edge → 1 once the user has scrolled past
       // PS_COLLAPSE_RANGE_PX). CSS interpolates badge opacity / cell width /
-      // name width against that variable so the column collapses *with* the
-      // user's scroll motion rather than snapping at scrollLeft > 0.
+      // name width against that variable.
+      //
+      // Two perf safeguards make this smooth instead of janky on mobile:
+      //   1. rAF throttle — coalesce the burst of scroll events that iOS
+      //      Safari fires into a single style write per frame.
+      //   2. Stepped interpolation — quantize the progress to N discrete
+      //      steps so the browser only does a fresh layout when the visible
+      //      size actually changes. Sub-pixel scroll deltas no longer trigger
+      //      relayout.
       const PS_COLLAPSE_RANGE_PX = 90;
+      const PS_COLLAPSE_STEPS = 12;            // 13 distinct states (0, 1/12, …, 1)
       const psWrapper = document.querySelector('#scoring.ps-modern .player-table-wrapper');
       if (psWrapper) {
-        let lastRatio = -1;
+        let rafScheduled = false;
+        let lastSteppedRatio = -1;
         const onPsScroll = () => {
-          const ratio = Math.min(1, Math.max(0, psWrapper.scrollLeft / PS_COLLAPSE_RANGE_PX));
-          // Throttle redundant updates so tiny sub-pixel scroll events don't
-          // re-trigger style recalc when nothing visible has changed.
-          if (Math.abs(ratio - lastRatio) < 0.015) return;
-          lastRatio = ratio;
-          psWrapper.style.setProperty('--ps-col', String(ratio));
-          // Binary class still useful for snapping non-interpolatable props
-          // (padding / margin / border-width) once the collapse is essentially
-          // complete.
-          if (ratio >= 0.95) psWrapper.classList.add('scrolled');
-          else psWrapper.classList.remove('scrolled');
+          if (rafScheduled) return;
+          rafScheduled = true;
+          requestAnimationFrame(() => {
+            rafScheduled = false;
+            const raw = Math.min(1, Math.max(0, psWrapper.scrollLeft / PS_COLLAPSE_RANGE_PX));
+            const stepped = Math.round(raw * PS_COLLAPSE_STEPS) / PS_COLLAPSE_STEPS;
+            if (stepped === lastSteppedRatio) return;
+            lastSteppedRatio = stepped;
+            psWrapper.style.setProperty('--ps-col', String(stepped));
+            // Binary class still useful for snapping non-interpolatable props
+            // (padding / margin / border-width) once the collapse is complete.
+            if (stepped >= 0.95) psWrapper.classList.add('scrolled');
+            else psWrapper.classList.remove('scrolled');
+          });
         };
         psWrapper.addEventListener('scroll', onPsScroll, { passive: true });
       }
