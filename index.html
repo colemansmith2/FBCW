@@ -12415,6 +12415,11 @@
       text-decoration: underline;
     }
 
+    /* Short-name span is mobile-only — hide everywhere by default; the
+       mobile @media block toggles between full/short via .scrolled. */
+    #scoring.ps-modern .player-table .ps-name-short { display: none; }
+    #scoring.ps-modern .player-table .ps-name-full { display: inline; }
+
     #scoring.ps-modern .player-table .player-mlb-team {
       color: var(--ps-ink-soft);
       font-size: 12px;
@@ -13011,6 +13016,26 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+      }
+
+      /* Two-phase horizontal scroll. The user's first 90px of scroll should
+         only collapse the Player column — stat columns should NOT slide off
+         the right edge yet. After the collapse completes, further scroll
+         moves stats normally.
+
+         Mechanism: counter-translate every stat cell (3rd column onward) by
+         exactly the scroll distance, capped at 90px. While S ≤ 90 the
+         counter-translate equals S, perfectly cancelling the scroll's left
+         shift — so as Player shrinks, Team simply slides leftward to stay
+         adjacent. Beyond S=90 the counter locks at 90px, so additional
+         scroll moves stats naturally (Player is fully collapsed by then).
+
+         JS sets --ps-shift on the wrapper inside its rAF scroll handler. */
+      #scoring.ps-modern .player-table-wrapper
+        .player-table tbody td:nth-child(n+3),
+      #scoring.ps-modern .player-table-wrapper
+        .player-table thead th:nth-child(n+3) {
+        transform: translateX(var(--ps-shift, 0px));
       }
 
       /* Full/short name swap — driven by the binary .scrolled class so the
@@ -34092,27 +34117,66 @@
       //      steps so the browser only does a fresh layout when the visible
       //      size actually changes. Sub-pixel scroll deltas no longer trigger
       //      relayout.
-      const PS_COLLAPSE_RANGE_PX = 90;         // scroll distance over which badges 3+ fade out
-      const PS_COLLAPSE_STEPS = 12;            // 13 distinct states (0, 1/12, …, 1)
+      // Scroll distance over which the Player column collapses 270 → 140px.
+      // Smaller = snappier; the stat columns are pinned during this range so
+      // the user doesn't lose content while it shrinks.
+      const PS_COLLAPSE_RANGE_PX = 60;
       const psWrapper = document.querySelector('#scoring.ps-modern .player-table-wrapper');
       if (psWrapper) {
-        let rafScheduled = false;
-        let lastSteppedRatio = -1;
+        // Drive updates from a rAF polling loop that runs while the wrapper
+        // is scrolling. iOS Safari throttles `scroll` events (they don't fire
+        // every frame), which made the column visibly trail the user's
+        // finger. Polling scrollLeft inside rAF guarantees we read the
+        // latest value every paint and write --ps-col / --ps-shift in lockstep,
+        // so the Player border and the stat columns stay aligned with no jump.
+        let psRafId = null;
+        let lastScrollLeft = -1;
+        let idleFrames = 0;
+        let lastScrolledOn = false;
+
+        const tick = () => {
+          const S = psWrapper.scrollLeft;
+          if (S === lastScrollLeft) {
+            // Stop polling once scrolling has clearly stopped — saves rAF
+            // cost while the table is idle. A few buffer frames ensures we
+            // capture any final momentum frame iOS schedules.
+            if (++idleFrames > 4) {
+              psRafId = null;
+              return;
+            }
+          } else {
+            idleFrames = 0;
+            lastScrollLeft = S;
+
+            // Continuous (sub-pixel) ratio — drives both the Player cell
+            // width interpolation and the position-badge fade.
+            const raw = Math.min(1, Math.max(0, S / PS_COLLAPSE_RANGE_PX));
+
+            // --ps-shift: counter-translate stat cells so the first
+            // PS_COLLAPSE_RANGE_PX of scroll is absorbed by the column
+            // collapse instead of sliding stats off-screen.
+            const shift = Math.min(S, PS_COLLAPSE_RANGE_PX);
+            psWrapper.style.setProperty('--ps-shift', `${shift}px`);
+            psWrapper.style.setProperty('--ps-col', raw.toFixed(4));
+
+            // Binary class still useful for snapping non-interpolatable
+            // properties (padding, margin, border-width) and the name swap
+            // once the collapse is essentially complete. Only mutate the
+            // classList when the boolean actually flips.
+            const wantScrolled = raw >= 0.95;
+            if (wantScrolled !== lastScrolledOn) {
+              lastScrolledOn = wantScrolled;
+              psWrapper.classList.toggle('scrolled', wantScrolled);
+            }
+          }
+          psRafId = requestAnimationFrame(tick);
+        };
+
         const onPsScroll = () => {
-          if (rafScheduled) return;
-          rafScheduled = true;
-          requestAnimationFrame(() => {
-            rafScheduled = false;
-            const raw = Math.min(1, Math.max(0, psWrapper.scrollLeft / PS_COLLAPSE_RANGE_PX));
-            const stepped = Math.round(raw * PS_COLLAPSE_STEPS) / PS_COLLAPSE_STEPS;
-            if (stepped === lastSteppedRatio) return;
-            lastSteppedRatio = stepped;
-            psWrapper.style.setProperty('--ps-col', String(stepped));
-            // Binary class still useful for snapping non-interpolatable props
-            // (padding / margin / border-width) once the collapse is complete.
-            if (stepped >= 0.95) psWrapper.classList.add('scrolled');
-            else psWrapper.classList.remove('scrolled');
-          });
+          if (psRafId === null) {
+            idleFrames = 0;
+            psRafId = requestAnimationFrame(tick);
+          }
         };
         psWrapper.addEventListener('scroll', onPsScroll, { passive: true });
       }
