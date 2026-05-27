@@ -12399,6 +12399,7 @@
       border: 2px solid var(--ps-line);
       border-radius: 50%;
       object-fit: cover;
+      flex: 0 0 38px;       /* never squeezed by a narrowing flex parent (sticky col compress) */
     }
 
     #scoring.ps-modern .player-table .player-name {
@@ -12725,6 +12726,29 @@
         box-shadow: 3px 3px 0 0 var(--ps-line);
         font-size: 14px;
       }
+      /* Manager + Qualifier text size matches the position pills below them */
+      #scoring.ps-modern .ps-filters .manager-btn,
+      #scoring.ps-modern .ps-filters .qualifier-btn {
+        font-size: 9px;
+        letter-spacing: 1px;
+      }
+      #scoring.ps-modern .ps-filters .manager-btn::after,
+      #scoring.ps-modern .ps-filters .qualifier-btn::after {
+        font-size: 8px;
+      }
+
+      /* Manager dropdown menu has to break out of the half-width Manager cell
+         on mobile — the global rule clamps min-width to 100% which makes the
+         2-column manager grid overflow. Span both filter columns + the gap. */
+      #scoring.ps-modern .ps-filters .manager-dropdown-menu {
+        width: calc(200% + 10px);
+        min-width: calc(200% + 10px);
+        left: 0;
+        right: auto;
+      }
+      #scoring.ps-modern .ps-filters .manager-dropdown-menu-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
 
       #scoring.ps-modern .ps-filters .toggle-btn {
         flex: 1;
@@ -12886,6 +12910,7 @@
         width: 28px;
         height: 28px;
         border-width: 2px;
+        flex: 0 0 28px;       /* lock circular shape even when the sticky col compresses */
       }
 
       #scoring.ps-modern .player-table .player-name {
