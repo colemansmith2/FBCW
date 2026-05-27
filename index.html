@@ -12853,54 +12853,37 @@
       }
 
       /* Sticky Player column — sits immediately to the right of the # column
-         and stays visible while scrolling horizontally. NO border-right —
-         the visual edge between sticky and scrolling now lives on the Team
-         column to its right. */
+         and stays visible while scrolling horizontally. Fixed width so it
+         doesn't reflow during scroll; the badges fading inside the cell
+         provide all the visual collapse motion. */
       #scoring.ps-modern .player-table tbody td:nth-child(2),
       #scoring.ps-modern .player-table thead th:nth-child(2) {
         position: sticky;
         left: 26px;                  /* matches # column width above */
         z-index: 2;
-      }
-
-      /* Sticky Team column — anchored to the right edge of the (interpolated)
-         Player column so it stays visible the entire time Player is
-         condensing. As --ps-col rises 0→1, both the Player width AND the
-         Team's sticky `left` shrink in lockstep, so Team rides Player's
-         right edge into its final docked position rather than scrolling
-         off-screen while Player is still wide. */
-      #scoring.ps-modern .player-table tbody td:nth-child(3),
-      #scoring.ps-modern .player-table thead th:nth-child(3) {
-        position: sticky;
-        left: calc(26px + 280px - 120px * var(--ps-col, 0));
-        z-index: 1;
         border-right: 3px solid var(--ps-line);
       }
 
       /* Header corners need to beat both axes */
       #scoring.ps-modern .player-table thead th:first-child,
-      #scoring.ps-modern .player-table thead th:nth-child(2),
-      #scoring.ps-modern .player-table thead th:nth-child(3) {
+      #scoring.ps-modern .player-table thead th:nth-child(2) {
         z-index: 4;
       }
 
       /* Sticky body cells need their own background — masks the stat columns
          scrolling behind them. Match the alternating row stripes + hover. */
       #scoring.ps-modern .player-table tbody tr td:first-child,
-      #scoring.ps-modern .player-table tbody tr td:nth-child(2),
-      #scoring.ps-modern .player-table tbody tr td:nth-child(3) {
+      #scoring.ps-modern .player-table tbody tr td:nth-child(2) {
         background: var(--ps-paper);
       }
 
       #scoring.ps-modern .player-table tbody tr:nth-child(even) td:first-child,
-      #scoring.ps-modern .player-table tbody tr:nth-child(even) td:nth-child(2),
-      #scoring.ps-modern .player-table tbody tr:nth-child(even) td:nth-child(3) {
+      #scoring.ps-modern .player-table tbody tr:nth-child(even) td:nth-child(2) {
         background: var(--ps-paper-row);
       }
 
       #scoring.ps-modern .player-table tbody tr:hover td:first-child,
-      #scoring.ps-modern .player-table tbody tr:hover td:nth-child(2),
-      #scoring.ps-modern .player-table tbody tr:hover td:nth-child(3) {
+      #scoring.ps-modern .player-table tbody tr:hover td:nth-child(2) {
         background: var(--ps-hi);
       }
 
@@ -13015,32 +12998,21 @@
         border-right-width: 0 !important;
       }
 
-      /* Sticky Player cell — interpolates from 280px (room for full name +
-         all badges) → 160px (just enough for headshot + ellipsised name +
-         a tight 2-badge row) as the user scrolls.
-         Using both min-width + max-width forces the column to exactly this
-         width regardless of cell content, so the Team column's sticky `left`
-         (which uses the same formula) lines up flush against Player's right
-         edge with no gap during the interpolation. */
+      /* Player cell — fixed width that fits headshot + most names + up to
+         two position badges. No scroll-driven interpolation — only the
+         badges 3+ above fade out. */
       #scoring.ps-modern .player-table-wrapper
         .player-table tbody td:nth-child(2),
       #scoring.ps-modern .player-table-wrapper
         .player-table thead th:nth-child(2) {
-        min-width: calc(280px - 120px * var(--ps-col, 0));
-        max-width: calc(280px - 120px * var(--ps-col, 0));
-        width:     calc(280px - 120px * var(--ps-col, 0));
-        padding-right: calc(6px - 4px * var(--ps-col, 0));
+        max-width: 200px;
       }
-
-      /* Player name follows the same scroll-progress curve.
-         At full scroll most names fit cleanly; only very long names
-         ("Yoshinobu Yamamoto") get ellipsised. */
       #scoring.ps-modern .player-table-wrapper
         .player-table .player-name {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: calc(200px - 95px * var(--ps-col, 0));
+        max-width: 150px;
       }
     }
 
@@ -34114,7 +34086,7 @@
       //      steps so the browser only does a fresh layout when the visible
       //      size actually changes. Sub-pixel scroll deltas no longer trigger
       //      relayout.
-      const PS_COLLAPSE_RANGE_PX = 120;        // matches Player cell shrink distance (280→160)
+      const PS_COLLAPSE_RANGE_PX = 90;         // scroll distance over which badges 3+ fade out
       const PS_COLLAPSE_STEPS = 12;            // 13 distinct states (0, 1/12, …, 1)
       const psWrapper = document.querySelector('#scoring.ps-modern .player-table-wrapper');
       if (psWrapper) {
