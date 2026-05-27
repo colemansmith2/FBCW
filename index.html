@@ -12198,14 +12198,14 @@
       color: var(--ps-hi);
       border-color: var(--ps-line);
     }
-    #scoring.ps-modern .ps-filters .position-pill[data-value="B"]    { background: var(--ps-field); color: #fff; }
-    #scoring.ps-modern .ps-filters .position-pill[data-value="P"]    { background: var(--ps-plum);  color: #fff; }
-    #scoring.ps-modern .ps-filters .position-pill[data-value="C"]    { background: var(--ps-plum);  color: #fff; }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="B"]    { background: #1e3a8a; color: #fff; }   /* deep navy/indigo */
+    #scoring.ps-modern .ps-filters .position-pill[data-value="P"]    { background: #d32f2f; color: #fff; }   /* bright red */
+    #scoring.ps-modern .ps-filters .position-pill[data-value="C"]    { background: #7b1f3a; color: #fff; }   /* maroon */
     #scoring.ps-modern .ps-filters .position-pill[data-value="1B"]   { background: var(--ps-field); color: #fff; }
     #scoring.ps-modern .ps-filters .position-pill[data-value="2B"]   { background: #ff9f1c;         color: var(--ps-ink); }
     #scoring.ps-modern .ps-filters .position-pill[data-value="3B"]   { background: var(--ps-pop);   color: #fff; }
     #scoring.ps-modern .ps-filters .position-pill[data-value="SS"]   { background: var(--ps-hi);    color: var(--ps-ink); }
-    #scoring.ps-modern .ps-filters .position-pill[data-value="OF"]   { background: var(--ps-leaf);  color: var(--ps-ink); }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="OF"]   { background: #1b5e20;        color: #fff; }   /* deep forest green */
     #scoring.ps-modern .ps-filters .position-pill[data-value="Util"] { background: #6c757d;         color: #fff; }
     #scoring.ps-modern .ps-filters .position-pill[data-value="SP"]   { background: #7d3cff;         color: #fff; }
     #scoring.ps-modern .ps-filters .position-pill[data-value="RP"]   { background: var(--ps-teal);  color: #fff; }
@@ -12216,14 +12216,14 @@
       border-color: var(--ps-line);
     }
     #scoring.ps-modern .ps-filters .position-pill.active[data-value="all"]  { color: var(--ps-ink); }
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="B"]    { color: var(--ps-field); }
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="P"]    { color: var(--ps-plum); }
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="C"]    { color: var(--ps-plum); }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="B"]    { color: #1e3a8a; }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="P"]    { color: #d32f2f; }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="C"]    { color: #7b1f3a; }
     #scoring.ps-modern .ps-filters .position-pill.active[data-value="1B"]   { color: var(--ps-field); }
     #scoring.ps-modern .ps-filters .position-pill.active[data-value="2B"]   { color: #ff9f1c; }
     #scoring.ps-modern .ps-filters .position-pill.active[data-value="3B"]   { color: var(--ps-pop); }
     #scoring.ps-modern .ps-filters .position-pill.active[data-value="SS"]   { color: var(--ps-hi-deep); }
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="OF"]   { color: var(--ps-leaf); }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="OF"]   { color: #1b5e20; }
     #scoring.ps-modern .ps-filters .position-pill.active[data-value="Util"] { color: #6c757d; }
     #scoring.ps-modern .ps-filters .position-pill.active[data-value="SP"]   { color: #7d3cff; }
     #scoring.ps-modern .ps-filters .position-pill.active[data-value="RP"]   { color: var(--ps-teal); }
@@ -12453,7 +12453,7 @@
 
     /* Solid-fill colors matching the player card modal & filter chips */
     #scoring.ps-modern .player-table .position-badge.pos-C {
-      background-color: #a347ff !important;
+      background-color: #7b1f3a !important;   /* maroon */
       color: #fff !important;
     }
 
@@ -12481,8 +12481,8 @@
     #scoring.ps-modern .player-table .position-badge.pos-LF,
     #scoring.ps-modern .player-table .position-badge.pos-CF,
     #scoring.ps-modern .player-table .position-badge.pos-RF {
-      background-color: #2ecc71 !important;
-      color: var(--ps-ink) !important;
+      background-color: #1b5e20 !important;    /* deep forest green — distinct from the green rank tier */
+      color: #fff !important;
     }
 
     #scoring.ps-modern .player-table .position-badge.pos-DH,
@@ -12807,10 +12807,17 @@
         border-spacing: 0;
       }
 
-      /* Hide the # / index column */
+      /* # column — fixed narrow width, sticky to the left edge */
       #scoring.ps-modern .player-table thead th:first-child,
       #scoring.ps-modern .player-table tbody td:first-child {
-        display: none;
+        width: 38px;
+        min-width: 38px;
+        max-width: 38px;
+        padding: 3px 4px;
+        text-align: center;
+        position: sticky;
+        left: 0;
+        z-index: 2;
       }
 
       /* Sticky thead — column names always visible while scrolling vertically */
@@ -12820,31 +12827,36 @@
         z-index: 3;
       }
 
-      /* Sticky Player column — stays visible while scrolling horizontally */
+      /* Sticky Player column — sits immediately to the right of the # column
+         and stays visible while scrolling horizontally */
       #scoring.ps-modern .player-table tbody td:nth-child(2),
       #scoring.ps-modern .player-table thead th:nth-child(2) {
         position: sticky;
-        left: 0;
+        left: 38px;                  /* matches # column width above */
         z-index: 2;
-        /* visual edge between sticky col and the scrolling stats */
+        /* visual edge between sticky cols and the scrolling stats */
         border-right: 3px solid var(--ps-line);
       }
 
-      /* Header corner needs to beat both axes */
+      /* Header corners need to beat both axes */
+      #scoring.ps-modern .player-table thead th:first-child,
       #scoring.ps-modern .player-table thead th:nth-child(2) {
         z-index: 4;
       }
 
       /* Sticky body cells need their own background — masks the stat columns
          scrolling behind them. Match the alternating row stripes + hover. */
+      #scoring.ps-modern .player-table tbody tr td:first-child,
       #scoring.ps-modern .player-table tbody tr td:nth-child(2) {
         background: var(--ps-paper);
       }
 
+      #scoring.ps-modern .player-table tbody tr:nth-child(even) td:first-child,
       #scoring.ps-modern .player-table tbody tr:nth-child(even) td:nth-child(2) {
         background: var(--ps-paper-row);
       }
 
+      #scoring.ps-modern .player-table tbody tr:hover td:first-child,
       #scoring.ps-modern .player-table tbody tr:hover td:nth-child(2) {
         background: var(--ps-hi);
       }
@@ -12923,28 +12935,63 @@
         display: inline;
       }
 
-      /* When the table has been scrolled horizontally, condense the sticky
-         Player column: keep only the FIRST (primary) position badge so
-         multi-position players (e.g. STL 1B OF) don't eat half the viewport.
-         The MLB team badge (.ps-mlb-badge) and the first .position-badge
-         remain visible. */
+      /* When the table is scrolled horizontally, secondary position badges
+         (everything after the first one) animate to a collapsed state so
+         multi-position players (STL 1B OF) don't eat half the viewport.
+         Animating max-width / padding / margin / border-width / opacity in
+         lockstep keeps the column reflow smooth rather than snapping. */
+      #scoring.ps-modern .player-table-wrapper
+        .player-mlb-team .position-badge ~ .position-badge {
+        display: inline-block;
+        overflow: hidden;
+        vertical-align: middle;
+        box-sizing: border-box;
+        max-width: 60px;
+        transition:
+          max-width    260ms ease,
+          opacity      220ms ease,
+          padding      260ms ease,
+          margin       260ms ease,
+          border-width 260ms ease;
+      }
       #scoring.ps-modern .player-table-wrapper.scrolled
         .player-mlb-team .position-badge ~ .position-badge {
-        display: none;
+        opacity: 0;
+        max-width: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        border-left-width: 0 !important;
+        border-right-width: 0 !important;
       }
+
       /* Cap the sticky Player cell width when scrolled so the table can
-         actually reflow narrower */
+         actually reflow narrower. Width transition matches the badge
+         transition so the column edge slides instead of jumping. */
+      #scoring.ps-modern .player-table-wrapper
+        .player-table tbody td:nth-child(2),
+      #scoring.ps-modern .player-table-wrapper
+        .player-table thead th:nth-child(2) {
+        max-width: 280px;
+        transition: max-width 260ms ease;
+      }
       #scoring.ps-modern .player-table-wrapper.scrolled
         .player-table tbody td:nth-child(2),
       #scoring.ps-modern .player-table-wrapper.scrolled
         .player-table thead th:nth-child(2) {
-        max-width: 180px;
+        max-width: 170px;
       }
-      #scoring.ps-modern .player-table-wrapper.scrolled
+      #scoring.ps-modern .player-table-wrapper
         .player-table .player-name {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        max-width: 200px;
+        transition: max-width 260ms ease;
+      }
+      #scoring.ps-modern .player-table-wrapper.scrolled
+        .player-table .player-name {
         max-width: 110px;
       }
     }
