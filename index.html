@@ -12997,23 +12997,26 @@
         border-right-width: 0 !important;
       }
 
-      /* Sticky Player cell — interpolates from 280px → 200px as the user
-         scrolls, so the column edge slides in sync with the badges shrinking
-         and the Team column never has to "jump" into place. */
+      /* Sticky Player cell — interpolates from 280px (room for full name +
+         all badges) → 145px (just enough for headshot + ellipsised name +
+         a tight 2-badge row) as the user scrolls. */
       #scoring.ps-modern .player-table-wrapper
         .player-table tbody td:nth-child(2),
       #scoring.ps-modern .player-table-wrapper
         .player-table thead th:nth-child(2) {
-        max-width: calc(280px - 80px * var(--ps-col, 0));
+        max-width: calc(280px - 135px * var(--ps-col, 0));
+        padding-right: calc(6px - 4px * var(--ps-col, 0));   /* trim trailing space too */
       }
 
-      /* Player name follows the same scroll-progress curve */
+      /* Player name follows the same scroll-progress curve.
+         At full scroll (100px) most names like "Kevin Gausman" fit cleanly;
+         only very long names ("Yoshinobu Yamamoto") get ellipsised. */
       #scoring.ps-modern .player-table-wrapper
         .player-table .player-name {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: calc(200px - 80px * var(--ps-col, 0));
+        max-width: calc(200px - 100px * var(--ps-col, 0));
       }
     }
 
