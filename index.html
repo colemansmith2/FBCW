@@ -12965,23 +12965,30 @@
          (everything after the first one) collapse so multi-position players
          (STL 1B OF) don't eat half the viewport.
 
-         Layout properties (max-width / padding / margin / border-width) SNAP
-         to zero — animating them is too expensive on mobile (constant
-         relayout = jank). Only opacity is transitioned, which is composited
-         on the GPU and stays at 60fps. The brief layout snap is masked by
-         the simultaneous opacity fade so it reads as a single smooth motion. */
+         Scroll-driven collapse:
+         JS sets --ps-col on the wrapper as the user scrolls (0 → 1 over the
+         first ~90px of horizontal scroll). CSS interpolates max-width,
+         opacity, and player-name max-width against that variable so the
+         column shrinks gradually with the scroll motion. Padding / margin /
+         border-width still snap via the .scrolled binary state because they
+         can't cleanly interpolate to 0 without thrashing.
+
+         Selector keeps the first TWO position badges visible — long player
+         names give us room to keep a second badge without crowding. Only
+         badges 3+ (multi-position players like KC 2B 3B SS OF) collapse. */
       #scoring.ps-modern .player-table-wrapper
-        .player-mlb-team .position-badge ~ .position-badge {
+        .player-mlb-team
+        .position-badge ~ .position-badge ~ .position-badge {
         display: inline-block;
         overflow: hidden;
         vertical-align: middle;
         box-sizing: border-box;
-        transition: opacity 160ms ease-out;
+        opacity: calc(1 - var(--ps-col, 0));
+        max-width: calc(60px * (1 - var(--ps-col, 0)));
       }
       #scoring.ps-modern .player-table-wrapper.scrolled
-        .player-mlb-team .position-badge ~ .position-badge {
-        opacity: 0;
-        max-width: 0 !important;
+        .player-mlb-team
+        .position-badge ~ .position-badge ~ .position-badge {
         padding-left: 0 !important;
         padding-right: 0 !important;
         margin-left: 0 !important;
@@ -12990,24 +12997,23 @@
         border-right-width: 0 !important;
       }
 
-      /* Player cell + name caps for the scrolled state — also snap (no
-         transition) for the same GPU-friendliness reason. */
-      #scoring.ps-modern .player-table-wrapper.scrolled
+      /* Sticky Player cell — interpolates from 280px → 200px as the user
+         scrolls, so the column edge slides in sync with the badges shrinking
+         and the Team column never has to "jump" into place. */
+      #scoring.ps-modern .player-table-wrapper
         .player-table tbody td:nth-child(2),
-      #scoring.ps-modern .player-table-wrapper.scrolled
+      #scoring.ps-modern .player-table-wrapper
         .player-table thead th:nth-child(2) {
-        max-width: 170px;
+        max-width: calc(280px - 80px * var(--ps-col, 0));
       }
+
+      /* Player name follows the same scroll-progress curve */
       #scoring.ps-modern .player-table-wrapper
         .player-table .player-name {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        max-width: 200px;
-      }
-      #scoring.ps-modern .player-table-wrapper.scrolled
-        .player-table .player-name {
-        max-width: 110px;
+        max-width: calc(200px - 80px * var(--ps-col, 0));
       }
     }
 
@@ -18484,19 +18490,30 @@
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         align-items: flex-start;
-        padding: 1rem 0;
+        padding: 0;                          /* card sits edge-to-edge — no gap to the viewport */
+        background: var(--pcm-paper-dim, #f5e3b3);   /* opaque so the page never peeks through */
       }
 
-      /* Let content flow naturally */
+      /* Let content flow naturally and fill the viewport */
       #player-modal .modal-content,
       #player-modal .player-modal-content,
       #projection-modal .modal-content,
       #projection-modal .projection-modal-content {
         max-height: none;
         height: auto;
-        margin: 0 auto;
+        min-height: 100vh;                   /* cover the screen even if card content is short */
+        width: 100%;
+        margin: 0;
         overflow: visible;
         flex-shrink: 0;
+      }
+
+      /* Drop the chunky offset shadow on mobile — there's no surrounding
+         space for it to live in once the card runs edge to edge. */
+      #player-modal.pcm-active .player-modal-layout {
+        box-shadow:
+          0 0 0 2px var(--pcm-paper),
+          0 0 0 4px var(--pcm-line);
       }
 
       #player-modal .modal-body-scroll,
@@ -34048,14 +34065,27 @@
       if (customDropdownsInitialized) return;
       customDropdownsInitialized = true;
 
-      // Mobile: when the table is scrolled horizontally, tag the wrapper so
-      // CSS can hide secondary position badges (and thus shrink the sticky
-      // Player column) — multi-position players were chewing up half the
-      // viewport. The wrapper persists across renders so we only attach once.
+      // Mobile: scroll-driven collapse of the sticky Player column.
+      // We expose the horizontal-scroll progress as a CSS variable on the
+      // wrapper (0 at the leftmost edge → 1 once the user has scrolled past
+      // PS_COLLAPSE_RANGE_PX). CSS interpolates badge opacity / cell width /
+      // name width against that variable so the column collapses *with* the
+      // user's scroll motion rather than snapping at scrollLeft > 0.
+      const PS_COLLAPSE_RANGE_PX = 90;
       const psWrapper = document.querySelector('#scoring.ps-modern .player-table-wrapper');
       if (psWrapper) {
+        let lastRatio = -1;
         const onPsScroll = () => {
-          if (psWrapper.scrollLeft > 0) psWrapper.classList.add('scrolled');
+          const ratio = Math.min(1, Math.max(0, psWrapper.scrollLeft / PS_COLLAPSE_RANGE_PX));
+          // Throttle redundant updates so tiny sub-pixel scroll events don't
+          // re-trigger style recalc when nothing visible has changed.
+          if (Math.abs(ratio - lastRatio) < 0.015) return;
+          lastRatio = ratio;
+          psWrapper.style.setProperty('--ps-col', String(ratio));
+          // Binary class still useful for snapping non-interpolatable props
+          // (padding / margin / border-width) once the collapse is essentially
+          // complete.
+          if (ratio >= 0.95) psWrapper.classList.add('scrolled');
           else psWrapper.classList.remove('scrolled');
         };
         psWrapper.addEventListener('scroll', onPsScroll, { passive: true });
@@ -37634,6 +37664,12 @@
       // Ensure modal toggle buttons reflect modal-local state
       updateModalToggleButtons();
       modal.classList.add("active");
+      // Save scroll position so closing the modal returns the user to where
+      // they were. body.modal-open applies position:fixed which would
+      // otherwise snap them to the top of the page.
+      const _pcmScrollY = window.scrollY || window.pageYOffset || 0;
+      document.body.dataset.modalScrollY = _pcmScrollY;
+      document.body.style.top = `-${_pcmScrollY}px`;
       document.body.classList.add("modal-open");
 
       // Load transaction history panel — render with pcm style if active
@@ -38678,7 +38714,12 @@
       modal.classList.remove("pcm-active");
       const ribbon = document.getElementById("pcm-ribbon");
       if (ribbon) ribbon.style.display = "none";
+      // Restore the scroll position that was saved when the modal opened.
+      const savedY = parseInt(document.body.dataset.modalScrollY || "0", 10);
+      document.body.style.top = "";
       document.body.classList.remove("modal-open");
+      delete document.body.dataset.modalScrollY;
+      if (savedY) window.scrollTo(0, savedY);
     }
 
     // Close player modal on outside click
