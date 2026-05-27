@@ -11965,8 +11965,9 @@
     #scoring.ps-modern .ps-filters .manager-btn {
       height: 44px;
       padding: 0 14px;
-      font-family: 'Basis33', monospace;
-      font-size: 18px;
+      font-family: 'Arcade Gamer', monospace;
+      font-size: 12px;
+      letter-spacing: 1px;
       background: var(--ps-paper);
       color: var(--ps-ink);
       border: 3px solid var(--ps-line);
@@ -12037,20 +12038,24 @@
       flex-direction: column;
       gap: 8px;
     }
+
     /* Desktop: align custom inputs vertically with the dropdown by giving it
        the same column-with-label structure so the inputs sit at the same
        baseline as the manager/qualifier buttons. */
     #scoring.ps-modern .ps-filters .qualifier-custom {
       align-self: flex-end;
     }
+
     #scoring.ps-modern .ps-filters .qualifier-dropdown {
       position: relative;
     }
+
     #scoring.ps-modern .ps-filters .qualifier-btn {
       height: 44px;
       padding: 0 14px;
-      font-family: 'Basis33', monospace;
-      font-size: 18px;
+      font-family: 'Arcade Gamer', monospace;
+      font-size: 12px;
+      letter-spacing: 1px;
       background: var(--ps-paper);
       color: var(--ps-ink);
       border: 3px solid var(--ps-line);
@@ -12064,16 +12069,19 @@
       gap: 10px;
       transition: transform .08s ease;
     }
+
     #scoring.ps-modern .ps-filters .qualifier-btn:hover {
-      transform: translate(-1px,-1px);
+      transform: translate(-1px, -1px);
       box-shadow: 5px 5px 0 0 var(--ps-line);
     }
+
     #scoring.ps-modern .ps-filters .qualifier-btn::after {
       content: '▼';
       font-family: 'Arcade Gamer', monospace;
       font-size: 10px;
       color: var(--ps-ink);
     }
+
     #scoring.ps-modern .ps-filters .qualifier-dropdown-menu {
       position: absolute;
       top: calc(100% + 8px);
@@ -12086,7 +12094,11 @@
       z-index: 10;
       display: none;
     }
-    #scoring.ps-modern .ps-filters .qualifier-dropdown-menu.active { display: block; }
+
+    #scoring.ps-modern .ps-filters .qualifier-dropdown-menu.active {
+      display: block;
+    }
+
     #scoring.ps-modern .ps-filters .qualifier-menu-item {
       font-family: 'Basis33', monospace;
       font-size: 18px;
@@ -12096,9 +12108,18 @@
       border-bottom: 2px dashed var(--ps-line);
       white-space: nowrap;
     }
-    #scoring.ps-modern .ps-filters .qualifier-menu-item:last-child { border-bottom: 0; }
-    #scoring.ps-modern .ps-filters .qualifier-menu-item:hover { background: var(--ps-paper-dim); }
-    #scoring.ps-modern .ps-filters .qualifier-menu-item.active { background: var(--ps-hi); }
+
+    #scoring.ps-modern .ps-filters .qualifier-menu-item:last-child {
+      border-bottom: 0;
+    }
+
+    #scoring.ps-modern .ps-filters .qualifier-menu-item:hover {
+      background: var(--ps-paper-dim);
+    }
+
+    #scoring.ps-modern .ps-filters .qualifier-menu-item.active {
+      background: var(--ps-hi);
+    }
 
     /* Custom-rule inputs (visible when Custom… is selected) */
     #scoring.ps-modern .ps-filters .qualifier-custom {
@@ -12106,9 +12127,11 @@
       gap: 6px;
       align-items: stretch;
     }
+
     #scoring.ps-modern .ps-filters .qualifier-custom.visible {
       display: flex;
     }
+
     #scoring.ps-modern .ps-filters .qualifier-custom select,
     #scoring.ps-modern .ps-filters .qualifier-custom input {
       height: 44px;
@@ -12122,8 +12145,15 @@
       padding: 0 8px;
       box-sizing: border-box;
     }
-    #scoring.ps-modern .ps-filters .qualifier-custom select { min-width: 84px; }
-    #scoring.ps-modern .ps-filters .qualifier-custom input  { min-width: 88px; }
+
+    #scoring.ps-modern .ps-filters .qualifier-custom select {
+      min-width: 84px;
+    }
+
+    #scoring.ps-modern .ps-filters .qualifier-custom input {
+      min-width: 88px;
+    }
+
     #scoring.ps-modern .ps-filters .qualifier-custom input:focus,
     #scoring.ps-modern .ps-filters .qualifier-custom select:focus {
       outline: none;
@@ -12162,116 +12192,41 @@
       box-shadow: none;
     }
 
-    /* Inactive — paper background with position color outline/text */
+    /* Default (NOT selected) — solid fill of the position color */
     #scoring.ps-modern .ps-filters .position-pill[data-value="all"] {
-      color: var(--ps-ink);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="B"] {
-      color: var(--ps-field);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="P"] {
-      color: var(--ps-plum);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="C"] {
-      color: var(--ps-plum);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="1B"] {
-      color: var(--ps-field);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="2B"] {
-      color: #ff9f1c;
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="3B"] {
-      color: var(--ps-pop);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="SS"] {
-      color: var(--ps-hi-deep);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="OF"] {
-      color: var(--ps-leaf);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="Util"] {
-      color: #6c757d;
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="SP"] {
-      color: #7d3cff;
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill[data-value="RP"] {
-      color: var(--ps-teal);
-    }
-
-    /* Active — solid fill of the position color */
-    #scoring.ps-modern .ps-filters .position-pill.active {
       background: var(--ps-ink);
       color: var(--ps-hi);
       border-color: var(--ps-line);
     }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="B"]    { background: var(--ps-field); color: #fff; }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="P"]    { background: var(--ps-plum);  color: #fff; }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="C"]    { background: var(--ps-plum);  color: #fff; }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="1B"]   { background: var(--ps-field); color: #fff; }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="2B"]   { background: #ff9f1c;         color: var(--ps-ink); }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="3B"]   { background: var(--ps-pop);   color: #fff; }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="SS"]   { background: var(--ps-hi);    color: var(--ps-ink); }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="OF"]   { background: var(--ps-leaf);  color: var(--ps-ink); }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="Util"] { background: #6c757d;         color: #fff; }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="SP"]   { background: #7d3cff;         color: #fff; }
+    #scoring.ps-modern .ps-filters .position-pill[data-value="RP"]   { background: var(--ps-teal);  color: #fff; }
 
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="B"] {
-      background: var(--ps-field);
-      color: #fff;
+    /* Selected — clear/paper background with the position color as text/border */
+    #scoring.ps-modern .ps-filters .position-pill.active {
+      background: var(--ps-paper) !important;
+      border-color: var(--ps-line);
     }
-
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="P"] {
-      background: var(--ps-plum);
-      color: #fff;
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="C"] {
-      background: var(--ps-plum);
-      color: #fff;
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="1B"] {
-      background: var(--ps-field);
-      color: #fff;
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="2B"] {
-      background: #ff9f1c;
-      color: var(--ps-ink);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="3B"] {
-      background: var(--ps-pop);
-      color: #fff;
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="SS"] {
-      background: var(--ps-hi);
-      color: var(--ps-ink);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="OF"] {
-      background: var(--ps-leaf);
-      color: var(--ps-ink);
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="Util"] {
-      background: #6c757d;
-      color: #fff;
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="SP"] {
-      background: #7d3cff;
-      color: #fff;
-    }
-
-    #scoring.ps-modern .ps-filters .position-pill.active[data-value="RP"] {
-      background: var(--ps-teal);
-      color: #fff;
-    }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="all"]  { color: var(--ps-ink); }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="B"]    { color: var(--ps-field); }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="P"]    { color: var(--ps-plum); }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="C"]    { color: var(--ps-plum); }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="1B"]   { color: var(--ps-field); }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="2B"]   { color: #ff9f1c; }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="3B"]   { color: var(--ps-pop); }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="SS"]   { color: var(--ps-hi-deep); }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="OF"]   { color: var(--ps-leaf); }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="Util"] { color: #6c757d; }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="SP"]   { color: #7d3cff; }
+    #scoring.ps-modern .ps-filters .position-pill.active[data-value="RP"]   { color: var(--ps-teal); }
 
     /* Search input → chunky search bar */
     #scoring.ps-modern .ps-filters .player-search {
@@ -12648,6 +12603,7 @@
 
     /* ============================ Mobile tuning ============================ */
     @media (max-width: 768px) {
+
       /* Smaller page-card shadow so it doesn't get clipped by viewport edges */
       #scoring.ps-modern .ps-page-card {
         box-shadow:
@@ -12655,9 +12611,12 @@
           0 0 0 3px var(--ps-line),
           4px 4px 0 0 rgba(20, 33, 61, 0.55);
       }
+
       /* Halftone corner dots are pure decoration & overlap the title — drop them */
       #scoring.ps-modern .ps-page-card::before,
-      #scoring.ps-modern .ps-page-card::after { display: none; }
+      #scoring.ps-modern .ps-page-card::after {
+        display: none;
+      }
 
       /* Ribbon: title on its own line, logo on the right, no badge */
       #scoring.ps-modern .ps-ribbon {
@@ -12665,27 +12624,44 @@
         gap: 10px;
         padding: 10px 12px;
       }
-      #scoring.ps-modern .ps-badge-score { display: none; }
-      #scoring.ps-modern .ps-title-block { line-height: 1.05; }   /* was .85 — fixes the stacked-line overlap */
+
+      #scoring.ps-modern .ps-badge-score {
+        display: none;
+      }
+
+      #scoring.ps-modern .ps-title-block {
+        line-height: 1.05;
+      }
+
+      /* was .85 — fixes the stacked-line overlap */
       #scoring.ps-modern .ps-page-title {
         font-size: 22px;
         letter-spacing: 0;
-        text-shadow: 2px 2px 0 var(--ps-line);  /* lighter shadow so wraps don't smear */
-        white-space: nowrap;                     /* single line; the 22px size always fits */
+        text-shadow: 2px 2px 0 var(--ps-line);
+        /* lighter shadow so wraps don't smear */
+        white-space: nowrap;
+        /* single line; the 22px size always fits */
       }
+
       #scoring.ps-modern .ps-page-meta {
         font-size: 11px;
         margin-top: 6px;
         letter-spacing: 1px;
         gap: 6px;
       }
+
       #scoring.ps-modern .ps-ribbon-logo-wrap {
-        width: 44px; height: 44px;
+        width: 44px;
+        height: 44px;
         padding: 4px;
         border-width: 2px;
         box-shadow: 3px 3px 0 0 var(--ps-line);
       }
-      #scoring.ps-modern .ps-ribbon-stitch { bottom: -8px; height: 5px; }
+
+      #scoring.ps-modern .ps-ribbon-stitch {
+        bottom: -8px;
+        height: 5px;
+      }
 
       /* ============ Filters: 2-column grid ============
          Layout (top → bottom):
@@ -12698,6 +12674,7 @@
       #scoring.ps-modern .ps-filters {
         padding: 14px 12px 12px;
       }
+
       #scoring.ps-modern .ps-filters .player-control-row-1 {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -12705,6 +12682,7 @@
         margin-bottom: 10px;
         align-items: start;
       }
+
       #scoring.ps-modern .ps-filters .season-selector,
       #scoring.ps-modern .ps-filters .stat-type-toggle,
       #scoring.ps-modern .ps-filters .position-filter {
@@ -12712,18 +12690,22 @@
         width: 100%;
         gap: 5px;
       }
+
       #scoring.ps-modern .ps-filters .manager-filter {
         grid-column: 1;
         min-width: 0;
         gap: 5px;
       }
+
       #scoring.ps-modern .ps-filters .qualifier-filter {
         grid-column: 2;
         min-width: 0;
         gap: 5px;
       }
+
       #scoring.ps-modern .ps-filters .qualifier-custom {
-        grid-column: 1 / -1;       /* full width row below manager + qualifier */
+        grid-column: 1 / -1;
+        /* full width row below manager + qualifier */
         align-self: stretch;
       }
 
@@ -12743,6 +12725,7 @@
         box-shadow: 3px 3px 0 0 var(--ps-line);
         font-size: 14px;
       }
+
       #scoring.ps-modern .ps-filters .toggle-btn {
         flex: 1;
         font-size: 9px;
@@ -12755,6 +12738,7 @@
         grid-template-columns: repeat(6, 1fr);
         gap: 4px;
       }
+
       #scoring.ps-modern .ps-filters .position-pill {
         font-size: 9px;
         padding: 6px 2px;
@@ -12766,6 +12750,7 @@
       #scoring.ps-modern .ps-filters .qualifier-custom {
         gap: 4px;
       }
+
       #scoring.ps-modern .ps-filters .qualifier-custom select,
       #scoring.ps-modern .ps-filters .qualifier-custom input {
         height: 38px;
@@ -12817,7 +12802,8 @@
       #scoring.ps-modern .player-table {
         font-size: 0.75rem;
         min-width: 0;
-        border-collapse: separate;     /* needed so sticky cells render their own bg */
+        border-collapse: separate;
+        /* needed so sticky cells render their own bg */
         border-spacing: 0;
       }
 
@@ -12843,17 +12829,22 @@
         /* visual edge between sticky col and the scrolling stats */
         border-right: 3px solid var(--ps-line);
       }
+
       /* Header corner needs to beat both axes */
-      #scoring.ps-modern .player-table thead th:nth-child(2) { z-index: 4; }
+      #scoring.ps-modern .player-table thead th:nth-child(2) {
+        z-index: 4;
+      }
 
       /* Sticky body cells need their own background — masks the stat columns
          scrolling behind them. Match the alternating row stripes + hover. */
       #scoring.ps-modern .player-table tbody tr td:nth-child(2) {
         background: var(--ps-paper);
       }
+
       #scoring.ps-modern .player-table tbody tr:nth-child(even) td:nth-child(2) {
         background: var(--ps-paper-row);
       }
+
       #scoring.ps-modern .player-table tbody tr:hover td:nth-child(2) {
         background: var(--ps-hi);
       }
@@ -12863,60 +12854,119 @@
         padding: 6px 4px;
         letter-spacing: 0.5px;
       }
+
       #scoring.ps-modern .player-table td {
         padding: 3px 6px;
         font-size: 0.85rem;
       }
+
       #scoring.ps-modern .player-table tbody td.stat-col {
         font-size: 0.95rem;
         letter-spacing: 0;
       }
-      #scoring.ps-modern .player-name-cell { gap: 6px; }
+
+      #scoring.ps-modern .player-name-cell {
+        gap: 6px;
+      }
+
       #scoring.ps-modern .player-table .player-headshot {
-        width: 28px; height: 28px;
+        width: 28px;
+        height: 28px;
         border-width: 2px;
       }
+
       #scoring.ps-modern .player-table .player-name {
         font-size: 13px;
         line-height: 1;
       }
+
       #scoring.ps-modern .player-table .player-mlb-team {
         font-size: 9px;
         gap: 3px;
       }
+
       #scoring.ps-modern .player-table .ps-mlb-badge,
       #scoring.ps-modern .player-table .position-badge {
         font-size: 8px !important;
         padding: 2px 3px !important;
         letter-spacing: 0.5px;
       }
+
       #scoring.ps-modern .player-table .draft-rank {
         font-size: 9px;
         padding: 4px 5px;
         min-width: 38px;
         box-shadow: 2px 2px 0 0 var(--ps-line);
       }
-      #scoring.ps-modern .player-team-cell { gap: 4px; }
+
+      #scoring.ps-modern .player-team-cell {
+        gap: 4px;
+      }
+
       #scoring.ps-modern .player-table .player-team-logo {
-        width: 20px; height: 20px;
+        width: 20px;
+        height: 20px;
         border-width: 1px;
       }
+
       #scoring.ps-modern .player-table .player-fantasy-team {
         font-size: 12px;
         max-width: 70px;
       }
 
       /* Pill labels: full text reads as ALL / BAT / PIT etc. via pill-label-short */
-      #scoring.ps-modern .ps-filters .pill-label-full { display: none; }
-      #scoring.ps-modern .ps-filters .pill-label-short { display: inline; }
+      #scoring.ps-modern .ps-filters .pill-label-full {
+        display: none;
+      }
+
+      #scoring.ps-modern .ps-filters .pill-label-short {
+        display: inline;
+      }
+
+      /* When the table has been scrolled horizontally, condense the sticky
+         Player column: keep only the FIRST (primary) position badge so
+         multi-position players (e.g. STL 1B OF) don't eat half the viewport.
+         The MLB team badge (.ps-mlb-badge) and the first .position-badge
+         remain visible. */
+      #scoring.ps-modern .player-table-wrapper.scrolled
+        .player-mlb-team .position-badge ~ .position-badge {
+        display: none;
+      }
+      /* Cap the sticky Player cell width when scrolled so the table can
+         actually reflow narrower */
+      #scoring.ps-modern .player-table-wrapper.scrolled
+        .player-table tbody td:nth-child(2),
+      #scoring.ps-modern .player-table-wrapper.scrolled
+        .player-table thead th:nth-child(2) {
+        max-width: 180px;
+      }
+      #scoring.ps-modern .player-table-wrapper.scrolled
+        .player-table .player-name {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 110px;
+      }
     }
 
     /* Extra-small phones (iPhone SE etc.) */
     @media (max-width: 400px) {
-      #scoring.ps-modern .ps-page-title { font-size: 18px; }
-      #scoring.ps-modern .ps-page-meta { font-size: 10px; }
-      #scoring.ps-modern .ps-ribbon-logo-wrap { width: 36px; height: 36px; }
-      #scoring.ps-modern .ps-filters .position-pills { grid-template-columns: repeat(4, 1fr); }
+      #scoring.ps-modern .ps-page-title {
+        font-size: 18px;
+      }
+
+      #scoring.ps-modern .ps-page-meta {
+        font-size: 10px;
+      }
+
+      #scoring.ps-modern .ps-ribbon-logo-wrap {
+        width: 36px;
+        height: 36px;
+      }
+
+      #scoring.ps-modern .ps-filters .position-pills {
+        grid-template-columns: repeat(4, 1fr);
+      }
     }
 
     /* =========================================
@@ -14512,6 +14562,24 @@
       vertical-align: middle;
     }
 
+    /* Colored MLB team badge in the ribbon meta line (replaces the logo image) */
+    #player-modal.pcm-active .pcm-meta .ps-mlb-badge {
+      display: inline-block;
+      font-family: 'Arcade Gamer', monospace;
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      padding: 5px 8px;
+      border: 2px solid var(--pcm-line);
+      border-radius: 0;
+      line-height: 1;
+      vertical-align: middle;
+    }
+
+    #player-modal.pcm-active .pcm-meta .ps-mlb-badge-fa {
+      background: var(--pcm-paper-dim);
+      color: var(--pcm-ink);
+    }
+
     #player-modal.pcm-active .pcm-season-pill {
       font-family: 'Arcade Gamer', monospace;
       background: var(--pcm-pop);
@@ -14737,6 +14805,7 @@
       padding: 12px 16px;
       display: grid;
       grid-template-columns: auto 1fr auto;
+      /* headshot | name+sub | rank pill (right) */
       align-items: center;
       gap: 14px;
       border-bottom: 4px solid var(--pcm-line);
@@ -14756,6 +14825,8 @@
       padding: 10px 12px;
       line-height: 1;
       letter-spacing: 1px;
+      justify-self: end;
+      /* right-align in the grid cell */
     }
 
     #player-modal.pcm-active .pcm-np-name {
@@ -14771,8 +14842,55 @@
       font-family: 'Arcade Gamer', monospace;
       font-size: 10px;
       color: var(--pcm-hi);
-      margin-top: 6px;
+      margin-top: 8px;
       letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* MLB team logo in a white circle inside the nameplate sub-line
+       (avoids the colored-badge variant blending into the dark navy bar) */
+    #player-modal.pcm-active .pcm-np-mlb-chip {
+      width: 38px;
+      height: 38px;
+      background: #fff;
+      border: 2px solid var(--pcm-line);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px;
+      overflow: hidden;
+      vertical-align: middle;
+      flex: 0 0 auto;
+    }
+    #player-modal.pcm-active .pcm-np-mlb-chip img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    #player-modal.pcm-active .pcm-np-mlb-chip.fallback {
+      font-family: 'Arcade Gamer', monospace;
+      font-size: 11px;
+      color: var(--pcm-ink);
+      padding: 0;
+    }
+
+    #player-modal.pcm-active .pcm-np-sub-sep {
+      color: #fff;
+      opacity: .7;
+    }
+
+    #player-modal.pcm-active .pcm-np-sub-ftc {
+      color: #fff;
+      font-size: 11px;
+    }
+
+    #player-modal.pcm-active .pcm-np-sub-ftc.pcm-np-sub-fa {
+      color: var(--pcm-pop);
     }
 
     #player-modal.pcm-active .pcm-np-headshot {
@@ -14780,6 +14898,8 @@
       height: 64px;
       background: var(--pcm-paper);
       border: 3px solid var(--pcm-hi);
+      border-radius: 50%;
+      /* circular */
       overflow: hidden;
       flex: 0 0 auto;
       position: relative;
@@ -14950,7 +15070,8 @@
 
     #player-modal.pcm-active .pcm-lh-head {
       display: grid;
-      grid-template-columns: 60px 1fr 50px 50px 60px 60px;
+      grid-template-columns: 50px 1fr 65px 48px 48px 56px 56px;
+      /* YR MGR ACQ OVR TYPE POS PTS */
       background: var(--pcm-ink);
       color: var(--pcm-hi);
       font-family: 'Arcade Gamer', monospace;
@@ -14975,13 +15096,21 @@
 
     #player-modal.pcm-active .pcm-lh-row {
       display: grid;
-      grid-template-columns: 60px 1fr 50px 50px 60px 60px;
+      grid-template-columns: 50px 1fr 65px 48px 48px 56px 56px;
       align-items: center;
       padding: 6px 0;
       border-bottom: 2px dotted var(--pcm-line);
       font-family: 'Basis33', monospace;
       font-size: 18px;
       color: var(--pcm-ink);
+    }
+
+    #player-modal.pcm-active .pcm-lh-row>.acq {
+      font-family: 'Arcade Gamer', monospace;
+      font-size: 9px;
+      color: var(--pcm-ink-soft);
+      letter-spacing: 0.5px;
+      text-align: center;
     }
 
     #player-modal.pcm-active .pcm-lh-row:last-child {
@@ -15924,7 +16053,8 @@
         display: none;
       }
 
-      /* Mobile league history: drop OVR and BAT/PIT columns; show YR / MGR / POS / PTS */
+      /* Mobile league history: drop ACQ (col 3), OVR (col 4), and BAT/PIT (col 5);
+         keep YR / MGR / POS / PTS */
       #player-modal.pcm-active .pcm-lh-head,
       #player-modal.pcm-active .pcm-lh-row {
         grid-template-columns: 48px 1fr 56px 56px;
@@ -15932,8 +16062,10 @@
 
       #player-modal.pcm-active .pcm-lh-head>div:nth-child(3),
       #player-modal.pcm-active .pcm-lh-head>div:nth-child(4),
+      #player-modal.pcm-active .pcm-lh-head>div:nth-child(5),
       #player-modal.pcm-active .pcm-lh-row>div:nth-child(3),
-      #player-modal.pcm-active .pcm-lh-row>div:nth-child(4) {
+      #player-modal.pcm-active .pcm-lh-row>div:nth-child(4),
+      #player-modal.pcm-active .pcm-lh-row>div:nth-child(5) {
         display: none;
       }
 
@@ -30654,11 +30786,6 @@
           <div class="ps-badge-score" aria-hidden="true">FBCW</div>
           <div class="ps-title-block">
             <div class="ps-page-title">PLAYER SCORING</div>
-            <div class="ps-page-meta">
-              <span id="ps-meta-count">— PLAYERS</span>
-              <span class="ps-meta-dot">&bull;</span>
-              <span id="ps-meta-window" class="ps-meta-window">SEASON</span>
-            </div>
           </div>
           <div class="ps-ribbon-logo-wrap">
             <img src="league_logo.png" alt="FBCW" class="ps-ribbon-logo" />
@@ -30708,13 +30835,13 @@
               <div class="manager-filter">
                 <label>Manager:</label>
                 <div class="manager-dropdown">
-                  <button class="manager-btn" id="manager-btn-display">All Managers</button>
+                  <button class="manager-btn" id="manager-btn-display">All</button>
                   <div class="manager-dropdown-menu" id="manager-dropdown-menu">
                     <!-- Populated dynamically -->
                   </div>
                 </div>
                 <select id="manager-filter" style="display: none;" onchange="filterPlayers()">
-                  <option value="all">All Managers</option>
+                  <option value="all">All</option>
                   <!-- Will be populated dynamically -->
                 </select>
               </div>
@@ -33477,6 +33604,88 @@
     let playerScoringInitialized = false;
     let filteredPlayersData = [];
     let playerHistoryData = {};
+
+    /* ===========================================================================
+       Per-season acquisition lookup for the player card modal history table.
+       Returns 'Rd N, P Ovr' / 'Trade' / 'Add MM/DD/YY' / '—' based on draft &
+       transactions data for the given year. Caches per-year data so multiple
+       rows in the same render don't refetch.
+       =========================================================================== */
+    const acqCacheByYear = {};
+    async function fetchYearAcqData(year) {
+      if (acqCacheByYear[year]) return acqCacheByYear[year];
+      const draftPath = year === 2026
+        ? "data/current_season/draft.json"
+        : `data/historical/${year}/draft.json`;
+      const txPath = year === 2026
+        ? "data/current_season/transactions.json"
+        : `data/historical/${year}/transactions.json`;
+      const teamsPath = year === 2026
+        ? "data/current_season/teams.json"
+        : `data/historical/${year}/teams.json`;
+      try {
+        const [draft, tx, teams] = await Promise.all([
+          fetch(draftPath).then(r => r.ok ? r.json() : []).catch(() => []),
+          fetch(txPath).then(r => r.ok ? r.json() : []).catch(() => []),
+          fetch(teamsPath).then(r => r.ok ? r.json() : []).catch(() => []),
+        ]);
+        const teamKeyToName = {};
+        const teamsArr = Array.isArray(teams) ? teams : [];
+        teamsArr.forEach(t => {
+          if (t && t.team_key) teamKeyToName[t.team_key] = t.team_name;
+        });
+        const teamsCount = teamsArr.length || 12;   // league has 12 teams; fall back if teams.json missing
+        acqCacheByYear[year] = {
+          draft: Array.isArray(draft) ? draft : [],
+          tx: Array.isArray(tx) ? tx : [],
+          teamKeyToName,
+          teamsCount,
+        };
+      } catch (e) {
+        acqCacheByYear[year] = { draft: [], tx: [], teamKeyToName: {} };
+      }
+      return acqCacheByYear[year];
+    }
+
+    function computeAcquisitionForSeason(playerName, year, teamName) {
+      const cache = acqCacheByYear[year];
+      if (!cache) return "—";
+      const nameLower = (playerName || "").toLowerCase().replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "").trim();
+
+      // Most recent add/trade that landed the player on this season's team
+      const events = cache.tx
+        .filter(t => t.players && (t.type === "add" || t.type === "add/drop" || t.type === "trade"))
+        .map(t => {
+          const matched = t.players.find(p =>
+            p.player_name &&
+            p.player_name.toLowerCase().replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "").trim() === nameLower &&
+            (p.transaction_type === "add" || p.transaction_type === "trade") &&
+            p.destination_team_name === teamName
+          );
+          return matched ? t : null;
+        })
+        .filter(Boolean)
+        .sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+
+      if (events.length > 0) {
+        const latest = events[0];
+        if (latest.type === "trade") return "TRADE";
+        return "ADD";
+      }
+
+      // Otherwise check the draft for this year — match on player name + drafting team
+      const pick = cache.draft.find(p =>
+        p.player_name &&
+        p.player_name.toLowerCase().replace(/\s*\(batter\)|\s*\(pitcher\)/gi, "").trim() === nameLower
+      );
+      if (pick && cache.teamKeyToName[pick.team_key] === teamName) {
+        // Display "round.pick_in_round" (e.g. 21.7 = round 21, pick 7 within the round)
+        const teams = cache.teamsCount || 12;
+        const pickInRound = ((Number(pick.pick) - 1) % teams) + 1;
+        return `${pick.round}.${pickInRound}`;
+      }
+      return "—";
+    }
     let currentPlayerSort = { column: "fantasy_points", direction: "desc" };
     let currentStatType = "fantasy";
     let currentPlayerWindow = "ytd";
@@ -33777,6 +33986,19 @@
       if (customDropdownsInitialized) return;
       customDropdownsInitialized = true;
 
+      // Mobile: when the table is scrolled horizontally, tag the wrapper so
+      // CSS can hide secondary position badges (and thus shrink the sticky
+      // Player column) — multi-position players were chewing up half the
+      // viewport. The wrapper persists across renders so we only attach once.
+      const psWrapper = document.querySelector('#scoring.ps-modern .player-table-wrapper');
+      if (psWrapper) {
+        const onPsScroll = () => {
+          if (psWrapper.scrollLeft > 0) psWrapper.classList.add('scrolled');
+          else psWrapper.classList.remove('scrolled');
+        };
+        psWrapper.addEventListener('scroll', onPsScroll, { passive: true });
+      }
+
       // Season dropdown
       const seasonBtn = document.getElementById('season-btn-display');
       const seasonMenu = document.getElementById('season-dropdown-menu');
@@ -33901,7 +34123,7 @@
           // Update button with logo + name or just name
           if (opt.value === 'all' || opt.value === '__FA__') {
             managerBtn.innerHTML = '';
-            managerBtn.textContent = opt.value === '__FA__' ? 'Free Agents' : 'All Managers';
+            managerBtn.textContent = opt.value === '__FA__' ? 'Free Agents' : 'All';
           } else {
             const teamDataArray = window.playerTeamsData || window.allTeamsData || [];
             const normalizedName = normalizeManagerName(opt.textContent, 2026, '', '');
@@ -34050,7 +34272,10 @@
 
       // For each position, sort eligible players by fantasy points and assign ranks
       positions.forEach((pos) => {
-        // Get players eligible for this position
+        const posUp = pos.toUpperCase();
+        // Get players eligible for this position (case-insensitive match
+        // because Yahoo data sometimes mixes "Util" and "UTIL" in the same
+        // eligible_positions array).
         let eligiblePlayers;
         if (pos === "P") {
           // P includes all pitchers
@@ -34059,7 +34284,9 @@
           );
         } else {
           eligiblePlayers = allPlayersData.filter(
-            (p) => p.eligible_positions && p.eligible_positions.includes(pos),
+            (p) => p.eligible_positions && p.eligible_positions.some(
+              (ep) => (ep || "").toUpperCase() === posUp
+            ),
           );
         }
 
@@ -34105,6 +34332,16 @@
       return info.position;
     }
 
+    // Normalize a position string into the key used by calculatePositionRanks()
+    // (e.g. "UTIL"/"util"/"DH" → "Util", "LF"/"CF"/"RF" → "OF"). The rank table
+    // is built with a specific case ("Util") so lookups must match.
+    function normalizeRankKey(p) {
+      const up = (p || "").toUpperCase();
+      if (up === "UTIL" || up === "DH") return "Util";
+      if (up === "LF" || up === "CF" || up === "RF") return "OF";
+      return up;  // C, 1B, 2B, 3B, SS, SP, RP, P, B
+    }
+
     function getPositionWithRankInfo(player) {
       const positionFilter = document.getElementById("position-filter")?.value || "all";
       const pos = player.primary_position || "-";
@@ -34123,11 +34360,14 @@
         displayPos = positionFilter;
       }
 
-      const rank = player.position_ranks[rankPos];
+      const rankKey = normalizeRankKey(rankPos);
+      const rank = player.position_ranks[rankKey];
       if (rank) {
-        return { position: displayPos, rank: rank };
+        // Display as uppercase (UTIL, OF, SS, etc.) for consistency with the
+        // colored chips and the rest of the page.
+        return { position: displayPos.toUpperCase(), rank: rank };
       }
-      return { position: pos, rank: '-' };
+      return { position: (pos || "").toUpperCase(), rank: '-' };
     }
 
     async function populateManagerFilter() {
@@ -34137,9 +34377,9 @@
         ...new Set(allPlayersData.map((p) => p.manager).filter(Boolean)),
       ].sort();
 
-      // Keep the "All Managers" option, then a Free Agents option, then the rest
+      // Keep the "All" option, then a Free Agents option, then the rest
       managerFilter.innerHTML =
-        '<option value="all">All Managers</option>' +
+        '<option value="all">All</option>' +
         '<option value="__FA__">Free Agents</option>';
       managers.forEach((manager) => {
         const option = document.createElement("option");
@@ -34678,12 +34918,12 @@
           const s = getPlayerStats(player);
           const pts = getPlayerFantasyPoints(player);
           if (player.position_type === "B") {
-            const qPA  = leaderBatPA  > 0 && (s.PA || 0) >= 0.6 * leaderBatPA;
-            const qPts = leaderBatPts > 0 && pts         >= 0.6 * leaderBatPts;
+            const qPA = leaderBatPA > 0 && (s.PA || 0) >= 0.6 * leaderBatPA;
+            const qPts = leaderBatPts > 0 && pts >= 0.6 * leaderBatPts;
             if (!qPA && !qPts) return false;
           } else if (player.position_type === "P") {
-            const qIP  = leaderPitIP  > 0 && (s.IP || 0) >= 0.6 * leaderPitIP;
-            const qPts = leaderPitPts > 0 && pts         >= 0.5 * leaderPitPts;
+            const qIP = leaderPitIP > 0 && (s.IP || 0) >= 0.6 * leaderPitIP;
+            const qPts = leaderPitPts > 0 && pts >= 0.5 * leaderPitPts;
             if (!qIP && !qPts) return false;
           }
         } else if (currentQualifier === "custom" && customStat && customOp && customVal !== null) {
@@ -34883,7 +35123,7 @@
       PIT: { bg: '#fdb827', fg: '#000000' },
       SD: { bg: '#2f241d', fg: '#ffc425' },
       SF: { bg: '#fd5a1e', fg: '#27251f' },
-      SEA: { bg: '#0c2c56', fg: '#c4ced4' },
+      SEA: { bg: '#00685E', fg: '#FFFFFF' },
       STL: { bg: '#c41e3a', fg: '#fedb00' },
       TB: { bg: '#092c5c', fg: '#8fbce6' },
       TEX: { bg: '#003278', fg: '#ffffff' },
@@ -34973,6 +35213,13 @@
         homeOnly: true,
         colors: { bg: '#010101', fg: '#F04E98' },
         label: 'Marlins Friday/Saturday vice black/pink'
+      },
+      {
+        team: 'SD',
+        days: [0],
+        homeOnly: true,
+        colors: { bg: '#0C2340', fg: '#E35205' },
+        label: 'Padres Sunday home navy alternate'
       }
     ];
 
@@ -35154,13 +35401,28 @@
 
           // Build position badges from eligible positions
           const eligiblePositions = player.eligible_positions || [player.primary_position || ''];
+          // Bench / IL slots are never useful as a badge
+          const BENCH_SLOTS = ['BN', 'IL', 'IL+', 'DL', 'NA'];
+          // Does the player have any real defensive/pitching eligibility?
+          const hasRealPosition = eligiblePositions.some(ep => {
+            const epUp = (ep || '').toUpperCase();
+            return epUp.length > 0 && epUp !== 'UTIL' && !BENCH_SLOTS.includes(epUp);
+          });
+          // Dedupe + filter in one pass (Yahoo data sometimes lists the same
+          // slot twice with different casing, e.g. ['Util','UTIL']).
+          const seenPositions = new Set();
           const filteredPositions = eligiblePositions.filter(p => {
             const up = (p || '').toUpperCase();
-            // Filter out generic/bench positions
-            if (['UTIL', 'BN', 'IL', 'IL+', 'DL', 'NA'].includes(up)) return false;
+            if (!up.length) return false;
+            if (BENCH_SLOTS.includes(up)) return false;
+            // Drop UTIL only when the player has a real position to show instead;
+            // UTIL-only players (e.g. DHs without defensive eligibility) keep it.
+            if (up === 'UTIL' && hasRealPosition) return false;
             // Filter out generic 'P' if SP or RP is present
             if (up === 'P' && eligiblePositions.some(ep => ['SP', 'RP'].includes((ep || '').toUpperCase()))) return false;
-            return up.length > 0;
+            if (seenPositions.has(up)) return false;
+            seenPositions.add(up);
+            return true;
           });
           const posBadgesHtml = filteredPositions.map(p => {
             const up = (p || '').toUpperCase();
@@ -37049,6 +37311,11 @@
       // The data above (player, stats, history, draft, etc.) is reused as-is.
       try {
         const pcmRibbon = document.getElementById("pcm-ribbon");
+        // Normalized MLB label for the colored team badge — must be available
+        // for both the ribbon and the nameplate, so hoist it to the top.
+        let pcmMlbLabel = mlbTeamText || "FA";
+        if (selectedYear >= 2025 && pcmMlbLabel === "OAK") pcmMlbLabel = "ATH";
+
         const pcmFantasyShortRaw =
           (player.team_name || "").trim() ||
           (player.manager || "").trim() ||
@@ -37160,16 +37427,24 @@
         let pcmHistoryHtml = "";
         if (historySeasons.length > 0) {
           const pcmHistTypeLabel = isBatter ? "BAT" : "PIT";
+          const displayedSeasons = historySeasons
+            .slice()
+            .sort((a, b) => b.year - a.year)
+            .slice(0, 6);
+
+          // Pre-fetch draft + transactions + teams for every displayed year so
+          // the row builder can read acquisition info synchronously.
+          await Promise.all(
+            [...new Set(displayedSeasons.map(s => s.year))].map(y => fetchYearAcqData(y))
+          );
+
           pcmHistoryHtml = `
               <div class="pcm-league-history">
                 <div class="pcm-lh-head">
-                  <div>YR</div><div>MANAGER</div><div>OVR</div>
+                  <div>YEAR</div><div>MANAGER</div><div>ACQ</div><div>OVR</div>
                   <div>${pcmHistTypeLabel}</div><div>POS</div><div>PTS</div>
                 </div>
-                ${historySeasons
-              .slice()
-              .sort((a, b) => b.year - a.year)
-              .slice(0, 6)
+                ${displayedSeasons
               .map((season) => {
                 const logo =
                   historyLogos[`${season.year}_${season.team_name}`] || "";
@@ -37192,6 +37467,7 @@
                     .slice(0, 2)
                     .join("")
                     .toUpperCase();
+                const acqText = isFA ? "—" : computeAcquisitionForSeason(player.name, season.year, teamNm);
                 return `
                       <div class="pcm-lh-row${isFA ? " fa" : ""}">
                         <div class="yr">${season.year}</div>
@@ -37204,6 +37480,7 @@
                   }</span>
                           <span>${mgr}</span>
                         </div>
+                        <div class="acq">${acqText}</div>
                         <div><span class="pill">${ranks.overall}</span></div>
                         <div><span class="pill">${ranks.type}</span></div>
                         <div><span class="pill ${isCurrent ? "gold" : ""}">${ranks.position}</span></div>
@@ -37227,17 +37504,20 @@
                     <div class="pcm-hero-fantasy${hasFantasyTeam ? "" : " fa"}">${pcmFantasyBadgeHtml}</div>
                   </div>
                   <div class="pcm-nameplate">
-                    <div class="pcm-np-num">${posRankDisplay || (player.primary_position || "—")}</div>
-                    <div class="pcm-np-text">
-                      <div class="pcm-np-name">${(player.name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '')}</div>
-                      <div class="pcm-np-sub">${mlbTeamText}${hasFantasyTeam
-            ? ` · ${(player.team_name || "").toUpperCase()}`
-            : ""
-          }</div>
-                    </div>
                     <div class="pcm-np-headshot">
                       <img src="${headshot}" alt="${player.name}" onerror="this.src='${placeholderHeadshot}';">
                     </div>
+                    <div class="pcm-np-text">
+                      <div class="pcm-np-name">${(player.name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '')}</div>
+                      <div class="pcm-np-sub">${hasMlbLogo
+            ? `<span class="pcm-np-mlb-chip"><img src="${mlbLogoUrl}" alt="${pcmMlbLabel}" onerror="this.parentElement.classList.add('fallback');this.outerHTML='${pcmMlbLabel}';"></span>`
+            : `<span class="pcm-np-mlb-chip fallback">${pcmMlbLabel}</span>`
+          }${hasFantasyTeam
+            ? `<span class="pcm-np-sub-sep">·</span><span class="pcm-np-sub-ftc">${(player.team_name || "").toUpperCase()}</span>`
+            : `<span class="pcm-np-sub-sep">·</span><span class="pcm-np-sub-ftc pcm-np-sub-fa">FREE AGENT</span>`
+          }</div>
+                    </div>
+                    <div class="pcm-np-num">${posRankDisplay || (player.primary_position || "—")}</div>
                   </div>
                   ${pcmWindowTabsHtml}
                   <div class="pcm-stat-block" id="modal-stats-content">
@@ -37257,9 +37537,9 @@
         // Build ribbon
         const pcmDisplayName = (player.name || '').replace(/\s*\(Batter\)|\s*\(Pitcher\)/gi, '');
         const pcmPrimaryPos = player.primary_position || "";
-        const pcmRibbonMlbHtml = hasMlbLogo
-          ? `<img class="pcm-meta-mlb-logo" src="${mlbLogoUrl}" alt="${mlbTeamText}" onerror="this.outerHTML='<span>'+this.alt+'</span>';">`
-          : `<span>${mlbTeamText || "FA"}</span>`;
+        // Use the same colored team badge as the Player Scoring page
+        // (with the 2025+ OAK→ATH rebrand applied for consistency).
+        const pcmRibbonMlbHtml = getPSMLBTeamBadge(pcmMlbLabel);
         const pcmRibbonHtml = `
             <div class="pcm-pos-badge pos-${pcmPrimaryPos}">${pcmPrimaryPos || "—"}</div>
             <div class="pcm-name-block">
@@ -42636,8 +42916,15 @@
         if (numRank <= 4) return "top-10";
         if (numRank <= 10) return "top-25";
         return "top-50";
+      } else if (pos === "UTIL" || pos === "DH") {
+        // UTIL / DH: pool is every batter (~250+), so tiers are wider.
+        // S <= 10, Green 11-50, Yellow 51-100, Red > 100
+        if (numRank <= 10) return "s-tier";
+        if (numRank <= 50) return "top-10";
+        if (numRank <= 100) return "top-25";
+        return "top-50";
       } else {
-        // All other hitters (1B, 2B, 3B, SS, DH): S <= 3, Green 4-8, Yellow 9-15, Red > 15
+        // All other hitters (1B, 2B, 3B, SS): S <= 3, Green 4-8, Yellow 9-15, Red > 15
         if (numRank <= 3) return "s-tier";
         if (numRank <= 8) return "top-10";
         if (numRank <= 15) return "top-25";
