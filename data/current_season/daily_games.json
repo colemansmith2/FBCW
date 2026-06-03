@@ -1,6 +1,6 @@
 {
   "date": "2026-06-03",
-  "updated": "2026-06-03T20:13:20.181700+00:00",
+  "updated": "2026-06-03T22:29:58.899328+00:00",
   "teams_playing": [
     "ARI",
     "ATL",
@@ -38,7 +38,7 @@
     {
       "game_pk": 822727,
       "game_date": "2026-06-03T17:05:00Z",
-      "status": "In Progress",
+      "status": "Final",
       "home_team": "WSH",
       "away_team": "MIA",
       "home_probable_pitcher": {
@@ -256,7 +256,7 @@
     {
       "game_pk": 823701,
       "game_date": "2026-06-03T17:40:00Z",
-      "status": "In Progress",
+      "status": "Final",
       "home_team": "MIN",
       "away_team": "CWS",
       "home_probable_pitcher": {
@@ -365,7 +365,7 @@
     {
       "game_pk": 823130,
       "game_date": "2026-06-03T19:40:00Z",
-      "status": "In Progress",
+      "status": "Final",
       "home_team": "SEA",
       "away_team": "NYM",
       "home_probable_pitcher": {
@@ -474,7 +474,7 @@
     {
       "game_pk": 823456,
       "game_date": "2026-06-03T22:40:00Z",
-      "status": "Pre-Game",
+      "status": "Warmup",
       "home_team": "PHI",
       "away_team": "SD",
       "home_probable_pitcher": {
@@ -583,7 +583,7 @@
     {
       "game_pk": 824755,
       "game_date": "2026-06-03T22:45:00Z",
-      "status": "Pre-Game",
+      "status": "Warmup",
       "home_team": "BOS",
       "away_team": "BAL",
       "home_probable_pitcher": {
@@ -1030,7 +1030,53 @@
         "player_id": 657277,
         "name": "Logan Webb"
       },
-      "home_lineup": [],
+      "home_lineup": [
+        {
+          "player_id": 592885,
+          "name": "Christian Yelich",
+          "batting_order": 1
+        },
+        {
+          "player_id": 683734,
+          "name": "Andrew Vaughn",
+          "batting_order": 2
+        },
+        {
+          "player_id": 668930,
+          "name": "Brice Turang",
+          "batting_order": 3
+        },
+        {
+          "player_id": 661388,
+          "name": "William Contreras",
+          "batting_order": 4
+        },
+        {
+          "player_id": 641343,
+          "name": "Jake Bauers",
+          "batting_order": 5
+        },
+        {
+          "player_id": 669003,
+          "name": "Garrett Mitchell",
+          "batting_order": 6
+        },
+        {
+          "player_id": 686217,
+          "name": "Sal Frelick",
+          "batting_order": 7
+        },
+        {
+          "player_id": 650859,
+          "name": "Luis Rengifo",
+          "batting_order": 8
+        },
+        {
+          "player_id": 666152,
+          "name": "David Hamilton",
+          "batting_order": 9
+        }
+      ],
       "away_lineup": [
         {
           "player_id": 669477,
@@ -1082,7 +1128,7 @@
     {
       "game_pk": 823051,
       "game_date": "2026-06-03T23:45:00Z",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "home_team": "STL",
       "away_team": "TEX",
       "home_probable_pitcher": {
@@ -1093,13 +1139,105 @@
         "player_id": 669022,
         "name": "MacKenzie Gore"
       },
-      "home_lineup": [],
-      "away_lineup": []
+      "home_lineup": [
+        {
+          "player_id": 691026,
+          "name": "Masyn Winn",
+          "batting_order": 1
+        },
+        {
+          "player_id": 671056,
+          "name": "Iv\u00e1n Herrera",
+          "batting_order": 2
+        },
+        {
+          "player_id": 691023,
+          "name": "Jordan Walker",
+          "batting_order": 3
+        },
+        {
+          "player_id": 676369,
+          "name": "Nelson Vel\u00e1zquez",
+          "batting_order": 4
+        },
+        {
+          "player_id": 676475,
+          "name": "Alec Burleson",
+          "batting_order": 5
+        },
+        {
+          "player_id": 665877,
+          "name": "Jos\u00e9 Ferm\u00edn",
+          "batting_order": 6
+        },
+        {
+          "player_id": 669357,
+          "name": "Nolan Gorman",
+          "batting_order": 7
+        },
+        {
+          "player_id": 695336,
+          "name": "Thomas Saggese",
+          "batting_order": 8
+        },
+        {
+          "player_id": 687363,
+          "name": "Victor Scott II",
+          "batting_order": 9
+        }
+      ],
+      "away_lineup": [
+        {
+          "player_id": 592626,
+          "name": "Joc Pederson",
+          "batting_order": 1
+        },
+        {
+          "player_id": 673962,
+          "name": "Josh Jung",
+          "batting_order": 2
+        },
+        {
+          "player_id": 607043,
+          "name": "Brandon Nimmo",
+          "batting_order": 3
+        },
+        {
+          "player_id": 669394,
+          "name": "Jake Burger",
+          "batting_order": 4
+        },
+        {
+          "player_id": 677649,
+          "name": "Ezequiel Duran",
+          "batting_order": 5
+        },
+        {
+          "player_id": 696030,
+          "name": "Alejandro Osuna",
+          "batting_order": 6
+        },
+        {
+          "player_id": 694497,
+          "name": "Evan Carter",
+          "batting_order": 7
+        },
+        {
+          "player_id": 543309,
+          "name": "Kyle Higashioka",
+          "batting_order": 8
+        },
+        {
+          "player_id": 670032,
+          "name": "Nicky Lopez",
+          "batting_order": 9
+        }
+      ]
     },
     {
       "game_pk": 824671,
       "game_date": "2026-06-04T00:05:00Z",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "home_team": "CHC",
       "away_team": "OAK",
       "home_probable_pitcher": {
@@ -1110,8 +1248,100 @@
         "player_id": 605488,
         "name": "Jeffrey Springs"
       },
-      "home_lineup": [],
-      "away_lineup": []
+      "home_lineup": [
+        {
+          "player_id": 663538,
+          "name": "Nico Hoerner",
+          "batting_order": 1
+        },
+        {
+          "player_id": 691718,
+          "name": "Pete Crow-Armstrong",
+          "batting_order": 2
+        },
+        {
+          "player_id": 608324,
+          "name": "Alex Bregman",
+          "batting_order": 3
+        },
+        {
+          "player_id": 673548,
+          "name": "Seiya Suzuki",
+          "batting_order": 4
+        },
+        {
+          "player_id": 664023,
+          "name": "Ian Happ",
+          "batting_order": 5
+        },
+        {
+          "player_id": 621020,
+          "name": "Dansby Swanson",
+          "batting_order": 6
+        },
+        {
+          "player_id": 683737,
+          "name": "Michael Busch",
+          "batting_order": 7
+        },
+        {
+          "player_id": 699393,
+          "name": "Pedro Ram\u00edrez",
+          "batting_order": 8
+        },
+        {
+          "player_id": 665804,
+          "name": "Miguel Amaya",
+          "batting_order": 9
+        }
+      ],
+      "away_lineup": [
+        {
+          "player_id": 666126,
+          "name": "Carlos Cortes",
+          "batting_order": 1
+        },
+        {
+          "player_id": 701762,
+          "name": "Nick Kurtz",
+          "batting_order": 2
+        },
+        {
+          "player_id": 669127,
+          "name": "Shea Langeliers",
+          "batting_order": 3
+        },
+        {
+          "player_id": 691016,
+          "name": "Tyler Soderstrom",
+          "batting_order": 4
+        },
+        {
+          "player_id": 667670,
+          "name": "Brent Rooker",
+          "batting_order": 5
+        },
+        {
+          "player_id": 671732,
+          "name": "Lawrence Butler",
+          "batting_order": 6
+        },
+        {
+          "player_id": 680869,
+          "name": "Zack Gelof",
+          "batting_order": 7
+        },
+        {
+          "player_id": 643446,
+          "name": "Jeff McNeil",
+          "batting_order": 8
+        },
+        {
+          "player_id": 675961,
+          "name": "Alika Williams",
+          "batting_order": 9
+        }
+      ]
     },
     {
       "game_pk": 824188,
@@ -1174,7 +1404,53 @@
           "batting_order": 9
         }
       ],
-      "away_lineup": []
+      "away_lineup": [
+        {
+          "player_id": 687462,
+          "name": "Spencer Horwitz",
+          "batting_order": 1
+        },
+        {
+          "player_id": 664040,
+          "name": "Brandon Lowe",
+          "batting_order": 2
+        },
+        {
+          "player_id": 668804,
+          "name": "Bryan Reynolds",
+          "batting_order": 3
+        },
+        {
+          "player_id": 693304,
+          "name": "Nick Gonzales",
+          "batting_order": 4
+        },
+        {
+          "player_id": 665833,
+          "name": "Oneil Cruz",
+          "batting_order": 5
+        },
+        {
+          "player_id": 542303,
+          "name": "Marcell Ozuna",
+          "batting_order": 6
+        },
+        {
+          "player_id": 691373,
+          "name": "Jhostynxon Garcia",
+          "batting_order": 7
+        },
+        {
+          "player_id": 669707,
+          "name": "Jared Triolo",
+          "batting_order": 8
+        },
+        {
+          "player_id": 680779,
+          "name": "Henry Davis",
+          "batting_order": 9
+        }
+      ]
     },
     {
       "game_pk": 824024,
@@ -1254,7 +1530,53 @@
           "batting_order": 9
         }
       ],
-      "away_lineup": []
+      "away_lineup": [
+        {
+          "player_id": 660271,
+          "name": "Shohei Ohtani",
+          "batting_order": 1
+        },
+        {
+          "player_id": 681624,
+          "name": "Andy Pages",
+          "batting_order": 2
+        },
+        {
+          "player_id": 518692,
+          "name": "Freddie Freeman",
+          "batting_order": 3
+        },
+        {
+          "player_id": 605141,
+          "name": "Mookie Betts",
+          "batting_order": 4
+        },
+        {
+          "player_id": 663656,
+          "name": "Kyle Tucker",
+          "batting_order": 5
+        },
+        {
+          "player_id": 571970,
+          "name": "Max Muncy",
+          "batting_order": 6
+        },
+        {
+          "player_id": 669257,
+          "name": "Will Smith",
+          "batting_order": 7
+        },
+        {
+          "player_id": 669743,
+          "name": "Alex Call",
+          "batting_order": 8
+        },
+        {
+          "player_id": 690976,
+          "name": "Alex Freeland",
+          "batting_order": 9
+        }
+      ]
     }
   ]
 }
