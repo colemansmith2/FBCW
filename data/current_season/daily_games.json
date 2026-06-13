@@ -1,6 +1,6 @@
 {
   "date": "2026-06-12",
-  "updated": "2026-06-12T21:50:06.729520+00:00",
+  "updated": "2026-06-13T00:11:23.975512+00:00",
   "teams_playing": [
     "ARI",
     "ATL",
@@ -38,7 +38,7 @@
     {
       "game_pk": 823370,
       "game_date": "2026-06-12T22:40:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "PIT",
       "away_team": "MIA",
       "home_probable_pitcher": {
@@ -147,7 +147,7 @@
     {
       "game_pk": 822726,
       "game_date": "2026-06-12T22:45:00Z",
-      "status": "Pre-Game",
+      "status": "Delayed Start",
       "home_team": "WSH",
       "away_team": "SEA",
       "home_probable_pitcher": {
@@ -256,7 +256,7 @@
     {
       "game_pk": 824826,
       "game_date": "2026-06-12T23:05:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "BAL",
       "away_team": "SD",
       "home_probable_pitcher": {
@@ -365,7 +365,7 @@
     {
       "game_pk": 824425,
       "game_date": "2026-06-12T23:10:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "CLE",
       "away_team": "DET",
       "home_probable_pitcher": {
@@ -474,7 +474,7 @@
     {
       "game_pk": 824752,
       "game_date": "2026-06-12T23:10:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "BOS",
       "away_team": "TEX",
       "home_probable_pitcher": {
@@ -583,7 +583,7 @@
     {
       "game_pk": 824507,
       "game_date": "2026-06-12T23:15:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "CIN",
       "away_team": "ARI",
       "home_probable_pitcher": {
@@ -692,7 +692,7 @@
     {
       "game_pk": 823617,
       "game_date": "2026-06-12T23:15:00Z",
-      "status": "Pre-Game",
+      "status": "Warmup",
       "home_team": "NYM",
       "away_team": "ATL",
       "home_probable_pitcher": {
@@ -801,7 +801,7 @@
     {
       "game_pk": 822803,
       "game_date": "2026-06-12T23:37:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "TOR",
       "away_team": "NYY",
       "home_probable_pitcher": {
@@ -910,7 +910,7 @@
     {
       "game_pk": 824588,
       "game_date": "2026-06-12T23:40:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "CWS",
       "away_team": "LAD",
       "home_probable_pitcher": {
@@ -1019,7 +1019,7 @@
     {
       "game_pk": 823778,
       "game_date": "2026-06-12T23:40:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "MIL",
       "away_team": "PHI",
       "home_probable_pitcher": {
@@ -1128,7 +1128,7 @@
     {
       "game_pk": 824102,
       "game_date": "2026-06-13T00:10:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "KC",
       "away_team": "HOU",
       "home_probable_pitcher": {
@@ -1237,7 +1237,7 @@
     {
       "game_pk": 823695,
       "game_date": "2026-06-13T00:10:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "MIN",
       "away_team": "STL",
       "home_probable_pitcher": {
@@ -1404,26 +1404,167 @@
           "batting_order": 9
         }
       ],
-      "away_lineup": []
+      "away_lineup": [
+        {
+          "player_id": 650490,
+          "name": "Yandy D\u00edaz",
+          "batting_order": 1
+        },
+        {
+          "player_id": 666018,
+          "name": "Jonathan Aranda",
+          "batting_order": 2
+        },
+        {
+          "player_id": 691406,
+          "name": "Junior Caminero",
+          "batting_order": 3
+        },
+        {
+          "player_id": 668723,
+          "name": "Ryan Vilade",
+          "batting_order": 4
+        },
+        {
+          "player_id": 596103,
+          "name": "Austin Slater",
+          "batting_order": 5
+        },
+        {
+          "player_id": 810938,
+          "name": "Ben Williamson",
+          "batting_order": 6
+        },
+        {
+          "player_id": 802415,
+          "name": "Chandler Simpson",
+          "batting_order": 7
+        },
+        {
+          "player_id": 663743,
+          "name": "Nick Fortes",
+          "batting_order": 8
+        },
+        {
+          "player_id": 670764,
+          "name": "Taylor Walls",
+          "batting_order": 9
+        }
+      ]
     },
     {
       "game_pk": 824997,
       "game_date": "2026-06-13T02:05:00Z",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "home_team": "OAK",
       "away_team": "COL",
       "home_probable_pitcher": {
         "player_id": 695611,
         "name": "Gage Jump"
       },
-      "away_probable_pitcher": null,
-      "home_lineup": [],
-      "away_lineup": []
+      "away_probable_pitcher": {
+        "player_id": 807743,
+        "name": "Sean Sullivan"
+      },
+      "home_lineup": [
+        {
+          "player_id": 669127,
+          "name": "Shea Langeliers",
+          "batting_order": 1
+        },
+        {
+          "player_id": 701762,
+          "name": "Nick Kurtz",
+          "batting_order": 2
+        },
+        {
+          "player_id": 687515,
+          "name": "Colby Thomas",
+          "batting_order": 3
+        },
+        {
+          "player_id": 691016,
+          "name": "Tyler Soderstrom",
+          "batting_order": 4
+        },
+        {
+          "player_id": 805779,
+          "name": "Jacob Wilson",
+          "batting_order": 5
+        },
+        {
+          "player_id": 641680,
+          "name": "Jonah Heim",
+          "batting_order": 6
+        },
+        {
+          "player_id": 680869,
+          "name": "Zack Gelof",
+          "batting_order": 7
+        },
+        {
+          "player_id": 691777,
+          "name": "Max Muncy",
+          "batting_order": 8
+        },
+        {
+          "player_id": 703607,
+          "name": "Henry Bolte",
+          "batting_order": 9
+        }
+      ],
+      "away_lineup": [
+        {
+          "player_id": 650489,
+          "name": "Willi Castro",
+          "batting_order": 1
+        },
+        {
+          "player_id": 691720,
+          "name": "Kyle Karros",
+          "batting_order": 2
+        },
+        {
+          "player_id": 681198,
+          "name": "TJ Rumfield",
+          "batting_order": 3
+        },
+        {
+          "player_id": 696100,
+          "name": "Hunter Goodman",
+          "batting_order": 4
+        },
+        {
+          "player_id": 687859,
+          "name": "Troy Johnston",
+          "batting_order": 5
+        },
+        {
+          "player_id": 678662,
+          "name": "Ezequiel Tovar",
+          "batting_order": 6
+        },
+        {
+          "player_id": 694249,
+          "name": "Cole Carrigg",
+          "batting_order": 7
+        },
+        {
+          "player_id": 694514,
+          "name": "Sterlin Thompson",
+          "batting_order": 8
+        },
+        {
+          "player_id": 690924,
+          "name": "Braxton Fulford",
+          "batting_order": 9
+        }
+      ]
     },
     {
       "game_pk": 823211,
       "game_date": "2026-06-13T02:15:00Z",
-      "status": "Scheduled",
+      "status": "Pre-Game",
       "home_team": "SF",
       "away_team": "CHC",
       "home_probable_pitcher": {
@@ -1434,8 +1575,100 @@
         "player_id": 665871,
         "name": "Javier Assad"
       },
-      "home_lineup": [],
-      "away_lineup": []
+      "home_lineup": [
+        {
+          "player_id": 650333,
+          "name": "Luis Arraez",
+          "batting_order": 1
+        },
+        {
+          "player_id": 805811,
+          "name": "Bryce Eldridge",
+          "batting_order": 2
+        },
+        {
+          "player_id": 669477,
+          "name": "Casey Schmitt",
+          "batting_order": 3
+        },
+        {
+          "player_id": 646240,
+          "name": "Rafael Devers",
+          "batting_order": 4
+        },
+        {
+          "player_id": 808982,
+          "name": "Jung Hoo Lee",
+          "batting_order": 5
+        },
+        {
+          "player_id": 642715,
+          "name": "Willy Adames",
+          "batting_order": 6
+        },
+        {
+          "player_id": 656305,
+          "name": "Matt Chapman",
+          "batting_order": 7
+        },
+        {
+          "player_id": 687551,
+          "name": "Drew Gilbert",
+          "batting_order": 8
+        },
+        {
+          "player_id": 691740,
+          "name": "Daniel Susac",
+          "batting_order": 9
+        }
+      ],
+      "away_lineup": [
+        {
+          "player_id": 691718,
+          "name": "Pete Crow-Armstrong",
+          "batting_order": 1
+        },
+        {
+          "player_id": 608324,
+          "name": "Alex Bregman",
+          "batting_order": 2
+        },
+        {
+          "player_id": 683737,
+          "name": "Michael Busch",
+          "batting_order": 3
+        },
+        {
+          "player_id": 664023,
+          "name": "Ian Happ",
+          "batting_order": 4
+        },
+        {
+          "player_id": 673548,
+          "name": "Seiya Suzuki",
+          "batting_order": 5
+        },
+        {
+          "player_id": 663538,
+          "name": "Nico Hoerner",
+          "batting_order": 6
+        },
+        {
+          "player_id": 694208,
+          "name": "Mois\u00e9s Ballesteros",
+          "batting_order": 7
+        },
+        {
+          "player_id": 608348,
+          "name": "Carson Kelly",
+          "batting_order": 8
+        },
+        {
+          "player_id": 621020,
+          "name": "Dansby Swanson",
+          "batting_order": 9
+        }
+      ]
     }
   ]
 }
