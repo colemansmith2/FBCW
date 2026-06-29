@@ -1,5 +1,134 @@
 [
   {
+    "transaction_key": "469.l.4114.tr.878",
+    "transaction_id": "878",
+    "type": "add/drop",
+    "timestamp": "1782760488",
+    "status": "successful",
+    "players": [
+      {
+        "player_key": "469.p.11823",
+        "player_id": "11823",
+        "player_name": "Joey Cantillo",
+        "team_abbr": "CLE",
+        "position": "SP,RP",
+        "transaction_type": "add",
+        "source_type": "freeagents",
+        "source_team_key": "",
+        "source_team_name": "",
+        "destination_type": "team",
+        "destination_team_key": "469.l.4114.t.5",
+        "destination_team_name": "Spud Sluggers"
+      },
+      {
+        "player_key": "469.p.10903",
+        "player_id": "10903",
+        "player_name": "Edward Cabrera",
+        "team_abbr": "CHC",
+        "position": "SP",
+        "transaction_type": "drop",
+        "source_type": "team",
+        "source_team_key": "469.l.4114.t.5",
+        "source_team_name": "Spud Sluggers",
+        "destination_type": "freeagents",
+        "destination_team_key": "",
+        "destination_team_name": ""
+      }
+    ],
+    "draft_picks": []
+  },
+  {
+    "transaction_key": "469.l.4114.tr.877",
+    "transaction_id": "877",
+    "type": "trade",
+    "timestamp": "1782755111",
+    "status": "successful",
+    "players": [
+      {
+        "player_key": "469.p.11251",
+        "player_id": "11251",
+        "player_name": "Merrill Kelly",
+        "team_abbr": "AZ",
+        "position": "SP",
+        "transaction_type": "trade",
+        "source_type": "team",
+        "source_team_key": "469.l.4114.t.3",
+        "source_team_name": "The Bag Squealers",
+        "destination_type": "team",
+        "destination_team_key": "469.l.4114.t.7",
+        "destination_team_name": "King Dylan's Knights"
+      },
+      {
+        "player_key": "469.p.63423",
+        "player_id": "63423",
+        "player_name": "Yoshinobu Yamamoto",
+        "team_abbr": "LAD",
+        "position": "SP",
+        "transaction_type": "trade",
+        "source_type": "team",
+        "source_team_key": "469.l.4114.t.7",
+        "source_team_name": "King Dylan's Knights",
+        "destination_type": "team",
+        "destination_team_key": "469.l.4114.t.3",
+        "destination_team_name": "The Bag Squealers"
+      }
+    ],
+    "trader_team_key": "469.l.4114.t.3",
+    "trader_team_name": "The Bag Squealers",
+    "tradee_team_key": "469.l.4114.t.7",
+    "tradee_team_name": "King Dylan's Knights",
+    "picks": [
+      {
+        "pick": {
+          "source_team_key": "469.l.4114.t.3",
+          "source_team_name": "The Bag Squealers",
+          "destination_team_key": "469.l.4114.t.7",
+          "destination_team_name": "King Dylan's Knights",
+          "original_team_key": "469.l.4114.t.3",
+          "original_team_name": "The Bag Squealers",
+          "round": "1"
+        }
+      },
+      {
+        "pick": {
+          "source_team_key": "469.l.4114.t.7",
+          "source_team_name": "King Dylan's Knights",
+          "destination_team_key": "469.l.4114.t.3",
+          "destination_team_name": "The Bag Squealers",
+          "original_team_key": "469.l.4114.t.7",
+          "original_team_name": "King Dylan's Knights",
+          "round": "20"
+        }
+      }
+    ],
+    "draft_picks": [
+      {
+        "display_name": "Round 1 Pick",
+        "round": "1",
+        "source_year": "",
+        "destination_year": "",
+        "source_type": "",
+        "source_team_key": "469.l.4114.t.3",
+        "source_team_name": "The Bag Squealers",
+        "destination_type": "",
+        "destination_team_key": "469.l.4114.t.7",
+        "destination_team_name": "King Dylan's Knights"
+      },
+      {
+        "display_name": "Round 20 Pick",
+        "round": "20",
+        "source_year": "",
+        "destination_year": "",
+        "source_type": "",
+        "source_team_key": "469.l.4114.t.7",
+        "source_team_name": "King Dylan's Knights",
+        "destination_type": "",
+        "destination_team_key": "469.l.4114.t.3",
+        "destination_team_name": "The Bag Squealers"
+      }
+    ]
+  },
+  {
     "transaction_key": "469.l.4114.tr.876",
     "transaction_id": "876",
     "type": "add",
