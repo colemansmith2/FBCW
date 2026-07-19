@@ -1,6 +1,6 @@
 {
   "date": "2026-07-19",
-  "updated": "2026-07-19T17:48:52.739501+00:00",
+  "updated": "2026-07-19T20:54:45.121489+00:00",
   "teams_playing": [
     "ARI",
     "ATL",
@@ -38,7 +38,7 @@
     {
       "game_pk": 822786,
       "game_date": "2026-07-19T16:15:00Z",
-      "status": "In Progress",
+      "status": "Final",
       "home_team": "TOR",
       "away_team": "CWS",
       "home_probable_pitcher": {
@@ -147,7 +147,7 @@
     {
       "game_pk": 823523,
       "game_date": "2026-07-19T16:35:00Z",
-      "status": "In Progress",
+      "status": "Final",
       "home_team": "NYY",
       "away_team": "LAD",
       "home_probable_pitcher": {
@@ -260,14 +260,17 @@
       "home_team": "NYY",
       "away_team": "LAD",
       "home_probable_pitcher": null,
-      "away_probable_pitcher": null,
+      "away_probable_pitcher": {
+        "player_id": 694361,
+        "name": "Will Klein"
+      },
       "home_lineup": [],
       "away_lineup": []
     },
     {
       "game_pk": 824739,
       "game_date": "2026-07-19T17:35:00Z",
-      "status": "In Progress",
+      "status": "Final",
       "home_team": "BOS",
       "away_team": "TB",
       "home_probable_pitcher": {
@@ -376,7 +379,7 @@
     {
       "game_pk": 823439,
       "game_date": "2026-07-19T17:35:00Z",
-      "status": "In Progress",
+      "status": "Final",
       "home_team": "PHI",
       "away_team": "NYM",
       "home_probable_pitcher": {
@@ -485,7 +488,7 @@
     {
       "game_pk": 824897,
       "game_date": "2026-07-19T17:35:00Z",
-      "status": "In Progress",
+      "status": "Final",
       "home_team": "ATL",
       "away_team": "TEX",
       "home_probable_pitcher": {
@@ -594,7 +597,7 @@
     {
       "game_pk": 824411,
       "game_date": "2026-07-19T17:40:00Z",
-      "status": "In Progress",
+      "status": "Final",
       "home_team": "CLE",
       "away_team": "PIT",
       "home_probable_pitcher": {
@@ -703,7 +706,7 @@
     {
       "game_pk": 824168,
       "game_date": "2026-07-19T18:10:00Z",
-      "status": "Warmup",
+      "status": "In Progress",
       "home_team": "HOU",
       "away_team": "BAL",
       "home_probable_pitcher": {
@@ -812,7 +815,7 @@
     {
       "game_pk": 824086,
       "game_date": "2026-07-19T18:10:00Z",
-      "status": "Warmup",
+      "status": "In Progress",
       "home_team": "KC",
       "away_team": "SD",
       "home_probable_pitcher": {
@@ -921,7 +924,7 @@
     {
       "game_pk": 823764,
       "game_date": "2026-07-19T18:10:00Z",
-      "status": "Warmup",
+      "status": "In Progress",
       "home_team": "MIL",
       "away_team": "MIA",
       "home_probable_pitcher": {
@@ -1030,7 +1033,7 @@
     {
       "game_pk": 824653,
       "game_date": "2026-07-19T18:20:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "CHC",
       "away_team": "MIN",
       "home_probable_pitcher": {
@@ -1139,7 +1142,7 @@
     {
       "game_pk": 824330,
       "game_date": "2026-07-19T19:10:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "COL",
       "away_team": "CIN",
       "home_probable_pitcher": {
@@ -1248,7 +1251,7 @@
     {
       "game_pk": 824978,
       "game_date": "2026-07-19T20:05:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "OAK",
       "away_team": "WSH",
       "home_probable_pitcher": {
@@ -1306,12 +1309,58 @@
           "batting_order": 9
         }
       ],
-      "away_lineup": []
+      "away_lineup": [
+        {
+          "player_id": 695578,
+          "name": "James Wood",
+          "batting_order": 1
+        },
+        {
+          "player_id": 678554,
+          "name": "Curtis Mead",
+          "batting_order": 2
+        },
+        {
+          "player_id": 665953,
+          "name": "Andr\u00e9s Chaparro",
+          "batting_order": 3
+        },
+        {
+          "player_id": 682928,
+          "name": "CJ Abrams",
+          "batting_order": 4
+        },
+        {
+          "player_id": 686611,
+          "name": "Dylan Crews",
+          "batting_order": 5
+        },
+        {
+          "player_id": 695670,
+          "name": "Harry Ford",
+          "batting_order": 6
+        },
+        {
+          "player_id": 695734,
+          "name": "Daylen Lile",
+          "batting_order": 7
+        },
+        {
+          "player_id": 696285,
+          "name": "Jacob Young",
+          "batting_order": 8
+        },
+        {
+          "player_id": 683083,
+          "name": "Nasim Nu\u00f1ez",
+          "batting_order": 9
+        }
+      ]
     },
     {
       "game_pk": 824007,
       "game_date": "2026-07-19T20:07:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "LAA",
       "away_team": "DET",
       "home_probable_pitcher": {
@@ -1420,7 +1469,7 @@
     {
       "game_pk": 823113,
       "game_date": "2026-07-19T20:10:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "SEA",
       "away_team": "SF",
       "home_probable_pitcher": {
@@ -1529,7 +1578,7 @@
     {
       "game_pk": 825057,
       "game_date": "2026-07-19T20:10:00Z",
-      "status": "Pre-Game",
+      "status": "In Progress",
       "home_team": "ARI",
       "away_team": "STL",
       "home_probable_pitcher": {
